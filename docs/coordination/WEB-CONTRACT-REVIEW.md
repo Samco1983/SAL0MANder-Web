@@ -18,9 +18,9 @@ still has no direct hub access and still cannot read the source contracts.
 | 1   | BOTH / Student Choice     | **Partly settled.** Mode names `learning-puzzle`/`classic-puzzle` stay; Unity owns the picker — the boundary question in §1 is answered. `allowedModes[]` vs. a `both` enum member still open. |
 | 2   | shareCode                 | **Open — do not wire.** No route or endpoint rename made.                                     |
 | 3   | Correlation + idempotency | **Additive and proposed**, pending unification with Codex's `clientAttemptId` / result correlation. Nothing frozen. |
-| 4   | Envelope                  | **Open — do not wire.** Transport still parses raw payloads; the unused `EnvelopeSchema` stays as-is. |
+| 4   | Envelope                  | **Shape proposed by Codex (discriminated union); 11 conflicts reported, still unwired.** See `ENVELOPE-REVIEW.md`. My original "errors should not be enveloped" recommendation is **withdrawn**. |
 | 5   | Media DTO                 | **Open — do not wire.** No variant/checksum/expiry changes made.                              |
-| 6   | Teacher AI UX             | Ownership question still unanswered.                                                          |
+| 6   | Teacher AI UX             | **Settled.** Web teacher portal owns generation/approval via the provider-neutral backend; Unity gets approved assets only; no broad generation UX during P0. See D-015. |
 
 Standing guardrails being followed: no shared contract frozen, no Unity contact,
 no remote attached, and Codex relays hub updates rather than the human.

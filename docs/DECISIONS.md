@@ -184,6 +184,27 @@ diagnostic is not lost to the recovery. `readEnv(source)` was extracted as a
 pure function because `import.meta.env` is a build-time constant that cannot be
 varied from a test; the failure above was unprovable before that.
 
+## D-015 — AI candidate generation lives in the web teacher portal
+
+**Decided** · relayed via Codex, 2026-08-15 · **answers Topic 6 of the web review**
+
+Near-term AI candidate generation and approval belong to the **web teacher
+portal**, running through the provider-neutral backend API. Unity receives
+**approved/promoted assets only**. AI authoring is explicitly *not* added to
+Unity's Teacher Studio.
+
+Scope limit: **no broad generation UX during P0.** This settles ownership so the
+question stops blocking, not so implementation starts. The usability deltas
+raised in the review — generation as a polled job rather than a long request,
+candidates held outside the append-only version sequence until accepted, and a
+typed error vocabulary — become web-side design work when P1 opens, and are
+recorded in `docs/coordination/WEB-CONTRACT-REVIEW.md` §6.
+
+Consequence worth stating now: this puts a generation provider on the web's
+critical path, which is a live architecture question (see D-013 — Google Cloud
+is settled as infrastructure, but services and auth are not). Nothing is built
+toward it yet.
+
 ---
 
 ## DEFERRED — requires approval before implementation
