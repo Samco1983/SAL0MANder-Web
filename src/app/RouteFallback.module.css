@@ -1,0 +1,11 @@
+.fallback {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  padding: var(--space-6);
+}
+
+.text {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}

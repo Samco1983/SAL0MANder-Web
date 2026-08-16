@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { env } from '@config/env'
 import { buildShareLink, paths } from '@config/routes'
@@ -8,6 +9,8 @@ import { Button, LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
+import { onUnityMessage } from '@unity/bridge'
+import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
 import { isRecoverable, linkCopy, linkStateFrom } from './linkState'
@@ -49,6 +52,34 @@ export function GuestPlayPage() {
   // Minted lazily on the device; not authentication, carries no PII.
   const identity = getGuestIdentity()
   const shareUrl = buildShareLink(activityId ?? '', env.publicBaseUrl)
+
+  const bundle = state.status === 'ready' ? state.bundle : undefined
+  // Starts only once there is a pinned version to attribute the play to.
+  const session = usePlaySession({
+    activityId,
+    activityVersionId: bundle?.version.id,
+    identity,
+    enabled: Boolean(bundle),
+  })
+
+  // Unity reports a finished game across the bridge; the web layer records it.
+  // A submit failure is deliberately silent to the student — the game is over
+  // and the result is the teacher's concern, not something to interrupt a
+  // child with.
+  useEffect(() => {
+    return onUnityMessage((message) => {
+      if (message.type !== 'session-finished') return
+      void session.submit({
+        status: 'completed',
+        durationMs: message.durationMs,
+        questionsAnswered: message.questionsAnswered,
+        questionsCorrect: message.questionsCorrect,
+        piecesPlaced: message.piecesPlaced,
+        piecesTotal: message.piecesTotal,
+        completedAt: new Date().toISOString(),
+      })
+    })
+  }, [session])
 
   return (
     <AppShell fill contained={false}>
