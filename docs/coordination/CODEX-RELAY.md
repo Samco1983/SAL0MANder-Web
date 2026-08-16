@@ -6,6 +6,41 @@
 
 ---
 
+## 0. OWNER DECISION — 2026-08-15 — all uploads private
+
+Samuel has ruled: **all uploaded photos are private.** AI-generated assets may
+stay on the public immutable CDN. This confirms the provenance split and makes
+private the default rather than a district-tier upgrade. Recorded as D-016.
+
+**Two consequences Codex and Gemini need to action:**
+
+1. **`asset-refresh` moves from NEXT to NOW.** Gemini scheduled the
+   version-pinned refresh endpoint as "NEXT (strict tenant/private schools)".
+   Private is now the default for every upload, so mid-play signed-URL expiry is
+   on the critical path for any photo-backed activity — not an edge case. Public
+   immutable CDN URLs solve expiry for AI assets only.
+2. **Media deletion must be a separate axis from version immutability.**
+   `ActivityVersion` is immutable by design. If a parent objects to a photo we
+   cannot mutate the version to remove it. Proposal: the version keeps its
+   `mediaId`, the bytes are purged, the activity degrades to a missing-image
+   state. Retrofitting this later means either breaking immutability or being
+   unable to honour a deletion request.
+
+**Still open (D-017), and it is an owner/product question, not engineering:**
+"private at rest" is not "private from students". Guest Play is auth-free, so
+anyone holding a share link sees the photo — signed URLs do not change that,
+since the URL is handed to whoever opens the activity. With a deliberately short
+human-friendly `shareCode`, the chain is a photograph of identifiable children
+behind a guessable URL reachable with no account.
+
+Web recommends, pending Samuel: point-of-upload disclosure in plain words, plus
+a higher-entropy `shareCode` specifically for activities containing uploads
+(short friendly codes stay for AI-generated activities — invisible to most
+teachers, costs nothing). Also flagging that a disclaimer does not transfer
+COPPA/FERPA obligations; that needs real legal review, not an agent's judgement.
+
+---
+
 ## 1. Acknowledged as reconciled
 
 Building consistently with these; not relitigating. Several resolve items I raised — recording so they stop being open on my side:

@@ -205,6 +205,66 @@ critical path, which is a live architecture question (see D-013 — Google Cloud
 is settled as infrastructure, but services and auth are not). Nothing is built
 toward it yet.
 
+## D-016 — All uploaded photos are private; AI-generated assets may be public
+
+**Decided** · Samuel (owner), 2026-08-15 · *"all photos that are uploaded should be private
+although i will have a disclaimer"*
+
+Confirms the provenance split proposed in `GEMINI-CHALLENGE.md` §C, and makes
+private the **default** rather than a district-tier upgrade:
+
+| Origin | Delivery |
+| --- | --- |
+| AI-generated (Imagen output) | Public immutable CDN — no PII by construction |
+| Teacher / user uploads | Private bucket, signed URLs, version-pinned |
+
+**Consequence that reorders the plan:** Gemini scheduled the version-pinned
+`asset-refresh` endpoint as *NEXT (strict tenant/private schools)*. Private is
+now the default for every upload, so refresh moves to **NOW** — the mid-play URL
+expiry problem is on the critical path for any activity built from a photo, not
+an edge case. Public immutable CDN URLs solve expiry only for AI assets.
+
+**What this decision does NOT settle** — see D-017.
+
+## D-017 — OPEN: "private storage" is not "private from students"
+
+**Raised** · 2026-08-15 · **needs an owner answer before uploads ship**
+
+D-016 makes uploaded photos private *at rest*. It does not answer who may see
+them at play time, and the two are easy to conflate.
+
+Guest Play is auth-free by non-negotiable #3. So a teacher who uploads a class
+photo and shares the link has made that photo visible to **anyone holding the
+link** — signed URLs do not change this, because the signed URL is handed to
+whoever opens the activity. Share links get pasted into Google Classroom, listed
+on TPT, and printed on worksheets. Combined with a deliberately short,
+human-friendly `shareCode`, the chain is: *a photograph of identifiable children
+behind a guessable URL, reachable with no account.*
+
+Three ways to close it, not mutually exclusive:
+
+1. **Point-of-upload disclosure.** The disclaimer earns its keep here, not in a
+   ToS: at the moment of upload, in plain words — "anyone with this activity's
+   link will be able to see this image." Specific and timely beats buried.
+2. **Higher-entropy shareCode for activities containing uploads.** Keep short
+   friendly codes for AI-generated activities; use longer codes where a photo is
+   involved. Costs nothing and is invisible to most teachers.
+3. **Require class-level access for upload-backed activities** — strongest, but
+   it collides with frictionless Guest Play, so it is a product tradeoff rather
+   than an engineering one.
+
+**Separately: a disclaimer does not transfer COPPA/FERPA obligations.** A
+teacher accepting terms is not parental consent, and this needs actual legal
+review before launch rather than an agent's judgement. Flagging, not advising.
+
+**And: deletion conflicts with immutable versions.** `ActivityVersion` is
+append-only and immutable so a mid-lesson publish cannot change what 200
+students are already playing (D-004 rationale). If a parent objects to a photo,
+we cannot mutate the version to remove it. Resolution: media deletion must be a
+**separate axis** from version immutability — the version keeps its `mediaId`
+reference, the bytes are purged, and the activity degrades gracefully to a
+missing-image state. This has to be designed in, not retrofitted.
+
 ---
 
 ## DEFERRED — requires approval before implementation
