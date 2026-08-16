@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { env } from '@config/env'
 import { buildShareLink, paths } from '@config/routes'
@@ -54,11 +54,34 @@ export function GuestPlayPage() {
   const shareUrl = buildShareLink(activityId ?? '', env.publicBaseUrl)
 
   const bundle = state.status === 'ready' ? state.bundle : undefined
-  // Starts only once there is a pinned version to attribute the play to.
+  const allowedPlayModes = (
+    bundle?.version.payload.body as { allowedPlayModes?: string[] } | undefined
+  )?.allowedPlayModes
+
+  /**
+   * The mode this attempt is pinned to.
+   *
+   * One mode allowed — known immediately. Student Choice — Unity owns the
+   * picker, so the web waits for `mode-selected` rather than guessing. Pinning
+   * a session to a mode the student never chose is unfixable after the fact:
+   * the value is immutable once set, so a teacher's mode breakdown would be
+   * quietly wrong with nothing to reveal it.
+   */
+  const [chosenMode, setChosenMode] = useState<string | undefined>(undefined)
+  const selectedPlayMode = allowedPlayModes?.length === 1 ? allowedPlayModes[0] : chosenMode
+
+  useEffect(() => {
+    return onUnityMessage((message) => {
+      if (message.type === 'mode-selected') setChosenMode(message.selectedPlayMode)
+    })
+  }, [])
+
+  // Starts only once there is a pinned version AND a known mode.
   const session = usePlaySession({
     activityId,
     activityVersionId: bundle?.version.id,
     identity,
+    selectedPlayMode,
     enabled: Boolean(bundle),
   })
 
@@ -76,16 +99,14 @@ export function GuestPlayPage() {
   const sessionId = session.status === 'active' ? session.session.id : undefined
   const boot = useMemo(() => {
     if (!bundle) return undefined
-    const body = bundle.version.payload.body as { allowedPlayModes?: string[] } | undefined
-    const allowed = body?.allowedPlayModes
     return {
       activityId: bundle.summary.id,
       activityVersionId: bundle.version.id,
       playBundle: bundle.version.payload.body,
-      ...(allowed?.length === 1 ? { selectedPlayMode: allowed[0] } : {}),
+      ...(selectedPlayMode ? { selectedPlayMode } : {}),
       ...(sessionId ? { sessionId } : {}),
     }
-  }, [bundle, sessionId])
+  }, [bundle, sessionId, selectedPlayMode])
 
   // Unity reports a finished game across the bridge; the web layer records it.
   // A submit failure is deliberately silent to the student — the game is over

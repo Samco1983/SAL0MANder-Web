@@ -48,6 +48,7 @@ const setup = (overrides: Partial<Parameters<typeof usePlaySession>[0]> = {}) =>
       activityId: 'act_1',
       activityVersionId: 'av_1',
       identity,
+      selectedPlayMode: 'classic-puzzle',
       enabled: true,
       ...overrides,
     }),
@@ -78,14 +79,43 @@ describe('starting', () => {
     expect(start).toHaveBeenCalledTimes(1)
   })
 
-  it('sends the pinned version and the guest identity', async () => {
+  it('sends the pinned version, mode, identity and attempt id', async () => {
     const { result } = setup()
     await waitFor(() => expect(result.current.status).toBe('active'))
-    expect(start.mock.calls[0]?.[0]).toEqual({
+    const [body, key] = start.mock.calls[0] as [Record<string, unknown>, string]
+
+    expect(body).toEqual({
       activityId: 'act_1',
       activityVersionId: 'av_1',
       identity,
+      selectedPlayMode: 'classic-puzzle',
+      clientAttemptId: key,
     })
+    // One concept, one value: minting clientAttemptId separately from the
+    // idempotency key would guarantee they eventually disagree.
+    expect(body.clientAttemptId).toBe(key)
+  })
+
+  it('opens no session until the mode is known', async () => {
+    // Student Choice: Unity owns the picker. Pinning a guess is unfixable —
+    // the value is immutable once set, so a teacher's mode breakdown would be
+    // quietly wrong with nothing to reveal it.
+    const { rerender } = renderHook(
+      ({ mode }: { mode: string | undefined }) =>
+        usePlaySession({
+          activityId: 'act_1',
+          activityVersionId: 'av_1',
+          identity,
+          selectedPlayMode: mode,
+          enabled: true,
+        }),
+      { initialProps: { mode: undefined as string | undefined } },
+    )
+    expect(start).not.toHaveBeenCalled()
+
+    rerender({ mode: 'learning-puzzle' })
+    await waitFor(() => expect(start).toHaveBeenCalledTimes(1))
+    expect(start.mock.calls[0]?.[0]).toMatchObject({ selectedPlayMode: 'learning-puzzle' })
   })
 
   it('reuses the stored key so a reload resumes rather than duplicating', async () => {
@@ -110,6 +140,7 @@ describe('starting', () => {
           activityId: 'act_1',
           activityVersionId: 'av_1',
           identity: { kind: 'guest', guestToken: token },
+          selectedPlayMode: 'classic-puzzle',
           enabled: true,
         }),
       { initialProps: { token: 'guest-token-1' } },

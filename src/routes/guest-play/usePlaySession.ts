@@ -20,6 +20,17 @@ type Input = {
   activityId: string | undefined
   activityVersionId: string | undefined
   identity: PlayerIdentity
+  /**
+   * The mode this attempt is pinned to.
+   *
+   * For a single-mode activity the caller knows it immediately. For Student
+   * Choice it arrives from Unity over the bridge, and until then it is
+   * `undefined` and **no session opens**. Starting early with a guess would pin
+   * the attempt to a mode the student never chose, and the value is immutable
+   * once pinned — so the mode breakdown in a teacher's report would be quietly
+   * wrong with no way to tell.
+   */
+  selectedPlayMode: string | undefined
   /** Sessions only start once there is something to play. */
   enabled: boolean
 }
@@ -39,6 +50,7 @@ export function usePlaySession({
   activityId,
   activityVersionId,
   identity,
+  selectedPlayMode,
   enabled,
 }: Input): PlaySessionApi {
   const [state, setState] = useState<PlaySessionState>({ status: 'idle' })
@@ -50,17 +62,28 @@ export function usePlaySession({
   identityRef.current = identity
 
   useEffect(() => {
-    if (!enabled || !activityId || !activityVersionId) return
+    // No mode, no session. See the field docs above.
+    if (!enabled || !activityId || !activityVersionId || !selectedPlayMode) return
 
     const controller = new AbortController()
     let active = true
     setState({ status: 'starting' })
 
     // Derived, so a reload resumes this session instead of creating a second.
+    // Doubles as `clientAttemptId` — same concept, one value.
     const idempotencyKey = startKeyFor(activityVersionId, newId)
 
     api.sessions
-      .start({ activityId, activityVersionId, identity: identityRef.current }, idempotencyKey)
+      .start(
+        {
+          activityId,
+          activityVersionId,
+          identity: identityRef.current,
+          selectedPlayMode,
+          clientAttemptId: idempotencyKey,
+        },
+        idempotencyKey,
+      )
       .then((session) => {
         if (active) setState({ status: 'active', session })
       })
@@ -73,7 +96,7 @@ export function usePlaySession({
       active = false
       controller.abort()
     }
-  }, [activityId, activityVersionId, enabled, attempt])
+  }, [activityId, activityVersionId, selectedPlayMode, enabled, attempt])
 
   const submit = useCallback(
     async (result: Omit<SessionResult, 'sessionId'>) => {

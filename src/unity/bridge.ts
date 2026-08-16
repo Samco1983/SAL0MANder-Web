@@ -96,6 +96,24 @@ export type UnityToWebMessage =
       piecesPlaced: number
       piecesTotal: number
     } & BridgeCorrelation)
+  /**
+   * The student picked a mode. DRAFT — proposed addition, not in
+   * `API_CONTRACT.md` yet.
+   *
+   * Needed because the two facts are on opposite sides of the bridge:
+   * `selectedPlayMode` is declared at `POST /v1/sessions`, which the *web*
+   * calls, but Unity owns the picker. For a Student Choice activity the choice
+   * does not exist at boot, and the web must not guess — pinning a session to a
+   * mode the student never chose corrupts the mode breakdown in reporting.
+   *
+   * Only meaningful when `allowedPlayModes` has more than one entry; a
+   * single-mode activity needs no message because the answer is already known.
+   */
+  | ({
+      type: 'mode-selected'
+      version: typeof BRIDGE_VERSION
+      selectedPlayMode: string
+    } & BridgeCorrelation)
   | ({ type: 'error'; version: typeof BRIDGE_VERSION; message: string } & BridgeCorrelation)
 
 export const UNITY_EVENT_NAME = 'sal0mander:unity-message'
@@ -146,6 +164,7 @@ export function sendToUnity(
 const KNOWN_TYPES = new Set<UnityToWebMessage['type']>([
   'ready',
   'load-progress',
+  'mode-selected',
   'session-finished',
   'error',
 ])
