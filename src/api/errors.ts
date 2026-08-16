@@ -6,6 +6,19 @@ export class ApiError extends Error {
   readonly status: number | null
   readonly requestId: string | undefined
   readonly details: Record<string, unknown> | undefined
+  /**
+   * The raw `code` string the server sent, before it was mapped onto our enum.
+   *
+   * Preserved because the server's vocabulary is wider than ours and still
+   * being negotiated: `IDEMPOTENCY_CONFLICT` has no member here yet and would
+   * otherwise collapse into a generic `conflict`, making a client-side key
+   * reuse bug indistinguishable from a domain conflict. Keeping the original
+   * costs nothing and keeps the signal available for logging until the shared
+   * vocabulary is settled.
+   */
+  readonly serverCode: string | undefined
+  /** Server's own retryability verdict, when it sent one. */
+  private readonly serverRetryable: boolean | undefined
 
   constructor(init: {
     code: ApiErrorCode
@@ -13,6 +26,8 @@ export class ApiError extends Error {
     status?: number | null
     requestId?: string
     details?: Record<string, unknown>
+    serverCode?: string
+    retryable?: boolean
   }) {
     super(init.message)
     this.name = 'ApiError'
@@ -20,10 +35,23 @@ export class ApiError extends Error {
     this.status = init.status ?? null
     this.requestId = init.requestId
     this.details = init.details
+    this.serverCode = init.serverCode
+    this.serverRetryable = init.retryable
   }
 
+  /**
+   * The server's verdict wins when it sent one — only it knows whether a given
+   * 500 is permanent. The derived table is the fallback, and the only source
+   * for client-synthesized failures (network, timeout) that never had a
+   * response.
+   *
+   * This does NOT decide whether a write is re-sent. `transport.ts` gates that
+   * separately on method and idempotency key, so a server claiming `retryable`
+   * can never cause an unkeyed POST to be repeated and double-count a
+   * student's completion.
+   */
   get retryable(): boolean {
-    return isRetryable(this.code)
+    return this.serverRetryable ?? isRetryable(this.code)
   }
 
   /**
@@ -50,6 +78,69 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * The fields we care about, wherever the server chose to put them.
+ *
+ * Two shapes are in play and the envelope is not frozen: today's flat body
+ * (`{ code, message, requestId, details }`) and the proposed enveloped one
+ * (`{ contractVersion, success: false, error: {...}, meta: { requestId } }`).
+ *
+ * Reading only the flat shape was a silent-data-loss bug waiting to ship: under
+ * the envelope every field misses, and because `code` has `.catch()` and
+ * `message` has `.default('')` the parse still "succeeds". Measured against the
+ * proposed body, `message` became the HTTP status text and `requestId` and
+ * `details` became undefined — losing the identifier a teacher would quote to
+ * support, on every error, with no signal that anything was wrong.
+ *
+ * Accepting both is deliberately NOT a decision about which envelope wins. It
+ * is tolerance, so the client cannot be broken by that decision landing.
+ */
+type ErrorFields = {
+  code: string | undefined
+  message: string | undefined
+  requestId: string | undefined
+  details: Record<string, unknown> | undefined
+  retryable: boolean | undefined
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+const asString = (v: unknown) => (typeof v === 'string' && v ? v : undefined)
+const asRecord = (v: unknown) => (isRecord(v) ? v : undefined)
+
+function extractErrorFields(body: unknown): ErrorFields {
+  const root = asRecord(body) ?? {}
+  // Enveloped errors nest under `error`; flat ones live at the root.
+  const source = asRecord(root.error) ?? root
+  const meta = asRecord(root.meta) ?? {}
+
+  return {
+    code: asString(source.code),
+    message: asString(source.message),
+    // `meta.requestId` (enveloped) or a sibling of `code` (flat).
+    requestId: asString(meta.requestId) ?? asString(source.requestId) ?? asString(root.requestId),
+    details: asRecord(source.details),
+    retryable: typeof source.retryable === 'boolean' ? source.retryable : undefined,
+  }
+}
+
+/**
+ * Maps a server code string onto our enum, tolerating case.
+ *
+ * The wire vocabulary is SCREAMING_SNAKE in the current proposals while ours is
+ * lowercase; that casing question is still open. Normalizing here means the
+ * codes we *do* share resolve correctly either way, and the ones we don't fall
+ * through to the status mapping rather than being mistaken for something else.
+ */
+function toContractCode(raw: string | undefined): ApiErrorCode | undefined {
+  if (!raw) return undefined
+  const parsed = ApiErrorBodySchema.shape.code.safeParse(raw.toLowerCase())
+  if (!parsed.success || parsed.data === 'unknown') return undefined
+  return parsed.data
+}
+
 export async function apiErrorFromResponse(response: Response): Promise<ApiError> {
   let body: unknown
   try {
@@ -57,14 +148,18 @@ export async function apiErrorFromResponse(response: Response): Promise<ApiError
   } catch {
     body = {}
   }
-  const parsed = ApiErrorBodySchema.safeParse(body)
+
+  const fields = extractErrorFields(body)
   // The contract owns this mapping; a second copy here would drift from it.
   const fallbackCode = codeFromStatus(response.status)
+
   return new ApiError({
-    code: parsed.success && parsed.data.code !== 'unknown' ? parsed.data.code : fallbackCode,
-    message: parsed.success && parsed.data.message ? parsed.data.message : response.statusText,
+    code: toContractCode(fields.code) ?? fallbackCode,
+    message: fields.message ?? response.statusText,
     status: response.status,
-    ...(parsed.success && parsed.data.requestId ? { requestId: parsed.data.requestId } : {}),
-    ...(parsed.success && parsed.data.details ? { details: parsed.data.details } : {}),
+    ...(fields.requestId ? { requestId: fields.requestId } : {}),
+    ...(fields.details ? { details: fields.details } : {}),
+    ...(fields.code ? { serverCode: fields.code } : {}),
+    ...(fields.retryable !== undefined ? { retryable: fields.retryable } : {}),
   })
 }
