@@ -1,6 +1,64 @@
+/*
+ * One extra surface level, borrowed from the older shell: page → hero → stat
+ * tiles. Depth is most of what separates "sketch" from "product", and it costs
+ * a background and a border rather than a redesign.
+ */
 .hero {
-  padding: var(--space-7) 0 var(--space-6);
-  max-width: 62ch;
+  display: grid;
+  gap: var(--space-5);
+  align-items: end;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  padding: var(--space-6);
+  margin-top: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.heroCopy {
+  max-width: 54ch;
+}
+
+/* The stat strip stacks under the copy before it gets cramped. */
+@media (max-width: 60rem) {
+  .hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
+
+/* Orientation at a glance — what exists, and how much of it. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.stat {
+  padding: var(--space-3);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.statValue {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  /* The one place accent earns its keep on this page. */
+  color: var(--color-accent);
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statNote {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }
 
 .eyebrow {

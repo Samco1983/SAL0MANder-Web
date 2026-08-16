@@ -16,38 +16,63 @@ export function HomePage() {
   return (
     <AppShell>
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>Cloud companion platform</p>
-        <h1 className={styles.title}>{env.appName}</h1>
-        <p className={styles.lede}>
-          The SAL0MANder application owns the gameplay. This site is the cloud companion around it:
-          share links, profiles, saved progress, media, and teacher tools. Students can open a
-          shared activity and play without an account.
-        </p>
-        <div className={styles.actions}>
-          <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)} size="lg">
-            Try Guest Play
-          </LinkButton>
-          <LinkButton to={paths.unity} variant="secondary" size="lg">
-            WebGL host
-          </LinkButton>
+        <div className={styles.heroCopy}>
+          <p className={styles.eyebrow}>Cloud companion platform</p>
+          <h1 className={styles.title}>{env.appName}</h1>
+          <p className={styles.lede}>
+            The SAL0MANder application owns the gameplay. This site is the cloud companion around
+            it: share links, profiles, saved progress, media, and teacher tools. Students can open a
+            shared activity and play without an account.
+          </p>
+          <div className={styles.actions}>
+            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)} size="lg">
+              Try Guest Play
+            </LinkButton>
+            <LinkButton to={paths.unity} variant="secondary" size="lg">
+              WebGL host
+            </LinkButton>
+          </div>
         </div>
+
+        {/* Orientation, not decoration: what exists right now, in three numbers. */}
+        <dl className={styles.stats}>
+          <div className={styles.stat}>
+            <dd className={styles.statValue}>1</dd>
+            <dt className={styles.statLabel}>Demo activity</dt>
+            <p className={styles.statNote}>Mock backend</p>
+          </div>
+          <div className={styles.stat}>
+            <dd className={styles.statValue}>0</dd>
+            <dt className={styles.statLabel}>Accounts needed</dt>
+            <p className={styles.statNote}>To play</p>
+          </div>
+          <div className={styles.stat}>
+            <dd className={styles.statValue}>v1</dd>
+            <dt className={styles.statLabel}>Contract</dt>
+            <p className={styles.statNote}>Draft</p>
+          </div>
+        </dl>
       </section>
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>What the web platform is responsible for</h2>
+        {/*
+          Intent-led headings, borrowed from the older shell: each card leads
+          with what someone is trying to do, not the feature's name.
+        */}
         <div className={styles.grid}>
-          <Card title="Share &amp; distribute">
-            A teacher publishes an activity and gets a stable link to send through TPT, Google
-            Classroom, an LMS, or a QR code.
+          <Card title="I want to share an activity">
+            A teacher publishes and gets a stable link to send through TPT, Google Classroom, an
+            LMS, or a QR code.
           </Card>
-          <Card title="Guest Play">
+          <Card title="I want to just play">
             A student opens that link and plays. No email, no password, no account required.
           </Card>
-          <Card title="Profiles &amp; progress">
+          <Card title="I want to keep my progress">
             Optional accounts add saved progress, XP, credits, badges, and history — never a
             requirement to play.
           </Card>
-          <Card title="Cloud storage">
+          <Card title="I want my images to load fast">
             Activities, versions, and images live in cloud storage and are served from a CDN.
           </Card>
         </div>
