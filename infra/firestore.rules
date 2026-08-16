@@ -1,0 +1,140 @@
+rules_version = '2';
+
+// SAL0MANder Firestore security rules
+//
+// STATUS: DRAFT — NOT DEPLOYED. Owner: Gemini (cloud lane).
+// Reviewed and amended by Claude Code as a consuming client owner, which
+// AGENT_WORKFLOW.md requires for Firestore changes.
+//
+// Amended rather than filed as objections because rules files get deployed with
+// `firebase deploy` and comments do not stop that. The default here is
+// fail-closed: rules that are too tight fail with a permission error someone
+// notices in an afternoon; rules that are too open fail as a breach nobody
+// notices at all.
+//
+// FOUR AMENDMENTS vs. the draft handed over — see infra/FIRESTORE-REVIEW.md:
+//   1. gameplay_sessions client writes  -> denied (were unauthenticated)
+//   2. media_assets read                -> AI-generated only (was all approved)
+//   3. activities read                  -> denied (was world-readable)
+//   4. isTeacher() get() fallback       -> removed (billed read per evaluation)
+//
+// The through-line: the agreed architecture is "zero direct client Firestore
+// access — sessions route through Cloud Run REST." These rules now say that.
+// The web client has no Firebase SDK dependency, so denying client access costs
+// nothing today and can be relaxed deliberately if that ever changes.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // AMENDED: custom claim only. The original also fell back to
+    // get(/users/$(uid)), which bills a document read on every evaluation and
+    // can be called several times per request. The claim is authoritative; if
+    // it is missing, that is a provisioning bug to fix at sign-in, not to paper
+    // over with a lookup on the hot path.
+    function isTeacher() {
+      return isAuthenticated() && request.auth.token.role == 'teacher';
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ------------------------------------------------------------------
+    // User profiles and credit balances
+    // ------------------------------------------------------------------
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['creditsBalance', 'role']);
+      allow delete: if false;
+
+      match /credit_transactions/{txId} {
+        allow read: if isOwner(userId);
+        allow write: if false; // Cloud Run only; append-only ledger.
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // Activities and immutable version snapshots
+    // ------------------------------------------------------------------
+    match /activities/{activityId} {
+      // AMENDED: was `resource.data.isPublished == true`, i.e. world-readable.
+      // Two problems. It contradicts server-side resolution — a share link is
+      // meant to resolve through GET /v1/play/{shareCode} on Cloud Run, not by
+      // the client querying Firestore. And it makes the whole published
+      // catalogue enumerable, which defeats the point of an unlisted activity.
+      // Combined with the answer key currently carried in the play bundle, a
+      // reader gets every question's correct answer for every activity.
+      allow read: if false;
+      allow write: if false; // Authoring goes through Cloud Run.
+
+      match /versions/{versionId} {
+        // AMENDED: was `allow read: if true` — same enumeration problem, and a
+        // version carries the full quiz payload.
+        allow read: if false;
+        allow write: if false; // Immutable, and created server-side.
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // Media assets
+    // ------------------------------------------------------------------
+    match /media_assets/{assetId} {
+      // AMENDED: was readable for any 'approved' or 'published' asset, which
+      // includes teacher photo uploads. Owner decision D-016/D-017: uploads are
+      // private and never link-shareable, because they can contain identifiable
+      // children. AI-generated assets carry no PII by construction and are the
+      // ones intended for the public immutable CDN.
+      allow read: if resource.data.provenance == 'ai-generated'
+        && resource.data.state in ['approved', 'published'];
+      allow write: if false; // Cloud Run only.
+    }
+
+    // ------------------------------------------------------------------
+    // AI generation batches (ephemeral)
+    // ------------------------------------------------------------------
+    match /generation_batches/{batchId} {
+      allow read: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+      allow write: if false; // Cloud Run orchestration only.
+    }
+
+    // ------------------------------------------------------------------
+    // Gameplay sessions
+    // ------------------------------------------------------------------
+    match /gameplay_sessions/{sessionId} {
+      // AMENDED — the most serious change.
+      //
+      // The draft allowed `create` with no authentication at all ("Guest Play
+      // support") and `update` with no authentication and no ownership check.
+      // That means anyone on the internet can create unlimited session
+      // documents — the quota-exhaustion and analytics-pollution vector raised
+      // in this project's own earlier cloud review — and anyone who knows or
+      // guesses a sessionId can complete someone else's session and set
+      // questionsCorrect to any value.
+      //
+      // Guest Play does not need client writes. It reaches the backend through
+      // POST /v1/sessions and POST /v1/sessions/{id}/result on Cloud Run, which
+      // is where the "no account required" guarantee is actually kept.
+      allow create, update, delete: if false;
+
+      allow read: if isAuthenticated()
+        && (resource.data.playerId == request.auth.uid || isTeacher());
+    }
+
+    // ------------------------------------------------------------------
+    // Aggregate statistics
+    // ------------------------------------------------------------------
+    match /activity_stats/{activityId} {
+      // Kept as-is. Decoupling these from the session write is right and
+      // resolves the transaction-contention path raised earlier: a busy
+      // counter can no longer fail a student's completion.
+      allow read: if isAuthenticated();
+      allow write: if false; // Out-of-band workers only.
+    }
+  }
+}
