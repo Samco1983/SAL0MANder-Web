@@ -34,23 +34,26 @@ export function HomePage() {
           </div>
         </div>
 
-        {/* Orientation, not decoration: what exists right now, in three numbers. */}
+        {/*
+          Orientation, not decoration: what exists right now, in three numbers.
+
+          Term before definition, and the visual order flipped in CSS instead.
+          A screen reader announces "Demo activity: 1", which is the sentence a
+          person would say; the value-first version I wrote initially was both
+          invalid markup and announced backwards as "1, Demo activity".
+        */}
         <dl className={styles.stats}>
-          <div className={styles.stat}>
-            <dd className={styles.statValue}>1</dd>
-            <dt className={styles.statLabel}>Demo activity</dt>
-            <p className={styles.statNote}>Mock backend</p>
-          </div>
-          <div className={styles.stat}>
-            <dd className={styles.statValue}>0</dd>
-            <dt className={styles.statLabel}>Accounts needed</dt>
-            <p className={styles.statNote}>To play</p>
-          </div>
-          <div className={styles.stat}>
-            <dd className={styles.statValue}>v1</dd>
-            <dt className={styles.statLabel}>Contract</dt>
-            <p className={styles.statNote}>Draft</p>
-          </div>
+          {[
+            { label: 'Demo activity', value: '1', note: 'Mock backend' },
+            { label: 'Accounts needed to play', value: '0', note: 'Guest Play' },
+            { label: 'Contract version', value: 'v1', note: 'Draft' },
+          ].map((s) => (
+            <div className={styles.stat} key={s.label}>
+              <dt className={styles.statLabel}>{s.label}</dt>
+              <dd className={styles.statValue}>{s.value}</dd>
+              <dd className={styles.statNote}>{s.note}</dd>
+            </div>
+          ))}
         </dl>
       </section>
 

@@ -33,6 +33,8 @@
   --accent-500: #f2793d;
   --accent-600: #d95f27;
   --accent-700: #b04a1c;
+  /* Hover step for the darkened accent; keeps the pressed state distinguishable. */
+  --accent-800: #8d3a14;
 
   /* Placeholder secondary, used for informational/teacher surfaces. */
   --support-100: #d9f2ee;
@@ -122,11 +124,22 @@
 
   --color-text: var(--neutral-900);
   --color-text-muted: var(--neutral-600);
-  --color-text-subtle: var(--neutral-500);
+  /*
+   * Was --neutral-500, which measured 3.75:1 on white — below the 4.5:1 floor
+   * for body text, and it is used for exactly the small 12px labels that need
+   * it most. "Subtle" describes hierarchy, not permission to be unreadable.
+   */
+  --color-text-subtle: var(--neutral-600);
   --color-text-inverse: var(--neutral-0);
 
-  --color-accent: var(--accent-600);
-  --color-accent-hover: var(--accent-700);
+  /*
+   * Accent is darkened one step for text and fills. White on --accent-600
+   * measured 3.74:1, so the primary button — the most important control on the
+   * page — failed AA. --accent-700 clears it while staying recognisably the
+   * same orange.
+   */
+  --color-accent: var(--accent-700);
+  --color-accent-hover: var(--accent-800);
   --color-accent-soft: var(--accent-100);
   --color-on-accent: var(--neutral-0);
 
