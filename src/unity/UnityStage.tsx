@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { resolveUnityBuildConfig } from './buildConfig'
+import {
+  BRIDGE_VERSION,
+  sendToUnity,
+  type UnityMessageTarget,
+  type WebToUnityMessage,
+} from './bridge'
 import styles from './UnityStage.module.css'
+
+/** Everything the host tells Unity at boot, minus the envelope fields. */
+export type BootPayload = Omit<Extract<WebToUnityMessage, { type: 'boot' }>, 'type' | 'version'>
 
 type LoadState =
   | { status: 'unconfigured' }
@@ -20,10 +29,35 @@ type LoadState =
  * Re-rendering the surrounding layout — including collapsing the 42% companion
  * panel — must never tear down a running game.
  */
-export function UnityStage({ activityId }: { activityId?: string }) {
+export function UnityStage({ activityId, boot }: { activityId?: string; boot?: BootPayload }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [state, setState] = useState<LoadState>({ status: 'unconfigured' })
   const config = resolveUnityBuildConfig()
+
+  // The live instance, kept outside state so obtaining it cannot re-render and
+  // cannot become a reason to restart the game.
+  const instanceRef = useRef<UnityMessageTarget | null>(null)
+  const bootedRef = useRef(false)
+
+  /**
+   * Boot Unity once, as soon as both halves exist.
+   *
+   * The activity fetch and the WebGL load race, and either can win: on a warm
+   * cache Unity is ready before the bundle arrives; on classroom wifi it is the
+   * other way round. Keying on both means the order does not matter.
+   *
+   * `bootedRef` makes it exactly once per instance. A second `boot` would ask a
+   * running game to reload an activity a student is already playing.
+   */
+  useEffect(() => {
+    if (!boot || bootedRef.current || state.status !== 'ready') return
+    const sent = sendToUnity(instanceRef.current, {
+      type: 'boot',
+      version: BRIDGE_VERSION,
+      ...boot,
+    })
+    if (sent) bootedRef.current = true
+  }, [boot, state.status])
 
   useEffect(() => {
     if (!config || !canvasRef.current) return
@@ -62,6 +96,7 @@ export function UnityStage({ activityId }: { activityId?: string }) {
             return
           }
           instance = created
+          instanceRef.current = created as unknown as UnityMessageTarget
           setState({ status: 'ready' })
         })
         .catch((error: unknown) => {
@@ -84,6 +119,9 @@ export function UnityStage({ activityId }: { activityId?: string }) {
     return () => {
       cancelled = true
       void instance?.Quit()
+      instanceRef.current = null
+      // A fresh instance is an unbooted one.
+      bootedRef.current = false
       script.remove()
     }
     // Only the resolved build identity may restart Unity. `config` is derived

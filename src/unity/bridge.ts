@@ -100,6 +100,48 @@ export type UnityToWebMessage =
 
 export const UNITY_EVENT_NAME = 'sal0mander:unity-message'
 
+/**
+ * Where a Web → Unity message is delivered inside the running build.
+ *
+ * PROVISIONAL. `API_CONTRACT.md` specifies that web sends via the instance's
+ * `SendMessage` but does not name the receiving GameObject or method — those
+ * belong to Unity. Defaults are a guess and need Codex to confirm; they are
+ * overridable so a mismatch is a config change, not a code change.
+ */
+export const UNITY_BRIDGE_TARGET = {
+  gameObject: 'SAL0MANderBridge',
+  method: 'ReceiveWebMessage',
+} as const
+
+/** The minimum a Unity instance must expose for the web to talk to it. */
+export type UnityMessageTarget = {
+  SendMessage: (gameObject: string, method: string, value: string) => void
+}
+
+/**
+ * Send one message into the running build.
+ *
+ * Returns whether it went out, and never throws. Unity's `SendMessage` throws
+ * if the target GameObject does not exist — which is exactly what a
+ * name mismatch looks like — and the web must not take the page down over a
+ * message the game does not need to receive. Guest Play works with the
+ * companion silent.
+ */
+export function sendToUnity(
+  instance: UnityMessageTarget | null | undefined,
+  message: WebToUnityMessage,
+  target: { gameObject: string; method: string } = UNITY_BRIDGE_TARGET,
+): boolean {
+  if (!instance?.SendMessage) return false
+  try {
+    instance.SendMessage(target.gameObject, target.method, JSON.stringify(message))
+    return true
+  } catch (error) {
+    console.error('[unity-bridge] SendMessage failed; gameplay continues', error)
+    return false
+  }
+}
+
 /** Message types this bridge version understands. Anything else is ignored. */
 const KNOWN_TYPES = new Set<UnityToWebMessage['type']>([
   'ready',

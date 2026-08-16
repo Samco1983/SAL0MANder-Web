@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { env } from '@config/env'
 import { buildShareLink, paths } from '@config/routes'
@@ -62,6 +62,31 @@ export function GuestPlayPage() {
     enabled: Boolean(bundle),
   })
 
+  /**
+   * What Unity is told at boot.
+   *
+   * Memoized on the identities it is built from, not the objects: a new object
+   * each render would re-fire the boot effect against a running game.
+   *
+   * `selectedPlayMode` is sent only when the activity allows exactly one mode.
+   * For Student Choice the choice does not exist yet at boot — Unity owns the
+   * picker — so sending a guess would pin the session to a mode the student
+   * never chose. See WEB-INVENTORY.md B-6.
+   */
+  const sessionId = session.status === 'active' ? session.session.id : undefined
+  const boot = useMemo(() => {
+    if (!bundle) return undefined
+    const body = bundle.version.payload.body as { allowedPlayModes?: string[] } | undefined
+    const allowed = body?.allowedPlayModes
+    return {
+      activityId: bundle.summary.id,
+      activityVersionId: bundle.version.id,
+      playBundle: bundle.version.payload.body,
+      ...(allowed?.length === 1 ? { selectedPlayMode: allowed[0] } : {}),
+      ...(sessionId ? { sessionId } : {}),
+    }
+  }, [bundle, sessionId])
+
   // Unity reports a finished game across the bridge; the web layer records it.
   // A submit failure is deliberately silent to the student — the game is over
   // and the result is the teacher's concern, not something to interrupt a
@@ -85,7 +110,7 @@ export function GuestPlayPage() {
     <AppShell fill contained={false}>
       <CompanionLayout
         companionLabel="Activity context"
-        stage={<UnityStage {...(activityId ? { activityId } : {})} />}
+        stage={<UnityStage {...(activityId ? { activityId } : {})} {...(boot ? { boot } : {})} />}
         companion={
           <>
             {state.status === 'loading' ? (
