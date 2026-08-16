@@ -83,6 +83,49 @@ describe('readEnv resilience', () => {
   })
 })
 
+describe('gated capability flags', () => {
+  it('leaves custom media upload and student-to-student sharing off by default', () => {
+    const features = readEnv({}).features
+    expect(features.customMediaUpload).toBe(false)
+    expect(features.studentSharing).toBe(false)
+  })
+
+  it('fails closed on a garbled value for a gated capability', () => {
+    // Forgetting it, misspelling it, or a broken env file must all leave the
+    // capability off. Enabling has to be deliberate.
+    const features = quietly(
+      () =>
+        readEnv({
+          VITE_FEATURE_CUSTOM_MEDIA_UPLOAD: 'yes',
+          VITE_FEATURE_STUDENT_SHARING: 'on',
+        }).features,
+    )
+    expect(features.customMediaUpload).toBe(false)
+    expect(features.studentSharing).toBe(false)
+  })
+
+  it('enables a gated capability only on an explicit true', () => {
+    expect(readEnv({ VITE_FEATURE_CUSTOM_MEDIA_UPLOAD: 'true' }).features.customMediaUpload).toBe(
+      true,
+    )
+    expect(readEnv({ VITE_FEATURE_STUDENT_SHARING: '1' }).features.studentSharing).toBe(true)
+  })
+
+  it('keeps the two sharing capabilities independent', () => {
+    // Who may share and what may be shared are separate risks; enabling one
+    // must never imply the other.
+    const features = readEnv({ VITE_FEATURE_CUSTOM_MEDIA_UPLOAD: 'true' }).features
+    expect(features.customMediaUpload).toBe(true)
+    expect(features.studentSharing).toBe(false)
+  })
+
+  it('has student-to-teacher sharing on by default, and switchable off', () => {
+    expect(readEnv({}).features.shareToTeacher).toBe(true)
+    expect(readEnv({ VITE_FEATURE_SHARE_TO_TEACHER: 'false' }).features.shareToTeacher).toBe(false)
+    expect(readEnv({ VITE_FEATURE_SHARE_TO_TEACHER: '0' }).features.shareToTeacher).toBe(false)
+  })
+})
+
 describe('readEnv derived flags', () => {
   it('marks production only for the production env', () => {
     expect(readEnv({ VITE_APP_ENV: 'production' }).isProd).toBe(true)

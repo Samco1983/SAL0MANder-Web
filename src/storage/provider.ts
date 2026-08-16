@@ -45,6 +45,25 @@ export class MediaValidationError extends Error {
   }
 }
 
+/**
+ * Thrown when custom photo upload is switched off (the default).
+ *
+ * The capability is built and tested; it is simply not enabled. Owner decision
+ * D-017: the option exists, and stays off until the review workflow and
+ * disclaimer are in place.
+ *
+ * This is a UI-layer gate, NOT a security control. A build-time flag only
+ * decides whether *our* code offers the feature — it cannot stop a crafted
+ * request. Whenever an upload endpoint exists, it must refuse independently on
+ * the server; do not treat this class as protection.
+ */
+export class UploadsDisabledError extends Error {
+  constructor() {
+    super('Custom photo upload is not enabled yet.')
+    this.name = 'UploadsDisabledError'
+  }
+}
+
 export function assertUploadable(file: Blob): void {
   if (file.size > MEDIA_LIMITS.maxBytes) {
     throw new MediaValidationError(

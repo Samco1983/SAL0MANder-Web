@@ -241,15 +241,26 @@ on TPT, and printed on worksheets. Combined with a deliberately short,
 human-friendly `shareCode`, the chain is: *a photograph of identifiable children
 behind a guessable URL, reachable with no account.*
 
-Three ways to close it, not mutually exclusive:
+**RESOLVED by owner, 2026-08-15:** *"don't make it a link unless photo is
+premade."* Custom media is **never link-shareable**. A shareCode is minted only
+for activities whose media is entirely premade/AI-generated; an activity
+containing custom-uploaded media is reachable through class/roster access only.
 
-1. **Point-of-upload disclosure.** The disclaimer earns its keep here, not in a
-   ToS: at the moment of upload, in plain words — "anyone with this activity's
-   link will be able to see this image." Specific and timely beats buried.
-2. **Higher-entropy shareCode for activities containing uploads.** Keep short
-   friendly codes for AI-generated activities; use longer codes where a photo is
-   involved. Costs nothing and is invisible to most teachers.
-3. **Require class-level access for upload-backed activities** — strongest, but
+This severs the risk chain rather than mitigating it — a photo of identifiable
+children never sits behind an anonymous URL, so shareCode entropy stops
+mattering for that case. **Enforceable invariant for the backend: refuse to mint
+a shareCode for any activity referencing custom-uploaded media.** Client-side
+checks are not sufficient.
+
+Superseded options, kept for the record:
+
+1. **Point-of-upload disclosure.** Still wanted, but as user-facing honesty
+   rather than as the control: at upload, in plain words, who will be able to
+   see this.
+2. **Higher-entropy shareCode for activities containing uploads.** Moot — those
+   activities get no shareCode at all.
+3. **Require class-level access for upload-backed activities** — this is what
+   was chosen. It was the strongest option, and
    it collides with frictionless Guest Play, so it is a product tradeoff rather
    than an engineering one.
 
@@ -264,6 +275,91 @@ we cannot mutate the version to remove it. Resolution: media deletion must be a
 **separate axis** from version immutability — the version keeps its `mediaId`
 reference, the bytes are purged, and the activity degrades gracefully to a
 missing-image state. This has to be designed in, not retrofitted.
+
+## D-018 — Sharing matrix: built, individually gated, fail-closed
+
+**Decided** · Samuel (owner), 2026-08-15 · *"have the option for it but NOT ENABLE IT
+until i feel its ready"*
+
+Each direction is a separate switch. Collapsing them would mean enabling one to
+get another, and they carry different risk.
+
+| Direction | Default | Switch |
+| --- | --- | --- |
+| Teacher → student (the core loop) | **on** | — |
+| Student → **teacher** | **on** | `VITE_FEATURE_SHARE_TO_TEACHER` |
+| Student → **student** | **off** | `VITE_FEATURE_STUDENT_SHARING` |
+| Custom media upload (photo + audio) | **off** | `VITE_FEATURE_CUSTOM_MEDIA_UPLOAD` |
+
+Implemented this batch: flags in `src/config/env.ts`, and `guardUploads()` in
+`src/storage/index.ts` wrapping the provider so `upload()` rejects with
+`UploadsDisabledError` while the switch is off. Reads and removes stay available
+so existing media never becomes unreachable. Wrapping rather than branching
+keeps the capability exercised by tests so it cannot rot while it waits.
+
+**Fail-closed.** The gated flags treat absent, empty, and unrecognized values as
+false, so a typo, a forgotten variable, or an env file that fails to load all
+leave the capability off. `VITE_FEATURE_SHARE_TO_TEACHER` is the one exception
+and fails *open*, by decision.
+
+**Two constraints this code cannot enforce — they are server-side:**
+
+1. **The student-to-student toggle must be teacher-reachable only** — never by a
+   student, for their own account or anyone else's. A build-time flag decides
+   whether the capability exists; it cannot express a role check.
+2. **A feature flag is not a security control.** It hides UI. Any endpoint must
+   independently refuse while a capability is off.
+
+**Student → teacher introduces attribution**, and that is where a child's name
+could first enter the system. A teacher receiving work must know whose it is.
+Attribution must come from a **teacher-managed roster** — the teacher creates
+the list, the student picks their name — never a free-text field a child types
+into. This keeps the no-prompt guarantee intact (the roster pick happens after
+play, at submission, never between a link and playable content) and keeps us out
+of collecting names directly from children.
+
+## D-019 — Custom audio clips: same gate, higher risk than photos
+
+**Decided** · Samuel (owner), 2026-08-15 · *"ability to send custom audio 10 second
+clip but similar rules as photo"*
+
+Audio rides the same `VITE_FEATURE_CUSTOM_MEDIA_UPLOAD` switch, the same review
+requirement, and the same no-anonymous-link rule. One gate, because the policy
+is identical.
+
+**But audio is harder to make safe than photos, not easier.** Recording this
+because the intuition runs the other way — audio files are small, so they feel
+lighter:
+
+- **COPPA names it explicitly.** The Rule's definition of personal information
+  covers *"a photograph, video, or audio file that contains a child's image or
+  voice."* A voice clip is the same category as a face photo, not a lesser one.
+- **Moderation has no commodity answer.** Image safety is a solved one-shot API
+  call. Audio needs speech-to-text then text moderation, which fails on
+  non-speech, degrades badly on children's voices (ASR accuracy for young
+  speakers is poor), and cannot read tone — the same words can be a joke or
+  bullying.
+- **Human review does not scale the same way.** A reviewer clears images at a
+  glance; 100 ten-second clips is ~17 minutes of unavoidable listening. Roughly
+  an order of magnitude more expensive per item.
+- **The 10-second limit needs decoding, not inspection.** Byte size and MIME
+  type are free to check. Duration requires decoding the file, and a client-side
+  check is bypassable, so the **server must enforce it**.
+- **Voice may be biometric in some jurisdictions** (e.g. Illinois BIPA), a
+  separate consent regime from image handling.
+
+What genuinely *is* easier: files are ~100–200 KB rather than megabytes, and
+there is no derivative pipeline — no thumbnails, no resizing, no slicing. Cheap
+to store and serve, hard to make safe.
+
+**Recommended shipping order for custom media:** AI-generated images (no PII at
+all) → custom photos (commodity moderation) → audio last. Audio should not go
+first merely because the files are small.
+
+**Contract additions needed from Codex** (proposals, not made unilaterally):
+`MediaKind` has no audio member; `MEDIA_LIMITS.allowedTypes` is images only; and
+`MediaDescriptor` has no duration field. All three are required before audio can
+be represented at all.
 
 ---
 

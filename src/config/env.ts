@@ -14,6 +14,18 @@ const boolish = z
   .optional()
   .transform((v) => v === 'true' || v === '1')
 
+/**
+ * Like `boolish`, but absent means ON.
+ *
+ * Reserved for capabilities the owner has approved by default. Note this fails
+ * *open*: a missing or unloaded env leaves the feature enabled. Only use it
+ * where that is the intended, decided behavior — never as a convenience.
+ */
+const boolishOn = z
+  .enum(['true', 'false', '1', '0', ''])
+  .optional()
+  .transform((v) => !(v === 'false' || v === '0'))
+
 const numeric = (fallback: number) =>
   z
     .string()
@@ -50,6 +62,41 @@ const EnvSchema = z.object({
   VITE_FEATURE_COMPANION_LAYOUT: boolish,
   VITE_FEATURE_GUEST_PLAY: boolish,
   VITE_FEATURE_ACCOUNTS: boolish,
+  /**
+   * Custom media upload — photos AND short audio clips. OFF unless explicitly
+   * set (D-017). One switch for both: they carry the same review requirement,
+   * and audio is the higher risk of the two (D-019).
+   *
+   * `boolish` treats absent, empty, and unrecognized values as false, so this
+   * fails closed: forgetting it, misspelling it, or an env file failing to load
+   * all leave uploads disabled. Enabling it has to be deliberate.
+   */
+  VITE_FEATURE_CUSTOM_MEDIA_UPLOAD: boolish,
+  /**
+   * Student-to-student sharing. OFF unless explicitly set (D-018).
+   *
+   * Separate from `VITE_FEATURE_CUSTOM_MEDIA_UPLOAD` on purpose: who may share
+   * and what may be shared are independent risks, and collapsing them into one
+   * switch would mean enabling one to get the other.
+   *
+   * When this is on, the per-class toggle that controls it must be reachable by
+   * teachers only — never by a student, for their own account or anyone else's.
+   * This flag cannot express that; it only decides whether the capability
+   * exists at all. The role check is a SERVER-SIDE authorization requirement.
+   */
+  VITE_FEATURE_STUDENT_SHARING: boolish,
+  /**
+   * Student → teacher sharing. ON by owner decision (D-018).
+   *
+   * A student sending their own work to their own teacher is ordinary
+   * classroom practice and the safest sharing direction, so it defaults on.
+   *
+   * It is still the direction that introduces attribution: a teacher receiving
+   * work has to know whose it is, and that is the first point a child's name
+   * could enter the system. See D-018 — attribution must come from a
+   * teacher-managed roster, never a free-text field a child types into.
+   */
+  VITE_FEATURE_SHARE_TO_TEACHER: boolishOn,
 
   VITE_TELEMETRY_DSN: z.string().optional().default(''),
   VITE_TELEMETRY_SAMPLE_RATE: numeric(0.1),
@@ -134,6 +181,9 @@ export function readEnv(source: unknown) {
       companionLayout: raw.VITE_FEATURE_COMPANION_LAYOUT,
       guestPlay: raw.VITE_FEATURE_GUEST_PLAY,
       accounts: raw.VITE_FEATURE_ACCOUNTS,
+      customMediaUpload: raw.VITE_FEATURE_CUSTOM_MEDIA_UPLOAD,
+      studentSharing: raw.VITE_FEATURE_STUDENT_SHARING,
+      shareToTeacher: raw.VITE_FEATURE_SHARE_TO_TEACHER,
     },
 
     telemetry: {
