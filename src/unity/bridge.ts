@@ -16,6 +16,7 @@
  *     not.
  */
 
+import { env } from '@config/env'
 import { createEventDeduper, type EventDeduper } from './eventDedupe'
 
 export const BRIDGE_VERSION = 1 as const
@@ -74,6 +75,21 @@ export type WebToUnityMessage =
        */
       selectedPlayMode?: string
     } & BridgeCorrelation)
+  /**
+   * The canonical session id, sent back after the web opens the session.
+   *
+   * Unity cannot know it: the web calls `POST /v1/sessions` for embedded WebGL,
+   * so the id is minted server-side and returned to the web. Unity needs it to
+   * correlate anything it later emits — without this, a `session-finished`
+   * carries no session and the web has to infer which attempt it belongs to.
+   */
+  | ({
+      type: 'session-started'
+      version: typeof BRIDGE_VERSION
+      sessionId: string
+      activityVersionId: string
+      selectedPlayMode?: string
+    } & BridgeCorrelation)
   | { type: 'set-paused'; version: typeof BRIDGE_VERSION; paused: boolean }
 
 /** Unity → Web. Delivered on `window` as a CustomEvent. */
@@ -121,10 +137,13 @@ export const UNITY_EVENT_NAME = 'sal0mander:unity-message'
 /**
  * Where a Web → Unity message is delivered inside the running build.
  *
- * PROVISIONAL. `API_CONTRACT.md` specifies that web sends via the instance's
- * `SendMessage` but does not name the receiving GameObject or method — those
- * belong to Unity. Defaults are a guess and need Codex to confirm; they are
- * overridable so a mismatch is a config change, not a code change.
+ * CANONICAL — approved by Codex 2026-08-15. Still overridable so a build that
+ * relocates the receiver is a config change rather than a code change.
+ *
+ * Note: no Unity C# receiver exists yet, and Codex reports the legacy `.jslib`
+ * uses incompatible DOM event names and shapes. Nothing here has been exercised
+ * against a real build, which is exactly why a failed delivery has to be loud
+ * (see `sendToUnity`).
  */
 export const UNITY_BRIDGE_TARGET = {
   gameObject: 'SAL0MANderBridge',
@@ -150,14 +169,43 @@ export function sendToUnity(
   message: WebToUnityMessage,
   target: { gameObject: string; method: string } = UNITY_BRIDGE_TARGET,
 ): boolean {
-  if (!instance?.SendMessage) return false
+  if (!instance?.SendMessage) {
+    reportUndelivered(message, 'no Unity instance is attached')
+    return false
+  }
   try {
     instance.SendMessage(target.gameObject, target.method, JSON.stringify(message))
     return true
   } catch (error) {
-    console.error('[unity-bridge] SendMessage failed; gameplay continues', error)
+    reportUndelivered(
+      message,
+      `SendMessage threw — is GameObject "${target.gameObject}" present with method "${target.method}"?`,
+      error,
+    )
     return false
   }
+}
+
+/**
+ * An undelivered message is a silent failure by nature, so make it loud.
+ *
+ * Codex's ruling requires development/QA diagnostics for missing bridge
+ * delivery, and the reason is concrete: no Unity C# receiver exists yet, and
+ * the legacy `.jslib` uses incompatible event names. A wrong GameObject name
+ * produces no error a student or a tester would ever see — boot simply never
+ * arrives and the game sits on an empty board. The first person to notice
+ * would be someone in a classroom.
+ *
+ * Loud in development, quiet in production: a teacher mid-lesson must not get
+ * console noise, and gameplay continues regardless.
+ */
+function reportUndelivered(message: WebToUnityMessage, reason: string, error?: unknown): void {
+  if (env.isProd) return
+  console.error(
+    `[unity-bridge] "${message.type}" was NOT delivered to Unity: ${reason}. ` +
+      `Gameplay continues, but Unity never received this message.`,
+    error ?? '',
+  )
 }
 
 /** Message types this bridge version understands. Anything else is ignored. */

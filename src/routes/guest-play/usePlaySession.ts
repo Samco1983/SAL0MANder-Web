@@ -61,6 +61,9 @@ export function usePlaySession({
   const identityRef = useRef(identity)
   identityRef.current = identity
 
+  /** A result that arrived before the session did. Held, never discarded. */
+  const pendingResultRef = useRef<Omit<SessionResult, 'sessionId'> | undefined>(undefined)
+
   useEffect(() => {
     // No mode, no session. See the field docs above.
     if (!enabled || !activityId || !activityVersionId || !selectedPlayMode) return
@@ -100,8 +103,24 @@ export function usePlaySession({
 
   const submit = useCallback(
     async (result: Omit<SessionResult, 'sessionId'>) => {
-      // Only an active session can produce a result. Submitting from any other
-      // state would either invent a session id or double-submit.
+      /**
+       * A result that lands before the session exists is **buffered, not
+       * dropped** (Codex ruling, 2026-08-15).
+       *
+       * The race is real and favours short activities: a four-piece puzzle on a
+       * fast device can finish before `POST /sessions` returns over classroom
+       * wifi. Returning early here — which is what this used to do — threw away
+       * a child's completed work with no error anywhere.
+       *
+       * One slot, deliberately. A session has exactly one result, so a second
+       * arrival is a duplicate rather than something to queue.
+       */
+      if (state.status === 'idle' || state.status === 'starting') {
+        pendingResultRef.current ??= result
+        return
+      }
+
+      // Any other non-active state would invent a session id or double-submit.
       if (state.status !== 'active') return
       const { session } = state
 
@@ -123,6 +142,20 @@ export function usePlaySession({
     },
     [state],
   )
+
+  /**
+   * Flush a buffered result as soon as the session exists.
+   *
+   * Runs after `submit` is defined so it uses the same path a live result
+   * takes — same derived key, same state transitions — rather than a parallel
+   * one that could drift.
+   */
+  useEffect(() => {
+    if (state.status !== 'active' || !pendingResultRef.current) return
+    const buffered = pendingResultRef.current
+    pendingResultRef.current = undefined
+    void submit(buffered)
+  }, [state.status, submit])
 
   /** Start a fresh attempt — "play again", not a reload. */
   const reset = useCallback(() => {

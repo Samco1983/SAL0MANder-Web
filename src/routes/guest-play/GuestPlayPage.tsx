@@ -108,6 +108,19 @@ export function GuestPlayPage() {
     }
   }, [bundle, sessionId, selectedPlayMode])
 
+  /** Handed back to Unity so it can correlate what it later emits. */
+  const sessionStarted = useMemo(
+    () =>
+      sessionId && bundle
+        ? {
+            sessionId,
+            activityVersionId: bundle.version.id,
+            ...(selectedPlayMode ? { selectedPlayMode } : {}),
+          }
+        : undefined,
+    [sessionId, bundle, selectedPlayMode],
+  )
+
   // Unity reports a finished game across the bridge; the web layer records it.
   // A submit failure is deliberately silent to the student — the game is over
   // and the result is the teacher's concern, not something to interrupt a
@@ -131,7 +144,13 @@ export function GuestPlayPage() {
     <AppShell fill contained={false}>
       <CompanionLayout
         companionLabel="Activity context"
-        stage={<UnityStage {...(activityId ? { activityId } : {})} {...(boot ? { boot } : {})} />}
+        stage={
+          <UnityStage
+            {...(activityId ? { activityId } : {})}
+            {...(boot ? { boot } : {})}
+            {...(sessionStarted ? { sessionStarted } : {})}
+          />
+        }
         companion={
           <>
             {state.status === 'loading' ? (

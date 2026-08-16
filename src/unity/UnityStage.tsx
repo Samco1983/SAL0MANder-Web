@@ -11,6 +11,11 @@ import styles from './UnityStage.module.css'
 /** Everything the host tells Unity at boot, minus the envelope fields. */
 export type BootPayload = Omit<Extract<WebToUnityMessage, { type: 'boot' }>, 'type' | 'version'>
 
+export type SessionStartedPayload = Omit<
+  Extract<WebToUnityMessage, { type: 'session-started' }>,
+  'type' | 'version'
+>
+
 type LoadState =
   | { status: 'unconfigured' }
   | { status: 'loading'; progress: number }
@@ -29,7 +34,20 @@ type LoadState =
  * Re-rendering the surrounding layout — including collapsing the 42% companion
  * panel — must never tear down a running game.
  */
-export function UnityStage({ activityId, boot }: { activityId?: string; boot?: BootPayload }) {
+export function UnityStage({
+  activityId,
+  boot,
+  sessionStarted,
+}: {
+  activityId?: string
+  boot?: BootPayload
+  /**
+   * The canonical session, once the web has opened it. Sent on to Unity so it
+   * can correlate anything it later emits — Unity cannot know this id, because
+   * the web mints it server-side.
+   */
+  sessionStarted?: SessionStartedPayload
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [state, setState] = useState<LoadState>({ status: 'unconfigured' })
   const config = resolveUnityBuildConfig()
@@ -58,6 +76,26 @@ export function UnityStage({ activityId, boot }: { activityId?: string; boot?: B
     })
     if (sent) bootedRef.current = true
   }, [boot, state.status])
+
+  /**
+   * Hand Unity the canonical session id once the web has one.
+   *
+   * Ordered after boot by construction: a session only exists after the bundle
+   * resolved, and boot fires the moment the bundle and the instance both do.
+   * Sent once per session id — resending would tell a running game its session
+   * restarted.
+   */
+  const sentSessionRef = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (!sessionStarted || state.status !== 'ready') return
+    if (sentSessionRef.current === sessionStarted.sessionId) return
+    const sent = sendToUnity(instanceRef.current, {
+      type: 'session-started',
+      version: BRIDGE_VERSION,
+      ...sessionStarted,
+    })
+    if (sent) sentSessionRef.current = sessionStarted.sessionId
+  }, [sessionStarted, state.status])
 
   useEffect(() => {
     if (!config || !canvasRef.current) return
