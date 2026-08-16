@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
-import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
+import { MOCK_DEMO_ACTIVITY_ID, MOCK_LINKS } from '@api/mockTransport'
 import { GuestPlayPage } from './GuestPlayPage'
 
 function renderAt(path: string) {
@@ -30,14 +30,9 @@ describe('Guest Play', () => {
 
   it('still renders the stage when the activity fails to load', async () => {
     renderAt('/play/does-not-exist')
-    expect(await screen.findByText(/Activity unavailable/i)).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
     // The companion failing must never take the game surface with it.
     expect(screen.getByRole('region', { name: /game stage/i })).toBeInTheDocument()
-  })
-
-  it('announces the failure to a screen reader', async () => {
-    renderAt('/play/does-not-exist')
-    expect(await screen.findByRole('alert')).toHaveTextContent(/activity unavailable/i)
   })
 
   it('offers no retry for a dead link, which retrying cannot fix', async () => {
@@ -53,5 +48,59 @@ describe('Guest Play', () => {
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent(/couldn't find that activity/i)
     expect(alert.textContent).not.toMatch(/404|No activity/)
+  })
+})
+
+describe('link states a student can tell apart', () => {
+  it('says a revoked link was turned off, not mistyped', async () => {
+    // Sending a student to retype a revoked code wastes their time and sends
+    // the teacher a support message they cannot act on.
+    renderAt(`/play/${MOCK_LINKS.revoked}`)
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(/turned off this share link/i)
+    expect(alert).toHaveTextContent(/ask them for a new one/i)
+    expect(alert.textContent).not.toMatch(/double-check|wrong character/i)
+  })
+
+  it('says an unpublished activity may come back', async () => {
+    renderAt(`/play/${MOCK_LINKS.unpublished}`)
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(/unpublished this activity/i)
+    expect(alert).toHaveTextContent(/may come back/i)
+  })
+
+  it('tells a mistyped link to check the characters', async () => {
+    renderAt('/play/typo-here')
+    expect(await screen.findByRole('alert')).toHaveTextContent(/double-check the link/i)
+  })
+
+  it('offers no retry for any deliberate link state', async () => {
+    for (const code of [MOCK_LINKS.revoked, MOCK_LINKS.unpublished]) {
+      const { unmount } = renderAt(`/play/${code}`)
+      await screen.findByRole('alert')
+      expect(screen.queryByRole('button', { name: /try again/i })).toBeNull()
+      unmount()
+    }
+  })
+
+  it('never leaks the server message for a deliberate state', async () => {
+    renderAt(`/play/${MOCK_LINKS.revoked}`)
+    const alert = await screen.findByRole('alert')
+    expect(alert.textContent).not.toMatch(/revoked by its owner|SHARE_LINK_REVOKED/)
+  })
+})
+
+describe('sharing', () => {
+  it('offers the share link once the activity resolves', async () => {
+    renderAt(`/play/${MOCK_DEMO_ACTIVITY_ID}`)
+    const input = await screen.findByLabelText(/share link/i)
+    expect(input).toHaveValue(`http://localhost:3000/play/${MOCK_DEMO_ACTIVITY_ID}`)
+    expect(input).toHaveAttribute('readonly')
+  })
+
+  it('does not offer sharing for a link that does not resolve', async () => {
+    renderAt('/play/does-not-exist')
+    await screen.findByRole('alert')
+    expect(screen.queryByLabelText(/share link/i)).toBeNull()
   })
 })

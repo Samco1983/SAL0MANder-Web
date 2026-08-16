@@ -6,9 +6,34 @@ import { AppShell } from '@components/layout/AppShell'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
 import { Button, LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
+import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
+import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
+import { isRecoverable, linkCopy, linkStateFrom } from './linkState'
 import styles from './GuestPlayPage.module.css'
+
+/**
+ * Why the link didn't work, and whether the student can do anything about it.
+ * A retry is offered only when retrying could plausibly succeed — re-running a
+ * revoked link teaches a student the app is broken rather than that the link is.
+ */
+function LinkFailure({ error, retry }: { error: ApiError; retry: () => void }) {
+  const state = linkStateFrom(error)
+  const { title, body } = linkCopy(state, error)
+
+  return (
+    <div role="alert">
+      <h1 className={styles.companionTitle}>{title}</h1>
+      <p className={styles.description}>{body}</p>
+      {isRecoverable(state, error) ? (
+        <Button className={styles.retry} onClick={retry}>
+          Try again
+        </Button>
+      ) : null}
+    </div>
+  )
+}
 
 /**
  * Guest Play — the distribution-critical route.
@@ -23,6 +48,7 @@ export function GuestPlayPage() {
   const state = useGuestActivity(activityId)
   // Minted lazily on the device; not authentication, carries no PII.
   const identity = getGuestIdentity()
+  const shareUrl = buildShareLink(activityId ?? '', env.publicBaseUrl)
 
   return (
     <AppShell fill contained={false}>
@@ -37,22 +63,7 @@ export function GuestPlayPage() {
               </p>
             ) : null}
 
-            {state.status === 'error' ? (
-              <div role="alert">
-                <h1 className={styles.companionTitle}>Activity unavailable</h1>
-                <p className={styles.description}>{state.error.userMessage}</p>
-                {/*
-                  Only offered when retrying could plausibly work. A button that
-                  re-runs a 404 teaches a student that the app is broken rather
-                  than that the link is.
-                */}
-                {state.error.retryable ? (
-                  <Button className={styles.retry} onClick={state.retry}>
-                    Try again
-                  </Button>
-                ) : null}
-              </div>
-            ) : null}
+            {state.status === 'error' ? <LinkFailure error={state.error} retry={state.retry} /> : null}
 
             {state.status === 'ready' ? (
               <>
@@ -61,6 +72,9 @@ export function GuestPlayPage() {
                   <p className={styles.byline}>by {state.bundle.summary.authorDisplayName}</p>
                 ) : null}
                 <p className={styles.description}>{state.bundle.summary.description}</p>
+                {/* No `title` — the heading is directly above; repeating it
+                    here would just be noise on this surface. */}
+                <SharePanel url={shareUrl} />
               </>
             ) : null}
 
@@ -82,7 +96,6 @@ export function GuestPlayPage() {
               <span>activity: {activityId ?? '—'}</span>
               <span>version: {state.status === 'ready' ? state.bundle.version.id : '—'}</span>
               <span>guest: {identity.guestToken.slice(0, 8)}… (device-local, not an account)</span>
-              <span>share: {buildShareLink(activityId ?? '', env.publicBaseUrl)}</span>
             </div>
           </>
         }

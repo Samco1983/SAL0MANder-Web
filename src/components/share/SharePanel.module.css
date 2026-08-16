@@ -1,0 +1,71 @@
+.panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.heading {
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-subtle);
+}
+
+.subject {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+}
+
+.linkRow {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.linkInput {
+  flex: 1 1 16ch;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.copyStatus {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  /* Reserve the line so revealing the message does not shift the layout. */
+  min-height: 1.2em;
+}
+
+.qrWrap {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+}
+
+.qr {
+  border-radius: var(--radius-sm);
+  /* The quiet zone must stay white for scanners, in either theme. */
+  background: #ffffff;
+  padding: var(--space-2);
+}
+
+.qrPlaceholder {
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+}
+
+.qrHint,
+.qrFallback {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+  max-width: 32ch;
+}

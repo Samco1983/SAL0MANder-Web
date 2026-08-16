@@ -18,6 +18,34 @@ const now = () => new Date().toISOString()
 const DEMO_ACTIVITY_ID = 'demo-activity'
 const DEMO_VERSION_ID = 'demo-version-1'
 
+/**
+ * Link states a share code can resolve to, so each can be built and seen
+ * locally. A teacher fielding "the link doesn't work" needs these to be
+ * distinguishable, and a student needs to be told which one happened.
+ *
+ * Carried on `serverCode` rather than as new `ApiErrorCode` members: the shared
+ * error vocabulary is still being negotiated (casing is unresolved), and this
+ * needs no contract change to be useful today.
+ */
+export const MOCK_LINKS = {
+  ok: DEMO_ACTIVITY_ID,
+  /** The teacher revoked this specific link; the activity may still exist. */
+  revoked: 'revoked-link',
+  /** The activity exists but is no longer published. */
+  unpublished: 'unpublished-activity',
+} as const
+
+const LINK_FAILURES: Record<string, { serverCode: string; message: string }> = {
+  [MOCK_LINKS.revoked]: {
+    serverCode: 'SHARE_LINK_REVOKED',
+    message: 'Share link revoked by its owner',
+  },
+  [MOCK_LINKS.unpublished]: {
+    serverCode: 'ACTIVITY_UNPUBLISHED',
+    message: 'Activity is not currently published',
+  },
+}
+
 function demoBundle(activityId: string) {
   return {
     summary: {
@@ -99,6 +127,19 @@ function route(options: RequestOptions, sessions: Map<string, unknown>): unknown
   const guestActivity = path.match(/^\/guest\/activities\/([^/]+)$/)
   if (guestActivity && method === 'GET') {
     const id = decodeURIComponent(guestActivity[1] ?? '')
+
+    // A revoked or unpublished link is gone on purpose, not mistyped. Same
+    // status, different `serverCode`, so the UI can say which happened.
+    const failure = LINK_FAILURES[id]
+    if (failure) {
+      throw new ApiError({
+        code: 'not_found',
+        message: failure.message,
+        status: 404,
+        serverCode: failure.serverCode,
+      })
+    }
+
     // Only the demo id resolves, so the not-found path is exercisable locally.
     if (id !== DEMO_ACTIVITY_ID) {
       throw new ApiError({ code: 'not_found', message: `No activity ${id}`, status: 404 })
