@@ -12,6 +12,10 @@
   color: var(--color-text-muted);
 }
 
+.retry {
+  margin-top: var(--space-4);
+}
+
 .meta {
   margin-top: auto;
   padding-top: var(--space-4);

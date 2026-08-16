@@ -4,7 +4,7 @@ import { buildShareLink, paths } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
 import { AppShell } from '@components/layout/AppShell'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
-import { LinkButton } from '@components/ui/Button'
+import { Button, LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { UnityStage } from '@unity/UnityStage'
 import { useGuestActivity } from './useGuestActivity'
@@ -32,14 +32,26 @@ export function GuestPlayPage() {
         companion={
           <>
             {state.status === 'loading' ? (
-              <p className={styles.description}>Loading activity…</p>
+              <p className={styles.description} role="status">
+                Loading activity…
+              </p>
             ) : null}
 
             {state.status === 'error' ? (
-              <>
+              <div role="alert">
                 <h1 className={styles.companionTitle}>Activity unavailable</h1>
                 <p className={styles.description}>{state.error.userMessage}</p>
-              </>
+                {/*
+                  Only offered when retrying could plausibly work. A button that
+                  re-runs a 404 teaches a student that the app is broken rather
+                  than that the link is.
+                */}
+                {state.error.retryable ? (
+                  <Button className={styles.retry} onClick={state.retry}>
+                    Try again
+                  </Button>
+                ) : null}
+              </div>
             ) : null}
 
             {state.status === 'ready' ? (

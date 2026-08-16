@@ -34,4 +34,24 @@ describe('Guest Play', () => {
     // The companion failing must never take the game surface with it.
     expect(screen.getByRole('region', { name: /game stage/i })).toBeInTheDocument()
   })
+
+  it('announces the failure to a screen reader', async () => {
+    renderAt('/play/does-not-exist')
+    expect(await screen.findByRole('alert')).toHaveTextContent(/activity unavailable/i)
+  })
+
+  it('offers no retry for a dead link, which retrying cannot fix', async () => {
+    // A 404 is terminal. A button that re-runs it teaches a student the app is
+    // broken rather than that the link is.
+    renderAt('/play/does-not-exist')
+    await screen.findByRole('alert')
+    expect(screen.queryByRole('button', { name: /try again/i })).toBeNull()
+  })
+
+  it('shows the student the plain-language reason, never a server string', async () => {
+    renderAt('/play/does-not-exist')
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(/couldn't find that activity/i)
+    expect(alert.textContent).not.toMatch(/404|No activity/)
+  })
 })
