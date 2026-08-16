@@ -36,6 +36,19 @@ export function AppShell({
         Skip to main content
       </a>
 
+      {/*
+        Says out loud what a screenshot cannot: this is working plumbing, not
+        approved design. Visual identity is gated on Product/Gameplay Discovery
+        (X-005), so anyone reviewing the app should judge the flows, not the
+        look. Hidden in production so it can never reach a teacher.
+      */}
+      {env.isProd ? null : (
+        <p className={styles.foundationBanner}>
+          <strong>Foundation preview</strong> — real flows, placeholder visual design. Not approved
+          P1 UX.
+        </p>
+      )}
+
       <header className={styles.header}>
         <Link to={paths.home} className={styles.brand}>
           <span className={styles.mark} aria-hidden="true">

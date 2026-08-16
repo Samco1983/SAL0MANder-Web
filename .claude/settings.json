@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm run test)",
+      "Bash(npm run test:coverage)",
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run verify)",
+      "Bash(npm run format:check)",
+      "Bash(npm ls *)",
+      "Bash(npm view *)",
+      "Bash(git show *)",
+      "Bash(git ls-files *)",
+      "Bash(git rev-parse *)",
+      "Bash(git branch *)",
+      "Bash(git stash list)",
+      "Bash(git worktree list)",
+      "Bash(git archive *)",
+      "mcp__Claude_Browser__navigate",
+      "mcp__Claude_Browser__read_page",
+      "mcp__Claude_Browser__read_network_requests",
+      "mcp__Claude_Browser__find",
+      "mcp__scheduled-tasks__list_scheduled_tasks"
+    ]
+  }
+}
