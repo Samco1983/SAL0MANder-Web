@@ -54,6 +54,32 @@ describe('copying', () => {
     expect(await screen.findByText(/copied to your clipboard/i)).toBeInTheDocument()
   })
 
+  it('announces the outcome in a live region, not just on screen', async () => {
+    // The copy button's label barely changes, so a screen-reader user learns
+    // whether the copy worked only if the result is announced. Asserting the
+    // text alone passes even with the live region removed — which is exactly
+    // how this regressed past a mutation check.
+    const user = userEvent.setup()
+    setClipboard(async () => {})
+    render(<SharePanel url={URL_UNDER_TEST} />)
+
+    await user.click(screen.getByRole('button', { name: /copy link/i }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent(/copied to your clipboard/i)
+  })
+
+  it('announces failure in that same live region', async () => {
+    const user = userEvent.setup()
+    setClipboard(async () => {
+      throw new Error('denied by permissions policy')
+    })
+    render(<SharePanel url={URL_UNDER_TEST} />)
+
+    await user.click(screen.getByRole('button', { name: /copy link/i }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent(/copy it manually/i)
+  })
+
   it('admits failure instead of pretending, and points at the manual path', async () => {
     // Silently doing nothing is worse than failing: the teacher walks away
     // believing the link is on their clipboard.
