@@ -1,6 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api, ApiError } from '@api/index'
-import type { GuestActivityBundle } from '@contracts/v1'
+import { ShareCodeSchema, type GuestActivityBundle } from '@contracts/v1'
+import { toGuestActivityBundle } from './playBundleAdapter'
+
+/**
+ * Resolve whatever is in the URL, by whichever path fits it.
+ *
+ * Both are live on purpose. P-002 (`shareCode` distinct from `activityId`) is
+ * still *Proposed*, so the new resolver runs alongside the existing one rather
+ * than replacing it — a link already in the wild must not stop working because
+ * a contract moved. Which one is used is decided by the shape of the value, so
+ * flipping to shareCode-only later is a deletion, not a migration.
+ */
+async function resolve(code: string, signal: AbortSignal): Promise<GuestActivityBundle> {
+  if (ShareCodeSchema.safeParse(code).success) {
+    return toGuestActivityBundle(await api.play.resolve(code, signal))
+  }
+  return api.activities.getGuestBundle(code, signal)
+}
 
 export type GuestActivityState =
   | { status: 'idle' }
@@ -42,8 +59,7 @@ export function useGuestActivity(activityId: string | undefined): GuestActivity 
     let active = true
     setState({ status: 'loading' })
 
-    api.activities
-      .getGuestBundle(activityId, controller.signal)
+    resolve(activityId, controller.signal)
       .then((bundle) => {
         if (active) setState({ status: 'ready', bundle })
       })

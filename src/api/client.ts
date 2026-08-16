@@ -2,6 +2,7 @@ import { env } from '@config/env'
 import { createHttpTransport, type Transport } from './transport'
 import { createMockTransport } from './mockTransport'
 import { activitiesApi } from './endpoints/activities'
+import { playApi } from './endpoints/play'
 import { sessionsApi } from './endpoints/sessions'
 
 /**
@@ -14,6 +15,8 @@ export function createApiClient(transport: Transport) {
   return {
     transport,
     activities: activitiesApi(transport),
+    /** Share-link resolution (draft; runs alongside `activities`). */
+    play: playApi(transport),
     sessions: sessionsApi(transport),
   }
 }

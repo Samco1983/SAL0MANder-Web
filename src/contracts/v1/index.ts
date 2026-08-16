@@ -7,6 +7,7 @@
 export * from './ids'
 export * from './common'
 export * from './media'
+export * from './share'
 export * from './activity'
 export * from './session'
 export * from './profile'
