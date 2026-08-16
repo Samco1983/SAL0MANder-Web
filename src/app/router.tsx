@@ -19,5 +19,8 @@ export const router = createBrowserRouter([
   { path: paths.guestPlay, element: <GuestPlayPage />, errorElement: <RouteError /> },
   { path: paths.profile, element: <ProfilePage />, errorElement: <RouteError /> },
   { path: paths.unity, element: <UnityHostPage />, errorElement: <RouteError /> },
-  { path: paths.notFound, element: <NotFoundPage /> },
+  // The catch-all needs a boundary too: without one, a throw inside
+  // NotFoundPage renders React Router's default blank screen — the exact
+  // outcome RouteError exists to prevent.
+  { path: paths.notFound, element: <NotFoundPage />, errorElement: <RouteError /> },
 ])
