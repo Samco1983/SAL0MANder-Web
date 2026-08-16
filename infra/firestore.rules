@@ -124,6 +124,13 @@ service cloud.firestore {
 
       allow read: if isAuthenticated()
         && (resource.data.playerId == request.auth.uid || isTeacher());
+
+      // Agreed TTL topology: traces expire here, so pruning them cannot take
+      // the session summary with it. The root document carries no TTL.
+      match /telemetry/{eventId} {
+        allow read: if isTeacher();
+        allow write: if false; // Cloud Run only.
+      }
     }
 
     // ------------------------------------------------------------------

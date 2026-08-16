@@ -47,6 +47,12 @@
       "collectionGroup": "generation_batches",
       "fieldPath": "expiresAt",
       "ttl": true
+    },
+    {
+      "//": "Agreed TTL topology: the root /gameplay_sessions/{id} document carries NO TTL, so teacher history is permanent. Trace events live in the telemetry subcollection and expire there, which is the only way a 30-day TTL can prune traces without deleting the session record with them.",
+      "collectionGroup": "telemetry",
+      "fieldPath": "expiresAt",
+      "ttl": true
     }
   ]
 }

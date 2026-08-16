@@ -361,6 +361,51 @@ first merely because the files are small.
 `MediaDescriptor` has no duration field. All three are required before audio can
 be represented at all.
 
+## D-020 — Client-reported scores are Practice / Unproctored Diagnostics
+
+**Decided** · relayed via Gemini, 2026-08-15 · **closes the W-1 finding in `STATUS.md`**
+
+`GET /v1/play/{shareCode}` delivers `quiz.questions[].choices[].isCorrect` to the
+browser. It is the unauthenticated student endpoint, so a student can read every
+correct answer in DevTools, and for Learning Puzzle — where a correct answer
+releases a piece — the loop is defeated with no tooling.
+
+Accepted for P0/P1 and formally classified: **"Practice / Unproctored
+Diagnostics."** Client-reported scores are not cryptographically trusted grading.
+
+**The constraint this carries, which is the reason it needed writing down:**
+
+> `questionsCorrect` is computed by the client, from an answer key the client
+> can read, and submitted by the client. It must never back a gradebook,
+> mastery report, standards-attainment view, or anything a teacher would read
+> as assessment.
+
+That is safe as a decision and dangerous as an assumption. Anyone building
+teacher-facing reporting later must treat these values as *engagement* signal,
+not achievement. If graded assessment is ever wanted, it needs server-side
+answer validation and the key withheld from the bundle — a different endpoint,
+not a tightening of this one.
+
+## D-021 — Firestore TTL topology: traces expire, sessions do not
+
+**Decided** · relayed via Gemini, 2026-08-15
+
+Firestore TTL deletes the **entire document**, not the field it keys on. A
+`telemetryExpiresAt` TTL on `/gameplay_sessions/{id}` would therefore have
+erased every session record — status, duration, scores — 30 days on, silently,
+which is the opposite of the stated intent.
+
+Agreed topology:
+
+| Path | TTL |
+| --- | --- |
+| `/gameplay_sessions/{sessionId}` | **none** — teacher history is permanent |
+| `/gameplay_sessions/{sessionId}/telemetry/{eventId}` | 30 days on `expiresAt` |
+| `/generation_batches/{batchId}` | 48h on `expiresAt` (whole doc is meant to go) |
+
+Recorded in `infra/firestore.rules` and `infra/firestore.indexes.json`, both
+still marked DRAFT / NOT DEPLOYED.
+
 ---
 
 ## DEFERRED — requires approval before implementation

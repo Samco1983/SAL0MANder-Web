@@ -16,6 +16,8 @@
  *     not.
  */
 
+import { createEventDeduper, type EventDeduper } from './eventDedupe'
+
 export const BRIDGE_VERSION = 1 as const
 
 /**
@@ -39,6 +41,13 @@ export const BRIDGE_VERSION = 1 as const
 export type BridgeCorrelation = {
   sessionId?: string
   correlationId?: string
+  /**
+   * Per-message identity. `API_CONTRACT.md` §WebGL bridge requires receivers to
+   * deduplicate on it — see `eventDedupe.ts` for why that matters most for
+   * `session-finished`.
+   */
+  eventId?: string
+  occurredAtUtc?: string
 }
 
 /** Web → Unity. Sent via the Unity instance's `SendMessage`. */
@@ -48,13 +57,36 @@ export type WebToUnityMessage =
       version: typeof BRIDGE_VERSION
       activityId: string
       activityVersionId: string
+      /**
+       * The sanitized play bundle, per `API_CONTRACT.md`: "boot: contract
+       * version, sanitized play bundle, and session correlation."
+       *
+       * Opaque to the web layer by design — it is handed across, never read.
+       * Typed `unknown` so the web cannot start depending on gameplay fields
+       * and quietly grow a second implementation of the rules.
+       */
+      playBundle?: unknown
+      /**
+       * The mode this session is pinned to, when the activity allows only one.
+       * Omitted for Student Choice, where Unity owns the picker and the choice
+       * does not exist yet at boot — see the open ownership question in
+       * `docs/coordination/WEB-INVENTORY.md` B-6.
+       */
+      selectedPlayMode?: string
     } & BridgeCorrelation)
   | { type: 'set-paused'; version: typeof BRIDGE_VERSION; paused: boolean }
 
 /** Unity → Web. Delivered on `window` as a CustomEvent. */
 export type UnityToWebMessage =
-  | { type: 'ready'; version: typeof BRIDGE_VERSION }
-  | { type: 'load-progress'; version: typeof BRIDGE_VERSION; progress: number }
+  // `API_CONTRACT.md`: every emitted message should carry contractVersion,
+  // eventId and occurredAtUtc — so correlation rides on all of them, not only
+  // the ones that name a session.
+  | ({ type: 'ready'; version: typeof BRIDGE_VERSION } & BridgeCorrelation)
+  | ({
+      type: 'load-progress'
+      version: typeof BRIDGE_VERSION
+      progress: number
+    } & BridgeCorrelation)
   | ({
       type: 'session-finished'
       version: typeof BRIDGE_VERSION
@@ -100,6 +132,8 @@ export type BridgeMismatch =
   | { reason: 'unknown-type'; type: string; detail: unknown }
 
 export type UnityMessageOptions = {
+  /** Injectable so the dedupe window is testable and shareable if ever needed. */
+  deduper?: EventDeduper
   /**
    * Called instead of `handler` when a message is dropped. Optional: omitting
    * it preserves the original silent-drop behavior exactly.
@@ -119,6 +153,8 @@ export function onUnityMessage(
   options: UnityMessageOptions = {},
 ): () => void {
   const { onMismatch } = options
+  // Per-subscription, so one listener's history cannot suppress another's.
+  const deduper = options.deduper ?? createEventDeduper()
 
   // Never let a diagnostic callback escalate into a broken game.
   const reportMismatch = (mismatch: BridgeMismatch) => {
@@ -151,6 +187,9 @@ export function onUnityMessage(
       reportMismatch({ reason: 'unknown-type', type: detail.type, detail })
       return
     }
+    // A redelivered `session-finished` would otherwise submit a student's
+    // result twice. Silent by design: a duplicate is not a fault to report.
+    if (!deduper.accept(detail.eventId)) return
 
     try {
       handler(detail as UnityToWebMessage)
