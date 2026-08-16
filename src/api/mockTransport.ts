@@ -40,21 +40,45 @@ function demoBundle(activityId: string) {
   }
 }
 
+/**
+ * Fingerprint of what a keyed write is asking for. Two requests sharing an
+ * idempotency key must be the *same* request; if they aren't, the key was
+ * reused by mistake and replaying the first response would hand back a record
+ * the caller never asked for.
+ */
+function requestFingerprint(options: RequestOptions): string {
+  return JSON.stringify([options.method ?? 'GET', options.path, options.body ?? null])
+}
+
 export function createMockTransport(): Transport {
   const sessions = new Map<string, unknown>()
-  /** Replays the stored result for a repeated key — mirrors server behavior. */
-  const idempotency = new Map<string, unknown>()
+  /** Replays the stored response for a repeated key — mirrors server behavior. */
+  const idempotency = new Map<string, { fingerprint: string; response: unknown }>()
 
   return {
     async request<T>(options: RequestOptions, schema: z.ZodType<T>): Promise<T> {
       await new Promise((r) => setTimeout(r, 120))
 
-      if (options.idempotencyKey && idempotency.has(options.idempotencyKey)) {
-        return schema.parse(idempotency.get(options.idempotencyKey))
+      const fingerprint = requestFingerprint(options)
+      const replayed = options.idempotencyKey ? idempotency.get(options.idempotencyKey) : undefined
+      if (replayed) {
+        // A real server must reject this rather than silently replay, or a key
+        // collision quietly returns the wrong record. The mock enforces it so
+        // the app is built against the strict behavior from the start.
+        if (replayed.fingerprint !== fingerprint) {
+          throw new ApiError({
+            code: 'conflict',
+            message: `Idempotency key ${options.idempotencyKey} was reused with a different request`,
+            status: 409,
+          })
+        }
+        return schema.parse(replayed.response)
       }
 
       const result = route(options, sessions)
-      if (options.idempotencyKey) idempotency.set(options.idempotencyKey, result)
+      if (options.idempotencyKey) {
+        idempotency.set(options.idempotencyKey, { fingerprint, response: result })
+      }
 
       const parsed = schema.safeParse(result)
       if (!parsed.success) {

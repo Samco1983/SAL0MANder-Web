@@ -20,7 +20,16 @@ export type ProfileId = Brand<string, 'ProfileId'>
 export type SessionId = Brand<string, 'SessionId'>
 export type MediaId = Brand<string, 'MediaId'>
 
-/** URL-safe, printable, QR-friendly. Deliberately excludes look-alike glyphs. */
+/**
+ * URL-safe and QR-friendly.
+ *
+ * NOTE: this alphabet does *not* exclude look-alike glyphs — `O`/`0` and
+ * `I`/`l`/`1` are all legal. That is fine for an ID, which is only ever
+ * machine-copied out of a URL, and wrong for anything a human retypes off a
+ * whiteboard. A human-typable share code therefore needs its own, narrower
+ * alphabet rather than reusing this one — see the shareCode proposal in
+ * docs/coordination/WEB-CONTRACT-REVIEW.md.
+ */
 const ID_PATTERN = /^[A-Za-z0-9_-]{6,64}$/
 
 const idSchema = <B extends string>(_brandName: B) =>

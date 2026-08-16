@@ -58,6 +58,25 @@ describe('mock transport', () => {
     expect(second.id).toBe(first.id)
   })
 
+  it('rejects an idempotency key reused with a different request', async () => {
+    const transport = createMockTransport()
+    const start = (guestToken: string) => ({
+      method: 'POST' as const,
+      path: '/sessions',
+      body: {
+        activityId: MOCK_DEMO_ACTIVITY_ID,
+        activityVersionId: 'demo-version-1',
+        identity: { kind: 'guest', guestToken },
+      },
+      idempotencyKey: 'key-1',
+    })
+    await transport.request(start('guest-token-1'), PlaySessionSchema)
+    // Replaying here would hand back another student's session.
+    await expect(
+      transport.request(start('guest-token-2'), PlaySessionSchema),
+    ).rejects.toMatchObject({ code: 'conflict' })
+  })
+
   it('reports a contract mismatch rather than returning an unparsed payload', async () => {
     const transport = createMockTransport()
     await expect(

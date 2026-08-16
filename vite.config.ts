@@ -31,12 +31,18 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // Unity WebGL (brotli/gzip streaming + SharedArrayBuffer-capable builds) is
-    // sensitive to these; harmless for the rest of the site.
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'credentialless',
-    },
+    // No COOP/COEP here on purpose.
+    //
+    // Cross-origin isolation is only *required* for SharedArrayBuffer, i.e. a
+    // Unity WebGL build with threads enabled. Unity threads are currently off,
+    // so the headers buy nothing — and COEP actively breaks the loading path we
+    // do use: a build served from `VITE_UNITY_BUILD_BASE_URL` (a CDN) and any
+    // cross-origin thumbnail are blocked unless every one of those responses
+    // carries `Cross-Origin-Resource-Policy`, which a third-party CDN will not
+    // do on our say-so. Dev then fails in a way production would not.
+    //
+    // Restore both headers the moment Unity ships a threaded build, and pair
+    // them with CORP on the asset origin — see docs/DECISIONS.md D-011.
   },
   test: {
     environment: 'jsdom',

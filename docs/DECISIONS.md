@@ -106,6 +106,53 @@ zero setup.
 CDN, and committing them would make the repo unusable within a few iterations.
 `VITE_UNITY_BUILD_BASE_URL` points at wherever a build lives.
 
+## D-011 — No COOP/COEP dev headers while Unity WebGL threads are off
+
+**Decided** · 2026-08-15
+
+The dev server previously sent `Cross-Origin-Opener-Policy: same-origin` and
+`Cross-Origin-Embedder-Policy: credentialless`. Both removed.
+
+Cross-origin isolation is only *required* for `SharedArrayBuffer`, i.e. a Unity
+WebGL build with threads enabled. Threads are off, so the headers bought
+nothing — while COEP actively broke the loading path we do use: a build served
+from `VITE_UNITY_BUILD_BASE_URL` (a CDN) and any cross-origin thumbnail are
+blocked unless every one of those responses carries
+`Cross-Origin-Resource-Policy`, which a third-party CDN will not set on our
+say-so. The net effect was dev failing in a way production would not.
+
+Cost: the day Unity ships a threaded build, both headers must come back *and*
+the asset origin must serve CORP. Recorded here so that is a lookup, not a
+rediscovery.
+
+## D-012 — Bridge drops are observable, and correlation fields are optional
+
+**Decided** · 2026-08-15 · **Bridge message set itself remains X-009**
+
+Two additive changes to `src/unity/bridge.ts`, which has no consumers yet:
+
+`onUnityMessage` takes an optional `onMismatch` callback. Dropping unusable
+messages is still the behavior; the callback only makes it visible. A silent
+drop is indistinguishable from "Unity never sent anything", so a build compiled
+against bridge v2 talking to a web deploy on v1 presents exactly like a dead
+game. Omitting the callback preserves the previous behavior exactly.
+
+Optional `sessionId` / `correlationId` on `boot`, `session-finished`, and
+`error`, plus `correlateSession()`. "The game finished" is not enough to write a
+result safely: a student who restarts mid-lesson produces two indistinguishable
+finish events, and the second result can be written against the first session.
+`correlateSession` is deliberately three-valued — `uncorrelated` is what a build
+predating these fields sends, and the caller decides whether to trust it rather
+than having it collapsed into a match (mis-attribution) or a mismatch (dropping
+every legacy result).
+
+Both fields are optional in every direction, so a Unity build that ignores them
+stays fully compatible. **Proposed, not agreed** — returned to Codex for
+reconciliation. Also tightened: a correctly-versioned message with an
+unrecognized `type` is now ignored and reported, matching this module's stated
+"unrecognized messages are ignored" rule, which the code did not previously
+honor.
+
 ---
 
 ## DEFERRED — requires approval before implementation
