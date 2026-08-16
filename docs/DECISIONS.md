@@ -153,13 +153,44 @@ unrecognized `type` is now ignored and reported, matching this module's stated
 "unrecognized messages are ignored" rule, which the code did not previously
 honor.
 
+## D-013 — Google Cloud is the accepted persistent infrastructure
+
+**Decided** · relayed via Codex, 2026-08-15 · **supersedes X-001 in part**
+
+Google Cloud is settled as the persistent infrastructure. X-001 as originally
+written ("Backend / hosting provider — architecture fork") is **stale**: the
+fork is no longer open.
+
+Still open, and still requiring approval before implementation: the exact
+services, the auth model, the privacy posture, the CDN, and operations. Nothing
+in this repo is wired to a provider — `Transport` and `MediaStorage` remain the
+only seams, which is what keeps the remaining choices cheap.
+
+## D-014 — Environment parsing recovers per field, never wholesale
+
+**Decided** · 2026-08-15
+
+`readEnv` previously parsed `import.meta.env` atomically and, on any failure,
+fell back to `EnvSchema.parse({})` — resetting *every* field to its default.
+Because each field is optional-with-a-default, a single unrecognized value
+anywhere (e.g. `VITE_FEATURE_GUEST_PLAY=yes`) emptied `VITE_API_BASE_URL`,
+flipped `api.isConfigured` to false, and silently ran the app against the
+in-memory mock transport. In production that is total, invisible data loss:
+every student's work written to a `Map` that dies with the tab.
+
+Each field now falls back independently to its own declared default. A strict
+parse still runs alongside, purely to log which keys were rejected, so the
+diagnostic is not lost to the recovery. `readEnv(source)` was extracted as a
+pure function because `import.meta.env` is a build-time constant that cannot be
+varied from a test; the failure above was unprovable before that.
+
 ---
 
 ## DEFERRED — requires approval before implementation
 
 | ID    | Decision                          | Blocked on                                    |
 | ----- | --------------------------------- | --------------------------------------------- |
-| X-001 | Backend / hosting provider        | Architecture fork — human approval            |
+| ~~X-001~~ | ~~Backend / hosting provider~~ | **Superseded by D-013** — Google Cloud accepted; services/auth/privacy/CDN/ops still open |
 | X-002 | Auth provider and account model   | Architecture + COPPA/FERPA product decision   |
 | X-003 | Object storage + CDN provider     | Architecture fork — human approval            |
 | X-004 | Analytics / telemetry vendor      | Architecture fork — human approval            |

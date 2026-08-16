@@ -7,6 +7,26 @@
 
 ---
 
+## Reconciliation status — updated 2026-08-15
+
+Codex posted this review to hub issue #1 and returned guardrails. **The access
+blocker below is worked around, not fixed**: Codex relays, but the web agent
+still has no direct hub access and still cannot read the source contracts.
+
+| #   | Topic                     | Status after Codex response                                                                 |
+| --- | ------------------------- | -------------------------------------------------------------------------------------------- |
+| 1   | BOTH / Student Choice     | **Partly settled.** Mode names `learning-puzzle`/`classic-puzzle` stay; Unity owns the picker — the boundary question in §1 is answered. `allowedModes[]` vs. a `both` enum member still open. |
+| 2   | shareCode                 | **Open — do not wire.** No route or endpoint rename made.                                     |
+| 3   | Correlation + idempotency | **Additive and proposed**, pending unification with Codex's `clientAttemptId` / result correlation. Nothing frozen. |
+| 4   | Envelope                  | **Open — do not wire.** Transport still parses raw payloads; the unused `EnvelopeSchema` stays as-is. |
+| 5   | Media DTO                 | **Open — do not wire.** No variant/checksum/expiry changes made.                              |
+| 6   | Teacher AI UX             | Ownership question still unanswered.                                                          |
+
+Standing guardrails being followed: no shared contract frozen, no Unity contact,
+no remote attached, and Codex relays hub updates rather than the human.
+
+---
+
 ## Access blocker — read this first
 
 **The Codex draft contracts could not be read.** Every delta below is derived

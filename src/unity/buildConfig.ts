@@ -1,4 +1,4 @@
-import { env } from '@config/env'
+import { env, type Env } from '@config/env'
 
 /**
  * Resolves the file layout Unity emits for a WebGL build.
@@ -19,11 +19,13 @@ export type UnityBuildConfig = {
   productVersion: string
 }
 
-export function resolveUnityBuildConfig(): UnityBuildConfig | null {
-  if (!env.unity.isConfigured) return null
+/** `source` is injectable so the URL layout is testable without a real build. */
+export function resolveUnityBuildConfig(source: Env = env): UnityBuildConfig | null {
+  if (!source.unity.isConfigured) return null
 
-  const base = env.unity.buildBaseUrl.replace(/\/+$/, '')
-  const name = env.unity.buildName
+  // Already normalized by `env`, but a caller-supplied source may not be.
+  const base = source.unity.buildBaseUrl.replace(/\/+$/, '')
+  const name = source.unity.buildName
 
   return {
     loaderUrl: `${base}/Build/${name}.loader.js`,
@@ -32,7 +34,7 @@ export function resolveUnityBuildConfig(): UnityBuildConfig | null {
     codeUrl: `${base}/Build/${name}.wasm`,
     streamingAssetsUrl: `${base}/StreamingAssets`,
     companyName: 'SAL0MANder',
-    productName: env.appName,
+    productName: source.appName,
     productVersion: '0.0.0',
   }
 }

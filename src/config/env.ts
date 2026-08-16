@@ -55,52 +55,97 @@ const EnvSchema = z.object({
   VITE_TELEMETRY_SAMPLE_RATE: numeric(0.1),
 })
 
-const parsed = EnvSchema.safeParse(import.meta.env)
+/**
+ * The same fields, but a bad value degrades only *that* field.
+ *
+ * Parsing the whole object atomically was actively dangerous: because every
+ * field is optional with a default, one unrecognized value anywhere (say
+ * `VITE_FEATURE_GUEST_PLAY=yes`) failed the entire parse, and the fallback
+ * reset *every* field to its default. `VITE_API_BASE_URL` became `''`, which
+ * flips `api.isConfigured` to false — so a single typo in an unrelated feature
+ * flag silently ran production against the in-memory mock transport, losing
+ * every student's work with no error anywhere. Per-field recovery keeps one bad
+ * value from taking the rest of the configuration with it.
+ *
+ * Each field falls back to what it yields for `undefined`, i.e. its own
+ * declared default.
+ */
+const ResilientEnvSchema = z.object(
+  Object.fromEntries(
+    Object.entries(EnvSchema.shape).map(([key, schema]) => {
+      // Widened because `.catch()`'s overloads don't unify across a union of
+      // differently-typed field schemas.
+      const field = schema as z.ZodType
+      return [key, field.catch(() => field.parse(undefined))]
+    }),
+  ) as Record<string, z.ZodType>,
+)
 
-if (!parsed.success) {
-  // Fail loudly in dev, but never hard-crash a student mid-session in prod.
-  console.error('[env] Invalid environment configuration:', z.treeifyError(parsed.error))
+/**
+ * `.catch()` changes a field's failure behavior, not its output type, so this
+ * parses to exactly what `EnvSchema` infers. Asserted once, here, rather than
+ * by pretending the wrapped shape is the original shape.
+ */
+type RawEnv = z.infer<typeof EnvSchema>
+
+/**
+ * Pure so it can be tested against a fabricated environment. `import.meta.env`
+ * is a build-time constant and cannot be varied from a test.
+ */
+export function readEnv(source: unknown) {
+  // Strict parse for diagnostics only — it names the offending keys, which
+  // per-field recovery would otherwise hide.
+  const strict = EnvSchema.safeParse(source)
+  if (!strict.success) {
+    // Loud in dev; never hard-crashes a student mid-session in prod.
+    console.error(
+      '[env] Ignoring invalid environment values (each falls back to its default):',
+      z.treeifyError(strict.error),
+    )
+  }
+
+  const raw = ResilientEnvSchema.parse(source ?? {}) as RawEnv
+
+  return {
+    appName: raw.VITE_APP_NAME,
+    appEnv: raw.VITE_APP_ENV,
+    publicBaseUrl: raw.VITE_PUBLIC_BASE_URL,
+
+    api: {
+      baseUrl: raw.VITE_API_BASE_URL,
+      contractVersion: raw.VITE_API_CONTRACT_VERSION,
+      timeoutMs: raw.VITE_API_TIMEOUT_MS,
+      /** No backend configured yet — the app runs against the mock transport. */
+      isConfigured: raw.VITE_API_BASE_URL.length > 0,
+    },
+
+    unity: {
+      buildBaseUrl: raw.VITE_UNITY_BUILD_BASE_URL,
+      buildName: raw.VITE_UNITY_BUILD_NAME,
+      isConfigured: raw.VITE_UNITY_BUILD_BASE_URL.length > 0,
+    },
+
+    storage: {
+      provider: raw.VITE_STORAGE_PROVIDER,
+      cdnBaseUrl: raw.VITE_MEDIA_CDN_BASE_URL,
+    },
+
+    features: {
+      companionLayout: raw.VITE_FEATURE_COMPANION_LAYOUT,
+      guestPlay: raw.VITE_FEATURE_GUEST_PLAY,
+      accounts: raw.VITE_FEATURE_ACCOUNTS,
+    },
+
+    telemetry: {
+      dsn: raw.VITE_TELEMETRY_DSN,
+      sampleRate: raw.VITE_TELEMETRY_SAMPLE_RATE,
+      isConfigured: raw.VITE_TELEMETRY_DSN.length > 0,
+    },
+
+    isProd: raw.VITE_APP_ENV === 'production',
+  } as const
 }
 
-const raw = parsed.success ? parsed.data : EnvSchema.parse({})
+export const env = readEnv(import.meta.env)
 
-export const env = {
-  appName: raw.VITE_APP_NAME,
-  appEnv: raw.VITE_APP_ENV,
-  publicBaseUrl: raw.VITE_PUBLIC_BASE_URL,
-
-  api: {
-    baseUrl: raw.VITE_API_BASE_URL,
-    contractVersion: raw.VITE_API_CONTRACT_VERSION,
-    timeoutMs: raw.VITE_API_TIMEOUT_MS,
-    /** No backend configured yet — the app runs against the mock transport. */
-    isConfigured: raw.VITE_API_BASE_URL.length > 0,
-  },
-
-  unity: {
-    buildBaseUrl: raw.VITE_UNITY_BUILD_BASE_URL,
-    buildName: raw.VITE_UNITY_BUILD_NAME,
-    isConfigured: raw.VITE_UNITY_BUILD_BASE_URL.length > 0,
-  },
-
-  storage: {
-    provider: raw.VITE_STORAGE_PROVIDER,
-    cdnBaseUrl: raw.VITE_MEDIA_CDN_BASE_URL,
-  },
-
-  features: {
-    companionLayout: raw.VITE_FEATURE_COMPANION_LAYOUT,
-    guestPlay: raw.VITE_FEATURE_GUEST_PLAY,
-    accounts: raw.VITE_FEATURE_ACCOUNTS,
-  },
-
-  telemetry: {
-    dsn: raw.VITE_TELEMETRY_DSN,
-    sampleRate: raw.VITE_TELEMETRY_SAMPLE_RATE,
-    isConfigured: raw.VITE_TELEMETRY_DSN.length > 0,
-  },
-
-  isProd: raw.VITE_APP_ENV === 'production',
-} as const
-
-export type Env = typeof env
+export type Env = ReturnType<typeof readEnv>

@@ -1,4 +1,4 @@
-import { ApiErrorBodySchema, type ApiErrorCode, isRetryable } from '@contracts/v1'
+import { ApiErrorBodySchema, codeFromStatus, type ApiErrorCode, isRetryable } from '@contracts/v1'
 
 /** Single error type crossing the API boundary, so callers catch one thing. */
 export class ApiError extends Error {
@@ -58,7 +58,8 @@ export async function apiErrorFromResponse(response: Response): Promise<ApiError
     body = {}
   }
   const parsed = ApiErrorBodySchema.safeParse(body)
-  const fallbackCode = statusToCode(response.status)
+  // The contract owns this mapping; a second copy here would drift from it.
+  const fallbackCode = codeFromStatus(response.status)
   return new ApiError({
     code: parsed.success && parsed.data.code !== 'unknown' ? parsed.data.code : fallbackCode,
     message: parsed.success && parsed.data.message ? parsed.data.message : response.statusText,
@@ -66,15 +67,4 @@ export async function apiErrorFromResponse(response: Response): Promise<ApiError
     ...(parsed.success && parsed.data.requestId ? { requestId: parsed.data.requestId } : {}),
     ...(parsed.success && parsed.data.details ? { details: parsed.data.details } : {}),
   })
-}
-
-function statusToCode(status: number): ApiErrorCode {
-  if (status === 400) return 'bad_request'
-  if (status === 401) return 'unauthorized'
-  if (status === 403) return 'forbidden'
-  if (status === 404) return 'not_found'
-  if (status === 409) return 'conflict'
-  if (status === 429) return 'rate_limited'
-  if (status >= 500) return 'server_error'
-  return 'unknown'
 }
