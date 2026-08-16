@@ -1,0 +1,237 @@
+/* =============================================================================
+ * SAL0MANder — Design Tokens
+ * =============================================================================
+ * PLACEHOLDER VALUES. This file defines the *shape* of the design system, not
+ * the final SAL0MANder brand. Final color/type/spacing decisions come out of
+ * Product/Gameplay Discovery and require human approval.
+ *
+ * Contract for everyone building on top of this:
+ *   - Components consume SEMANTIC tokens only (--color-surface, --space-4, ...).
+ *   - Components never reference PRIMITIVE tokens (--slate-700) directly.
+ *   - Rebranding = editing primitives + the semantic mapping in this file.
+ *     No component file should need to change.
+ * ========================================================================== */
+
+:root {
+  /* --- Primitives: color ramps -------------------------------------------- */
+  --neutral-0: #ffffff;
+  --neutral-50: #f8fafb;
+  --neutral-100: #eef1f4;
+  --neutral-200: #dde2e8;
+  --neutral-300: #c2cad4;
+  --neutral-400: #98a3b1;
+  --neutral-500: #6f7c8c;
+  --neutral-600: #55616f;
+  --neutral-700: #3d4753;
+  --neutral-800: #272f39;
+  --neutral-900: #171d25;
+  --neutral-950: #0d1117;
+
+  /* Placeholder accent. Salamander-adjacent warm ember; NOT final brand. */
+  --accent-100: #ffe6d5;
+  --accent-300: #ffb086;
+  --accent-500: #f2793d;
+  --accent-600: #d95f27;
+  --accent-700: #b04a1c;
+
+  /* Placeholder secondary, used for informational/teacher surfaces. */
+  --support-100: #d9f2ee;
+  --support-500: #2aa899;
+  --support-700: #1b7268;
+
+  --danger-100: #fde2e2;
+  --danger-500: #d64545;
+  --danger-700: #a12c2c;
+
+  --warning-100: #fdf0d0;
+  --warning-500: #d99a1e;
+
+  --success-100: #ddf3e0;
+  --success-500: #35a35a;
+
+  /* --- Primitives: spacing (4px base) ------------------------------------- */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* --- Primitives: radii --------------------------------------------------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* --- Primitives: typography --------------------------------------------- */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.75rem;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.55;
+
+  --weight-regular: 400;
+  --weight-medium: 550;
+  --weight-bold: 700;
+
+  /* --- Primitives: elevation ---------------------------------------------- */
+  --shadow-1: 0 1px 2px rgb(13 17 23 / 0.06), 0 1px 3px rgb(13 17 23 / 0.08);
+  --shadow-2: 0 4px 10px rgb(13 17 23 / 0.08), 0 2px 4px rgb(13 17 23 / 0.06);
+  --shadow-3: 0 12px 32px rgb(13 17 23 / 0.14);
+
+  /* --- Primitives: motion -------------------------------------------------- */
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* --- Primitives: z-index scale ------------------------------------------- */
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+
+  /* --- Layout: the optional 42 / 58 companion split ------------------------ */
+  /* The Unity stage is the dominant surface. The companion panel is optional
+     and collapsible; Unity gameplay must never depend on it. */
+  --companion-width: 42%;
+  --stage-width: 58%;
+  --companion-min-width: 20rem;
+  --app-header-height: 3.5rem;
+  --app-max-width: 84rem;
+  --focus-ring-width: 2px;
+
+  /* --- Semantic tokens: LIGHT (default) ----------------------------------- */
+  --color-canvas: var(--neutral-50);
+  --color-surface: var(--neutral-0);
+  --color-surface-raised: var(--neutral-0);
+  --color-surface-sunken: var(--neutral-100);
+  --color-border: var(--neutral-200);
+  --color-border-strong: var(--neutral-300);
+
+  --color-text: var(--neutral-900);
+  --color-text-muted: var(--neutral-600);
+  --color-text-subtle: var(--neutral-500);
+  --color-text-inverse: var(--neutral-0);
+
+  --color-accent: var(--accent-600);
+  --color-accent-hover: var(--accent-700);
+  --color-accent-soft: var(--accent-100);
+  --color-on-accent: var(--neutral-0);
+
+  --color-support: var(--support-700);
+  --color-support-soft: var(--support-100);
+
+  --color-danger: var(--danger-700);
+  --color-danger-soft: var(--danger-100);
+  --color-warning: var(--warning-500);
+  --color-warning-soft: var(--warning-100);
+  --color-success: var(--success-500);
+  --color-success-soft: var(--success-100);
+
+  --color-focus-ring: var(--accent-600);
+  --color-overlay: rgb(13 17 23 / 0.45);
+
+  /* The Unity WebGL stage sits on a deliberately dark ground in both themes so
+     the game canvas is not framed by a bright halo. */
+  --color-stage: var(--neutral-950);
+  --color-on-stage: var(--neutral-200);
+
+  color-scheme: light;
+}
+
+/* --- Semantic tokens: DARK ------------------------------------------------ */
+/* Applied via `data-theme="dark"` (explicit choice) OR system preference when
+   no explicit choice is stored. Only semantic tokens are remapped. */
+:root[data-theme='dark'],
+:root[data-theme='system'] {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-canvas: var(--neutral-950);
+    --color-surface: var(--neutral-900);
+    --color-surface-raised: var(--neutral-800);
+    --color-surface-sunken: var(--neutral-950);
+    --color-border: var(--neutral-800);
+    --color-border-strong: var(--neutral-700);
+
+    --color-text: var(--neutral-100);
+    --color-text-muted: var(--neutral-300);
+    --color-text-subtle: var(--neutral-400);
+    --color-text-inverse: var(--neutral-950);
+
+    --color-accent: var(--accent-500);
+    --color-accent-hover: var(--accent-300);
+    --color-accent-soft: rgb(242 121 61 / 0.16);
+    --color-on-accent: var(--neutral-950);
+
+    --color-support: var(--support-500);
+    --color-support-soft: rgb(42 168 153 / 0.16);
+
+    --color-danger: #f08a8a;
+    --color-danger-soft: rgb(214 69 69 / 0.18);
+    --color-warning: #e9bb56;
+    --color-warning-soft: rgb(217 154 30 / 0.18);
+    --color-success: #6cc98a;
+    --color-success-soft: rgb(53 163 90 / 0.18);
+
+    --color-focus-ring: var(--accent-300);
+    --color-overlay: rgb(0 0 0 / 0.6);
+
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-2: 0 4px 10px rgb(0 0 0 / 0.45);
+    --shadow-3: 0 12px 32px rgb(0 0 0 / 0.55);
+
+    color-scheme: dark;
+  }
+}
+
+/* Explicit dark choice must win over a light system preference. */
+:root[data-theme='dark'] {
+  --color-canvas: var(--neutral-950);
+  --color-surface: var(--neutral-900);
+  --color-surface-raised: var(--neutral-800);
+  --color-surface-sunken: var(--neutral-950);
+  --color-border: var(--neutral-800);
+  --color-border-strong: var(--neutral-700);
+
+  --color-text: var(--neutral-100);
+  --color-text-muted: var(--neutral-300);
+  --color-text-subtle: var(--neutral-400);
+  --color-text-inverse: var(--neutral-950);
+
+  --color-accent: var(--accent-500);
+  --color-accent-hover: var(--accent-300);
+  --color-accent-soft: rgb(242 121 61 / 0.16);
+  --color-on-accent: var(--neutral-950);
+
+  --color-support: var(--support-500);
+  --color-support-soft: rgb(42 168 153 / 0.16);
+
+  --color-danger: #f08a8a;
+  --color-danger-soft: rgb(214 69 69 / 0.18);
+  --color-warning: #e9bb56;
+  --color-warning-soft: rgb(217 154 30 / 0.18);
+  --color-success: #6cc98a;
+  --color-success-soft: rgb(53 163 90 / 0.18);
+
+  --color-focus-ring: var(--accent-300);
+  --color-overlay: rgb(0 0 0 / 0.6);
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 4px 10px rgb(0 0 0 / 0.45);
+  --shadow-3: 0 12px 32px rgb(0 0 0 / 0.55);
+}
