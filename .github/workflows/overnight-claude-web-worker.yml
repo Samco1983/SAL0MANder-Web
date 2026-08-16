@@ -1,0 +1,201 @@
+name: SAL0MANder Web Overnight - Claude Worker
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Hourly during Samuel's overnight Pacific window. PDT ≈ 11:12 PM–7:12 AM.
+    - cron: '12 6-14 * * *'
+
+concurrency:
+  group: sal0mander-web-overnight-claude
+  cancel-in-progress: false
+
+jobs:
+  pick-task:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+    outputs:
+      has_task: ${{ steps.pick.outputs.has_task }}
+      task_json: ${{ steps.pick.outputs.task_json }}
+      issue_number: ${{ steps.pick.outputs.issue_number }}
+    steps:
+      - name: Pick oldest trusted web overnight task
+        id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_json="$(
+            gh issue list \
+              --repo "$GITHUB_REPOSITORY" \
+              --state open \
+              --limit 100 \
+              --search 'in:title "[OVERNIGHT][WEB]" author:Samco1983' \
+              --json number,title,body,url,createdAt \
+            | jq -c 'sort_by(.createdAt) | .[0] // empty'
+          )"
+
+          if [[ -z "$task_json" ]]; then
+            echo 'has_task=false' >> "$GITHUB_OUTPUT"
+            echo 'No open trusted [OVERNIGHT][WEB] task.'
+            exit 0
+          fi
+
+          echo 'has_task=true' >> "$GITHUB_OUTPUT"
+          echo "issue_number=$(jq -r '.number' <<<"$task_json")" >> "$GITHUB_OUTPUT"
+          echo "task_json=$task_json" >> "$GITHUB_OUTPUT"
+
+  claude:
+    needs: pick-task
+    if: needs.pick-task.outputs.has_task == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Check Anthropic credential
+        id: credential
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        shell: bash
+        run: |
+          if [[ -n "$ANTHROPIC_API_KEY" ]]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'ANTHROPIC_API_KEY is not configured; worker is inert.'
+          fi
+
+      - name: Checkout main
+        if: steps.credential.outputs.ready == 'true'
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Install dependencies
+        if: steps.credential.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Run bounded Claude web task
+        if: steps.credential.outputs.ready == 'true'
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are Claude Code, the web engineering point person for SAL0MANder.
+
+            Work exactly ONE trusted overnight queue issue.
+
+            Repository: ${{ github.repository }}
+            Queue issue: #${{ needs.pick-task.outputs.issue_number }}
+            Queue task JSON:
+            ${{ needs.pick-task.outputs.task_json }}
+
+            Before editing, read CLAUDE.md and docs/CHARTER-WEB-POINT-PERSON.md.
+
+            Overnight guardrails:
+            - Work in this web repository only. Never modify or clone the Unity repository.
+            - Do not push, merge, deploy, publish, change billing, alter secrets, create cloud resources, or contact production systems.
+            - Do not edit .github/, infra/, package.json, package-lock.json, .env*, configuration for credentials, or dependency versions.
+            - No provider SDK may enter feature code; preserve Transport/MediaStorage boundaries.
+            - Guest Play must remain ungated; do not add account/email/name requirements to share-link play.
+            - Do not duplicate Unity gameplay logic in React.
+            - Do not freeze a shared API/data contract unilaterally. Record any required cross-repo contract delta for Codex/Gemini review.
+            - Keep the change narrowly scoped to the queue issue. No opportunistic redesign/refactor.
+            - Do not claim Unity runtime, cloud deployment, or production behavior was verified from this runner.
+            - Run npm run verify before finishing. If it fails, fix only task-related failures or leave a precise blocker report.
+            - Inspect git diff and git status before finishing.
+
+            Safe edit scope for overnight work is existing/new text source and tests under src/ and docs/. No binaries or generated artifacts.
+            If the requested task requires a major product decision, production credential, deployment, destructive migration, or live Unity evidence, make no speculative implementation and return a blocker report.
+          claude_args: |
+            --max-turns 14
+            --allowedTools Read,Edit,Write,Glob,Grep,Bash(npm run verify:*),Bash(npm test:*),Bash(git diff:*),Bash(git status:*)
+
+      - name: Guard unattended diff
+        if: steps.credential.outputs.ready == 'true'
+        id: guard
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          changed="$(git status --porcelain)"
+          if [[ -z "$changed" ]]; then
+            echo 'has_changes=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          bad=0
+          while IFS= read -r line; do
+            file="${line:3}"
+            case "$file" in
+              src/*|docs/*)
+                ;;
+              *)
+                echo "BLOCKED PATH: $file"
+                bad=1
+                ;;
+            esac
+          done <<< "$changed"
+
+          if [[ "$bad" -ne 0 ]]; then
+            echo 'Claude changed a path outside the overnight allowlist. Nothing will be published.'
+            exit 1
+          fi
+
+          npm run verify
+          echo 'has_changes=true' >> "$GITHUB_OUTPUT"
+
+      - name: Publish guarded change as draft PR
+        if: steps.credential.outputs.ready == 'true' && steps.guard.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ needs.pick-task.outputs.issue_number }}
+          TASK_TITLE: ${{ fromJSON(needs.pick-task.outputs.task_json).title }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="agent/claude-web-overnight-${ISSUE_NUMBER}-${GITHUB_RUN_ID}"
+
+          git config user.name 'sal0mander-web-overnight[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -b "$branch"
+          git add -- src docs
+          git commit -m "agent: Claude web overnight task #${ISSUE_NUMBER}"
+          git push origin "$branch"
+
+          body_file="$(mktemp)"
+          cat > "$body_file" <<EOF
+          Guarded Claude overnight web change for #${ISSUE_NUMBER}.
+
+          **Safety:** draft only; no auto-merge or deployment. `npm run verify` passed and the unattended path guard allowed only `src/` and `docs/` changes.
+
+          Gemini review and daytime/human review are still required before merge.
+          EOF
+
+          pr_url="$(gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$branch" \
+            --draft \
+            --title "[OVERNIGHT][WEB] Claude: ${TASK_TITLE}" \
+            --body-file "$body_file")"
+
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Claude overnight worker produced a guarded **draft PR**: $pr_url\n\nNo automatic merge or deployment was performed."
+          gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --reason completed
+
+      - name: Report no-edit result
+        if: steps.credential.outputs.ready == 'true' && steps.guard.outputs.has_changes == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ needs.pick-task.outputs.issue_number }}
+        shell: bash
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Claude overnight worker completed its pass but produced no guarded file changes. The issue remains open for daytime review/re-scoping."
