@@ -52,16 +52,30 @@ look identical to the watchdog. Overnight, retries to a sleeping adapter will
 exhaust, the worker gets marked unreachable, and Samuel is escalated to at 3am
 for a machine that is merely off.
 
-Options, and this needs deciding before the watchdog ships:
+**Resolution — no new component needed. Withdrawing my own suggestion.**
 
-- Retry backoff long enough to survive a night (hours, not minutes) before
-  declaring a worker dead.
-- The adapter announces itself on startup, so "was offline, now back" is a
-  known transition rather than a recovery from failure.
-- Quiet hours on escalation — queue the alert, deliver it in the morning.
+I proposed a startup announcement so the watchdog could tell "was off" from
+"broke". That was designed for the push model, and it is redundant in the pull
+model recommended above: **if the adapter polls, every poll is an announcement.**
 
-Cheapest is the second: one call on adapter start, and the watchdog can tell
-"expected offline" from "stopped answering mid-task."
+The state machine already draws the line:
+
+| Situation | State | Escalate? |
+| --- | --- | --- |
+| Machine asleep, task waiting | `QUEUED` — nobody picked it up | **No.** It drains on return. |
+| Worker took the task, then died | `PICKED_UP`/`RUNNING`, heartbeat stale | **Yes.** Real failure. |
+
+So the watchdog rule is: **never escalate on `QUEUED` age alone; escalate on a
+stalled `PICKED_UP` or `RUNNING`.** A task sitting queued overnight is the system
+working, not failing.
+
+This also removes the retry-exhaustion problem entirely. Nothing is being
+*delivered* to a sleeping worker, so nothing is retrying against it — the task
+simply stays `QUEUED` until a worker asks for it. Retry counts should be spent
+on failed *processing*, not on failed reach attempts.
+
+Worker liveness, if it is ever wanted for a dashboard, is `lastPolledAt` per
+recipient. Free, since the poll already happens.
 
 **None of this argues against Make.** Rebuilding its retry, ordering, scheduling
 and monitoring would be far more work than the subscription costs. The
