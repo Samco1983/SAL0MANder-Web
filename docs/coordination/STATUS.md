@@ -5,6 +5,21 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 🔒 CLOSED — recovered `:8080` folder, owner decision 2026-08-16
+
+`~/Documents/GitHub/salamander-studio-shell-8080` is the permanent recovered
+copy. Baseline `9c665cf` kept, corrective `45ffaee` kept, **no history rewrite.**
+`node_modules` stays on disk so the preview runs, ignored by Git. The
+`/private/tmp` source stays untouched. Not merged with `:3000` or `:5173`, not
+canonical.
+
+**Claude is stood down from that folder** unless the owner explicitly returns
+work to it. No reads, writes, commits or servers there without that.
+
+Verified clean at handover: 0 changed tracked files, HEAD at `45ffaee`.
+
+---
+
 ## The three web implementations — canonical paths
 
 Recorded 2026-08-16, owner-confirmed. **None is canonical yet.** Owner
