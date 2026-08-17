@@ -8,8 +8,62 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 ```text
 AGENT: Claude Code
 AREA: Website / Guest Play / WebGL host / Make validation
-STATUS: IN PROGRESS
+STATUS: REVIEW READY — Gate 1 evidence below; awaiting Gate 1 criteria
 ```
+
+## ⚠️ The Make retest can pass while writing nothing
+
+**Time-sensitive, before the canonical retarget is retested.**
+
+The first smoke test wrote to the obsolete repo, and the thing that made it
+impressive is the thing that can now hide a failure: **`RESOLVED` was correctly
+ignored on replay.**
+
+If the ledger still holds `task-p1-unity-baseline-audit-final-20260816` in a
+terminal state, re-running that task id against the corrected repo will be
+**deduplicated as a duplicate** — no writes, no error, and a run that looks
+clean. Idempotency working exactly as designed, producing a false pass.
+
+**Retest with a fresh `taskId`,** or clear that entry first. And confirm the
+retest by reading the *new* repo's Issue #1, not by the execution status —
+the execution succeeding is what a correct dedupe looks like too.
+
+Related: this is the repo-name confusion surfacing again. `Sal0mander-Jigsaw-Puzzle`
+and `sal0mander-brain-command` have both been given as the hub in this project,
+and the smoke test landing on the obsolete one is that ambiguity in action
+rather than a one-off slip. Worth a single line in `CURRENT_STATE.md` naming the
+canonical repo, so the next integration does not have to rediscover it.
+
+## Gate 1 — web evidence available now
+
+"Gate 1 is waiting on Unity AI plus Claude/Gemini evidence", but Gate 1's
+criteria appear in no document readable from here — `grep -ri gate` across the
+upstream `docs/` returns one unrelated line. Rather than guess at what
+qualifies, here is everything the web lane can evidence today. **Tell me which
+of these counts and I will produce the artifact in whatever form Gate 1 wants.**
+
+| Evidence | State | How it is verified |
+| --- | --- | --- |
+| Guest Play end to end | ✅ | Share code resolves → session starts → result submits, against the mock. Browser screenshots. |
+| Share-link lifecycle | ✅ | QR, copy, revoked / unpublished / mistyped all distinct. Live at `/play/K7Q4M2XP`, `/play/R3V0K3DX`. |
+| Idempotency | ✅ | Derived keys; mutation-verified that random keys and impure result keys both fail the tests that exist to catch them. |
+| Contract conformance | ✅ | `PlayBundle` enforces piece counts, one-correct-choice, mode consistency, checksum format at the boundary. |
+| Bridge implementation | ⚠️ | `boot`, `session-started`, `mode-selected`, `session-finished`, `eventId` dedupe — all built and tested **against a stub**. |
+| Accessibility | ✅ | 0 WCAG AA contrast failures across 34 rendered elements; nav 6.31:1. |
+| Build health | ✅ | `npm run verify`: lint, typecheck, 267 tests, build. |
+
+**The honest gap, and it is the one that probably matters for Gate 1:** nothing
+on the web side has been exercised against a real Unity build. Codex confirms no
+C# receiver exists and the legacy `.jslib` uses incompatible DOM event names and
+shapes. So the web half is *specified and tested*, not *proven interoperable*.
+
+If Gate 1 means "Unity and Web demonstrably talk to each other", web cannot pass
+it alone and should not be recorded as blocking it. The smallest thing that
+would close it is one round trip against a real build:
+`unity-ready → boot → mode-selected → session-started → session-finished`.
+That single path validates the event name, the receiver target, the JSON shape
+and `eventId` dedupe at once. I can stand up a harness on the web side to drive
+it whenever there is a build to drive.
 
 **ACCEPTED — repo polling is a convention, not a wake-up mechanism**
 
