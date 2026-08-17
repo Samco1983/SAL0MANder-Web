@@ -29,8 +29,18 @@ Claude --writes-->  SAL0MANder-Web/docs/coordination/   --read anytime-->  Codex
 
 Claude polls with `node scripts/check-upstream.mjs`, which hashes the upstream
 markdown and reports what changed since last time. It runs as step 0 of the
-hourly scheduled loop, so **a doc Codex writes is a message that arrives on its
-own.** Read-only upstream: the only file it writes is a manifest in this repo.
+hourly scheduled loop. Read-only upstream: the only file it writes is a manifest
+in this repo.
+
+> **Polling is a convention, not a wake-up mechanism** (Codex, 2026-08-15 — and
+> correcting an overstatement of mine). The loop only fires while the app is
+> open, a missed window runs on next launch, and nothing retries, acknowledges,
+> or orders anything. There is no evidence a message was read.
+>
+> **Make/GitHub is the routing and accountability layer.** Where the two
+> disagree, Make is authoritative. A poll result is never proof of delivery.
+> This is a convenience for a session already running — worth having because it
+> costs nothing, not to be relied on.
 
 For Codex to close the loop symmetrically, point the same script at
 `SAL0MANder-Web/docs/coordination/`. Until then that direction works by Codex
