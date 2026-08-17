@@ -35,11 +35,33 @@ Claude session exist. Acceptance step 2 still needs one of:
 So the bridge genuinely is small. **Invocation is not**, and the two are being
 counted as one thing.
 
-### 3. "Always-on" is bounded by the machine
+### 3. Make runs 24/7; only *delivery to Claude* is bounded by the machine
 
-If the Mac sleeps, the adapter is down no matter how healthy Make is. The
-reliability ceiling is the laptop, not the subscription. Worth stating before
-anyone reads a green ledger as 24/7 coverage.
+Correcting my own overstatement. An Active scenario runs on Make's servers, so
+while the Mac is asleep Make still receives webhooks, holds them in the ledger,
+retries, updates GitHub Issue #1 and fires alerts. None of that needs the
+laptop.
+
+What stops is one link: **delivery to a Claude worker**, because that worker
+does not exist while the machine is asleep. Everything else keeps running, and
+queued work drains when the adapter comes back — which is exactly what a durable
+ledger is for. Nothing is lost.
+
+**The consequence worth designing for:** an asleep laptop and a broken worker
+look identical to the watchdog. Overnight, retries to a sleeping adapter will
+exhaust, the worker gets marked unreachable, and Samuel is escalated to at 3am
+for a machine that is merely off.
+
+Options, and this needs deciding before the watchdog ships:
+
+- Retry backoff long enough to survive a night (hours, not minutes) before
+  declaring a worker dead.
+- The adapter announces itself on startup, so "was offline, now back" is a
+  known transition rather than a recovery from failure.
+- Quiet hours on escalation — queue the alert, deliver it in the morning.
+
+Cheapest is the second: one call on adapter start, and the watchdog can tell
+"expected offline" from "stopped answering mid-task."
 
 **None of this argues against Make.** Rebuilding its retry, ordering, scheduling
 and monitoring would be far more work than the subscription costs. The
