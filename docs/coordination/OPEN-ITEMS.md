@@ -1,5 +1,73 @@
 # Open items register
 
+## W-8 — Nothing can invoke a Claude Code session. Acceptance step 2 cannot pass. 🔴
+
+**Raised 2026-08-15, in response to the worker-adapter architecture. Blocks the
+whole acceptance test, so it should be read before building the adapter.**
+
+The proposed test step 2 is *"Claude is actually invoked without Samuel touching
+anything."* **There is no mechanism by which that can happen today.** A Claude
+Code session runs when a session is open. It exposes no inbound endpoint, and
+Make cannot start one. This is structural, not a preference or a permission
+setting — and I would rather say so now than have an adapter built against an
+assumption that cannot hold.
+
+What can exist is a **local adapter process** — a small always-on service that
+owns an HTTP endpoint, receives Make's webhook, writes the task to a durable
+local queue, and returns `DELIVERED`. A Claude session drains that queue when it
+runs. That is buildable and worth building.
+
+**But it changes what the ACK proves, and the design must not blur this:**
+
+| ACK | Proves | Does not prove |
+| --- | --- | --- |
+| Adapter, on receipt | the endpoint is alive and the task is durably queued | any agent saw it |
+| Agent, on pickup | a session has the work | it will finish |
+| Agent, on completion | the work is done | — |
+
+The proposed state machine already has room for exactly this —
+`DELIVERED` = adapter, `ACKNOWLEDGED` = agent pickup, `DONE` = completion. The
+risk is treating a `DELIVERED` from the adapter as delivery to the *agent*,
+which is the same mistake as treating a repo poll as delivery, one layer up.
+**`DELIVERED` must never satisfy the watchdog on its own.**
+
+### Four corrections to the design
+
+1. **Per-recipient ordering, not global.** Make's "Process data in order"
+   serializes the whole queue, so one task stuck retrying for Codex blocks an
+   unrelated task for Claude. Order within a recipient; parallel across them.
+2. **Distinguish a dead worker from a poison message.** "Retry count exceeded →
+   worker unreachable" conflates them. N failures across *different* messages
+   means the worker is down; N failures on *one* message means the message is
+   bad. Treating the second as the first takes a healthy worker offline and
+   leaves the bad message to do it again. Dead-letter the message, keep the
+   worker live.
+3. **Retries must resend the same `messageId`.** Idempotent processing only
+   works if the key is stable across attempts. If Make's retry carries a fresh
+   execution id and the adapter keys on that, dedupe silently does nothing —
+   and it fails open, so nothing looks wrong until work is done twice.
+4. **Absolute watchdog thresholds will page on healthy work.** "IN_PROGRESS with
+   no checkpoint for 60 minutes" trips on a long batch — several today ran past
+   30 minutes legitimately. Either workers heartbeat, or the threshold is
+   per-task-type. And escalate **once per task**, not once per retry, or three
+   unreachable agents overnight becomes an alert storm nobody reads.
+
+### Accepted without reservation
+
+Polling is not delivery. Repo files are not transport. GitHub is audit evidence.
+Make owns delivery once the sender writes. I have **stopped work on repo
+polling** — the existing script stays as a convenience for a running session and
+gets no further investment.
+
+### What web will build, once there is something to ACK to
+
+Idempotent processing keyed on `messageId`, and ACK emission at pickup and
+completion. That half is mine and I can build it against a stub before the real
+adapter exists — I need only the message envelope shape and the ACK endpoint
+contract.
+
+---
+
 **Maintained by:** Web Engineering point person (Claude Code)
 **Last updated:** 2026-08-15
 
