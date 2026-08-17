@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-08-17T01:20:43.947Z",
+  "files": {
+    "contracts/API_CONTRACT.md": {
+      "hash": "cd17e8f5fe3e",
+      "lines": 268
+    },
+    "contracts/ASSET_PIPELINE.md": {
+      "hash": "ac0f59964982",
+      "lines": 95
+    },
+    "contracts/DATA_MODEL.md": {
+      "hash": "5b4585052581",
+      "lines": 143
+    },
+    "coordination/AGENT_WORKFLOW.md": {
+      "hash": "7d8421ad1192",
+      "lines": 80
+    },
+    "coordination/CURRENT_STATE.md": {
+      "hash": "61e9b696aaf0",
+      "lines": 91
+    },
+    "coordination/DECISIONS.md": {
+      "hash": "c1878bdaf3f6",
+      "lines": 74
+    }
+  }
+}
