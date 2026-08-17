@@ -30,9 +30,12 @@ export function useClientAttemptId(activityVersionId: string | undefined) {
 
   const clientAttemptId = useMemo(() => {
     if (!activityVersionId) return undefined
+    // `epoch` is read so the dependency is real rather than merely declared:
+    // `renewAttempt` clears storage and bumps it, and this recomputation is
+    // what turns that into a new id.
+    void epoch
     // Reads the stored value first, so a reload resumes the same attempt.
     return startKeyFor(activityVersionId, newId)
-    // `epoch` is the renewal trigger; it is intentionally part of the identity.
   }, [activityVersionId, epoch])
 
   /** Ends this attempt's identity and mints the next. */

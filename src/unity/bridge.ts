@@ -141,6 +141,15 @@ export type UnityToWebMessage =
       version: typeof BRIDGE_VERSION
       selectedPlayMode: string
     } & BridgeCorrelation)
+  /**
+   * Unity reports it cannot speak this contract version. Distinct from `error`:
+   * a mismatch is a deploy-skew problem for an operator, not a gameplay fault.
+   */
+  | ({
+      type: 'contract-mismatch'
+      version: typeof BRIDGE_VERSION
+      message?: string
+    } & BridgeCorrelation)
   | ({ type: 'error'; version: typeof BRIDGE_VERSION; message: string } & BridgeCorrelation)
 
 export const UNITY_EVENT_NAME = 'sal0mander:unity-message'
@@ -220,13 +229,45 @@ function reportUndelivered(message: WebToUnityMessage, reason: string, error?: u
 }
 
 /** Message types this bridge version understands. Anything else is ignored. */
+/**
+ * Accepted v1 names plus the aliases this codebase shipped first.
+ *
+ * `API_CONTRACT.md` names `unity-ready`, `contract-mismatch` and `fatal-error`;
+ * the stub here used `ready` and `error`. Both are accepted during the rollout
+ * so a build on either vocabulary works, and `normalizeType` collapses them to
+ * one internal name — the alternative is every consumer learning both.
+ */
+const TYPE_ALIASES: Record<string, UnityToWebMessage['type']> = {
+  'unity-ready': 'ready',
+  'fatal-error': 'error',
+  'contract-mismatch': 'contract-mismatch',
+}
+
 const KNOWN_TYPES = new Set<UnityToWebMessage['type']>([
   'ready',
   'load-progress',
   'mode-selected',
   'session-finished',
+  'contract-mismatch',
   'error',
 ])
+
+/** Maps an accepted v1 name onto the internal one; passes others through. */
+function normalizeType(raw: string): string {
+  return TYPE_ALIASES[raw] ?? raw
+}
+
+/**
+ * The contract version a message declares.
+ *
+ * `contractVersion` is the accepted v1 field; `version` was the stub's name and
+ * is still read so a build compiled against it keeps working. Preferring the
+ * new one means a build sending both is treated as v1 rather than as whatever
+ * the legacy field happens to say.
+ */
+function readContractVersion(detail: Record<string, unknown>): unknown {
+  return detail.contractVersion ?? detail.version
+}
 
 /**
  * Why a message was dropped.
@@ -293,17 +334,22 @@ export function onUnityMessage(
       reportMismatch({ reason: 'malformed', detail })
       return
     }
-    if (detail.version !== BRIDGE_VERSION) {
+    const contractVersion = readContractVersion(detail as Record<string, unknown>)
+    if (contractVersion !== BRIDGE_VERSION) {
       reportMismatch({
         reason: 'version',
         type: detail.type,
-        received: detail.version,
+        received: contractVersion,
         expected: BRIDGE_VERSION,
         detail,
       })
       return
     }
-    if (!KNOWN_TYPES.has(detail.type as UnityToWebMessage['type'])) {
+
+    // Collapse the accepted v1 name onto the internal one before dispatch, so
+    // a handler never has to know which vocabulary the build was compiled on.
+    const type = normalizeType(detail.type) as UnityToWebMessage['type']
+    if (!KNOWN_TYPES.has(type)) {
       reportMismatch({ reason: 'unknown-type', type: detail.type, detail })
       return
     }
@@ -312,7 +358,9 @@ export function onUnityMessage(
     if (!deduper.accept(detail.eventId)) return
 
     try {
-      handler(detail as UnityToWebMessage)
+      // `version` is normalized too, so a v1 build sending only
+      // `contractVersion` still satisfies consumers reading `version`.
+      handler({ ...detail, type, version: BRIDGE_VERSION } as UnityToWebMessage)
     } catch (error) {
       console.error('[unity-bridge] handler threw; ignoring', error)
     }
@@ -331,6 +379,60 @@ export function onUnityMessage(
  * `'match'` would silently mis-attribute results the moment two sessions
  * overlap; collapsing it into `'mismatch'` would drop every result from a build
  * that has not adopted the fields yet.
+ */
+/**
+ * Does this message belong to the attempt currently on screen?
+ *
+ * Supersedes {@link correlateSession} for the Gate-1 guards. Three reasons the
+ * older helper does not fit:
+ *
+ *   - it requires a `sessionId` in `expected`, and at `mode-selected` no
+ *     session exists yet — that is the whole point of the handshake;
+ *   - it keys on `correlationId`, now deprecated in favour of
+ *     `clientAttemptId`;
+ *   - it treats a message carrying no correlation as `'uncorrelated'`, i.e.
+ *     "cannot tell, caller decides". The Gate-1 ruling reverses that: a
+ *     missing attempt id must **not** latch a mode or submit a result.
+ *
+ * Fail-closed, deliberately. An uncorrelated `session-finished` from a
+ * superseded boot looks exactly like a legitimate one, and accepting it writes
+ * a stale result against the live session.
+ */
+export type AttemptVerdict =
+  | 'match'
+  /** Carries an attempt id, but not the one on screen — a superseded boot. */
+  | 'stale-attempt'
+  /** Right attempt, wrong session — a restart within the same attempt. */
+  | 'stale-session'
+  /** No attempt id at all. Cannot be placed, so it is not acted on. */
+  | 'missing-attempt'
+
+export function correlateAttempt(
+  message: UnityToWebMessage,
+  expected: { clientAttemptId: string | undefined; sessionId?: string | undefined },
+): AttemptVerdict {
+  const actual = message as Partial<BridgeCorrelation>
+  // `correlationId` is still read so a build on the old field keeps working.
+  const attempt = actual.clientAttemptId ?? actual.correlationId
+
+  if (attempt === undefined || expected.clientAttemptId === undefined) return 'missing-attempt'
+  if (attempt !== expected.clientAttemptId) return 'stale-attempt'
+
+  // Session is only checkable once the web has one; before that, matching the
+  // attempt is the strongest statement available and is enough.
+  if (
+    expected.sessionId !== undefined &&
+    actual.sessionId !== undefined &&
+    actual.sessionId !== expected.sessionId
+  ) {
+    return 'stale-session'
+  }
+  return 'match'
+}
+
+/**
+ * @deprecated Superseded by {@link correlateAttempt}, which keys on
+ * `clientAttemptId` and fails closed. Retained for the bridge rollout.
  */
 export type CorrelationVerdict = 'match' | 'mismatch' | 'uncorrelated'
 

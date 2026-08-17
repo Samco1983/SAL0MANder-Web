@@ -9,7 +9,7 @@ import { Button, LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
-import { onUnityMessage } from '@unity/bridge'
+import { correlateAttempt, onUnityMessage } from '@unity/bridge'
 import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
@@ -69,6 +69,14 @@ export function GuestPlayPage() {
    * the value is immutable once set, so a teacher's mode breakdown would be
    * quietly wrong with nothing to reveal it.
    */
+  /**
+   * Created before boot, not inside the session effect, so Unity is handed an
+   * attempt identity from its very first message — for Student Choice the
+   * session does not exist until the student picks, which would otherwise
+   * leave Unity with nothing to correlate against.
+   */
+  const { clientAttemptId, renewAttempt } = useClientAttemptId(bundle?.version.id)
+
   const [chosenMode, setChosenMode] = useState<string | undefined>(undefined)
   const selectedPlayMode = allowedPlayModes?.length === 1 ? allowedPlayModes[0] : chosenMode
 
@@ -77,16 +85,30 @@ export function GuestPlayPage() {
    * the pinned mode or the allow-list change — re-subscribing mid-handshake
    * would drop a `mode-selected` arriving in the gap.
    */
-  const modeStateRef = useRef<{ pinned: string | undefined; allowed: readonly string[] | undefined }>({
-    pinned: undefined,
-    allowed: undefined,
-  })
-  modeStateRef.current = { pinned: chosenMode, allowed: allowedPlayModes }
+  const modeStateRef = useRef<{
+    pinned: string | undefined
+    allowed: readonly string[] | undefined
+    attemptId: string | undefined
+  }>({ pinned: undefined, allowed: undefined, attemptId: undefined })
+  modeStateRef.current = {
+    pinned: chosenMode,
+    allowed: allowedPlayModes,
+    attemptId: clientAttemptId,
+  }
 
   useEffect(() => {
     return onUnityMessage((message) => {
       if (message.type !== 'mode-selected') return
-      const { pinned, allowed } = modeStateRef.current
+      const { pinned, allowed, attemptId } = modeStateRef.current
+
+      // Guard 1: a mode from a superseded boot, or with no attempt id at all,
+      // must not latch — and therefore must not create a session.
+      const correlation = correlateAttempt(message, { clientAttemptId: attemptId })
+      if (correlation !== 'match') {
+        if (!env.isProd) console.warn('[guest-play] mode-selected dropped:', correlation, message)
+        return
+      }
+
       const verdict = resolveSelectedMode(message.selectedPlayMode, pinned, allowed)
 
       // Only the first valid choice moves anything. Duplicates and conflicts
@@ -100,14 +122,6 @@ export function GuestPlayPage() {
       }
     })
   }, [])
-
-  /**
-   * Created before boot, not inside the session effect, so Unity is handed an
-   * attempt identity from its very first message — for Student Choice the
-   * session does not exist until the student picks, which would otherwise
-   * leave Unity with nothing to correlate against.
-   */
-  const { clientAttemptId, renewAttempt } = useClientAttemptId(bundle?.version.id)
 
   // Starts only once there is a pinned version AND a known mode.
   const session = usePlaySession({
@@ -144,6 +158,17 @@ export function GuestPlayPage() {
     }
   }, [bundle, sessionId, selectedPlayMode, clientAttemptId])
 
+  /**
+   * What `session-finished` is checked against. A ref for the same reason the
+   * mode guard uses one: re-subscribing when the session id arrives would drop
+   * a result landing in the gap.
+   */
+  const correlationRef = useRef<{ attemptId: string | undefined; sessionId: string | undefined }>({
+    attemptId: undefined,
+    sessionId: undefined,
+  })
+  correlationRef.current = { attemptId: clientAttemptId, sessionId }
+
   /** Handed back to Unity so it can correlate what it later emits. */
   const sessionStarted = useMemo(
     () =>
@@ -165,6 +190,21 @@ export function GuestPlayPage() {
   useEffect(() => {
     return onUnityMessage((message) => {
       if (message.type !== 'session-finished') return
+
+      /*
+       * Guard 2: a result from a superseded boot looks identical to a real
+       * one. Submitting it writes a stale attempt's numbers against the live
+       * session, which is unfixable once the result is recorded.
+       */
+      const correlation = correlateAttempt(message, {
+        clientAttemptId: correlationRef.current.attemptId,
+        sessionId: correlationRef.current.sessionId,
+      })
+      if (correlation !== 'match') {
+        if (!env.isProd) console.warn('[guest-play] session-finished dropped:', correlation, message)
+        return
+      }
+
       void session.submit({
         status: 'completed',
         durationMs: message.durationMs,
