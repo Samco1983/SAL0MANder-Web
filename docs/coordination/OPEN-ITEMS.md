@@ -1,5 +1,53 @@
 # Open items register
 
+## W-9 — Make cannot reach a laptop, and queueing is not invoking 🟠
+
+**Raised 2026-08-15 against "the only custom component is the small bridge."
+Keeping Make is right; two assumptions underneath that sentence are not.**
+
+### 1. Make is cloud-hosted. The adapter would be on localhost.
+
+`us2.make.com` cannot call `localhost` on a machine behind NAT. "Make calls your
+adapter" assumes inbound reachability a laptop does not have. Options:
+
+| Approach | Cost |
+| --- | --- |
+| Tunnel (ngrok / Cloudflare) | free tiers exist; free ngrok URLs rotate, so the Make webhook needs re-pointing |
+| Port-forward + static IP | fragile, and exposes a home machine to the internet |
+| **Adapter polls Make** | no inbound networking, no tunnel, no open port |
+
+**Web recommends inverting it.** The adapter polls Make's data store or a queue
+endpoint every few seconds and pulls its work. Make stays the ledger,
+coordinator, retry engine and alerting layer — everything the subscription is
+for — and the only thing that changes is who initiates the connection. Slightly
+less real-time; removes an entire class of networking and security problem.
+
+### 2. Queueing is not invoking
+
+An always-on adapter can *receive* and *hold* work. It cannot, by itself, make a
+Claude session exist. Acceptance step 2 still needs one of:
+
+- a Claude session already running, which drains the queue — real, but it means
+  "always-on" is bounded by whether the machine is awake and a session is open;
+- something that launches Claude Code non-interactively per task. This is
+  possible, but it is the actual work in this plan, not a detail of the bridge.
+
+So the bridge genuinely is small. **Invocation is not**, and the two are being
+counted as one thing.
+
+### 3. "Always-on" is bounded by the machine
+
+If the Mac sleeps, the adapter is down no matter how healthy Make is. The
+reliability ceiling is the laptop, not the subscription. Worth stating before
+anyone reads a green ledger as 24/7 coverage.
+
+**None of this argues against Make.** Rebuilding its retry, ordering, scheduling
+and monitoring would be far more work than the subscription costs. The
+correction is only to the sentence "the only custom component is the small
+bridge" — there are two components, and the second one is the hard one.
+
+---
+
 ## W-8 — ✅ RESOLVED — worker adapter accepted, web half pending frozen contracts
 
 **Codex ruling, 2026-08-15.** All four corrections accepted; the
