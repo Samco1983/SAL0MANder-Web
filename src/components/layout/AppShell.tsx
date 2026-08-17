@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { env } from '@config/env'
 import { paths } from '@config/routes'
+import { Wordmark } from '@components/brand/Wordmark'
 import { ThemeToggle } from './ThemeToggle'
 import styles from './AppShell.module.css'
 
@@ -50,11 +51,8 @@ export function AppShell({
       )}
 
       <header className={styles.header}>
-        <Link to={paths.home} className={styles.brand}>
-          <span className={styles.mark} aria-hidden="true">
-            S0
-          </span>
-          {env.appName}
+        <Link to={paths.home} className={styles.brand} aria-label={`${env.appName} home`}>
+          <Wordmark />
         </Link>
 
         <nav className={styles.nav} aria-label="Main">
