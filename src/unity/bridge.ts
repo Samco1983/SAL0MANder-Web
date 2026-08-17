@@ -41,6 +41,17 @@ export const BRIDGE_VERSION = 1 as const
  */
 export type BridgeCorrelation = {
   sessionId?: string
+  /**
+   * The stable identity of one play attempt, surviving a reload. Sent from
+   * `boot` onward so Unity can correlate before a session exists.
+   *
+   * This supersedes `correlationId`, which named the same thing under a
+   * different word. Both travel for now so a build compiled against the older
+   * field keeps working; `correlationId` is deprecated and will be removed
+   * once no consumer reads it.
+   */
+  clientAttemptId?: string
+  /** @deprecated Use `clientAttemptId`. Kept only for bridge-rollout compatibility. */
   correlationId?: string
   /**
    * Per-message identity. `API_CONTRACT.md` §WebGL bridge requires receivers to

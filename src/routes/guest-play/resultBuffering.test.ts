@@ -68,6 +68,7 @@ const setup = () =>
       activityVersionId: 'av_1',
       identity,
       selectedPlayMode: 'classic-puzzle',
+      clientAttemptId: 'attempt-1',
       enabled: true,
     }),
   )

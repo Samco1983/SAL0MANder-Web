@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, ApiError } from '@api/index'
-import { newId, type PlayerIdentity, type PlaySession, type SessionResult } from '@contracts/v1'
-import { clearStartKey, resultKeyFor, startKeyFor } from './idempotency'
+import type { PlayerIdentity, PlaySession, SessionResult } from '@contracts/v1'
+import { clearStartKey, resultKeyFor } from './idempotency'
 
 export type PlaySessionState =
   | { status: 'idle' }
@@ -31,6 +31,19 @@ type Input = {
    * wrong with no way to tell.
    */
   selectedPlayMode: string | undefined
+  /**
+   * The attempt identity, created before boot. Supplied rather than minted
+   * here so `boot`, the session body and the idempotency key all carry the
+   * same value.
+   */
+  clientAttemptId: string | undefined
+  /**
+   * Mints a fresh attempt identity. The id is owned above this hook now, so
+   * "play again" has to ask for a new one — clearing storage here would not be
+   * enough, and reusing the finished attempt's id would have the server
+   * deduplicate the new session away.
+   */
+  onRenewAttempt?: () => void
   /** Sessions only start once there is something to play. */
   enabled: boolean
 }
@@ -51,6 +64,8 @@ export function usePlaySession({
   activityVersionId,
   identity,
   selectedPlayMode,
+  clientAttemptId,
+  onRenewAttempt,
   enabled,
 }: Input): PlaySessionApi {
   const [state, setState] = useState<PlaySessionState>({ status: 'idle' })
@@ -67,14 +82,14 @@ export function usePlaySession({
   useEffect(() => {
     // No mode, no session. See the field docs above.
     if (!enabled || !activityId || !activityVersionId || !selectedPlayMode) return
+    if (!clientAttemptId) return
 
     const controller = new AbortController()
     let active = true
     setState({ status: 'starting' })
 
-    // Derived, so a reload resumes this session instead of creating a second.
-    // Doubles as `clientAttemptId` — same concept, one value.
-    const idempotencyKey = startKeyFor(activityVersionId, newId)
+    // One value: the attempt identity IS the idempotency key.
+    const idempotencyKey = clientAttemptId
 
     api.sessions
       .start(
@@ -99,7 +114,7 @@ export function usePlaySession({
       active = false
       controller.abort()
     }
-  }, [activityId, activityVersionId, selectedPlayMode, enabled, attempt])
+  }, [activityId, activityVersionId, selectedPlayMode, clientAttemptId, enabled, attempt])
 
   const submit = useCallback(
     async (result: Omit<SessionResult, 'sessionId'>) => {
@@ -159,9 +174,9 @@ export function usePlaySession({
 
   /** Start a fresh attempt — "play again", not a reload. */
   const reset = useCallback(() => {
-    if (activityVersionId) clearStartKey(activityVersionId)
+    onRenewAttempt?.()
     setAttempt((n) => n + 1)
-  }, [activityVersionId])
+  }, [onRenewAttempt])
 
   return { ...state, submit, reset }
 }

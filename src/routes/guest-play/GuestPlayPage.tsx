@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { env } from '@config/env'
 import { buildShareLink, paths } from '@config/routes'
@@ -14,6 +14,8 @@ import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
 import { isRecoverable, linkCopy, linkStateFrom } from './linkState'
+import { isModeChange, resolveSelectedMode } from './modeSelection'
+import { useClientAttemptId } from './useClientAttemptId'
 import styles from './GuestPlayPage.module.css'
 
 /**
@@ -70,11 +72,42 @@ export function GuestPlayPage() {
   const [chosenMode, setChosenMode] = useState<string | undefined>(undefined)
   const selectedPlayMode = allowedPlayModes?.length === 1 ? allowedPlayModes[0] : chosenMode
 
+  /**
+   * Read through a ref so the subscription is never torn down and rebuilt as
+   * the pinned mode or the allow-list change — re-subscribing mid-handshake
+   * would drop a `mode-selected` arriving in the gap.
+   */
+  const modeStateRef = useRef<{ pinned: string | undefined; allowed: readonly string[] | undefined }>({
+    pinned: undefined,
+    allowed: undefined,
+  })
+  modeStateRef.current = { pinned: chosenMode, allowed: allowedPlayModes }
+
   useEffect(() => {
     return onUnityMessage((message) => {
-      if (message.type === 'mode-selected') setChosenMode(message.selectedPlayMode)
+      if (message.type !== 'mode-selected') return
+      const { pinned, allowed } = modeStateRef.current
+      const verdict = resolveSelectedMode(message.selectedPlayMode, pinned, allowed)
+
+      // Only the first valid choice moves anything. Duplicates and conflicts
+      // both leave the pin alone, and neither can open a second session.
+      if (isModeChange(verdict)) {
+        setChosenMode(verdict.mode)
+      } else if (verdict.outcome !== 'ignored-duplicate' && !env.isProd) {
+        // A rejection means Unity and the web disagree about this activity —
+        // silent in production, loud enough to debug anywhere else.
+        console.warn('[guest-play] mode-selected rejected', verdict)
+      }
     })
   }, [])
+
+  /**
+   * Created before boot, not inside the session effect, so Unity is handed an
+   * attempt identity from its very first message — for Student Choice the
+   * session does not exist until the student picks, which would otherwise
+   * leave Unity with nothing to correlate against.
+   */
+  const { clientAttemptId, renewAttempt } = useClientAttemptId(bundle?.version.id)
 
   // Starts only once there is a pinned version AND a known mode.
   const session = usePlaySession({
@@ -82,6 +115,8 @@ export function GuestPlayPage() {
     activityVersionId: bundle?.version.id,
     identity,
     selectedPlayMode,
+    clientAttemptId,
+    onRenewAttempt: renewAttempt,
     enabled: Boolean(bundle),
   })
 
@@ -103,10 +138,11 @@ export function GuestPlayPage() {
       activityId: bundle.summary.id,
       activityVersionId: bundle.version.id,
       playBundle: bundle.version.payload.body,
+      ...(clientAttemptId ? { clientAttemptId } : {}),
       ...(selectedPlayMode ? { selectedPlayMode } : {}),
       ...(sessionId ? { sessionId } : {}),
     }
-  }, [bundle, sessionId, selectedPlayMode])
+  }, [bundle, sessionId, selectedPlayMode, clientAttemptId])
 
   /** Handed back to Unity so it can correlate what it later emits. */
   const sessionStarted = useMemo(
@@ -115,10 +151,11 @@ export function GuestPlayPage() {
         ? {
             sessionId,
             activityVersionId: bundle.version.id,
+            ...(clientAttemptId ? { clientAttemptId } : {}),
             ...(selectedPlayMode ? { selectedPlayMode } : {}),
           }
         : undefined,
-    [sessionId, bundle, selectedPlayMode],
+    [sessionId, bundle, selectedPlayMode, clientAttemptId],
   )
 
   // Unity reports a finished game across the bridge; the web layer records it.

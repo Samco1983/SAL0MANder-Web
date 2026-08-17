@@ -49,6 +49,7 @@ const setup = (overrides: Partial<Parameters<typeof usePlaySession>[0]> = {}) =>
       activityVersionId: 'av_1',
       identity,
       selectedPlayMode: 'classic-puzzle',
+      clientAttemptId: 'attempt-1',
       enabled: true,
       ...overrides,
     }),
@@ -107,6 +108,7 @@ describe('starting', () => {
           activityVersionId: 'av_1',
           identity,
           selectedPlayMode: mode,
+          clientAttemptId: 'attempt-1',
           enabled: true,
         }),
       { initialProps: { mode: undefined as string | undefined } },
@@ -141,6 +143,7 @@ describe('starting', () => {
           activityVersionId: 'av_1',
           identity: { kind: 'guest', guestToken: token },
           selectedPlayMode: 'classic-puzzle',
+          clientAttemptId: 'attempt-1',
           enabled: true,
         }),
       { initialProps: { token: 'guest-token-1' } },
@@ -197,9 +200,11 @@ describe('submitting a result', () => {
   })
 
   it('clears the start key once the attempt is over', async () => {
+    // The id itself is owned by useClientAttemptId now; this hook still ends
+    // the stored attempt so the next start is a genuinely new session.
+    sessionStorage.setItem('sal0mander.session.startKey.av_1', 'attempt-1')
     const { result } = setup()
     await waitFor(() => expect(result.current.status).toBe('active'))
-    expect(sessionStorage.getItem('sal0mander.session.startKey.av_1')).not.toBeNull()
 
     await act(async () => result.current.submit(outcome))
 
@@ -218,14 +223,25 @@ describe('submitting a result', () => {
 })
 
 describe('play again', () => {
-  it('opens a genuinely new session with a new key', async () => {
-    const { result } = setup()
+  it('asks its owner for a fresh attempt identity', async () => {
+    // Reusing the finished attempt's id would have the server deduplicate the
+    // new session away, so reset must renew the identity, not just re-run.
+    const onRenewAttempt = vi.fn()
+    const { result } = renderHook(() =>
+      usePlaySession({
+        activityId: 'act_1',
+        activityVersionId: 'av_1',
+        identity,
+        selectedPlayMode: 'classic-puzzle',
+        clientAttemptId: 'attempt-1',
+        onRenewAttempt,
+        enabled: true,
+      }),
+    )
     await waitFor(() => expect(result.current.status).toBe('active'))
-    const firstKey = start.mock.calls[0]?.[1]
 
     act(() => result.current.reset())
-    await waitFor(() => expect(start).toHaveBeenCalledTimes(2))
 
-    expect(start.mock.calls[1]?.[1]).not.toBe(firstKey)
+    expect(onRenewAttempt).toHaveBeenCalledTimes(1)
   })
 })
