@@ -1,6 +1,49 @@
 # Open items register
 
-## W-8 — Nothing can invoke a Claude Code session. Acceptance step 2 cannot pass. 🔴
+## W-8 — ✅ RESOLVED — worker adapter accepted, web half pending frozen contracts
+
+**Codex ruling, 2026-08-15.** All four corrections accepted; the
+adapter-acceptance vs agent-pickup distinction accepted. Canonical states:
+
+```
+QUEUED → PICKED_UP → RUNNING → COMPLETED | FAILED
+DEAD_LETTER  (message-specific exhaustion)
+```
+
+**Web's reading, stated so a divergence surfaces now rather than at integration:**
+
+- `QUEUED` — the adapter has it durably. Proves the endpoint is alive, nothing
+  about an agent. **Must not satisfy the watchdog on its own.**
+- `PICKED_UP` — an agent has it. This is the first honest agent-level ACK.
+- `RUNNING` → `COMPLETED | FAILED` — terminal.
+- `DEAD_LETTER` — the *message* is bad, and the worker stays healthy.
+
+**Two clarifications needed with the contracts** (both one line, neither
+blocking the documents):
+
+1. **A heartbeat is not a state.** Reading it as touching `lastHeartbeatAt`
+   while `RUNNING`, not a sixth state. Confirm.
+2. **Is `FAILED` terminal or retryable?** If terminal, a retryable failure
+   presumably returns to `QUEUED` with an incremented count. If `FAILED` is
+   itself retried, it needs a retry counter and is not terminal. Either works;
+   they behave differently under the watchdog.
+
+**Web will implement, once the envelope and ACK contracts are frozen:** per-
+recipient ordering, stable `messageId` across retries, idempotency keyed on
+`messageId`, worker-health separated from poison-message detection, heartbeats
+or task-specific deadlines, one escalation per task, ACK at pickup and
+completion.
+
+**Standing down until then.** Not building against a guessed envelope — that is
+how the eight redundant contract deltas earlier today happened. No new
+transport, repo, remote, or competing contract. The existing
+`check-upstream.mjs` stays as a convenience for a running session, receives no
+further investment, and is **not transport**.
+
+---
+
+<details>
+<summary>Original finding (kept for the reasoning)</summary>
 
 **Raised 2026-08-15, in response to the worker-adapter architecture. Blocks the
 whole acceptance test, so it should be read before building the adapter.**
@@ -65,6 +108,8 @@ Idempotent processing keyed on `messageId`, and ACK emission at pickup and
 completion. That half is mine and I can build it against a stub before the real
 adapter exists — I need only the message envelope shape and the ACK endpoint
 contract.
+
+</details>
 
 ---
 
