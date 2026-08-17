@@ -142,6 +142,11 @@ export type UnityToWebMessage =
       selectedPlayMode: string
     } & BridgeCorrelation)
   /**
+   * The build finished loading an activity. Informational: the web already
+   * knows which activity it booted, so this only confirms Unity got there.
+   */
+  | ({ type: 'activity-loaded'; version: typeof BRIDGE_VERSION } & BridgeCorrelation)
+  /**
    * Unity reports it cannot speak this contract version. Distinct from `error`:
    * a mismatch is a deploy-skew problem for an operator, not a gameplay fault.
    */
@@ -194,7 +199,14 @@ export function sendToUnity(
     return false
   }
   try {
-    instance.SendMessage(target.gameObject, target.method, JSON.stringify(message))
+    /*
+     * Canonical `contractVersion` alongside the legacy `version`. Unity's v1
+     * receiver reads the former; a build still on the stub reads the latter.
+     * Sending both costs one field and removes the deploy-order dependency
+     * entirely.
+     */
+    const wire = { ...message, contractVersion: BRIDGE_VERSION }
+    instance.SendMessage(target.gameObject, target.method, JSON.stringify(wire))
     return true
   } catch (error) {
     reportUndelivered(
@@ -240,17 +252,28 @@ function reportUndelivered(message: WebToUnityMessage, reason: string, error?: u
 const TYPE_ALIASES: Record<string, UnityToWebMessage['type']> = {
   'unity-ready': 'ready',
   'fatal-error': 'error',
-  'contract-mismatch': 'contract-mismatch',
+  'progress-updated': 'load-progress',
 }
 
 const KNOWN_TYPES = new Set<UnityToWebMessage['type']>([
   'ready',
   'load-progress',
+  'activity-loaded',
   'mode-selected',
   'session-finished',
   'contract-mismatch',
   'error',
 ])
+
+/**
+ * Web → Unity only, and rejected if it arrives inbound (Codex ruling).
+ *
+ * `session-started` carries the canonical session id the web minted. A build
+ * echoing it back would look authoritative while asserting a session the web
+ * did not open — reported as a direction violation rather than an unknown
+ * type, because the distinction is the whole point.
+ */
+const OUTBOUND_ONLY_TYPES = new Set(['session-started', 'boot', 'set-paused'])
 
 /** Maps an accepted v1 name onto the internal one; passes others through. */
 function normalizeType(raw: string): string {
@@ -291,6 +314,8 @@ export type BridgeMismatch =
     }
   /** Correct version, but a `type` this build does not know. Forward-compat. */
   | { reason: 'unknown-type'; type: string; detail: unknown }
+  /** A Web → Unity message arriving inbound. Never legitimate. */
+  | { reason: 'wrong-direction'; type: string; detail: unknown }
 
 export type UnityMessageOptions = {
   /** Injectable so the dedupe window is testable and shareable if ever needed. */
@@ -349,6 +374,10 @@ export function onUnityMessage(
     // Collapse the accepted v1 name onto the internal one before dispatch, so
     // a handler never has to know which vocabulary the build was compiled on.
     const type = normalizeType(detail.type) as UnityToWebMessage['type']
+    if (OUTBOUND_ONLY_TYPES.has(type)) {
+      reportMismatch({ reason: 'wrong-direction', type: detail.type, detail })
+      return
+    }
     if (!KNOWN_TYPES.has(type)) {
       reportMismatch({ reason: 'unknown-type', type: detail.type, detail })
       return
@@ -406,10 +435,26 @@ export type AttemptVerdict =
   | 'stale-session'
   /** No attempt id at all. Cannot be placed, so it is not acted on. */
   | 'missing-attempt'
+  /** Session required but absent. A completion must name what it completed. */
+  | 'missing-session'
+  /** Session required, but the web has none active to compare against. */
+  | 'no-active-session'
 
 export function correlateAttempt(
   message: UnityToWebMessage,
   expected: { clientAttemptId: string | undefined; sessionId?: string | undefined },
+  options: {
+    /**
+     * Require an exactly-matching session, not merely a matching attempt.
+     *
+     * Set for `session-finished` (Codex ruling on 0e80233). A completion is a
+     * write against a specific session, so "right attempt, session unstated"
+     * is not good enough — accepting it would attribute a result to whichever
+     * session happened to be current. Left unset for `mode-selected`, where no
+     * session exists yet by construction.
+     */
+    requireSession?: boolean
+  } = {},
 ): AttemptVerdict {
   const actual = message as Partial<BridgeCorrelation>
   // `correlationId` is still read so a build on the old field keeps working.
@@ -418,8 +463,15 @@ export function correlateAttempt(
   if (attempt === undefined || expected.clientAttemptId === undefined) return 'missing-attempt'
   if (attempt !== expected.clientAttemptId) return 'stale-attempt'
 
-  // Session is only checkable once the web has one; before that, matching the
-  // attempt is the strongest statement available and is enough.
+  if (options.requireSession) {
+    // No active session means there is nothing this completion could belong
+    // to. Buffering it is not an option either: a result held now would be
+    // flushed against whatever session opens next, which is precisely the
+    // mis-attribution this guard exists to prevent.
+    if (expected.sessionId === undefined) return 'no-active-session'
+    if (actual.sessionId === undefined) return 'missing-session'
+  }
+
   if (
     expected.sessionId !== undefined &&
     actual.sessionId !== undefined &&
@@ -428,6 +480,27 @@ export function correlateAttempt(
     return 'stale-session'
   }
   return 'match'
+}
+
+/**
+ * Is this `session-finished` payload structurally usable?
+ *
+ * A known type with a plausible shape can still be malformed. Without this, a
+ * missing `piecesTotal` reaches `submitResult` as `undefined` and is written as
+ * a student's result — the contract's schema would reject it, but only after
+ * the value had already been treated as real.
+ */
+export function isUsableFinishedPayload(
+  message: Extract<UnityToWebMessage, { type: 'session-finished' }>,
+): boolean {
+  const metrics = [
+    message.durationMs,
+    message.questionsAnswered,
+    message.questionsCorrect,
+    message.piecesPlaced,
+    message.piecesTotal,
+  ]
+  return metrics.every((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0)
 }
 
 /**

@@ -59,10 +59,12 @@ describe('sendToUnity', () => {
     const target = { SendMessage }
     sendToUnity(target, { type: 'set-paused', version: 1, paused: true })
 
+    // Canonical contractVersion rides alongside the legacy version field, so
+    // a v1 receiver and a stub receiver both understand the same payload.
     expect(SendMessage).toHaveBeenCalledWith(
       UNITY_BRIDGE_TARGET.gameObject,
       UNITY_BRIDGE_TARGET.method,
-      JSON.stringify({ type: 'set-paused', version: 1, paused: true }),
+      JSON.stringify({ type: 'set-paused', version: 1, paused: true, contractVersion: 1 }),
     )
   })
 

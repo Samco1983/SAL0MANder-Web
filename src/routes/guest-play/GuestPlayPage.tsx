@@ -9,7 +9,7 @@ import { Button, LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
-import { correlateAttempt, onUnityMessage } from '@unity/bridge'
+import { correlateAttempt, isUsableFinishedPayload, onUnityMessage } from '@unity/bridge'
 import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
@@ -196,12 +196,26 @@ export function GuestPlayPage() {
        * one. Submitting it writes a stale attempt's numbers against the live
        * session, which is unfixable once the result is recorded.
        */
-      const correlation = correlateAttempt(message, {
-        clientAttemptId: correlationRef.current.attemptId,
-        sessionId: correlationRef.current.sessionId,
-      })
+      const correlation = correlateAttempt(
+        message,
+        {
+          clientAttemptId: correlationRef.current.attemptId,
+          sessionId: correlationRef.current.sessionId,
+        },
+        // Stricter than the mode guard: a completion must name the exact
+        // session it completed. No active session means drop, not buffer —
+        // a held result would flush against whatever session opens next.
+        { requireSession: true },
+      )
       if (correlation !== 'match') {
         if (!env.isProd) console.warn('[guest-play] session-finished dropped:', correlation, message)
+        return
+      }
+
+      // A known type can still be malformed. Without this a missing metric
+      // reaches submitResult as `undefined` and is recorded as a real result.
+      if (!isUsableFinishedPayload(message)) {
+        if (!env.isProd) console.warn('[guest-play] session-finished malformed', message)
         return
       }
 

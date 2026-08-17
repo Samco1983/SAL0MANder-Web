@@ -69,9 +69,25 @@ function live(): Record<string, unknown> {
  * without the guard doing anything.
  */
 async function settleSession(startSpy: { mock: { results: { value: unknown }[] } }) {
+  const first = startSpy.mock.results[0]
+  if (!first) throw new Error('settleSession: POST /sessions was never called')
   await act(async () => {
-    await startSpy.mock.results[0]?.value
+    await first.value
   })
+}
+
+/** The session the web actually opened, after it has settled. */
+async function activeSessionId(startSpy: {
+  mock: { results: { value: unknown }[] }
+}): Promise<string> {
+  const first = startSpy.mock.results[0]
+  if (!first) throw new Error('activeSessionId: POST /sessions was never called')
+  return ((await first.value) as { id: string }).id
+}
+
+/** Correlation for a completion: attempt AND the session it completed. */
+function liveWithSession(sessionId: string): Record<string, unknown> {
+  return { ...live(), sessionId }
 }
 
 function renderPlay(code: string) {
@@ -235,37 +251,45 @@ describe('the handshake, end to end', () => {
   })
 
   it('deduplicates a replayed session-finished', async () => {
+    // Spy installed before the mode fires, or the start call is never recorded.
+    const start = vi.spyOn(api.sessions, 'start')
+    const submit = vi.spyOn(api.sessions, 'submitResult')
     renderPlay(MOCK_SHARE_CODES.ok)
     await screen.findByText(/Fractions Review/i)
     unity.modeSelected('classic-puzzle', undefined, live())
-    await waitFor(() =>
-      expect(Object.keys(sessionStorage).filter((k) => k.includes('startKey'))).toHaveLength(1),
-    )
+
+    await waitFor(() => expect(start).toHaveBeenCalledTimes(1))
+    await settleSession(start)
+    const sid = await activeSessionId(start)
 
     // Same eventId three times — a Unity retry, or a re-attached listener.
-    unity.finished('fin-1', live())
-    unity.finished('fin-1', live())
-    unity.finished('fin-1', live())
+    unity.finished('fin-1', liveWithSession(sid))
+    unity.finished('fin-1', liveWithSession(sid))
+    unity.finished('fin-1', liveWithSession(sid))
 
-    // The attempt resolves once; the start key is cleared exactly once and
-    // never re-created by the replays.
-    await waitFor(() =>
-      expect(Object.keys(sessionStorage).filter((k) => k.includes('startKey'))).toHaveLength(0),
-    )
+    // Three deliveries, one write: eventId dedupe stops the replay before it
+    // becomes a request, and the derived key would make it safe even if not.
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1))
   })
 
-  it('does not lose a result that finishes before the session exists', async () => {
-    // The race on a four-piece puzzle: Unity finishes before POST /sessions
-    // returns. Buffered, not dropped.
+  it('drops a completion that names no session, even mid-start', async () => {
+    /*
+     * REVERSED by the Codex review of 0e80233. This previously asserted the
+     * four-piece-puzzle race was *buffered*; the ruling is now explicit that a
+     * completion with a missing or foreign session must be rejected rather
+     * than accepted or buffered.
+     *
+     * The trade-off is real and is flagged to Codex: a genuine result that
+     * beats its own session is now discarded rather than held. See BLOCKER.
+     */
+    const submit = vi.spyOn(api.sessions, 'submitResult')
     renderPlay(MOCK_SHARE_CODES.ok)
     await screen.findByText(/Fractions Review/i)
 
     unity.modeSelected('classic-puzzle', undefined, live())
     unity.finished('fin-early', live())
 
-    await waitFor(() =>
-      expect(Object.keys(sessionStorage).filter((k) => k.includes('startKey'))).toHaveLength(0),
-    )
+    expect(submit).not.toHaveBeenCalled()
   })
 })
 
@@ -370,7 +394,8 @@ describe('correlation guards — adversarial', () => {
     await waitFor(() => expect(start).toHaveBeenCalledTimes(1))
     await settleSession(start)
 
-    unity.finished('fin-good', live())
+    const sid = await activeSessionId(start)
+    unity.finished('fin-good', liveWithSession(sid))
 
     await waitFor(() => expect(submit).toHaveBeenCalledTimes(1))
   })
