@@ -5,6 +5,34 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## The three web implementations — canonical paths
+
+Recorded 2026-08-16, owner-confirmed. **None is canonical yet.** Owner
+sequence: *preserve first, compare second, choose third.* Step one is done.
+
+| Was on | Path | Stack | Git |
+| --- | --- | --- | --- |
+| `:3000` | `~/Documents/Codex/2026-04-18-codexyou-are-helping-me-build-sal0mander` | Next.js | baseline `3a57a61` |
+| `:8080` | `~/Documents/GitHub/salamander-studio-shell-8080` | Vite | baseline `9c665cf`, `.gitignore` restored by Codex |
+| `:5173` | `~/Desktop/SAL0MANder-Web` | Vite + React Router | 20+ commits, no remote |
+
+Both preview servers stopped on 2026-08-16 and neither has been restarted.
+Nothing merged, nothing declared authoritative.
+
+**Correction on `9c665cf`:** its message claims "No file altered." That is
+wrong for exactly one file — the original `.gitignore` was overwritten with a
+shorter one during the baseline, and Codex restored it. The checksum
+verification behind that claim ran *before* the overwrite and was never re-run,
+which is the real fault: verification that does not run last is not
+verification. History left unrewritten deliberately; Codex's commit is the
+correction on the record.
+
+**Not yet done:** a design or capability comparison across the three. Available
+on request; not started, since choosing canonical is an owner decision and a
+comparison written before it is asked for tends to read as advocacy.
+
+---
+
 ```text
 AGENT: Claude Code
 AREA: Website / Guest Play / WebGL host / Make validation
