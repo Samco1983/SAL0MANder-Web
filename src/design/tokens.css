@@ -46,11 +46,18 @@
    * Using the vivid pair for text is the most common way a brand palette ends
    * up failing AA, so they are separated here rather than left to judgement.
    */
-  --brand-green: #22c55e; /* mark and glow only */
-  --brand-green-text: #15803d; /* 5.02:1 on white */
-  --brand-green-deep: #166534; /* 7.13:1 — fills behind white text */
-  --brand-violet: #7c3aed; /* mark */
-  --brand-violet-text: #6d28d9; /* 7.10:1 on white */
+  /* The mark's vertical gradient: violet at the top, lime at the bottom. */
+  --brand-violet-bright: #a78bfa;
+  --brand-violet: #7c3aed; /* 5.70:1 */
+  --brand-lime: #84cc16; /* 1.98:1 — mark only, never type */
+  --brand-lime-bright: #a3e635;
+
+  /* Readable tier. The brand's lime is 1.98:1 on white, so words use a deeper
+     step of the same hue rather than the mark colour. */
+  --brand-green: #84cc16; /* alias: mark and glow */
+  --brand-green-text: #4d7c0f; /* 4.99:1 */
+  --brand-green-deep: #3f6212; /* 7.08:1 — fills behind white text */
+  --brand-violet-text: #6d28d9; /* 7.10:1 */
   --brand-ink: #14121c;
 
   /* Placeholder secondary, used for informational/teacher surfaces. */

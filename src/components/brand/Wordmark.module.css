@@ -1,7 +1,17 @@
+/*
+ * One font-size controls the whole lockup.
+ *
+ * Everything inside is em-based, so the mark, the letters and the suffix all
+ * scale together — set `font-size` on this element and the proportions hold.
+ * They previously did not: `.letters` was pinned to a token while `.studios`
+ * was em-based, so enlarging the wordmark grew the suffix and left the name
+ * behind.
+ */
 .wordmark {
   display: inline-flex;
   align-items: baseline;
-  gap: var(--space-2);
+  gap: 0.5em;
+  font-size: var(--text-lg);
   /* Tight tracking is what makes the wordmark read as one object. */
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -11,7 +21,7 @@
   display: inline-flex;
   align-items: center;
   font-weight: var(--weight-bold);
-  font-size: var(--text-lg);
+  font-size: 1em;
   line-height: 1;
 }
 
