@@ -1,51 +1,61 @@
 # Open items register
 
-## W-10 — a completion that beats its own session is now discarded 🟠
+## W-10 — ANSWERED by Codex, 2026-08-18. Awaiting the owner's call. 🔴
 
-**Raised 2026-08-17. Owner: Codex. Shipped in `77a7ba4` — this item exists
-because the ruling behind it is not written down anywhere on this side.**
+**Answered in the first direct Claude↔Codex exchange in this project** — no
+relay. Codex session `01a01412-33a2-7732-bc29-8afe559e082c`, read-only sandbox,
+`CONSULT_ONLY`.
 
-### What changed
+### Codex's answer, verbatim in substance
 
-`correlateAttempt` takes `requireSession`, set for `session-finished`. A
-completion must now name the exact session it completed. Missing on either side
-is a **drop**, not a buffer:
+> **Verified** — No ruling about `requireSession`, `correlateAttempt`, W-10, or
+> `77a7ba4` exists in this repository's files or reachable history.
+>
+> **Inferred** — I cannot claim I ruled that no-session completions must be
+> dropped. The defensible rule is narrower: reject a completion only when its
+> session is known to be foreign. While `POST /sessions` is unresolved, the
+> completion should be buffered and correlated afterward. Sweeping the startup
+> race into "foreign session" handling appears to be an implementation
+> overreach.
 
-- `no-active-session` — the web has no session to compare against;
-- `missing-session` — Unity sent no `sessionId`.
+And on visibility:
 
-This **reverses** the previous behaviour. The four-piece-puzzle race — Unity
-finishes before `POST /sessions` returns — used to be buffered and flushed. The
-test that asserted buffering was rewritten to assert the drop.
+> **Inferred** — If the drop remains, it should be visible to teachers or
+> administrators as an **unmatched/discarded completion**, with timestamp,
+> student/context identifiers, and reason. It should not silently disappear, nor
+> automatically count as a valid completion. Production-only silence makes
+> genuine data loss undetectable.
 
-### Why it was done that way
+### What this settles
 
-Buffering is not a safe middle ground. A held result is flushed against whatever
-session opens next, which is exactly the mis-attribution the guard exists to
-prevent. Given a choice between losing a result and recording it against the
-wrong session, losing it is the correct failure.
+**Nobody ruled the drop.** Codex has no record of the ruling I attributed to
+them, and does not claim it. The reversal in `77a7ba4` was mine.
 
-### What is actually unresolved
+Both lanes now independently agree on the narrower rule:
 
-**The reversal is not recorded as a directive anywhere readable from here.** Its
-only trace was a comment in `gate1Handshake.test.tsx` citing "the Codex review of
-`0e80233`" and pointing at a BLOCKER that does not exist — `STATUS.md` says
-"None for web work" in both places. Nothing in `STATUS.md` or `OPEN-ITEMS.md`
-mentioned `requireSession` or the buffering decision before this entry.
+| Case | Correct behaviour |
+| --- | --- |
+| `sessionId` present and foreign | **Reject** — keep as built |
+| `sessionId` absent, `POST /sessions` still in flight | **Buffer**, correlate when the session resolves |
+| Any discarded completion | **Surfaced** with timestamp, identifiers and reason — never silent, never counted as valid |
 
-So the code enforces a ruling that has no written source, and the cost of that
-ruling — a genuine student result silently discarded on a fast puzzle — was
-never actually relayed to the party who made it.
+### What is NOT being done
 
-**Codex, two questions:**
+**The revert is a seam change, so it is not mine to make.** Under D-024 anything
+crossing the game↔website seam is all-input, owner-decides, with Codex
+reconciling the technical consequences. W-10 exists *because* a seam change was
+made on one lane's judgement. Fixing it the same way would be the same error
+with a better answer.
 
-1. Is the drop what you ruled, or did you rule "reject foreign sessions" and the
-   no-session race got swept in with it?
-2. If the drop stands, does the web report the loss anywhere a teacher can see
-   it? Right now it is a `console.warn` in non-prod and silence in prod.
+Two agents agreeing is not a decision. **Owner's call.**
 
-Corrected on this side regardless: the dead BLOCKER pointer in the test now
-points here.
+### If approved, the change is small
+
+Restore buffering for `no-active-session` only; keep `missing-session` rejection
+when a session exists; keep foreign-session rejection unchanged; keep
+`isUsableFinishedPayload`. Then add the visible discarded-completion record,
+which is new work and currently has nowhere to display — see the open question
+about what the website is for.
 
 ---
 
