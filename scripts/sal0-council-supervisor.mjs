@@ -31,9 +31,13 @@ const LEDGER_FILE = join(RUNS_DIR, 'ledger.jsonl')
 const PROBE_FILE = join(COORDINATION_DIR, 'PROBE.md')
 const CURRENT_STATE_FILE = join(COORDINATION_DIR, 'CURRENT_STATE.md')
 const RECENT_COMMIT_COUNT = Number(process.env.SAL0_COUNCIL_COMMITS || '10')
+const CLAUDE_BIN = process.env.SAL0_CLAUDE_BIN || 'claude'
+const AGENT_TIMEOUT_MS = Number(process.env.SAL0_COUNCIL_AGENT_TIMEOUT_MS || '120000')
 
 const args = new Set(process.argv.slice(2))
-const dryRun = args.has('--dry-run') || !args.has('--run-agents')
+const runAgents = args.has('--run-agents')
+const dryRun = args.has('--dry-run') || !runAgents
+const runMode = runAgents ? 'agent-claude-position' : 'dry-run'
 const validateSchemas = args.has('--validate-schemas')
 const showHelp = args.has('--help') || args.has('-h')
 
@@ -42,11 +46,23 @@ if (showHelp) {
 
 Usage:
   node scripts/sal0-council-supervisor.mjs --dry-run
+  node scripts/sal0-council-supervisor.mjs --run-agents
   node scripts/sal0-council-supervisor.mjs --validate-schemas
 
-This v0 intentionally does not call models unless a future --run-agents mode is
-implemented. It builds the packet, hashes it, writes runs/<timestamp>-<hash8>/,
-and records skips in docs/coordination/runs/ledger.jsonl.
+Dry-run builds the packet, hashes it, writes runs/<timestamp>-<hash8>/, and
+records skips in docs/coordination/runs/ledger.jsonl.
+
+--run-agents currently runs Claude POSITION only, then validates and records
+raw + parsed output. Gemini and OpenAI remain disabled until Claude output is
+proven stable.
+
+Warning:
+  --run-agents sends the assembled packet to Claude. Use only when that external
+  model handoff is approved for the current packet.
+
+Environment:
+  SAL0_CLAUDE_BIN                  Claude CLI path, default claude
+  SAL0_COUNCIL_AGENT_TIMEOUT_MS    Per-agent timeout, default 120000
 `)
   process.exit(0)
 }
@@ -140,6 +156,15 @@ function validateCritique(raw, position) {
 
 function validateDecision(raw) {
   return decisionSchema.parse(raw)
+}
+
+function parseJsonObject(rawText) {
+  const start = rawText.indexOf('{')
+  const end = rawText.lastIndexOf('}')
+  if (start < 0 || end <= start) {
+    throw new Error('Agent output did not contain a JSON object')
+  }
+  return JSON.parse(rawText.slice(start, end + 1))
 }
 
 function runSchemaValidationProof() {
@@ -322,6 +347,87 @@ function relativeToRoot(path) {
   return path.startsWith(`${ROOT}/`) ? path.slice(ROOT.length + 1) : path
 }
 
+function buildClaudePrompt(packet) {
+  return `You are Claude in the SAL0MANder agent council.
+
+Return JSON only. No Markdown, no prose outside JSON.
+
+Your required schema:
+{
+  "schemaVersion": "sal0-council-position-v0",
+  "agent": "Claude",
+  "state": "WORKING | DONE - NEED NEW TASK | BLOCKED - NEED OWNER | WRONG LANE - REASSIGN | UNKNOWN/UNREACHABLE | REVIEW READY",
+  "lane": "Unity/Game | Web | Make Automation | Coordination | Seam",
+  "claims": [
+    {
+      "id": "C1",
+      "claim": "Specific claim grounded in the packet.",
+      "evidence": [
+        {
+          "type": "commit | test | run | file | issue-comment | screenshot | blocker",
+          "reference": "Specific file, commit, run, or blocker.",
+          "summary": "Why this evidence supports the claim."
+        }
+      ]
+    }
+  ],
+  "risks": ["Specific risk, if any."],
+  "nextAction": {
+    "owner": "Specific owner",
+    "action": "One concrete next action.",
+    "successCheck": "How to falsify or verify completion."
+  }
+}
+
+Rules:
+- Do not claim live GitHub, Make, Unity, or Gemini state unless the packet proves it.
+- Do not ask Samuel to do coordination work unless owner input is genuinely required.
+- Pick one next action only.
+- If evidence is missing, use state BLOCKED - NEED OWNER or UNKNOWN/UNREACHABLE.
+
+Packet:
+${stableJson(packet)}
+`
+}
+
+function runClaudePosition(packet, runDir) {
+  const prompt = buildClaudePrompt(packet)
+  atomicWrite(join(runDir, '01-claude-prompt.txt'), prompt)
+
+  let raw
+  try {
+    raw = execFileSync(CLAUDE_BIN, ['-p', prompt], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      maxBuffer: 1024 * 1024 * 8,
+      timeout: AGENT_TIMEOUT_MS,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+  } catch (error) {
+    const message =
+      error.code === 'ENOENT'
+        ? `Claude CLI not found. Set SAL0_CLAUDE_BIN or install/login Claude CLI. Tried: ${CLAUDE_BIN}`
+        : `Claude POSITION failed: ${error.message}`
+    throw new Error(message)
+  }
+
+  atomicWrite(join(runDir, '01-claude.raw.txt'), raw)
+  const parsed = validatePosition(parseJsonObject(raw))
+  atomicWrite(join(runDir, '01-claude.position.json'), `${stableJson(parsed)}\n`)
+  return parsed
+}
+
+function writeFailure(runDir, error) {
+  const body = `# SAL0MANder Council Failure
+
+Status: FAILED
+Reason: ${error.message}
+
+No downstream agent stages should run from this packet.
+`
+  atomicWrite(join(runDir, 'ERROR.md'), body)
+}
+
 function buildPacket() {
   return {
     version: 'sal0-council-packet-v0',
@@ -357,7 +463,9 @@ function run() {
   const packet = buildPacket()
   const hash = packetHash({ ...packet, createdAt: undefined })
   const hash8 = hash.slice(0, 8)
-  const priorSuccess = readLedger().find((entry) => entry.hash === hash && entry.status === 'success')
+  const priorSuccess = readLedger().find(
+    (entry) => entry.hash === hash && entry.runMode === runMode && entry.status === 'success',
+  )
 
   if (priorSuccess) {
     appendLedger({
@@ -368,6 +476,7 @@ function run() {
       status: 'skipped-no-change',
       priorRun: priorSuccess.runDir,
       modelCalls: 0,
+      runMode,
       dryRun,
     })
     console.log(`no change — packet ${hash8} already succeeded in ${priorSuccess.runDir}`)
@@ -379,37 +488,63 @@ function run() {
   mkdirSync(runDir, { recursive: true })
   atomicWrite(join(runDir, 'packet.json'), `${stableJson({ ...packet, hash })}\n`)
 
-  runSchemaValidationProof()
+  let modelCalls = 0
 
-  const result = `# SAL0MANder Council Result
+  try {
+    runSchemaValidationProof()
+    let claudePosition = null
+    if (runAgents) {
+      claudePosition = runClaudePosition(packet, runDir)
+      modelCalls = 1
+    }
 
-Status: DRY RUN
+    const result = `# SAL0MANder Council Result
+
+Status: ${runAgents ? 'CLAUDE POSITION CAPTURED' : 'DRY RUN'}
 Packet: ${hash}
-Model calls: 0
+Model calls: ${modelCalls}
 Schema validation: PASS
 
 This run proved packet assembly, hashing, run-folder creation, and ledger
 writing. It also proved strict local schemas for Claude POSITION, Gemini
-CRITIQUE, and OpenAI DECISION. Claude/Gemini/OpenAI calls are intentionally not
-wired yet.
+CRITIQUE, and OpenAI DECISION.
 
-Next action: wire Claude POSITION generation behind --run-agents while keeping
-Gemini/OpenAI disabled until the first raw Claude output validates.
+${claudePosition ? `Claude state: ${claudePosition.state}\nClaude next action: ${claudePosition.nextAction.action}\n` : 'Claude/Gemini/OpenAI calls are intentionally not wired in dry-run.\n'}
+Next action: ${runAgents ? 'wire Gemini critique only after Claude output validates repeatedly.' : 'run --run-agents once Claude CLI is available to capture the first validated POSITION.'}
 `
 
-  atomicWrite(join(runDir, 'RESULT.md'), result)
-  appendLedger({
-    hash,
-    hash8,
-    startedAt,
-    finishedAt: new Date().toISOString(),
-    status: 'success',
-    runDir: relativeToRoot(runDir),
-    modelCalls: 0,
-    schemaValidation: 'pass',
-    dryRun,
-  })
-  console.log(`wrote council dry run ${runDir}`)
+    atomicWrite(join(runDir, 'RESULT.md'), result)
+    appendLedger({
+      hash,
+      hash8,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      status: 'success',
+      runDir: relativeToRoot(runDir),
+      modelCalls,
+      runMode,
+      claudePosition: claudePosition ? 'pass' : 'not-run',
+      schemaValidation: 'pass',
+      dryRun,
+    })
+    console.log(`wrote council ${runAgents ? 'agent run' : 'dry run'} ${runDir}`)
+  } catch (error) {
+    writeFailure(runDir, error)
+    appendLedger({
+      hash,
+      hash8,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      status: 'failed',
+      runDir: relativeToRoot(runDir),
+      modelCalls,
+      runMode,
+      error: error.message,
+      dryRun,
+    })
+    console.error(error.message)
+    process.exitCode = 1
+  }
 }
 
 run()

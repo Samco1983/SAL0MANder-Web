@@ -92,6 +92,7 @@ The next automation layer is intentionally local and hash-gated:
 
 ```bash
 npm run council:dry-run
+npm run council:run-agents
 npm run council:validate-schemas
 ```
 
@@ -102,3 +103,10 @@ messages, computes a packet hash, writes
 same packet hash has already succeeded.
 
 This is the safe proof before wiring Claude, Gemini, OpenAI, launchd, or Make.
+Agent-run mode currently stops after Claude POSITION validation; Gemini and
+OpenAI are intentionally still off.
+
+Because agent-run mode sends the assembled packet to Claude, it requires
+explicit approval for the current packet before real use. The missing-CLI/blocker
+path can be tested without sending external data by setting `SAL0_CLAUDE_BIN` to
+a nonexistent path.
