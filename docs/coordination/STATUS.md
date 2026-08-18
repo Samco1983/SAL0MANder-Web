@@ -5,6 +5,80 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-18 — invocation proven; governance recorded; STATUS caught up
+
+```text
+AGENT: Claude Code
+AREA: Website lane / governance
+STATUS: ACTIVE
+```
+
+**W-9 MOVED — a headless Claude was launched and it followed the failsafe**
+
+`Verified` (execution evidence, seen in the operator's terminal): a fresh
+`claude -p --output-format json` process started unattended, read the pinned
+baseline files, returned structured status, exited 0, and modified nothing.
+Confirmed independently on this side: working tree clean, `HEAD` unmoved at
+`e2aa1dc`, reflog shows no foreign commit.
+
+`Verified` (its own output): that session read `STATUS.md` and
+`MIRROR-PROTOCOL.md` **because `CLAUDE.md` told it to**, attempted the
+"confirm the commit is still current" step, could not complete it without
+GitHub access, and **said so** — labelling its claims Verified / Relayed /
+Inferred without having seen the Advisory Protocol conversation.
+
+So two things now have evidence rather than intent:
+
+1. **A Claude session can be started without a human in the chair.**
+2. **The failsafe line propagates to sessions with no memory of this one.**
+   `8ab0e24` is doing the job it was written for.
+
+`Relayed`, from the operator: the GitHub-triggered wakeup — starting a session
+when nobody is at the machine — is the remaining link. **W-9 is narrowed, not
+closed.** What is proven is invocation on a machine that is already awake.
+
+**FLAGGED — `--permission-mode dontAsk`**
+
+The proof ran with permission prompts suppressed. For a read-only check-in that
+is correct and the "modified nothing" result confirms it behaved. It is worth
+naming before this becomes routine: a headless Claude with `dontAsk` will not
+stop to ask before writing. The check-in path should stay read-only by
+construction rather than by good behaviour, and any future write-capable wakeup
+needs its own decision.
+
+**RECORDED SINCE THE LAST ENTRY** — five commits this file did not cover:
+
+| Commit | What |
+| --- | --- |
+| `70deb75` | **D-024** — two evidence lanes: Codex leads the game, Claude leads the website |
+| `225f896` | D-024 amended — lane leads, Unity chat inside Codex's lane, seam questions all-input |
+| `3af3d99` | Brainstorm proposal, marked NOT A DECISION |
+| `f5af4a5` | Advisory Protocol proposed |
+| `e2aa1dc` | Advisory Protocol revised to the owner's amendments — still **not binding** |
+
+**CORRECTION TO MY OWN SPEC**
+
+`TIER1-CHECKIN-SPEC.md` derives "next action" from a `NEXT` section. No entry in
+this file had one — including the entries written after that spec. Caught by the
+headless session, not by me. Every entry from here carries `NEXT`.
+
+**NEXT**
+
+1. Owner to accept or amend the Advisory Protocol; on acceptance, amend D-024 so
+   its seam rule includes Codex's reconciliation step.
+2. Owner to push `gate1-web-readiness` — twelve commits are still local-only, and
+   the "no upstream" finding below remains accurate as of this entry.
+3. Codex to answer the seven review boxes, W-10 first.
+4. Website product definition — still the largest open question. Codex has P1-A;
+   the web lane has no written equivalent, so every web choice so far has been
+   infrastructure chosen in the absence of a brief.
+
+**BLOCKERS**
+
+None for web work.
+
+---
+
 ## 2026-08-18 — `CHECK STATUS` specified; web evidence is local-only
 
 ```text
