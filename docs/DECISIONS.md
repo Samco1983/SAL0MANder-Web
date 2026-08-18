@@ -534,6 +534,49 @@ proven (**W-9**).
 
 ---
 
+## D-024 — Two evidence lanes. The dashboard measures commits, not people.
+
+**Decided** · 2026-08-18 · owner ruling
+
+**Two lanes produce checkable evidence:**
+
+| Lane | Owner | Repo |
+| --- | --- | --- |
+| Website / Guest Play | Claude | `Samco1983/SAL0MANder-Web` |
+| Game / Teacher Studio | Codex | `Samco1983/Sal0mander-Jigsaw-Puzzle` |
+
+**A lane is not a rank, and the dashboard is not an org chart.** It tracks one
+narrow thing — work that produced a commit someone can open and verify. Nobody
+is demoted by being absent from it, because it does not measure contribution. It
+measures what can be checked.
+
+- **ChatGPT** — advisory, unchanged, no row. It has been reading the situation
+  across every lane and that stays valuable. There is simply no commit to point
+  at, and a dashboard of verifiable evidence cannot carry a claim it cannot
+  verify.
+- **Gemini** — reader and interface (see D-023). No repo, so no row. Its job is
+  to let the owner ask "where is everything?" and get a plain answer.
+- **"Unity AI" visual QA** — a **task**, not a lane. The 1366×768 / 1024×768
+  check is assigned to Codex or done by the owner. Nothing should stay blocked
+  waiting on an agent that has never acknowledged anything.
+
+**Point is the owner.** Two scopes are not two decision-makers. Codex is
+accountable for the game and owns the coordination hub; Claude is accountable
+for the website. Both prove what they did. Neither decides what happens next.
+
+**Why this is worth writing down:** the previous framing put four names on a
+chart, two of which could only ever render `UNKNOWN`. A dashboard with
+permanently broken rows teaches its reader to ignore rows — which is the exact
+opposite of a failsafe.
+
+**Left open, deliberately:** whether the FIFO claim queue
+(`MAKE-CLAIM-FLOW.md`) is still needed. It was specified to hand work to many
+competing workers; two agents who each own a repo and never touch the other's do
+not compete for anything. Not retired here — that is an owner call, and the spec
+stays on file until it is made.
+
+---
+
 ## DEFERRED — requires approval before implementation
 
 | ID    | Decision                          | Blocked on                                    |

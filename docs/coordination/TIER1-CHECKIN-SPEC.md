@@ -25,17 +25,18 @@ invocation is not.** The dashboard states that on every run (§6).
 
 ## 1 · Lanes and their evidence surfaces
 
+Two lanes, per **D-024**. Both always populated — no permanently `UNKNOWN` rows.
+
 | Lane | Owner | Repo · branch | Docs read | Issue |
 | --- | --- | --- | --- | --- |
-| Web / Guest Play | Claude | `Samco1983/SAL0MANder-Web` · `main` | `docs/coordination/STATUS.md`, `OPEN-ITEMS.md` | #1 |
-| Unity gameplay | Codex | `Samco1983/Sal0mander-Jigsaw-Puzzle` · `main` | `docs/coordination/CURRENT_STATE.md`, `P1_PROCESS.md` | #1 |
-| Unity AI / visual QA | Unity AI | *none known* | — | #1 only |
-| Gemini | Gemini | *none known* | — | #1 only |
+| Website / Guest Play | Claude | `Samco1983/SAL0MANder-Web` · `main` | `docs/coordination/STATUS.md`, `OPEN-ITEMS.md` | #1 |
+| Game / Teacher Studio | Codex | `Samco1983/Sal0mander-Jigsaw-Puzzle` · `main` | `docs/coordination/CURRENT_STATE.md`, `P1_PROCESS.md` | #1 |
 
-**Two of four lanes have no committed evidence surface at all.** Unity AI and
-Gemini can only ever be as fresh as their last Issue #1 comment, and will read
-`UNKNOWN` when they have none. That is a true statement about the system, not a
-defect in the report — and it is the most useful thing the first run will say.
+**Not lanes, and deliberately absent** (D-024): ChatGPT is advisory, Gemini is
+the reader/interface, and "Unity AI visual QA" is a task assigned to Codex or
+the owner. None of them commit, so none can be verified, and a row that can only
+ever read `UNKNOWN` teaches its reader to ignore rows — the opposite of a
+failsafe.
 
 Issue #1 is on `Sal0mander-Jigsaw-Puzzle` and is the **only** write target.
 
