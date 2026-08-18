@@ -3,8 +3,9 @@
 This is the safe first step toward the SAL0MANder dispatcher.
 
 It reads GitHub Issue #1, finds the oldest unprocessed check-in request, and
-prints the manual Codex command that should process it. It does **not** execute
-Codex by itself.
+prints the manual Codex command that should process it. It can also print a
+manual override packet for Claude, Gemini, Codex CLI, or any other agent that is
+quiet or not showing evidence. It does **not** execute Codex by itself.
 
 That boundary matters: GitHub comments are outside input, so Version 1 reports
 and queues. Execution stays explicit until the request envelope is locked down.
@@ -13,6 +14,12 @@ and queues. Execution stays explicit until the request envelope is locked down.
 
 ```bash
 npm run checkin:monitor
+```
+
+For a quiet or unproductive agent:
+
+```bash
+npm run checkin:monitor -- --override
 ```
 
 After a request is actually handled:
@@ -34,8 +41,10 @@ variable.
 
 ## Request marker
 
-Post a comment on the hub issue containing either `CHECK_IN_REQUEST` or
-`ACTION REQUIRED`:
+The monitor can see either `CHECK_IN_REQUEST` or older `ACTION REQUIRED`
+comments. Only `CHECK_IN_REQUEST` is treated as dispatcher-ready.
+
+Preferred format:
 
 ```text
 CHECK_IN_REQUEST
@@ -49,6 +58,15 @@ Expected evidence:
 
 The monitor treats only `CHECK_IN_PROCESSED` or local seen-state as already
 handled. A comment that says `CHECKPOINT REQUIRED` can still be pending work.
+
+Legacy `ACTION REQUIRED` comments are shown as `manual-review`, because they can
+contain broad prose and multiple lane requests. They are useful for a human or
+supervisor, but should not become automatic execution input.
+
+Manual override rules live in
+[`MANUAL-OVERRIDE.md`](./MANUAL-OVERRIDE.md). Short version: status without
+pickup, heartbeat, commit, test/build output, Make run, GitHub writeback, or an
+exact blocker is not productive evidence.
 
 ## Local state
 

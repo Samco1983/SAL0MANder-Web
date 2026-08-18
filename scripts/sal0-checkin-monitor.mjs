@@ -27,9 +27,11 @@ const STATE_FILE =
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || ''
 const REQUEST_MARKERS = ['CHECK_IN_REQUEST', 'ACTION REQUIRED']
 const PROCESSED_MARKERS = ['CHECK_IN_PROCESSED']
+const VALID_LANES = new Set(['Game', 'Unity', 'Web', 'Website', 'Seam', 'Coordination'])
 
 const args = new Set(process.argv.slice(2))
 const accept = args.has('--accept')
+const override = args.has('--override')
 const showHelp = args.has('--help') || args.has('-h')
 
 if (showHelp) {
@@ -38,6 +40,7 @@ if (showHelp) {
 Usage:
   node scripts/sal0-checkin-monitor.mjs
   node scripts/sal0-checkin-monitor.mjs --accept
+  node scripts/sal0-checkin-monitor.mjs --override
 
 Environment:
   SAL0_HUB_REPO                    Hub repo, default ${HUB_REPO}
@@ -103,13 +106,55 @@ function oldestPending(comments, state) {
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0]
 }
 
+function readField(body, fieldName) {
+  const fieldStart = new RegExp(`^${fieldName}:\\s*(.*)$`, 'im')
+  const match = body.match(fieldStart)
+  if (!match || match.index === undefined) return ''
+
+  const firstLine = match[1]?.trim() || ''
+  const afterField = body.slice(match.index + match[0].length)
+  const nextField = afterField.search(/^\w[\w /-]*:\s*/m)
+  const rest = nextField >= 0 ? afterField.slice(0, nextField) : afterField
+  return [firstLine, rest.trim()].filter(Boolean).join('\n').trim()
+}
+
+function parseEnvelope(body) {
+  const marker = REQUEST_MARKERS.find((candidate) => body.includes(candidate)) || ''
+  const lane = readField(body, 'Lane')
+  const request = readField(body, 'Request')
+  const expectedEvidence = readField(body, 'Expected evidence')
+
+  const problems = []
+  if (marker !== 'CHECK_IN_REQUEST') {
+    problems.push('use CHECK_IN_REQUEST for dispatcher-ready work')
+  }
+  if (!VALID_LANES.has(lane)) {
+    problems.push(`Lane must be one of: ${[...VALID_LANES].join(', ')}`)
+  }
+  if (!request) {
+    problems.push('Request field is required')
+  }
+
+  return {
+    marker,
+    lane,
+    request,
+    expectedEvidence,
+    isStructured: problems.length === 0,
+    problems,
+  }
+}
+
 function printManualCommand(comment) {
+  const envelope = parseEnvelope(comment.body)
   const prompt = `CHECK_IN_REQUEST from ${comment.html_url}
 
 CONSULT_ONLY unless the request explicitly asks for a code change.
 Use evidence labels: Verified, Relayed, Inferred.
 Read GitHub/project files before claiming status.
 Do not cross web/game repo boundaries without saying so.
+Envelope status: ${envelope.isStructured ? 'structured' : 'manual-review'}
+${envelope.problems.length ? `Envelope problems: ${envelope.problems.join('; ')}` : ''}
 
 Request:
 ${comment.body}`
@@ -131,6 +176,51 @@ ${comment.body}`
   console.log(command.map(shellQuote).join(' '))
 }
 
+function printOverridePacket(comment) {
+  const envelope = parseEnvelope(comment.body)
+  const lane = envelope.lane || 'Coordination'
+  const request = envelope.request || comment.body
+  const evidence = envelope.expectedEvidence || 'commit, test output, GitHub comment, Make run, or explicit blocker'
+
+  console.log('\nManual override packet:')
+  console.log(`COPY/PASTE THIS INTO ANY QUIET OR UNPRODUCTIVE AGENT
+
+SAL0MANder Manual Override
+
+You are being checked because the coordination system needs evidence, not vague status.
+
+Lane: ${lane}
+Source: ${comment.html_url}
+Request:
+${request}
+
+Expected evidence:
+${evidence}
+
+Rules:
+- Reply with ACK first.
+- State the exact folder/repo you are using.
+- Run a read-only status check before editing.
+- Do not cross repo boundaries.
+- Do not touch secrets, auth files, tokens, or unrelated projects.
+- If you are not the right agent for this lane, say so immediately.
+- If blocked, state the exact blocker immediately.
+- Do not say "in progress" unless you have real evidence.
+
+Required response format:
+ACK
+Lane:
+Folder:
+Current branch:
+Latest commit:
+Git status:
+What I changed or verified:
+Evidence:
+Blocked:
+Next action:
+What I will not touch:`)
+}
+
 async function main() {
   const state = readState()
   const comments = await fetchIssueComments()
@@ -149,9 +239,16 @@ async function main() {
   console.log(`Author: ${pending.user?.login || 'unknown'}`)
   console.log(`Created: ${pending.created_at}`)
   console.log(`URL: ${pending.html_url}`)
+  const envelope = parseEnvelope(pending.body)
+  console.log(`Envelope: ${envelope.isStructured ? 'structured' : 'manual-review'}`)
+  if (envelope.problems.length) console.log(`Envelope notes: ${envelope.problems.join('; ')}`)
   console.log('\nRequest body:\n')
   console.log(pending.body)
-  printManualCommand(pending)
+  if (override) {
+    printOverridePacket(pending)
+  } else {
+    printManualCommand(pending)
+  }
 
   if (accept) {
     state.seenCommentIds = [...new Set([...state.seenCommentIds, pending.id])]
