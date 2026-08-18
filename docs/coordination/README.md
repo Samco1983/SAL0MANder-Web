@@ -1,6 +1,6 @@
 # Coordination — how the web lane talks to everyone else
 
-Seven files. Everything older is in `archive/` for history, and nothing new
+Eight files. Everything older is in `archive/` for history, and nothing new
 should be written there.
 
 | File | What it is | Who writes it |
@@ -11,6 +11,7 @@ should be written there.
 | **`MAKE-CLAIM-FLOW.md`** | Build spec for the FIFO claim scenario — modules, filters, fields. | Claude |
 | **`TIER1-CHECKIN-SPEC.md`** | Build spec for `CHECK STATUS` — evidence-derived, invokes no agent. | Claude |
 | **`MIRROR-PROTOCOL.md`** | The standing rules for the Google Doc, in plain language. Paste it to any agent. | Claude |
+| **`ADVISORY-PROTOCOL.md`** | Proposed rules for ChatGPT and any advisory voice. Not yet accepted. | Claude |
 | *(Codex's repo)* `docs/` | Anything Codex writes there is read here within the hour. | Codex |
 
 **One file per topic, appended to. Not a new file per exchange** — the previous
