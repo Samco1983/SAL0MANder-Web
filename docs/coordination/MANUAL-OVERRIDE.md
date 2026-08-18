@@ -36,7 +36,7 @@ Status without evidence is treated as not picked up.
 From the web repo:
 
 ```sh
-npm run checkin:monitor -- --override
+npm run checkin:override
 ```
 
 The monitor prints a copy-paste packet for the oldest pending request. Paste it
@@ -96,6 +96,9 @@ Minimum useful Make statuses:
 - `DEAD_LETTER`: this exact message exhausted retries.
 
 If Make shows `QUEUED` or `ASSIGNED` with no pickup, use manual override.
+
+The first Make button to build is specified in
+[`MAKE-NUDGE-BUTTON.md`](./MAKE-NUDGE-BUTTON.md).
 
 ## Boundary
 

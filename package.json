@@ -17,6 +17,7 @@
     "test:coverage": "vitest run --coverage",
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
     "checkin:monitor": "node scripts/sal0-checkin-monitor.mjs",
+    "checkin:override": "node scripts/sal0-checkin-monitor.mjs --override",
     "checkin:monitor:accept": "node scripts/sal0-checkin-monitor.mjs --accept"
   },
   "dependencies": {

@@ -19,7 +19,7 @@ npm run checkin:monitor
 For a quiet or unproductive agent:
 
 ```bash
-npm run checkin:monitor -- --override
+npm run checkin:override
 ```
 
 After a request is actually handled:
@@ -67,6 +67,9 @@ Manual override rules live in
 [`MANUAL-OVERRIDE.md`](./MANUAL-OVERRIDE.md). Short version: status without
 pickup, heartbeat, commit, test/build output, Make run, GitHub writeback, or an
 exact blocker is not productive evidence.
+
+The Make manual-trigger version of this nudge is specified in
+[`MAKE-NUDGE-BUTTON.md`](./MAKE-NUDGE-BUTTON.md).
 
 ## Local state
 
