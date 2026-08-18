@@ -26,6 +26,8 @@ Important boundary:
   current packet.
 - This does not edit Unity/Game files.
 - Gemini, OpenAI, launchd, Make, and Google Docs mirror are still not wired.
+- `npm run council:launchd:plist` only generates a launchd plist for review; it
+  does not install or load the schedule.
 
 Why this matters:
 - Repeated scheduled runs can become cheap and quiet.
@@ -42,3 +44,4 @@ Next safe upgrade:
 - Before running it for real, confirm the current packet is allowed to be sent
   to Claude.
 - Wire Gemini critique after Claude POSITION validates repeatedly.
+- Activate launchd only after the dry-run schedule behavior is accepted.

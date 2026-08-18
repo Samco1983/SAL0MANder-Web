@@ -92,6 +92,7 @@ The next automation layer is intentionally local and hash-gated:
 
 ```bash
 npm run council:dry-run
+npm run council:launchd:plist
 npm run council:run-agents
 npm run council:validate-schemas
 ```
@@ -110,3 +111,6 @@ Because agent-run mode sends the assembled packet to Claude, it requires
 explicit approval for the current packet before real use. The missing-CLI/blocker
 path can be tested without sending external data by setting `SAL0_CLAUDE_BIN` to
 a nonexistent path.
+
+The launchd helper generates a plist only. It does not install, load, or start
+the schedule.

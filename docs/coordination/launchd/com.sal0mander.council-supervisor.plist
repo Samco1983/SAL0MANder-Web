@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.sal0mander.council-supervisor</string>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/samuel_saldivar/Desktop/SAL0MANder-Web/</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/node</string>
+    <string>/Users/samuel_saldivar/Desktop/SAL0MANder-Web/scripts/sal0-council-supervisor.mjs</string>
+    <string>--dry-run</string>
+  </array>
+
+  <key>StartInterval</key>
+  <integer>3600</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/samuel_saldivar/Desktop/SAL0MANder-Web/docs/coordination/runs/logs/council-supervisor.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/samuel_saldivar/Desktop/SAL0MANder-Web/docs/coordination/runs/logs/council-supervisor.err.log</string>
+
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>
