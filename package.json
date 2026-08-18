@@ -19,7 +19,8 @@
     "checkin:monitor": "node scripts/sal0-checkin-monitor.mjs",
     "checkin:override": "node scripts/sal0-checkin-monitor.mjs --override",
     "checkin:monitor:accept": "node scripts/sal0-checkin-monitor.mjs --accept",
-    "council:dry-run": "node scripts/sal0-council-supervisor.mjs --dry-run"
+    "council:dry-run": "node scripts/sal0-council-supervisor.mjs --dry-run",
+    "council:validate-schemas": "node scripts/sal0-council-supervisor.mjs --validate-schemas"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",

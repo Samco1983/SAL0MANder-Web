@@ -92,6 +92,7 @@ The next automation layer is intentionally local and hash-gated:
 
 ```bash
 npm run council:dry-run
+npm run council:validate-schemas
 ```
 
 It reads `PROBE.md`, `CURRENT_STATE.md`, and the last 10 non-council commit

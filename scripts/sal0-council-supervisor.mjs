@@ -22,6 +22,7 @@ import {
 import { dirname, join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { z } from 'zod'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const COORDINATION_DIR = join(ROOT, 'docs', 'coordination')
@@ -33,6 +34,7 @@ const RECENT_COMMIT_COUNT = Number(process.env.SAL0_COUNCIL_COMMITS || '10')
 
 const args = new Set(process.argv.slice(2))
 const dryRun = args.has('--dry-run') || !args.has('--run-agents')
+const validateSchemas = args.has('--validate-schemas')
 const showHelp = args.has('--help') || args.has('-h')
 
 if (showHelp) {
@@ -40,11 +42,204 @@ if (showHelp) {
 
 Usage:
   node scripts/sal0-council-supervisor.mjs --dry-run
+  node scripts/sal0-council-supervisor.mjs --validate-schemas
 
 This v0 intentionally does not call models unless a future --run-agents mode is
 implemented. It builds the packet, hashes it, writes runs/<timestamp>-<hash8>/,
 and records skips in docs/coordination/runs/ledger.jsonl.
 `)
+  process.exit(0)
+}
+
+const stateSchema = z.enum([
+  'WORKING',
+  'DONE - NEED NEW TASK',
+  'BLOCKED - NEED OWNER',
+  'WRONG LANE - REASSIGN',
+  'UNKNOWN/UNREACHABLE',
+  'REVIEW READY',
+])
+
+const laneSchema = z.enum([
+  'Unity/Game',
+  'Web',
+  'Make Automation',
+  'Coordination',
+  'Seam',
+])
+
+const evidenceSchema = z.object({
+  type: z.enum(['commit', 'test', 'run', 'file', 'issue-comment', 'screenshot', 'blocker']),
+  reference: z.string().min(1),
+  summary: z.string().min(1),
+})
+
+const falsifiableActionSchema = z.object({
+  owner: z.string().min(1),
+  action: z.string().min(1),
+  successCheck: z.string().min(1),
+})
+
+const positionSchema = z
+  .object({
+    schemaVersion: z.literal('sal0-council-position-v0'),
+    agent: z.literal('Claude'),
+    state: stateSchema,
+    lane: laneSchema,
+    claims: z.array(
+      z.object({
+        id: z.string().regex(/^C\d+$/),
+        claim: z.string().min(10),
+        evidence: z.array(evidenceSchema).min(1),
+      }),
+    ).min(1),
+    risks: z.array(z.string().min(1)).default([]),
+    nextAction: falsifiableActionSchema,
+  })
+  .strict()
+
+const critiqueSchema = z
+  .object({
+    schemaVersion: z.literal('sal0-council-critique-v0'),
+    agent: z.literal('Gemini'),
+    state: stateSchema,
+    rejectedClaudeClaimId: z.string().regex(/^C\d+$/),
+    rejectedClaudeClaimQuote: z.string().min(10),
+    reason: z.string().min(10),
+    evidence: z.array(evidenceSchema).min(1),
+    nextAction: falsifiableActionSchema,
+  })
+  .strict()
+
+const decisionSchema = z
+  .object({
+    schemaVersion: z.literal('sal0-council-decision-v0'),
+    agent: z.literal('OpenAI'),
+    state: stateSchema,
+    rationale: z.string().min(10),
+    selectedNextAction: falsifiableActionSchema,
+    rejectedOptions: z.array(z.string().min(1)).default([]),
+  })
+  .strict()
+
+function validatePosition(raw) {
+  return positionSchema.parse(raw)
+}
+
+function validateCritique(raw, position) {
+  const critique = critiqueSchema.parse(raw)
+  const rejectedClaim = position.claims.find((claim) => claim.id === critique.rejectedClaudeClaimId)
+  if (!rejectedClaim) {
+    throw new Error(`Gemini rejected missing Claude claim ${critique.rejectedClaudeClaimId}`)
+  }
+  if (!rejectedClaim.claim.includes(critique.rejectedClaudeClaimQuote)) {
+    throw new Error('Gemini critique quote does not match the rejected Claude claim')
+  }
+  return critique
+}
+
+function validateDecision(raw) {
+  return decisionSchema.parse(raw)
+}
+
+function runSchemaValidationProof() {
+  const position = validatePosition({
+    schemaVersion: 'sal0-council-position-v0',
+    agent: 'Claude',
+    state: 'REVIEW READY',
+    lane: 'Coordination',
+    claims: [
+      {
+        id: 'C1',
+        claim: 'The council supervisor should validate schemas before live agent execution.',
+        evidence: [
+          {
+            type: 'file',
+            reference: 'scripts/sal0-council-supervisor.mjs',
+            summary: 'Supervisor owns local packet and output validation.',
+          },
+        ],
+      },
+    ],
+    risks: ['Loose prose can look like evidence when it is not machine-checkable.'],
+    nextAction: {
+      owner: 'Codex',
+      action: 'Add schema validation before agent execution.',
+      successCheck: 'A local validation command exits 0 for valid samples and throws for invalid critique references.',
+    },
+  })
+
+  validateCritique(
+    {
+      schemaVersion: 'sal0-council-critique-v0',
+      agent: 'Gemini',
+      state: 'REVIEW READY',
+      rejectedClaudeClaimId: 'C1',
+      rejectedClaudeClaimQuote: 'validate schemas before live agent execution',
+      reason: 'Schema validation alone is incomplete unless critiques are tied to exact prior claims.',
+      evidence: [
+        {
+          type: 'file',
+          reference: 'scripts/sal0-council-supervisor.mjs',
+          summary: 'Critique validation checks claim id and exact quote containment.',
+        },
+      ],
+      nextAction: {
+        owner: 'Codex',
+        action: 'Reject generic Gemini critique output.',
+        successCheck: 'A critique without a matching Claude quote fails validation.',
+      },
+    },
+    position,
+  )
+
+  validateDecision({
+    schemaVersion: 'sal0-council-decision-v0',
+    agent: 'OpenAI',
+    state: 'REVIEW READY',
+    rationale: 'The next council upgrade must preserve falsifiability before scheduling.',
+    selectedNextAction: {
+      owner: 'Codex',
+      action: 'Wire validators into the dry-run evidence path before model calls.',
+      successCheck: 'The dry-run result records schema validation as passing with zero model calls.',
+    },
+    rejectedOptions: ['Wire launchd before output validation exists.'],
+  })
+
+  try {
+    validateCritique(
+      {
+        schemaVersion: 'sal0-council-critique-v0',
+        agent: 'Gemini',
+        state: 'REVIEW READY',
+        rejectedClaudeClaimId: 'C9',
+        rejectedClaudeClaimQuote: 'generic praise',
+        reason: 'This should fail because it does not cite a real Claude claim.',
+        evidence: [
+          {
+            type: 'blocker',
+            reference: 'schema-proof',
+            summary: 'Negative validation fixture.',
+          },
+        ],
+        nextAction: {
+          owner: 'Codex',
+          action: 'Prove bad critique rejection.',
+          successCheck: 'This fixture throws instead of passing.',
+        },
+      },
+      position,
+    )
+    throw new Error('Negative critique fixture unexpectedly passed')
+  } catch (error) {
+    if (error.message === 'Negative critique fixture unexpectedly passed') throw error
+  }
+
+  console.log('schema validation proof passed')
+}
+
+if (validateSchemas) {
+  runSchemaValidationProof()
   process.exit(0)
 }
 
@@ -184,17 +379,22 @@ function run() {
   mkdirSync(runDir, { recursive: true })
   atomicWrite(join(runDir, 'packet.json'), `${stableJson({ ...packet, hash })}\n`)
 
+  runSchemaValidationProof()
+
   const result = `# SAL0MANder Council Result
 
 Status: DRY RUN
 Packet: ${hash}
 Model calls: 0
+Schema validation: PASS
 
 This run proved packet assembly, hashing, run-folder creation, and ledger
-writing. Claude/Gemini/OpenAI calls are intentionally not wired yet.
+writing. It also proved strict local schemas for Claude POSITION, Gemini
+CRITIQUE, and OpenAI DECISION. Claude/Gemini/OpenAI calls are intentionally not
+wired yet.
 
-Next action: implement strict JSON schema validation for Claude POSITION,
-Gemini CRITIQUE, and OpenAI DECISION before enabling agent execution.
+Next action: wire Claude POSITION generation behind --run-agents while keeping
+Gemini/OpenAI disabled until the first raw Claude output validates.
 `
 
   atomicWrite(join(runDir, 'RESULT.md'), result)
@@ -206,6 +406,7 @@ Gemini CRITIQUE, and OpenAI DECISION before enabling agent execution.
     status: 'success',
     runDir: relativeToRoot(runDir),
     modelCalls: 0,
+    schemaValidation: 'pass',
     dryRun,
   })
   console.log(`wrote council dry run ${runDir}`)
