@@ -2,7 +2,7 @@
 
 This is the safe first step toward the SAL0MANder dispatcher.
 
-It reads GitHub Issue #1, finds the oldest unprocessed `CHECK_IN_REQUEST`, and
+It reads GitHub Issue #1, finds the oldest unprocessed check-in request, and
 prints the manual Codex command that should process it. It does **not** execute
 Codex by itself.
 
@@ -34,7 +34,8 @@ variable.
 
 ## Request marker
 
-Post a comment on the hub issue containing:
+Post a comment on the hub issue containing either `CHECK_IN_REQUEST` or
+`ACTION REQUIRED`:
 
 ```text
 CHECK_IN_REQUEST
@@ -45,6 +46,9 @@ Request:
 Expected evidence:
 ...
 ```
+
+The monitor treats only `CHECK_IN_PROCESSED` or local seen-state as already
+handled. A comment that says `CHECKPOINT REQUIRED` can still be pending work.
 
 ## Local state
 

@@ -4,7 +4,7 @@
  *
  * This is the safe first piece of the dispatcher:
  * - reads GitHub Issue #1 comments
- * - finds the oldest unprocessed CHECK_IN_REQUEST
+ * - finds the oldest unprocessed check-in request
  * - prints the exact request and a local Codex command to run manually
  * - optionally marks that comment as seen in local state
  *
@@ -25,6 +25,8 @@ const STATE_FILE =
   process.env.SAL0_CHECKIN_MONITOR_STATE ||
   new URL('../docs/coordination/.checkin-monitor-state.json', import.meta.url).pathname
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || ''
+const REQUEST_MARKERS = ['CHECK_IN_REQUEST', 'ACTION REQUIRED']
+const PROCESSED_MARKERS = ['CHECK_IN_PROCESSED']
 
 const args = new Set(process.argv.slice(2))
 const accept = args.has('--accept')
@@ -87,8 +89,8 @@ async function fetchIssueComments() {
 function oldestPending(comments, state) {
   const seen = new Set(state.seenCommentIds)
   return comments
-    .filter((comment) => comment.body?.includes('CHECK_IN_REQUEST'))
-    .filter((comment) => !comment.body?.includes('CHECK_IN_PROCESSED'))
+    .filter((comment) => REQUEST_MARKERS.some((marker) => comment.body?.includes(marker)))
+    .filter((comment) => !PROCESSED_MARKERS.some((marker) => comment.body?.includes(marker)))
     .filter((comment) => !seen.has(comment.id))
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0]
 }
@@ -121,11 +123,11 @@ async function main() {
 
   if (!pending) {
     writeState(state)
-    console.log(`${state.lastCheckedAt} — no pending CHECK_IN_REQUEST`)
+    console.log(`${state.lastCheckedAt} — no pending check-in request`)
     return
   }
 
-  console.log(`${state.lastCheckedAt} — oldest pending CHECK_IN_REQUEST`)
+  console.log(`${state.lastCheckedAt} — oldest pending check-in request`)
   console.log(`Comment id: ${pending.id}`)
   console.log(`Author: ${pending.user?.login || 'unknown'}`)
   console.log(`Created: ${pending.created_at}`)
