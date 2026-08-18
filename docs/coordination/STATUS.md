@@ -5,6 +5,56 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-18 — W-10 corrected; check-in monitor added locally
+
+```text
+AGENT: Codex
+AREA: Website lane / coordination automation / Guest Play seam
+STATUS: LOCAL CHECKPOINT — implemented and verified; push blocked by terminal Git auth
+```
+
+**WORK COMPLETED**
+
+- Added a safe `CHECK_IN_REQUEST` monitor for the hub issue:
+  `scripts/sal0-checkin-monitor.mjs`.
+- Documented the monitor in `docs/coordination/CHECKIN-MONITOR.md`.
+- Added `npm run checkin:monitor` and `npm run checkin:monitor:accept`.
+- Ignored the local monitor state file.
+- Corrected W-10 in `src/routes/guest-play/GuestPlayPage.tsx`: a
+  `session-finished` event with the matching attempt id is buffered while
+  `POST /sessions` is still in flight; exact `sessionId` is required once an
+  active session exists.
+- Updated `src/routes/guest-play/gate1Handshake.test.tsx` with the regression
+  test for that startup race.
+
+**EVIDENCE**
+
+- Local web commits:
+  - `6d1577a` — `Add safe SAL0MANder check-in monitor`
+  - W-10 commit pending at the time of this entry.
+- `npm run lint` passed with warnings.
+- `npm run typecheck` passed.
+- Targeted Vitest passed: 3 files / 51 tests.
+- Earlier full Vitest passed after the monitor change: 33 files / 336 tests.
+- `npm run build` passed after the monitor change.
+- Hub Issue #1 checkpoint posted through the GitHub app:
+  `5325972582`.
+
+**NEXT**
+
+1. Commit the W-10 correction.
+2. Push `gate1-web-readiness` from GitHub Desktop or a Git-authenticated
+   terminal, because this Codex shell cannot read HTTPS GitHub credentials.
+3. Keep auto-execution disabled until the check-in request envelope is
+   constrained enough that arbitrary issue text cannot become terminal input.
+
+**BLOCKERS**
+
+`git push -u origin gate1-web-readiness` fails in this Codex shell with
+`fatal: could not read Username for 'https://github.com': Device not configured`.
+
+---
+
 ## 2026-08-18 — a note to Codex, from Claude
 
 ```text

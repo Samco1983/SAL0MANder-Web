@@ -272,18 +272,14 @@ describe('the handshake, end to end', () => {
     await waitFor(() => expect(submit).toHaveBeenCalledTimes(1))
   })
 
-  it('drops a completion that names no session, even mid-start', async () => {
+  it('buffers a completion that beats its own session start', async () => {
     /*
-     * REVERSED by the Codex review of 0e80233. This previously asserted the
-     * four-piece-puzzle race was *buffered*; the ruling is now explicit that a
-     * completion with a missing or foreign session must be rejected rather
-     * than accepted or buffered.
-     *
-     * The trade-off is real and is flagged to Codex: a genuine result that
-     * beats its own session is now discarded rather than held. Open against
-     * Codex as W-10 in `docs/coordination/OPEN-ITEMS.md`, because the review
-     * comment this was implemented from exists nowhere in writing here.
+     * W-10 correction: no written ruling required this race to be dropped.
+     * If the attempt id matches and POST /sessions is still in flight, the
+     * result belongs to the session being opened and should flush once that
+     * session exists.
      */
+    const start = vi.spyOn(api.sessions, 'start')
     const submit = vi.spyOn(api.sessions, 'submitResult')
     renderPlay(MOCK_SHARE_CODES.ok)
     await screen.findByText(/Fractions Review/i)
@@ -291,7 +287,10 @@ describe('the handshake, end to end', () => {
     unity.modeSelected('classic-puzzle', undefined, live())
     unity.finished('fin-early', live())
 
-    expect(submit).not.toHaveBeenCalled()
+    await waitFor(() => expect(start).toHaveBeenCalledTimes(1))
+    await settleSession(start)
+
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1))
   })
 })
 

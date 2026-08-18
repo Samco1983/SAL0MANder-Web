@@ -1,10 +1,27 @@
 # Open items register
 
-## W-10 — ANSWERED by Codex, 2026-08-18. Awaiting the owner's call. 🔴
+## W-10 — ✅ RESOLVED — startup completion race buffered
 
 **Answered in the first direct Claude↔Codex exchange in this project** — no
 relay. Codex session `01a01412-33a2-7732-bc29-8afe559e082c`, read-only sandbox,
-`CONSULT_ONLY`.
+`CONSULT_ONLY`. Owner then approved the smaller correction, and Codex applied it
+in the web lane.
+
+### Resolution, 2026-08-18
+
+Implemented in local web commit pending push:
+
+- `src/routes/guest-play/GuestPlayPage.tsx` now requires an exact `sessionId`
+  only after the web has an active session to compare against.
+- A `session-finished` event with the matching `clientAttemptId` while
+  `POST /sessions` is still in flight is accepted into the existing
+  `usePlaySession` one-slot result buffer.
+- Missing-session completion after a session exists is still rejected.
+- Wrong-session completion is still rejected.
+- Targeted regression coverage is in
+  `src/routes/guest-play/gate1Handshake.test.tsx`.
+
+Verified: targeted Vitest run passed, 3 files / 51 tests.
 
 ### Codex's answer, verbatim in substance
 
@@ -26,7 +43,7 @@ And on visibility:
 > automatically count as a valid completion. Production-only silence makes
 > genuine data loss undetectable.
 
-### What this settles
+### What this settled
 
 **Nobody ruled the drop.** Codex has no record of the ruling I attributed to
 them, and does not claim it. The reversal in `77a7ba4` was mine.
@@ -39,23 +56,11 @@ Both lanes now independently agree on the narrower rule:
 | `sessionId` absent, `POST /sessions` still in flight | **Buffer**, correlate when the session resolves |
 | Any discarded completion | **Surfaced** with timestamp, identifiers and reason — never silent, never counted as valid |
 
-### What is NOT being done
+### What remains separate
 
-**The revert is a seam change, so it is not mine to make.** Under D-024 anything
-crossing the game↔website seam is all-input, owner-decides, with Codex
-reconciling the technical consequences. W-10 exists *because* a seam change was
-made on one lane's judgement. Fixing it the same way would be the same error
-with a better answer.
-
-Two agents agreeing is not a decision. **Owner's call.**
-
-### If approved, the change is small
-
-Restore buffering for `no-active-session` only; keep `missing-session` rejection
-when a session exists; keep foreign-session rejection unchanged; keep
-`isUsableFinishedPayload`. Then add the visible discarded-completion record,
-which is new work and currently has nowhere to display — see the open question
-about what the website is for.
+Visible teacher/admin reporting for unmatched or discarded completions is still
+future product work. The data-loss race is fixed; the reporting surface should
+wait until the website has an accepted teacher/admin purpose for those records.
 
 ---
 

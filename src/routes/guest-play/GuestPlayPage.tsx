@@ -202,10 +202,11 @@ export function GuestPlayPage() {
           clientAttemptId: correlationRef.current.attemptId,
           sessionId: correlationRef.current.sessionId,
         },
-        // Stricter than the mode guard: a completion must name the exact
-        // session it completed. No active session means drop, not buffer —
-        // a held result would flush against whatever session opens next.
-        { requireSession: true },
+        // Stricter than the mode guard once a session exists: a completion
+        // must name the exact active session. Before POST /sessions resolves,
+        // the matching attempt id is the strongest correlation available and
+        // usePlaySession buffers the result for that session-start race.
+        { requireSession: correlationRef.current.sessionId !== undefined },
       )
       if (correlation !== 'match') {
         if (!env.isProd) console.warn('[guest-play] session-finished dropped:', correlation, message)
