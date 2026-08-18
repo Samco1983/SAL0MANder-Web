@@ -35,3 +35,6 @@ coverage
 
 # Unity WebGL builds are large binary artifacts — served from CDN, not git
 public/unity/
+
+# Local coordination monitor state
+docs/coordination/.checkin-monitor-state.json

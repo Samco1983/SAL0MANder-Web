@@ -15,7 +15,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "checkin:monitor": "node scripts/sal0-checkin-monitor.mjs",
+    "checkin:monitor:accept": "node scripts/sal0-checkin-monitor.mjs --accept"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
