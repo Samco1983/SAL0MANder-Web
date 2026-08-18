@@ -65,25 +65,33 @@ function writeState(state) {
 }
 
 async function fetchIssueComments() {
-  const url = `https://api.github.com/repos/${HUB_REPO}/issues/${HUB_ISSUE}/comments?per_page=100`
-  const response = await fetch(url, {
-    headers: {
+  const headers = {
       Accept: 'application/vnd.github+json',
       'User-Agent': 'sal0-checkin-monitor-v1',
       ...(GITHUB_TOKEN ? { Authorization: `Bearer ${GITHUB_TOKEN}` } : {}),
-    },
-  })
-
-  if (!response.ok) {
-    if (response.status === 404 && !GITHUB_TOKEN) {
-      throw new Error(
-        `GitHub read failed: 404 Not Found. If ${HUB_REPO} is private, rerun with GITHUB_TOKEN or GH_TOKEN set.`,
-      )
     }
-    throw new Error(`GitHub read failed: ${response.status} ${response.statusText}`)
-  }
 
-  return response.json()
+  const comments = []
+  let page = 1
+
+  while (true) {
+    const url = `https://api.github.com/repos/${HUB_REPO}/issues/${HUB_ISSUE}/comments?per_page=100&page=${page}`
+    const response = await fetch(url, { headers })
+
+    if (!response.ok) {
+      if (response.status === 404 && !GITHUB_TOKEN) {
+        throw new Error(
+          `GitHub read failed: 404 Not Found. If ${HUB_REPO} is private, rerun with GITHUB_TOKEN or GH_TOKEN set.`,
+        )
+      }
+      throw new Error(`GitHub read failed: ${response.status} ${response.statusText}`)
+    }
+
+    const pageComments = await response.json()
+    comments.push(...pageComments)
+    if (pageComments.length < 100) return comments
+    page += 1
+  }
 }
 
 function oldestPending(comments, state) {
@@ -106,12 +114,21 @@ Do not cross web/game repo boundaries without saying so.
 Request:
 ${comment.body}`
 
-  const escapedPrompt = JSON.stringify(prompt)
+  const shellQuote = (value) => `'${String(value).replaceAll("'", "'\\''")}'`
+  const command = [
+    CODEX_BIN,
+    'exec',
+    '-C',
+    UNITY_REPO,
+    '--add-dir',
+    WEB_REPO,
+    '-s',
+    'read-only',
+    prompt,
+  ]
 
   console.log('\nManual Codex command:')
-  console.log(
-    `${CODEX_BIN} exec -C ${UNITY_REPO} --add-dir ${WEB_REPO} -s read-only ${escapedPrompt}`,
-  )
+  console.log(command.map(shellQuote).join(' '))
 }
 
 async function main() {
