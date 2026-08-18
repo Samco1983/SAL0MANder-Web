@@ -18,7 +18,8 @@
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
     "checkin:monitor": "node scripts/sal0-checkin-monitor.mjs",
     "checkin:override": "node scripts/sal0-checkin-monitor.mjs --override",
-    "checkin:monitor:accept": "node scripts/sal0-checkin-monitor.mjs --accept"
+    "checkin:monitor:accept": "node scripts/sal0-checkin-monitor.mjs --accept",
+    "council:dry-run": "node scripts/sal0-council-supervisor.mjs --dry-run"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
