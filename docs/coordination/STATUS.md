@@ -5,6 +5,53 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-18 — FIFO claim repair specified (`MAKE-CLAIM-FLOW.md`)
+
+```text
+AGENT: Claude Code
+AREA: Make control plane — claim selection
+STATUS: SPECIFIED, NOT BUILT — no Make access from this session
+```
+
+Owner ruling: replace exact-match claim lookup with a FIFO queue claim. Not a
+redesign, not a Make replacement, and Docs stays a read-only mirror (D-022).
+
+Full build spec in `MAKE-CLAIM-FLOW.md`: module-by-module flow, exact filter,
+exact update fields, Docs append placement, duplicate-pickup mitigation.
+
+**Three findings the spec turns on, all of the same class as the bug being
+fixed** — a lookup that matches nothing and reports it as nothing to do:
+
+1. **A zero-result search emits zero bundles**, so every downstream module is
+   skipped — including the webhook response. Without an Array aggregator
+   immediately after the search, the 204 branch can never fire. This alone
+   would explain a claim route that "returns nothing" while executing cleanly.
+2. **`adapterState != PICKED_UP` does not match records where the field was
+   never set.** Every ledger row predating `adapterState` is invisible to the
+   filter as specified. Spec carries an `OR does not exist` group; the durable
+   fix is a one-off backfill to `NONE`.
+3. **An unconditional lane filter matches nothing when no lane is passed** —
+   the exact failure mode being replaced, reintroduced one module later.
+
+**Race:** Make's Data Store has no compare-and-swap, so search-then-update is
+two calls. Sequential processing is the guard that actually closes it; the
+`sal0_claim_locks` add-with-overwrite-off narrows what sequential cannot reach
+(a second scenario, a manual run). Stated as a narrowing, not a proof —
+duplicate pickup stays *safe* rather than merely *rare* only because writeback
+idempotency (`MAKE-VALIDATION-SPEC.md §4`) is separately specified.
+
+**NEEDS FROM OWNER**
+
+Nothing to unblock the spec. To verify it: whether the Data Store module in
+this account exposes a Sort field (a fallback expression is given either way),
+and confirmation the ledger data store is named `sal0_task_ledger`.
+
+**BLOCKERS**
+
+None for web work.
+
+---
+
 ## 2026-08-17 — owner ruling on the Docs mirror; web lane is *not* paused
 
 ```text

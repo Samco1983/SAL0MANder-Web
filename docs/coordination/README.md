@@ -1,6 +1,6 @@
 # Coordination — how the web lane talks to everyone else
 
-Four files. Everything older is in `archive/` for history, and nothing new
+Five files. Everything older is in `archive/` for history, and nothing new
 should be written there.
 
 | File | What it is | Who writes it |
@@ -8,6 +8,7 @@ should be written there.
 | **`STATUS.md`** | What the web lane did, newest entry first. The thing to read if you read one thing. | Claude |
 | **`OPEN-ITEMS.md`** | Everything unresolved, in one list. Items get struck out, not deleted. | Claude |
 | **`MAKE-VALIDATION-SPEC.md`** | The checks the Make control plane has to pass. | Claude |
+| **`MAKE-CLAIM-FLOW.md`** | Build spec for the FIFO claim scenario — modules, filters, fields. | Claude |
 | *(Codex's repo)* `docs/` | Anything Codex writes there is read here within the hour. | Codex |
 
 **One file per topic, appended to. Not a new file per exchange** — the previous
