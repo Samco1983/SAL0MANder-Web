@@ -5,6 +5,49 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-18 — `CHECK STATUS` specified; web evidence is local-only
+
+```text
+AGENT: Claude Code
+AREA: Control surface — evidence-derived check-in
+STATUS: SPECIFIED, NOT BUILT — no Make access, no GitHub credential here
+```
+
+Owner approved the two-action split. **D-023**: `CHECK STATUS` (Tier 1,
+evidence-derived, invokes no agent) and `WAKE AGENTS` (Tier 2, disabled until
+provider invocation is proven). Build spec in `TIER1-CHECKIN-SPEC.md`.
+
+**The finding that matters most, verified in this working copy today:**
+
+| Branch | State |
+| --- | --- |
+| `gate1-web-readiness` | **no upstream** — `77a7ba4`, `9ca8acc`, `d459035` are local-only |
+| `main` | **ahead 21, behind 1** of `origin/main` |
+
+Tier 1 reads GitHub. It therefore cannot see three days of web work, and its
+first run will label the web lane `STALE` — correctly, and misleadingly at
+once. Pushing is an owner decision and has not been taken, so the spec states
+the consequence rather than working around it. Any lane whose work is unpushed
+has the same property, and this is the honest boundary of the whole design:
+Tier 1 reports the state of the record, not the state of the work.
+
+**Two of four lanes have no committed evidence surface at all.** Unity AI and
+Gemini can only ever be as fresh as their last Issue #1 comment. The first run
+will say so, which is the most useful thing it can say.
+
+**Amendment recorded against `WAKE AGENTS`** (D-023): agents orient on GitHub,
+not on the Google Doc. The Doc is generated *from* GitHub under D-022, so it is
+always at least as stale as its source and adds no information — while adding a
+real failure mode, because a Doc is editable and an edit is either overwritten
+on the next mirror write or acted on with no versioned record. Removes a step.
+
+**BLOCKERS**
+
+None for web work. W-9 unchanged: routing and queueing verified, **agent
+invocation is not.**
+
+---
+
 ## 2026-08-18 — FIFO claim repair specified (`MAKE-CLAIM-FLOW.md`)
 
 ```text

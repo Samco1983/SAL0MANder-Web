@@ -442,6 +442,79 @@ fixed by fixing GitHub. Accepted — that is the property being bought.
 
 ---
 
+## D-023 — Check-in is derived from evidence; waking agents is a separate, disabled action
+
+**Decided** · 2026-08-18 · owner ruling
+
+The control surface reserves **two distinct actions**, never one button:
+
+| Action | Tier | State | What it does |
+| --- | --- | --- | --- |
+| **`CHECK STATUS`** | 1 | buildable now | Derives every lane's state from committed evidence. Invokes no agent. |
+| **`WAKE AGENTS`** | 2 | **disabled** | Starts hosted provider sessions. Stays off until real provider invocation is proven end to end. |
+
+**Tier 1 accepts no self-reported status.** Every field is read from committed
+evidence — `STATUS.md` and the coordination docs, git history, and comments on
+`Samco1983/Sal0mander-Jigsaw-Puzzle` Issue #1. No AI agent is called, so no
+field can be authored by a model at read time.
+
+**Why the separation is the decision, not an implementation detail.** A freshly
+started headless session has no memory of what it was doing. Asked "current
+assignment, progress, blocker, next action", it can only produce a fluent,
+confident, ungrounded answer — and a dashboard renders that identically to a
+real one. Committed evidence cannot confabulate: it is either there, or it is
+absent and labelled. So the reliable half of the button is precisely the half
+that calls nobody, and it is worth shipping alone.
+
+**Missing evidence is labelled, never inferred.** `STALE` and `UNKNOWN` are
+first-class outputs. A lane with no readable evidence reads `UNKNOWN`, and no
+field is ever carried forward from a previous run to fill a gap — a stale value
+that looks current is the specific failure this decision exists to prevent.
+
+**W-9 stays explicit.** Routing and queueing are verified; **agent invocation is
+not.** Tier 1 does not close W-9, does not weaken it, and must not be presented
+as autonomy. It reports what the system has committed, not what any agent is
+doing right now.
+
+**One editable dashboard comment** on Issue #1, updated in place per
+`MAKE-VALIDATION-SPEC.md §5` — not a comment per run.
+
+**Cost, and it is real:** Tier 1's accuracy is bounded by what has been
+**pushed**. Unpushed local work is invisible and its lane reads `STALE`. That is
+the correct failure — visible, attributable, fixed by pushing — as against a
+confident wrong answer, which is what self-report produces. Accepted knowingly.
+
+Deliberately not built under this decision: Tier 2, GitHub workflow dispatch,
+Gemini API function calling, any publicly reachable webhook button, any provider
+invocation.
+
+### `WAKE AGENTS` — reserved semantics, still disabled
+
+Owner, 2026-08-18, recorded so the target is fixed before it is buildable. On
+press: start each available agent → have it orient on the latest briefing →
+check the linked GitHub evidence → continue its assignment or report a blocker →
+update Issue #1. The Google Doc is the easy briefing surface; GitHub stays the
+official proof.
+
+**One amendment, and it removes a step rather than adding one.** "Force it to
+read the Google Doc briefing" gives an agent no information it cannot get more
+cheaply and more currently from GitHub, because under D-022 the Doc is
+*generated from* GitHub and is therefore always at least as stale as its source.
+It does add a failure mode: a Doc is editable, someone will eventually type a
+correction into it, and that correction is either silently overwritten on the
+next mirror write or acted on by an agent with no versioned record of what it
+read. Both are the second-command-centre failure D-022 exists to prevent,
+arriving through the read path instead of the write path.
+
+So: **agents orient on GitHub; the Doc is the human's panel.** If an agent is to
+read the Doc at all, it reads it as an index of links and treats only the linked
+GitHub artifact as instruction. Nothing actionable is sourced from the Doc.
+
+Unchanged: `WAKE AGENTS` stays disabled until hosted provider invocation is
+proven (**W-9**).
+
+---
+
 ## DEFERRED — requires approval before implementation
 
 | ID    | Decision                          | Blocked on                                    |
