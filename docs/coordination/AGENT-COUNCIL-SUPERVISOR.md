@@ -4,7 +4,8 @@ This is the local proof-of-life for the council architecture.
 
 Current status:
 - `npm run council:dry-run` builds a deterministic context packet.
-- The packet reads `PROBE.md`, `CURRENT_STATE.md`, and the last 10 commits.
+- The packet reads `PROBE.md`, `CURRENT_STATE.md`, and the last 10 non-council
+  commit messages.
 - The supervisor computes a SHA-256 hash.
 - If the same hash already succeeded, it logs `no change` and exits with zero
   model calls.
@@ -17,6 +18,7 @@ Important boundary:
 
 Why this matters:
 - Repeated scheduled runs can become cheap and quiet.
+- Council-generated commits do not feed back into the next packet.
 - Failed or stale packets can be audited from disk.
 - The council can be upgraded one proof at a time instead of becoming another
   vague dashboard.

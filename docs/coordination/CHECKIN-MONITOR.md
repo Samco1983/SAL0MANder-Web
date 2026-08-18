@@ -94,9 +94,10 @@ The next automation layer is intentionally local and hash-gated:
 npm run council:dry-run
 ```
 
-It reads `PROBE.md`, `CURRENT_STATE.md`, and the last 10 commits, computes a
-packet hash, writes `docs/coordination/runs/<timestamp>-<hash8>/packet.json`,
-writes a short `RESULT.md`, appends `runs/ledger.jsonl`, and exits without model
-calls when the same packet hash has already succeeded.
+It reads `PROBE.md`, `CURRENT_STATE.md`, and the last 10 non-council commit
+messages, computes a packet hash, writes
+`docs/coordination/runs/<timestamp>-<hash8>/packet.json`, writes a short
+`RESULT.md`, appends `runs/ledger.jsonl`, and exits without model calls when the
+same packet hash has already succeeded.
 
 This is the safe proof before wiring Claude, Gemini, OpenAI, launchd, or Make.

@@ -61,6 +61,15 @@ function git(args) {
   }).trim()
 }
 
+function recentProductCommits() {
+  return git(['log', '-25', '--format=%s'])
+    .split('\n')
+    .filter((line) => line.trim())
+    .filter((line) => !line.startsWith('council:'))
+    .slice(0, RECENT_COMMIT_COUNT)
+    .join('\n')
+}
+
 function stableJson(value) {
   return JSON.stringify(sortKeys(value), null, 2)
 }
@@ -130,7 +139,7 @@ function buildPacket() {
         path: 'docs/coordination/CURRENT_STATE.md',
         body: readOptional(CURRENT_STATE_FILE),
       },
-      recentCommits: git(['log', `-${RECENT_COMMIT_COUNT}`, '--oneline']),
+      recentCommits: recentProductCommits(),
     },
   }
 }
