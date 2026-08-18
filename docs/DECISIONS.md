@@ -560,9 +560,28 @@ measures what can be checked.
   check is assigned to Codex or done by the owner. Nothing should stay blocked
   waiting on an agent that has never acknowledged anything.
 
-**Point is the owner.** Two scopes are not two decision-makers. Codex is
-accountable for the game and owns the coordination hub; Claude is accountable
-for the website. Both prove what they did. Neither decides what happens next.
+**Each lane has a lead** (owner, 2026-08-18). Claude **leads** the website;
+Codex **leads** the game. Leading means making the calls inside your own scope
+and bringing the owner the ones that need them — not waiting to be told each
+move. **Unity chat sits inside Codex's lane**, and Codex checks in with it. It
+is not a separate name floating outside, and nothing outside the game lane
+should sit blocked waiting on it.
+
+**Point is still the owner.** Two leads are not two decision-makers. Both leads
+prove what they did; neither decides what the project does next.
+
+### Combination questions go to everyone
+
+Where the two lanes touch — anything crossing the game↔website seam — nobody
+decides alone. **All input, owner decides.** That means Claude, Codex, Unity
+chat via Codex, and any advisory voice the owner wants in it.
+
+The seam is where every hard open question already lives: the bridge message
+set (**X-009**), who mints activity IDs (**X-010**), the contract transport
+(**X-011**), and the dropped-completion ruling (**W-10**). All four were already
+marked as needing joint agreement. This makes the rule general rather than
+per-item: a lane lead who decides a seam question alone has exceeded their lane,
+however reasonable the decision.
 
 **Why this is worth writing down:** the previous framing put four names on a
 chart, two of which could only ever render `UNKNOWN`. A dashboard with
