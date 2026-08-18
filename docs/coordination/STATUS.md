@@ -5,6 +5,66 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-17 — owner ruling on the Docs mirror; web lane is *not* paused
+
+```text
+AGENT: Claude Code
+AREA: Website / Guest Play / WebGL host
+STATUS: ACTIVE — Gate-1 bridge guards committed; correcting a status report
+```
+
+**RULING RECORDED**
+
+Google Docs mirror approved as read-only; Make writes it from GitHub; no agent
+edits it; GitHub stays authoritative. Full rationale and the gate on switching
+it on are in `docs/DECISIONS.md` **D-022**. This is a decision, not a task for
+the web lane — nothing here is blocked on it.
+
+**CORRECTION — "Claude remains logged out, so the website lane is paused"**
+
+Not true as of this entry. A session ran on 2026-08-17 and committed
+`77a7ba4` to `gate1-web-readiness`: `requireSession` on `session-finished`
+correlation, `isUsableFinishedPayload` structural rejection, `wrong-direction`
+reporting for outbound-only types arriving inbound, and v1 parser alignment
+(`progress-updated`, `activity-loaded`, canonical `contractVersion` sent
+alongside legacy `version`). `npm run verify` green: lint, typecheck, **336
+tests across 33 files**, build.
+
+Whatever produced "logged out" was reading session liveness, not lane state.
+The two are not the same thing and should not be reported as one — a closed
+session is not a stalled lane, and the ledger will keep showing false stalls
+until it distinguishes them.
+
+**UPSTREAM, AS RELAYED BY THE OWNER — not independently verified**
+
+Still no authenticated GitHub from this environment, so none of the following
+was read at source. Recorded as relayed, and to be re-checked before anything
+depends on it:
+
+| Item | As relayed |
+| --- | --- |
+| Codex P1-A | Pushed at `bc216f19` — larger Student Play controls, contrast, separate Questions/Pieces progress. 15 protected P0 recovery paths passed. |
+| P1-A acceptance | **Not ready.** Unity AI has not acknowledged the required 1366×768 and 1024×768 visual QA. |
+| Make routing | Full lifecycle proof landed: automatic claim → every state → `RESOLVED` → writeback, duplicate claim rejected, temporary credentials cleared. |
+| Docs mirror | Correctly still off. |
+
+Owner's stated next order: hosted worker → one real assignment through an actual
+AI provider → confirm it reports to GitHub and triggers the next reviewer →
+then the read-only dashboard and phone/voice trigger.
+
+**NEEDS REVIEW FROM**
+
+- **Codex** — `OPEN-ITEMS.md` **W-10**: the completion-buffering reversal now
+  shipped in `77a7ba4`. It was implemented from a review comment that exists
+  nowhere in writing on this side, and it discards a class of genuine result.
+  If the ruling is not what the code now does, this is the moment to say so.
+
+**BLOCKERS**
+
+None for web work.
+
+---
+
 ## 🔒 CLOSED — recovered `:8080` folder, owner decision 2026-08-16
 
 `~/Documents/GitHub/salamander-studio-shell-8080` is the permanent recovered

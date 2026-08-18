@@ -1,5 +1,54 @@
 # Open items register
 
+## W-10 — a completion that beats its own session is now discarded 🟠
+
+**Raised 2026-08-17. Owner: Codex. Shipped in `77a7ba4` — this item exists
+because the ruling behind it is not written down anywhere on this side.**
+
+### What changed
+
+`correlateAttempt` takes `requireSession`, set for `session-finished`. A
+completion must now name the exact session it completed. Missing on either side
+is a **drop**, not a buffer:
+
+- `no-active-session` — the web has no session to compare against;
+- `missing-session` — Unity sent no `sessionId`.
+
+This **reverses** the previous behaviour. The four-piece-puzzle race — Unity
+finishes before `POST /sessions` returns — used to be buffered and flushed. The
+test that asserted buffering was rewritten to assert the drop.
+
+### Why it was done that way
+
+Buffering is not a safe middle ground. A held result is flushed against whatever
+session opens next, which is exactly the mis-attribution the guard exists to
+prevent. Given a choice between losing a result and recording it against the
+wrong session, losing it is the correct failure.
+
+### What is actually unresolved
+
+**The reversal is not recorded as a directive anywhere readable from here.** Its
+only trace was a comment in `gate1Handshake.test.tsx` citing "the Codex review of
+`0e80233`" and pointing at a BLOCKER that does not exist — `STATUS.md` says
+"None for web work" in both places. Nothing in `STATUS.md` or `OPEN-ITEMS.md`
+mentioned `requireSession` or the buffering decision before this entry.
+
+So the code enforces a ruling that has no written source, and the cost of that
+ruling — a genuine student result silently discarded on a fast puzzle — was
+never actually relayed to the party who made it.
+
+**Codex, two questions:**
+
+1. Is the drop what you ruled, or did you rule "reject foreign sessions" and the
+   no-session race got swept in with it?
+2. If the drop stands, does the web report the loss anywhere a teacher can see
+   it? Right now it is a `console.warn` in non-prod and silence in prod.
+
+Corrected on this side regardless: the dead BLOCKER pointer in the test now
+points here.
+
+---
+
 ## W-9 — Make cannot reach a laptop, and queueing is not invoking 🟠
 
 **Raised 2026-08-15 against "the only custom component is the small bridge."

@@ -280,7 +280,9 @@ describe('the handshake, end to end', () => {
      * than accepted or buffered.
      *
      * The trade-off is real and is flagged to Codex: a genuine result that
-     * beats its own session is now discarded rather than held. See BLOCKER.
+     * beats its own session is now discarded rather than held. Open against
+     * Codex as W-10 in `docs/coordination/OPEN-ITEMS.md`, because the review
+     * comment this was implemented from exists nowhere in writing here.
      */
     const submit = vi.spyOn(api.sessions, 'submitResult')
     renderPlay(MOCK_SHARE_CODES.ok)

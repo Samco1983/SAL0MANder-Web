@@ -408,6 +408,40 @@ still marked DRAFT / NOT DEPLOYED.
 
 ---
 
+## D-022 — Google Docs is a read-only mirror; GitHub stays authoritative
+
+**Decided** · 2026-08-17 · owner ruling
+
+A Google Doc control panel is approved as a **visibility layer only**. Make
+writes it from GitHub. No agent — Claude, Codex, Gemini, Unity AI — edits it.
+
+The panel shows, per agent: what it is doing, last check-in time, current status
+and blocker, latest completed result, next assignment, decisions waiting on the
+owner, direct links back to the GitHub evidence, and a "last synchronized"
+timestamp.
+
+**Why one-way.** An editable mirror is a second command centre. Two writable
+ledgers drift, and the moment they disagree there is no way to tell which is
+correct without re-deriving the answer from the work itself. Read-only means a
+contradiction is always a mirror bug, never an authority question.
+
+Consistent with the existing rule that Make/GitHub is the routing and
+accountability layer and repo polling is only a convenience
+(`docs/coordination/README.md`). This extends the same principle to Docs.
+
+**Gate on turning it on:** the mirror stays off until one genuinely automatic
+Make cycle completes end to end. Owner has held it off correctly so far; as of
+2026-08-17 the routing proof has landed (claim → lifecycle → `RESOLVED` →
+writeback, with a duplicate claim rejected and temporary credentials cleared),
+but that proves the *pipeline*, not that a real AI provider can be woken and do
+real work. Owner's stated order: hosted worker → one real assignment through an
+actual provider → then the mirror.
+
+**Cost:** the owner cannot correct the panel in place; a wrong line there is
+fixed by fixing GitHub. Accepted — that is the property being bought.
+
+---
+
 ## DEFERRED — requires approval before implementation
 
 | ID    | Decision                          | Blocked on                                    |
