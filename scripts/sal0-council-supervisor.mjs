@@ -62,12 +62,25 @@ function git(args) {
 }
 
 function recentProductCommits() {
-  return git(['log', '-25', '--format=%s'])
-    .split('\n')
-    .filter((line) => line.trim())
-    .filter((line) => !line.startsWith('council:'))
+  return productCommitRows()
+    .map(({ subject }) => subject)
     .slice(0, RECENT_COMMIT_COUNT)
     .join('\n')
+}
+
+function latestProductHead() {
+  return productCommitRows()[0]?.hash || git(['rev-parse', 'HEAD'])
+}
+
+function productCommitRows() {
+  return git(['log', '-25', '--format=%H%x00%s'])
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const [hash, subject] = line.split('\0')
+      return { hash, subject }
+    })
+    .filter(({ subject }) => !subject.startsWith('council:'))
 }
 
 function stableJson(value) {
@@ -121,7 +134,7 @@ function buildPacket() {
     repo: {
       root: ROOT,
       branch: git(['branch', '--show-current']),
-      head: git(['rev-parse', 'HEAD']),
+      productHead: latestProductHead(),
       status: git([
         'status',
         '--short',

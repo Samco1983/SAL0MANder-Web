@@ -6,6 +6,8 @@ Current status:
 - `npm run council:dry-run` builds a deterministic context packet.
 - The packet reads `PROBE.md`, `CURRENT_STATE.md`, and the last 10 non-council
   commit messages.
+- The packet uses the latest non-council commit as `productHead`, so committing
+  council run evidence does not trigger another council run.
 - The supervisor computes a SHA-256 hash.
 - If the same hash already succeeded, it logs `no change` and exits with zero
   model calls.
