@@ -496,19 +496,38 @@ check the linked GitHub evidence → continue its assignment or report a blocker
 update Issue #1. The Google Doc is the easy briefing surface; GitHub stays the
 official proof.
 
-**One amendment, and it removes a step rather than adding one.** "Force it to
-read the Google Doc briefing" gives an agent no information it cannot get more
-cheaply and more currently from GitHub, because under D-022 the Doc is
-*generated from* GitHub and is therefore always at least as stale as its source.
-It does add a failure mode: a Doc is editable, someone will eventually type a
-correction into it, and that correction is either silently overwritten on the
-next mirror write or acted on by an agent with no versioned record of what it
-read. Both are the second-command-centre failure D-022 exists to prevent,
-arriving through the read path instead of the write path.
+**Amendment — read from the Doc, act from GitHub.** My first position was that
+agents should not read the Doc at all, on the grounds that it is generated from
+GitHub and so can never be fresher. Owner corrected this twice, and both
+corrections hold:
 
-So: **agents orient on GitHub; the Doc is the human's panel.** If an agent is to
-read the Doc at all, it reads it as an index of links and treats only the linked
-GitHub artifact as instruction. Nothing actionable is sourced from the Doc.
+1. **Reach is not the same as freshness.** Gemini opens a Google Doc natively;
+   reading GitHub needs a token and API calls. For some agents the Doc is
+   genuinely the cheaper door, and "always slightly staler" does not outweigh
+   "actually reachable".
+2. **GitHub has outages.** During one, a Doc copied 40 minutes ago is the only
+   readable picture of where things stand. A mirror has real availability value
+   precisely when the source is down.
+
+So the split is by *verb*, not by surface:
+
+- **Reading the Doc: permitted**, for any agent that reaches it more easily.
+- **Acting on the Doc: never.** Anything an agent will actually do resolves to a
+  GitHub artifact. The Doc points at it.
+- **Every Doc line carries the commit sha it was derived from and the UTC time
+  it was written.** That stamp is what makes the first rule safe — a reader can
+  see exactly how old the line is and go to the source when it matters.
+- **If GitHub is unreachable, nothing acts.** The agent reports "cannot verify"
+  and stops. An outage is when unverifiable action does the most damage: no
+  agent can see another's work, and none can write back to Issue #1, so drift
+  is silent and simultaneous.
+
+The hazard this preserves against is unchanged. A Doc is editable, someone will
+eventually type a correction into it, and that correction is either overwritten
+on the next mirror write or acted on with no versioned record of what was read —
+the second-command-centre failure D-022 exists to prevent, arriving through the
+read path instead of the write path. Stamping every line and forbidding action
+on unlinked Doc text is what closes it without banning the read.
 
 Unchanged: `WAKE AGENTS` stays disabled until hosted provider invocation is
 proven (**W-9**).
