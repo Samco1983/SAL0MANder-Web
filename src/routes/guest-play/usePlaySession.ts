@@ -14,11 +14,43 @@ export type PlaySessionState =
       attemptId: string
       result: Omit<SessionResult, 'sessionId'>
       error: ApiError
+      /**
+       * The session the result belongs to, when one was ever opened.
+       *
+       * Absent when `POST /sessions` itself failed — there is no session to
+       * submit against, and {@link PlaySessionApi.retryDelivery} re-opens one
+       * instead of resubmitting.
+       */
+      session?: PlaySession
     }
   | { status: 'error'; error: ApiError }
 
 export type PlaySessionApi = PlaySessionState & {
   submit: (result: Omit<SessionResult, 'sessionId'>) => Promise<void>
+  /**
+   * Deliver a held result, by whichever route is missing.
+   *
+   * Safe by construction rather than by convention, on both routes:
+   *
+   * - the submission failed → resend against the same session, keyed on
+   *   `resultKeyFor(session.id)`, a pure function of the session, so the server
+   *   sees one write;
+   * - the session never opened → re-run `POST /sessions` under the *same*
+   *   `clientAttemptId`, which is the idempotency key, so a start that in fact
+   *   succeeded server-side returns that session rather than a second one. The
+   *   held result goes back into the buffer and takes the ordinary flush path.
+   *
+   * A no-op from any state with nothing deliverable held, and from a held
+   * result whose attempt the app has already moved past — see {@link canRetry}.
+   */
+  retryDelivery: () => Promise<void>
+  /**
+   * Whether {@link retryDelivery} would actually do something.
+   *
+   * Offering a button that silently does nothing is its own version of the
+   * defect this state exists to fix, so the surface asks rather than guesses.
+   */
+  canRetry: boolean
   reset: () => void
 }
 
@@ -90,6 +122,15 @@ export function usePlaySession({
   /** A result that arrived before the session did. Held with its attempt id. */
   const pendingResultRef = useRef<PendingResult | undefined>(undefined)
 
+  /**
+   * The attempt id the *open* session was started under.
+   *
+   * Not the same as the current `clientAttemptId`, which can already have been
+   * renewed by the time a submission fails. A held result must be labelled with
+   * the attempt that produced it, or the record is worse than useless.
+   */
+  const startedAttemptRef = useRef<string | undefined>(undefined)
+
   useEffect(() => {
     // No mode, no session. See the field docs above.
     if (!enabled || !activityId || !activityVersionId || !selectedPlayMode) return
@@ -114,7 +155,9 @@ export function usePlaySession({
         idempotencyKey,
       )
       .then((session) => {
-        if (active) setState({ status: 'active', session })
+        if (!active) return
+        startedAttemptRef.current = idempotencyKey
+        setState({ status: 'active', session })
       })
       .catch((error: unknown) => {
         if (!active || controller.signal.aborted) return
@@ -137,6 +180,46 @@ export function usePlaySession({
       controller.abort()
     }
   }, [activityId, activityVersionId, selectedPlayMode, clientAttemptId, enabled, attempt])
+
+  /**
+   * Send a completed result to the backend, once — the single path every
+   * submission takes, live, buffered or retried.
+   *
+   * **A failure here is not an error, it is a held result.** The student has
+   * already finished; the numbers exist and nothing else in the system has
+   * them. Collapsing that into `{ status: 'error', error }` threw the result,
+   * the attempt id and the ability to retry away in one assignment, which is
+   * the same silence W-10 forbade — arriving on the more likely path, since
+   * this call happens at the *end* of a session rather than the start.
+   */
+  const deliver = useCallback(
+    async (session: PlaySession, result: Omit<SessionResult, 'sessionId'>, attemptId: string) => {
+      setState({ status: 'submitting', session })
+      try {
+        const updated = await api.sessions.submitResult(
+          session.id,
+          { ...result, sessionId: session.id },
+          // Pure function of the session: the same retry, from any client, at
+          // any time, derives the same key.
+          resultKeyFor(session.id),
+        )
+        setState({ status: 'finished', session: updated })
+        // The attempt is over; a subsequent start should be a new session.
+        // Only on success — ending the attempt identity while a result is still
+        // undelivered would let a reload orphan it.
+        clearStartKey(session.activityVersionId)
+      } catch (error) {
+        setState({
+          status: 'result-undeliverable',
+          attemptId,
+          result,
+          error: toApiError(error),
+          session,
+        })
+      }
+    },
+    [],
+  )
 
   const submit = useCallback(
     async (result: Omit<SessionResult, 'sessionId'>) => {
@@ -161,26 +244,40 @@ export function usePlaySession({
 
       // Any other non-active state would invent a session id or double-submit.
       if (state.status !== 'active') return
-      const { session } = state
 
-      setState({ status: 'submitting', session })
-      try {
-        const updated = await api.sessions.submitResult(
-          session.id,
-          { ...result, sessionId: session.id },
-          // Pure function of the session: the same retry, from any client, at
-          // any time, derives the same key.
-          resultKeyFor(session.id),
-        )
-        setState({ status: 'finished', session: updated })
-        // The attempt is over; a subsequent start should be a new session.
-        clearStartKey(session.activityVersionId)
-      } catch (error) {
-        setState({ status: 'error', error: toApiError(error) })
-      }
+      await deliver(
+        state.session,
+        result,
+        startedAttemptRef.current ?? clientAttemptId ?? state.session.id,
+      )
     },
-    [state, clientAttemptId],
+    [state, clientAttemptId, deliver],
   )
+
+  /**
+   * True when a held result has a route to the backend. See
+   * {@link PlaySessionApi.retryDelivery} for the two routes.
+   */
+  const canRetry =
+    state.status === 'result-undeliverable' &&
+    (Boolean(state.session) || state.attemptId === clientAttemptId)
+
+  /** Deliver a held result. See {@link PlaySessionApi.retryDelivery}. */
+  const retryDelivery = useCallback(async () => {
+    if (state.status !== 'result-undeliverable') return
+
+    if (state.session) {
+      await deliver(state.session, state.result, state.attemptId)
+      return
+    }
+
+    // No session ever opened. Re-running the start is only correct while the
+    // app is still on that attempt — under a renewed attempt id the start would
+    // open a session the held result does not belong to.
+    if (state.attemptId !== clientAttemptId) return
+    pendingResultRef.current = { attemptId: state.attemptId, result: state.result }
+    setAttempt((n) => n + 1)
+  }, [state, deliver, clientAttemptId])
 
   /**
    * Flush a buffered result as soon as the session exists.
@@ -215,7 +312,7 @@ export function usePlaySession({
     setAttempt((n) => n + 1)
   }, [onRenewAttempt])
 
-  return { ...state, submit, reset }
+  return { ...state, submit, retryDelivery, canRetry, reset }
 }
 
 function toApiError(error: unknown): ApiError {

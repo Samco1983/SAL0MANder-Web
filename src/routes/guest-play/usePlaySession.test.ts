@@ -211,14 +211,23 @@ describe('submitting a result', () => {
     expect(sessionStorage.getItem('sal0mander.session.startKey.av_1')).toBeNull()
   })
 
-  it('surfaces a submit failure without losing the session', async () => {
+  it('surfaces a submit failure without losing the session or the result', async () => {
+    // Was asserted as `error` until W-13. That state carries an ApiError and
+    // nothing else, so it discarded the student's completed work at the exact
+    // moment the work existed and the backend did not have it. Full coverage of
+    // the corrected behaviour is in `resultDelivery.test.ts`.
     submitResult.mockRejectedValue(new ApiError({ code: 'timeout', message: 'slow' }))
     const { result } = setup()
     await waitFor(() => expect(result.current.status).toBe('active'))
 
     await act(async () => result.current.submit(outcome))
 
-    expect(result.current.status).toBe('error')
+    expect(result.current).toMatchObject({
+      status: 'result-undeliverable',
+      attemptId: 'attempt-1',
+      result: outcome,
+      session: { id: 'ses_1' },
+    })
   })
 })
 

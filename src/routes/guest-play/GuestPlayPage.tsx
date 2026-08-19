@@ -41,6 +41,45 @@ function LinkFailure({ error, retry }: { error: ApiError; retry: () => void }) {
 }
 
 /**
+ * A finished result the backend has not accepted yet.
+ *
+ * Ruled visible-now rather than deferred to teacher/admin reporting: a student
+ * who completed an activity and whose result silently vanished has no way to
+ * know, and neither has anyone else. Deliberately undramatic — the game is over
+ * and nothing the student did was lost — and deliberately in the companion
+ * panel, so a save problem never overlays or interrupts the stage.
+ *
+ * The retry is offered when the hook says it would do something. A button that
+ * silently does nothing would be the same defect in a new costume.
+ */
+function UndeliveredResult({
+  attemptId,
+  retryable,
+  retry,
+}: {
+  attemptId: string
+  retryable: boolean
+  retry: () => void
+}) {
+  return (
+    <div className={styles.undelivered} role="alert">
+      <h2 className={styles.undeliveredTitle}>Your finished activity isn't saved yet</h2>
+      <p className={styles.undeliveredBody}>
+        {retryable
+          ? 'You finished — nothing is lost. Saving it to your teacher did not go through, so try again when the connection is back.'
+          : 'You finished — nothing is lost. This device is holding your result until it can be saved.'}
+      </p>
+      {retryable ? (
+        <Button className={styles.retry} onClick={retry}>
+          Try saving again
+        </Button>
+      ) : null}
+      <p className={styles.undeliveredMeta}>attempt: {attemptId}</p>
+    </div>
+  )
+}
+
+/**
  * Guest Play — the distribution-critical route.
  *
  * A teacher's share link lands here. Reaching playable content requires no
@@ -198,9 +237,9 @@ export function GuestPlayPage() {
   )
 
   // Unity reports a finished game across the bridge; the web layer records it.
-  // A submit failure is deliberately silent to the student — the game is over
-  // and the result is the teacher's concern, not something to interrupt a
-  // child with.
+  // A submit failure does not interrupt the stage — the game is over — but it
+  // is no longer silent either: it surfaces in the companion panel, holding the
+  // result and its attempt id, with a retry. See W-13.
   useEffect(() => {
     return onUnityMessage((message) => {
       if (message.type !== 'session-finished') return
@@ -266,6 +305,14 @@ export function GuestPlayPage() {
             ) : null}
 
             {state.status === 'error' ? <LinkFailure error={state.error} retry={state.retry} /> : null}
+
+            {session.status === 'result-undeliverable' ? (
+              <UndeliveredResult
+                attemptId={session.attemptId}
+                retryable={session.canRetry}
+                retry={() => void session.retryDelivery()}
+              />
+            ) : null}
 
             {state.status === 'ready' ? (
               <>

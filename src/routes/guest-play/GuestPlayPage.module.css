@@ -16,6 +16,39 @@
   margin-top: var(--space-4);
 }
 
+/*
+ * A finished result the backend has not accepted.
+ *
+ * Warning, not danger: nothing the student did was lost or wrong, and the game
+ * is over either way. It lives in the companion panel and never overlays the
+ * stage — a save problem must not look like a game problem.
+ */
+.undelivered {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  background: var(--color-warning-soft);
+}
+
+.undeliveredTitle {
+  font-size: var(--text-md);
+  margin-bottom: var(--space-2);
+}
+
+.undeliveredBody {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.undeliveredMeta {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+  word-break: break-all;
+}
+
 .meta {
   margin-top: auto;
   padding-top: var(--space-4);
