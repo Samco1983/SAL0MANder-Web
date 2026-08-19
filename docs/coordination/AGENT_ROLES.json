@@ -13,7 +13,11 @@
   "agents": [
     {
       "id": "codex",
-      "displayName": "Codex",
+      "number": "SAL0-01",
+      "codename": "Architect",
+      "surfaceLabel": "Codex Desktop",
+      "displayName": "SAL0-01 Architect — Codex Desktop",
+      "clearRole": "Technical Lead",
       "authority": "technical-point-person",
       "primaryLane": "Unity/Game",
       "surfaces": ["desktop-chat", "cli"],
@@ -49,8 +53,51 @@
       ]
     },
     {
+      "id": "codex-cli",
+      "number": "SAL0-02",
+      "codename": "Runner",
+      "surfaceLabel": "Codex CLI",
+      "displayName": "SAL0-02 Runner — Codex CLI",
+      "clearRole": "Local Execution",
+      "authority": "local-execution-worker",
+      "primaryLane": "Coordination",
+      "surfaces": ["cli"],
+      "sessionPolicy": "stateless worker; receives task-specific packets only",
+      "callWhen": [
+        "repo-status-check",
+        "test-run",
+        "diff-summary",
+        "bounded-command-line-investigation",
+        "stateless-technical-task"
+      ],
+      "outputSchema": "command output, implementation evidence, or blocker",
+      "allowedActions": [
+        "read-approved-project-files",
+        "run-approved-commands",
+        "run-tests",
+        "summarize-diffs",
+        "write-run-evidence"
+      ],
+      "forbiddenActions": [
+        "touch-secrets",
+        "destructive-git-without-owner-approval",
+        "persist-hidden-memory",
+        "claim-desktop-chat-context"
+      ],
+      "failsafes": [
+        "stateless-packet-required",
+        "exit-code-required",
+        "stdout-stderr-captured",
+        "timeout-required"
+      ]
+    },
+    {
       "id": "chatgpt-openai",
-      "displayName": "ChatGPT / OpenAI",
+      "number": "SAL0-03",
+      "codename": "Director",
+      "surfaceLabel": "OpenAI API",
+      "displayName": "SAL0-03 Director — OpenAI API",
+      "clearRole": "Product Decision",
       "authority": "program-product-manager",
       "primaryLane": "Coordination",
       "surfaces": ["desktop-chat", "api"],
@@ -81,7 +128,11 @@
     },
     {
       "id": "claude",
-      "displayName": "Claude",
+      "number": "SAL0-04",
+      "codename": "Builder",
+      "surfaceLabel": "Claude CLI",
+      "displayName": "SAL0-04 Builder — Claude CLI",
+      "clearRole": "Web/Code Work",
       "authority": "web-code-lead-and-adversarial-reviewer",
       "primaryLane": "Web",
       "surfaces": ["cli", "browser-chat"],
@@ -115,8 +166,47 @@
       ]
     },
     {
+      "id": "claude-chat",
+      "number": "SAL0-05",
+      "codename": "Reviewer",
+      "surfaceLabel": "Claude Chat",
+      "displayName": "SAL0-05 Reviewer — Claude Chat",
+      "clearRole": "Manual Critique",
+      "authority": "manual-adversarial-reviewer",
+      "primaryLane": "Web",
+      "surfaces": ["browser-chat"],
+      "sessionPolicy": "manual consult only unless copied into run evidence",
+      "callWhen": [
+        "manual-ux-review",
+        "accessibility-pushback",
+        "architecture-overreach-review",
+        "copy-paste-review"
+      ],
+      "outputSchema": "manual review copied into run evidence",
+      "allowedActions": [
+        "review-pasted-context",
+        "produce-manual-critique",
+        "raise-ux-or-accessibility-risk"
+      ],
+      "forbiddenActions": [
+        "claim-cli-evidence",
+        "edit-repos-directly",
+        "touch-secrets",
+        "be-treated-as-automation-identity"
+      ],
+      "failsafes": [
+        "manual-output-must-be-copied-into-evidence",
+        "label-as-manual-review",
+        "no-vague-approval"
+      ]
+    },
+    {
       "id": "gemini",
-      "displayName": "Gemini",
+      "number": "SAL0-06",
+      "codename": "Scout",
+      "surfaceLabel": "Gemini Chat",
+      "displayName": "SAL0-06 Scout — Gemini Chat",
+      "clearRole": "Google/Browser Review",
       "authority": "google-cloud-browser-security-challenger",
       "primaryLane": "Coordination",
       "surfaces": ["browser-chat", "cli-or-api-later"],
@@ -148,8 +238,48 @@
       ]
     },
     {
+      "id": "gemini-api-cli",
+      "number": "SAL0-07",
+      "codename": "Challenger",
+      "surfaceLabel": "Gemini API/CLI",
+      "displayName": "SAL0-07 Challenger — Gemini API/CLI",
+      "clearRole": "Automated Critique",
+      "authority": "automated-google-cloud-security-challenger",
+      "primaryLane": "Coordination",
+      "surfaces": ["api", "cli"],
+      "sessionPolicy": "future unattended critique worker; must be proven before activation",
+      "callWhen": [
+        "automated-critique",
+        "google-cloud-security-risk",
+        "oauth-storage-risk",
+        "critique-claude-position"
+      ],
+      "outputSchema": "sal0-council-critique-v0",
+      "allowedActions": [
+        "critique-specific-claude-claim",
+        "cite-challenged-claim",
+        "raise-security-or-scaling-risk"
+      ],
+      "forbiddenActions": [
+        "generic-praise",
+        "independent-answer-without-claim-reference",
+        "edit-repos-directly",
+        "claim-private-github-access-unless-proven"
+      ],
+      "failsafes": [
+        "must-reference-claude-claim-id",
+        "must-quote-challenged-claim",
+        "schema-validate-critique",
+        "fail-if-cli-or-api-unproven"
+      ]
+    },
+    {
       "id": "unity-ai",
-      "displayName": "Unity AI",
+      "number": "SAL0-08",
+      "codename": "Inspector",
+      "surfaceLabel": "Unity MCP",
+      "displayName": "SAL0-08 Inspector — Unity MCP",
+      "clearRole": "Unity Evidence",
       "authority": "unity-editor-specialist",
       "primaryLane": "Unity/Game",
       "surfaces": ["unity-editor", "mcp"],
@@ -182,7 +312,11 @@
     },
     {
       "id": "make",
-      "displayName": "Make",
+      "number": "SAL0-09",
+      "codename": "Signal",
+      "surfaceLabel": "Make Cloud",
+      "displayName": "SAL0-09 Signal — Make Cloud",
+      "clearRole": "Outside Automation",
       "authority": "outside-edge-automation",
       "primaryLane": "Make Automation",
       "surfaces": ["webhooks", "dashboard"],
@@ -211,6 +345,44 @@
         "idempotency-key-required",
         "no-secret-proof-required",
         "manual-confirmation-before-live-scenario-change"
+      ]
+    },
+    {
+      "id": "github",
+      "number": "SAL0-10",
+      "codename": "Ledger",
+      "surfaceLabel": "GitHub Cloud",
+      "displayName": "SAL0-10 Ledger — GitHub Cloud",
+      "clearRole": "Source Of Truth",
+      "authority": "durable-evidence-hub",
+      "primaryLane": "Coordination",
+      "surfaces": ["cloud", "issues", "pull-requests", "commits"],
+      "sessionPolicy": "durable evidence and audit trail, not model memory",
+      "callWhen": [
+        "record-evidence",
+        "verify-commit",
+        "open-or-review-pr",
+        "read-accepted-project-truth"
+      ],
+      "outputSchema": "commit, issue, pull request, or comment reference",
+      "allowedActions": [
+        "store-commits",
+        "store-issues",
+        "store-pull-requests",
+        "store-review-comments",
+        "preserve-audit-trail"
+      ],
+      "forbiddenActions": [
+        "replace-human-acceptance",
+        "act-as-scheduler",
+        "store-secrets-in-comments",
+        "silently-promote-agent-opinions"
+      ],
+      "failsafes": [
+        "source-pointer-required",
+        "private-access-must-be-explicit",
+        "no-secret-comments",
+        "branch-before-merge"
       ]
     }
   ]

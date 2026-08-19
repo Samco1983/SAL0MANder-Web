@@ -8,6 +8,9 @@ Codex's technical ruling for this layer lives in
 Agent roles and session fail-safes live in `AGENT_ROLES.json` and
 `SESSION-FAILSAFES.md`.
 
+The current human-facing Mission Control session record lives in
+`MISSION-CONTROL-SESSION.md`.
+
 Current status:
 - `npm run council:dry-run` builds a deterministic context packet.
 - `npm run --silent council:print-packet` prints the exact packet for review

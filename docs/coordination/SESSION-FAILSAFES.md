@@ -1,6 +1,7 @@
 # Session And Fail-Safe Plan
 
-The supervisor must distinguish agent identity, surface, and capability.
+Our SAL0MANder Mission Control supervisor must distinguish agent identity,
+surface, and capability.
 
 ## Session Rules
 
@@ -15,15 +16,16 @@ The supervisor must distinguish agent identity, surface, and capability.
 
 ## Recommended Rooms
 
-- Codex desktop chat: main technical command room.
-- Codex CLI: stateless technical worker or explicit consultation.
-- Claude CLI: web/code POSITION worker when available.
-- Claude browser chat: manual consult only unless copied into run evidence.
-- Gemini browser chat: live Google/browser/cloud challenger while Samuel is
-  present.
-- Gemini CLI/API: future unattended critique worker after proof.
-- GitHub Issue/PR: durable evidence hub.
-- Make: outside-edge webhook/notification/Google Docs mirror.
+- SAL0-01 Architect — Codex Desktop — Technical Lead.
+- SAL0-02 Runner — Codex CLI — Local Execution.
+- SAL0-03 Director — OpenAI API — Product Decision.
+- SAL0-04 Builder — Claude CLI — Web/Code Work.
+- SAL0-05 Reviewer — Claude Chat — Manual Critique.
+- SAL0-06 Scout — Gemini Chat — Google/Browser Review.
+- SAL0-07 Challenger — Gemini API/CLI — Automated Critique.
+- SAL0-08 Inspector — Unity MCP — Unity Evidence.
+- SAL0-09 Signal — Make Cloud — Outside Automation.
+- SAL0-10 Ledger — GitHub Cloud — Source Of Truth.
 
 ## Fail-Safe States
 
@@ -62,4 +64,3 @@ Stop the run when:
 - a requested action crosses lanes without a boundary review;
 - a destructive or spending action is needed;
 - milestone acceptance is required from Samuel.
-
