@@ -413,7 +413,7 @@ ${stableJson(packet)}
 `
 }
 
-function runClaudePosition(packet, runDir) {
+function runClaudePosition(packet, runDir, commandsRun) {
   const prompt = buildClaudePrompt(packet)
   atomicWrite(join(runDir, '01-claude-prompt.txt'), prompt)
 
@@ -680,7 +680,7 @@ function run() {
     runSchemaValidationProof()
     let claudePosition = null
     if (runAgents) {
-      const outcome = runClaudePosition(packet, runDir)
+      const outcome = runClaudePosition(packet, runDir, commandsRun)
       claudePosition = outcome.position
       costUsd = outcome.costUsd
       modelCalls = 1
