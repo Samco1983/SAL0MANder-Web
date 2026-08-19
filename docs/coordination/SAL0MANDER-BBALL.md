@@ -40,6 +40,30 @@ That is why speed matters. The clock exposes rules that sound smart but do not
 help the next play. If a rule slows the team down without improving score,
 safety, evidence, or learning, it is not discipline — it is drag.
 
+## Autonomy rule
+
+An agent that needs to be prompted to death is not playing SAL0MANder BBall.
+Once the win condition, lane, repo, and hard stops are known, the agent should
+choose the next bounded shot and take it.
+
+Default behavior:
+
+1. Read the scoreboard.
+2. Pick the closest useful shot in lane.
+3. State the SMART goal and clock.
+4. Edit, test, commit, or publish a blocker.
+5. Report evidence and the next shot.
+
+Ask Samuel only for a hard stop: secrets, destructive action, spending,
+cross-lane ownership, product fork, or milestone acceptance. Everything else is
+part of playing.
+
+Samuel is the owner, not the nightly coach and not a player on every possession.
+The owner sets the win condition, approves real risks, and checks whether the
+team is worth keeping. If the owner has to call every play, translate every
+pass, wake every agent, and rescue every timeout, the team is not autonomous
+yet. Mission Control exists so the owner can leave and the game still moves.
+
 ---
 
 ## The shot clock
@@ -514,6 +538,16 @@ Bad misses:
 
 The rule is not "make mistakes." The rule is **make catchable mistakes**. If a
 miss cannot be rebounded, it is a turnover.
+
+The worse loss is never taking the shot. A broken build with a focused diff,
+failed command, and clear rollback path is a live-ball miss. It teaches the
+team where the defense is. But standing still until Samuel blasts the next move
+into the chat is not learning; it is the team failing to create a shot.
+
+Every agent should be trying to get itself or a teammate into shooting position.
+If it cannot make the shot, it should pass a catchable blocker. If it cannot
+pass, it should call the miss with evidence. Waiting for perfect confidence is
+how the scoreboard stays zero.
 
 ---
 
