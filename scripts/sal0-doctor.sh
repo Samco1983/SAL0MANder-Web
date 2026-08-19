@@ -40,18 +40,27 @@ hr
 # ── Claude ──────────────────────────────────────────────────────────────────
 CLAUDE="$HOME/.local/bin/claude"
 if [ -x "$CLAUDE" ]; then
-  mine=$("$CLAUDE" -p "$PROBE" --output-format json 2>&1 \
+  mine=$("$CLAUDE" -p "$PROBE" --output-format json 2>/dev/null \
     | python3 -c "import json,sys
 try: print('FAIL' if json.load(sys.stdin).get('is_error') else 'ok')
 except Exception: print('FAIL')")
-  sched=$(env -i HOME="$HOME" PATH="$SCHED_PATH" "$CLAUDE" -p "$PROBE" --output-format json 2>&1 \
+  # Test the path the runner actually uses. sal0-work-loop.sh reads this file
+  # and exports CLAUDE_CODE_OAUTH_TOKEN, so a doctor that omits it reports FAIL
+  # for a system that works — a false negative, and a check that cries wolf is
+  # one people stop reading.
+  TOKEN_FILE="${SAL0_CLAUDE_TOKEN_FILE:-$HOME/.sal0mander/secrets/claude_oauth_token}"
+  TOKEN=""
+  [ -f "$TOKEN_FILE" ] && TOKEN="$(cat "$TOKEN_FILE")"
+  sched=$(env -i HOME="$HOME" PATH="$SCHED_PATH" CLAUDE_CODE_OAUTH_TOKEN="$TOKEN" \
+    "$CLAUDE" -p "$PROBE" --output-format json 2>/dev/null \
     | python3 -c "import json,sys
 try:
     d=json.load(sys.stdin)
     print('FAIL: '+str(d.get('result'))[:38] if d.get('is_error') else 'ok')
 except Exception: print('FAIL: no json')")
+  [ -z "$TOKEN" ] && sched="$sched (no token file)"
   row "claude" "$mine" "$sched"
-  case "$sched" in ok) pass=$((pass+1));; *) fail=$((fail+1));; esac
+  case "$sched" in ok*) pass=$((pass+1));; *) fail=$((fail+1));; esac
 else
   row "claude" "not installed" "—"
 fi
