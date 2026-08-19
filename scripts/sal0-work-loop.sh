@@ -222,9 +222,96 @@ run_worker_with_clock "$LOG_DIR/work-loop-$STAMP.json"
 EXIT=$?
 echo "claude exit code: $EXIT"
 
-# The worker is told NOT to commit, so HEAD never moves on its own. Its output
-# arrives as an uncommitted working tree — that is what has to be looked at.
-# Comparing HEAD before and after can only ever report NOTHING CHANGED.
+WORKER_HEAD="$($GIT rev-parse HEAD)"
+if [ "$WORKER_HEAD" != "$BEFORE" ]; then
+  COMMITTED_FILES="$($GIT diff --name-only "$BEFORE..$WORKER_HEAD" -- . ':(exclude)docs/coordination/runs')"
+  FILES="$(printf '%s\n' "$COMMITTED_FILES" | sed '/^$/d' | wc -l | tr -d ' ')"
+  echo "worker moved HEAD to ${WORKER_HEAD:0:8}; committed $FILES file(s):"
+  printf '%s\n' "$COMMITTED_FILES"
+
+  if [ "$EXIT" -ne 0 ]; then
+    echo "ONE THING THAT CHANGED: BAD TURNOVER — worker committed but exited $EXIT"
+    micro_huddle \
+      "Worker moved HEAD and then failed." \
+      "Commit ${WORKER_HEAD:0:8} exists, but worker exit was $EXIT." \
+      "A made-looking shot with a failing runner needs review before the next possession." \
+      "SAL0-01" \
+      "auto" \
+      "Treating a committed-but-failed worker as automatically green."
+    echo "=== end $STAMP (exit 1) ==="
+    exit 1
+  fi
+
+  npm run verify >"$LOG_DIR/verify-$STAMP.log" 2>&1
+  VERIFY=$?
+  echo "npm run verify exit: $VERIFY"
+  if [ "$VERIFY" -ne 0 ]; then
+    echo "ONE THING THAT CHANGED: REBOUNDABLE MISS — worker commit ${WORKER_HEAD:0:8} fails verify"
+    echo "verify log: $LOG_DIR/verify-$STAMP.log"
+    micro_huddle \
+      "Worker committed, but verify failed afterward." \
+      "Commit ${WORKER_HEAD:0:8} needs repair before it counts as a score." \
+      "Committed work still has to clear the same evidence gate as an uncommitted diff." \
+      "SAL0-04 or SAL0-07" \
+      "auto" \
+      "Counting a pushed commit without a verify pass."
+    echo "=== end $STAMP (exit 1) ==="
+    exit 1
+  fi
+
+  if $GIT push origin "$BRANCH"; then
+    echo "pushed"
+  else
+    echo "ONE THING STILL UNVERIFIED: PUSH FAILED — commit ${WORKER_HEAD:0:8} is local only"
+    echo "BLOCKED - NEED OWNER — GitHub did not receive the commit. Other agents cannot see it."
+    micro_huddle \
+      "Worker commit verified locally, but push failed." \
+      "Local commit ${WORKER_HEAD:0:8} exists only on this machine." \
+      "A local-only score is not visible to the team until GitHub receives it." \
+      "SAL0-02" \
+      "auto" \
+      "Telling other agents to rely on an unpushed commit."
+    echo "=== end $STAMP (exit 1) ==="
+    exit 1
+  fi
+
+  ISSUE="$(grep -m1 'Work GitHub issue #' "$SKILL" 2>/dev/null | grep -o '[0-9]\+' | head -1 || true)"
+  if [ -n "${ISSUE:-}" ] && command -v gh >/dev/null 2>&1; then
+    if gh issue comment "$ISSUE" --repo Samco1983/SAL0MANder-Web --body "Automated work loop \`$STAMP\`
+
+**ONE THING THAT CHANGED:** COMMITTED \`${WORKER_HEAD:0:8}\` — $FILES file(s), \`npm run verify\` exit 0
+
+Files touched:
+\`\`\`
+$(printf '%s\n' "$COMMITTED_FILES" | head -20)
+\`\`\`
+
+https://github.com/Samco1983/SAL0MANder-Web/commit/$WORKER_HEAD" >/dev/null 2>&1; then
+      echo "commented on issue #$ISSUE"
+    else
+      echo "issue comment failed"
+    fi
+  fi
+
+  if command -v osascript >/dev/null 2>&1; then
+    osascript -e "display notification \"$FILES file(s) committed ${WORKER_HEAD:0:8}\" with title \"SAL0MANder work loop\"" >/dev/null 2>&1 || true
+  fi
+
+  echo "ONE THING THAT CHANGED: COMMITTED ${WORKER_HEAD:0:8} — $FILES file(s), verify passed"
+  $GIT --no-pager log --oneline -1
+  micro_huddle \
+    "Worker produced its own verified, pushed commit." \
+    "Commit ${WORKER_HEAD:0:8}, $FILES file(s), verify passed." \
+    "The scoreboard checked HEAD movement before checking tree cleanliness." \
+    "SAL0-07 or next queue owner" \
+    "auto" \
+    "Calling a clean tree empty after a worker commit."
+  echo "=== end $STAMP (exit $EXIT) ==="
+  exit 0
+fi
+
+# The normal worker path arrives as an uncommitted working tree. If the worker
+# commits anyway, the HEAD-movement path above owns that evidence.
 DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
 
 if [ -z "$DIRTY" ]; then

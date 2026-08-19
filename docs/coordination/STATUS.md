@@ -5,6 +5,47 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — work-loop scoreboard now detects worker-made commits
+
+```text
+AGENT: Codex Desktop
+AREA: Mission Control / scheduled work loop evidence
+STATUS: SHIPPED, verify green
+```
+
+**WHAT CHANGED**
+
+The 01:17 scheduled run produced commit `7355614`, but the loop log still said
+`ONE THING THAT CHANGED: NOTHING CHANGED`. The root cause was the evidence
+order: after Claude exited, the loop checked only whether the working tree was
+dirty. If Claude had already committed, the tree was clean, so a real shot was
+scored and then reported as empty.
+
+`scripts/sal0-work-loop.sh` now checks `HEAD` movement before working-tree
+cleanliness. If the worker moved `HEAD`, the loop:
+
+- lists files changed from `BEFORE..HEAD`;
+- treats non-zero worker exit after a commit as a bad turnover;
+- runs `npm run verify` against the worker-made commit;
+- pushes the verified commit;
+- comments on the GitHub issue when an issue can be identified;
+- reports the made shot as `COMMITTED <hash>` instead of `NOTHING CHANGED`.
+
+The uncommitted-diff path remains intact for the normal worker flow.
+
+**EVIDENCE**
+
+- `bash -n scripts/sal0-work-loop.sh`: pass.
+- `npm run verify`: lint, typecheck, **46 files / 523 tests**, build — pass.
+
+**NEXT SAFE BATCH**
+
+Run the next scheduled possession and confirm the log reports a worker-made
+commit, an uncommitted diff, or a true `NOTHING CHANGED` based on git evidence,
+not on the agent's own wording.
+
+---
+
 ## 2026-08-19 — the undelivered-result notice no longer promises durability it doesn't have
 
 ```text
