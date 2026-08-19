@@ -33,9 +33,52 @@ exec >>"$LOG" 2>&1
 
 echo "=== SAL0MANder work loop $STAMP ==="
 
+predict_next_shot() {
+  if command -v gh >/dev/null 2>&1; then
+    ISSUE="$(gh issue list --repo Samco1983/SAL0MANder-Web --state open --limit 20 \
+      --json number,title,labels \
+      --jq '[.[] | select(.title | ascii_upcase | contains("[WEB]")) | select([.labels[].name] | index("in-progress") | not) | select([.labels[].name] | index("blocked") | not)][0] | if . then "#\(.number) \(.title)" else empty end' 2>/dev/null || true)"
+    if [ -n "$ISSUE" ]; then
+      echo "$ISSUE"
+      return
+    fi
+  fi
+
+  if [ -f "$REPO/docs/coordination/OPEN-ITEMS.md" ]; then
+    ITEM="$(grep -m1 '^## W-[0-9].*[🔴🟠]' "$REPO/docs/coordination/OPEN-ITEMS.md" 2>/dev/null || true)"
+    if [ -n "$ITEM" ]; then
+      echo "$ITEM"
+      return
+    fi
+  fi
+
+  echo "Deploy-readiness review: run verify, control-room, blockers, and name one shippable risk."
+}
+
+micro_huddle() {
+  echo "MICRO-HUDDLE"
+  echo "What just happened: $1"
+  echo "What changed: $2"
+  echo "What did we learn: $3"
+  echo "Next receiver: $4"
+  next_shot="$5"
+  if [ -z "$next_shot" ] || [ "$next_shot" = "auto" ]; then
+    next_shot="$(predict_next_shot)"
+  fi
+  echo "Next shot: $next_shot"
+  echo "Stop doing: $6"
+}
+
 # The brake lives outside the repo so no git operation can remove it.
 if [ -f "$PAUSE" ]; then
   echo "PAUSED by $PAUSE: $(cat "$PAUSE" 2>/dev/null)"
+  micro_huddle \
+    "Loop found the pause brake before work started." \
+    "Nothing changed." \
+    "Pause state is respected before any worker can touch the repo." \
+    "SAL0-01 or owner" \
+    "Read the pause reason and resume only when the condition is true." \
+    "Starting a possession while the brake is on."
   exit 0
 fi
 
@@ -70,6 +113,13 @@ if [ -n "$PRE_DIRTY" ]; then
   echo "BLOCKED - NEED OWNER — working tree was already dirty before this run:"
   echo "$PRE_DIRTY"
   echo "Refusing to start. Commit or stash the existing changes, then re-run."
+  micro_huddle \
+    "Loop refused a dirty court before the worker started." \
+    "Nothing changed." \
+    "Court protection worked; the worker did not inherit somebody else's diff." \
+    "current file owner" \
+    "auto" \
+    "Running a worker on a dirty shared tree."
   echo "=== end $STAMP (refused) ==="
   exit 1
 fi
@@ -101,6 +151,13 @@ DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
 
 if [ -z "$DIRTY" ]; then
   echo "ONE THING THAT CHANGED: NOTHING CHANGED"
+  micro_huddle \
+    "Worker exited without a repo diff." \
+    "Nothing changed." \
+    "No shot landed; check whether the task was too vague, blocked, or already done." \
+    "SAL0-02" \
+    "auto" \
+    "Counting an empty run as progress."
   echo "=== end $STAMP (exit $EXIT) ==="
   exit 0
 fi
@@ -118,6 +175,13 @@ if [ "$VERIFY" -ne 0 ]; then
   echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — verify exited $VERIFY"
   echo "Nothing committed. Working tree left as-is on purpose; read the diff."
   echo "verify log: $LOG_DIR/verify-$STAMP.log"
+  micro_huddle \
+    "Worker changed files, but verify failed." \
+    "Uncommitted diff preserved." \
+    "This is a reboundable miss because the failing command and diff are both visible." \
+    "SAL0-04 or SAL0-07" \
+    "auto" \
+    "Hiding a failed verify behind green wording."
   echo "=== end $STAMP (exit $EXIT) ==="
   exit 1
 fi
@@ -134,6 +198,13 @@ npm run verify exit 0 before commit.
 Sal0-From: SAL0-04"; then
   echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — commit was rejected"
   echo "The worker's changes are still in the working tree. Nothing was lost."
+  micro_huddle \
+    "Verify passed, but git rejected the commit." \
+    "Uncommitted diff preserved." \
+    "The referee protected attribution or commit policy." \
+    "SAL0-01" \
+    "auto" \
+    "Claiming saved work when HEAD did not move."
   echo "=== end $STAMP (exit 1) ==="
   exit 1
 fi
@@ -143,6 +214,13 @@ AFTER="$($GIT rev-parse HEAD)"
 # nothing to do with this run.
 if [ "$AFTER" = "$BEFORE" ]; then
   echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — HEAD did not move; nothing was committed"
+  micro_huddle \
+    "Commit path reported success but HEAD did not move." \
+    "Nothing trustworthy changed." \
+    "HEAD movement is required evidence; without it there is no made shot." \
+    "SAL0-01" \
+    "auto" \
+    "Self-grading commit success from log text."
   echo "=== end $STAMP (exit 1) ==="
   exit 1
 fi
@@ -155,6 +233,13 @@ if $GIT push origin "$BRANCH"; then
 else
   echo "ONE THING STILL UNVERIFIED: PUSH FAILED — commit ${AFTER:0:8} is local only"
   echo "BLOCKED - NEED OWNER — GitHub did not receive the commit. Other agents cannot see it."
+  micro_huddle \
+    "Commit landed locally, but push failed." \
+    "Local commit ${AFTER:0:8} exists only on this machine." \
+    "A local-only score is not visible to the team until GitHub receives it." \
+    "SAL0-02" \
+    "auto" \
+    "Telling other agents to rely on an unpushed commit."
   echo "=== end $STAMP (exit 1) ==="
   exit 1
 fi
@@ -184,5 +269,13 @@ fi
 if command -v osascript >/dev/null 2>&1; then
   osascript -e "display notification \"$FILES file(s) committed ${AFTER:0:8}\" with title \"SAL0MANder work loop\"" >/dev/null 2>&1 || true
 fi
+
+micro_huddle \
+  "Worker produced a verified, pushed commit." \
+  "Commit ${AFTER:0:8}, $FILES file(s), verify passed." \
+  "This possession scored because git, tests, and GitHub agree." \
+  "SAL0-07 or next queue owner" \
+  "auto" \
+  "Letting a made shot vanish without a next receiver."
 
 echo "=== end $STAMP (exit $EXIT) ==="
