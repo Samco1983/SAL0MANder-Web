@@ -99,10 +99,11 @@ if [ "$fail" -gt 0 ]; then
   Anthropic's own GitHub Actions integration uses, for this exact reason:
 
       claude setup-token
-      umask 077 && printf '%s' '<token>' > ~/.sal0mander/claude-token
+      mkdir -p ~/.sal0mander/secrets
+      umask 077 && printf '%s' '<token>' > ~/.sal0mander/secrets/claude_oauth_token
 
     then in any scheduled runner:
-      export CLAUDE_CODE_OAUTH_TOKEN="$(cat ~/.sal0mander/claude-token)"
+      export CLAUDE_CODE_OAUTH_TOKEN="$(cat ~/.sal0mander/secrets/claude_oauth_token)"
 
   Gemini — the key already lives in Keychain, and scripts/sal0-gemini.sh reads
   it at call time. A quota failure is not an auth failure: the free tier is 20
