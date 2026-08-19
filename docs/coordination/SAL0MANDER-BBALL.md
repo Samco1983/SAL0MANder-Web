@@ -92,6 +92,50 @@ honest answer to "is it running?" was *nobody knows*.
    an hour with no commit against its reason is an abandoned game, not a paused
    one.
 
+## The huddle
+
+The shot clock is only half of it. **A team that never slows down runs the same
+broken play all night, faster.**
+
+That is not theory. On 2026-08-19 the agents moved fast for six hours and
+produced 253 plumbing changes, 6 product changes, and zero points. Every
+decision that actually changed the outcome came from someone stopping the play:
+
+| The stop | What it changed |
+| --- | --- |
+| *"I want actual work, not test verify test verify"* | six hours of tooling exposed as motion |
+| *"you all need to show your data"* | produced the evidence rules, which caught four false claims |
+| *"agents should not grade their own homework"* | the one law. Explained all five failures at once |
+| *"maybe you need a new court"* | worktrees — fixed the whole class, not the instances |
+| *"is this thing saved?"* | caught a loop reporting COMMITTED for work it never saved |
+
+Not one of those came from an agent. Agents inside the game optimise the play
+they are running. **They do not stop to ask whether it is the right play** —
+that is what a huddle is for, and it is why the coach seat exists.
+
+### When to call one
+
+- **The same failure twice.** The execution is not the problem; the play is.
+- **The scoreboard has not moved** while commits pile up. Always. This is the
+  loudest signal in the system and the easiest to talk past.
+- **Two agents disagree about who owns something.** Every turnover that night
+  came from this. Talk before touching.
+- **Before adding a player.** A new seat mid-game adds a variable to every
+  failure that follows.
+- **After any turnover.** Not to assign blame — to name the rule that prevents
+  the next one.
+
+### How to huddle
+
+Stop. Read the Control Room. Say the uncomfortable number out loud. Name **one**
+play. Then break and run it.
+
+A huddle that produces three plays has produced none, and a huddle that ends
+without anyone naming a number was just a rest.
+
+**Speed wins possessions. Huddles win games.** Both, in the right order: huddle
+to pick the play, then run it on the clock.
+
 ## The scoreboard
 
 > **`queue: N open, M closed`. Nothing else is points.**
