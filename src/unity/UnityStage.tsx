@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Button } from '@components/ui/Button'
 import { resolveUnityBuildConfig } from './buildConfig'
 import {
   BRIDGE_VERSION,
@@ -8,6 +9,22 @@ import {
   type WebToUnityMessage,
 } from './bridge'
 import styles from './UnityStage.module.css'
+
+/**
+ * Turn a loader failure into something a student can act on.
+ *
+ * Added alongside the raw loader text, never instead of it. A student needs to
+ * know whether to try again; a teacher filing a bug needs the actual reason.
+ */
+function describeLoadFailure(raw: string): string {
+  if (/network|fetch|load|404|failed to load/i.test(raw)) {
+    return 'The game files could not be downloaded. This is usually the connection — try again.'
+  }
+  if (/memory|allocat/i.test(raw)) {
+    return 'This device ran out of memory starting the game. Close other tabs and try again.'
+  }
+  return 'The game could not start. Try again, and tell your teacher if it keeps happening.'
+}
 
 /** Everything the host tells Unity at boot, minus the envelope fields. */
 export type BootPayload = Omit<Extract<WebToUnityMessage, { type: 'boot' }>, 'type' | 'version'>
@@ -55,6 +72,16 @@ export function UnityStage({
 
   // The live instance, kept outside state so obtaining it cannot re-render and
   // cannot become a reason to restart the game.
+  /**
+   * Incremented to ask for a fresh load attempt.
+   *
+   * A WebGL download that dies on classroom wifi is the most common failure
+   * this host has, and until now it was terminal: the student saw "could not
+   * start" and the only way forward was reloading the whole page. Retrying
+   * through the same effect means the cleanup runs first, so a retry cannot
+   * leave a half-initialised instance behind.
+   */
+  const [retryToken, setRetryToken] = useState(0)
   const instanceRef = useRef<UnityMessageTarget | null>(null)
   const bootedRef = useRef(false)
 
@@ -200,7 +227,10 @@ export function UnityStage({
     // Only the resolved build identity may restart Unity. `config` is derived
     // from build-time env and is stable for the life of the page.
     // oxlint-disable-next-line react/exhaustive-deps
-  }, [config?.loaderUrl])
+    // retryToken re-runs this effect, and React tears the previous one down
+    // first — so Quit() is always called before a new instance is created.
+    // That is what makes retry unable to duplicate an instance.
+  }, [config?.loaderUrl, retryToken])
 
   if (!config) {
     return (
@@ -257,7 +287,16 @@ export function UnityStage({
       {state.status === 'error' ? (
         <div className={styles.empty} role="alert">
           <h2 className={styles.emptyTitle}>SAL0MANder could not start</h2>
-          <p className={styles.emptyBody}>{state.message}</p>
+          <p className={styles.emptyBody}>{describeLoadFailure(state.message)}</p>
+          {/*
+            The technical detail stays. Existing tests assert the loader URL and
+            the raw reason are surfaced, deliberately: a teacher reporting a
+            broken build, or a developer reading a screenshot, needs it. The
+            loader URL is build-base plus build-name and carries no activity or
+            share code, so there is nothing sensitive to withhold.
+          */}
+          <p className={styles.hint}>{state.message}</p>
+          <Button onClick={() => setRetryToken((n) => n + 1)}>Try again</Button>
         </div>
       ) : null}
     </div>
