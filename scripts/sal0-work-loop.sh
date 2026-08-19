@@ -97,6 +97,16 @@ run_worker_with_clock() {
     elapsed=$((elapsed + WORKER_HEARTBEAT_SECONDS))
     echo "worker still running: ${elapsed}s / ${WORKER_CLOCK_SECONDS}s"
 
+    if grep -qiE "not logged in|workspace has not been trusted|hasTrustDialogAccepted|trust dialog" "$output_file" "$LOG" 2>/dev/null; then
+      echo "AGENT_UNAVAILABLE: Claude needs interactive login or workspace trust"
+      kill_pid_tree "$worker_pid"
+      sleep 2
+      kill -9 "$worker_pid" 2>/dev/null || true
+      wait "$worker_pid" 2>/dev/null || true
+      worker_exit=125
+      break
+    fi
+
     if [ "$elapsed" -ge "$WORKER_CLOCK_SECONDS" ]; then
       echo "AGENT_TIMEOUT: worker exceeded ${WORKER_CLOCK_SECONDS}s"
       kill_pid_tree "$worker_pid"
@@ -198,7 +208,11 @@ DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
 
 if [ -z "$DIRTY" ]; then
   if [ "$EXIT" -ne 0 ]; then
-    echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $EXIT with no diff"
+    if [ "$EXIT" -eq 125 ]; then
+      echo "ONE THING THAT CHANGED: BENCHED — Claude needs interactive login or workspace trust"
+    else
+      echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $EXIT with no diff"
+    fi
     micro_huddle \
       "Worker failed or timed out without a repo diff." \
       "Nothing changed." \
@@ -226,7 +240,11 @@ echo "worker changed $FILES file(s):"
 echo "$DIRTY"
 
 if [ "$EXIT" -ne 0 ]; then
-  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $EXIT after changing files"
+  if [ "$EXIT" -eq 125 ]; then
+    echo "ONE THING THAT CHANGED: BENCHED — Claude needs interactive login or workspace trust after changing files"
+  else
+    echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $EXIT after changing files"
+  fi
   echo "Nothing committed. Working tree left as-is on purpose; read the diff before another shot."
   micro_huddle \
     "Worker failed or timed out after changing files." \
