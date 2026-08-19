@@ -157,9 +157,22 @@ to pick the play, then run it on the clock.
 
 ### Micro-huddles
 
-After every play or major checkpoint, hold one small discussion before the next
-handoff. Not a meeting, not a new planning phase — a quick read of what just
-happened so the next pass is timed better.
+A play is one bounded possession:
+
+- one issue attempt;
+- one worker run;
+- one review/rebound;
+- one blocker clear;
+- one deploy check;
+- one deliberate spike with a stated clock and success check.
+
+A file edit is not automatically a play. A chat message is not automatically a
+play. A test rerun is not automatically a play. Those are touches inside the
+same possession unless they change the owner, objective, risk, or result.
+
+After a completed play or major checkpoint, hold one small discussion before the
+next handoff. Not a meeting, not a new planning phase — a quick read of what
+just happened so the next pass is timed better.
 
 The micro-huddle has a clock:
 
@@ -185,6 +198,38 @@ Stop doing:
 A micro-huddle earns its time only if it makes the next possession clearer. If
 it creates more than one next play, it is no longer a micro-huddle — call a real
 huddle or choose one shot and move.
+
+Too many micro-huddles hurt the team. Do **not** call one after every tiny
+touch. Skip it when the same agent is continuing the same possession, the next
+action is already written, the tree is clean, and there was no miss or turnover.
+
+### Long huddles and timeout budget
+
+Long huddles are expensive. In a real game, bad timeout timing can lose the
+game; Mission Control has the same risk. A long huddle can break rhythm, lose
+context, leave automation paused, and make every agent wait for Samuel again.
+
+Call a long huddle only for:
+
+- repeated same-cause mistakes;
+- three bad turnovers in one window;
+- any flagrant turnover;
+- a deploy decision;
+- a new agent/role entering the court;
+- a scoreboard stall: 10 commits or 3 hours with no point;
+- a change to the win condition.
+
+Budget:
+
+| Huddle | Budget | Must produce |
+| --- | --- | --- |
+| Micro-huddle | 2-5 minutes | next receiver, next shot, one lesson |
+| Long huddle | 15 minutes | one play, one owner, one success check |
+| Timeout | until cleared | preserved state, caller, reason, resume condition |
+
+The danger is not slowing down. The danger is slowing down and failing to get
+back into rhythm. A huddle that does not restart the next possession is a
+turnover by another name.
 
 ## The scoreboard
 
