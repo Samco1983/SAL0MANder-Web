@@ -86,7 +86,8 @@ fi
 
 # acceptEdits so it can write code without a human approving each edit.
 # A loop that stops to ask is not a loop.
-"$CLAUDE" -p "$(cat "$SKILL")" \
+PROMPT="$(printf 'SAL0MANder work-loop instructions:\n\n%s' "$(cat "$SKILL")")"
+"$CLAUDE" -p "$PROMPT" \
   --permission-mode acceptEdits \
   --allowedTools "Read,Edit,Write,Bash,Glob,Grep" \
   --output-format json > "$LOG_DIR/work-loop-$STAMP.json"
