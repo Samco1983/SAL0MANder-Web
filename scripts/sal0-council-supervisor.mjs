@@ -13,10 +13,13 @@
  */
 import { createHash } from 'node:crypto'
 import {
+  closeSync,
   existsSync,
   mkdirSync,
+  openSync,
   readFileSync,
   renameSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -32,6 +35,7 @@ const PROBE_FILE = join(COORDINATION_DIR, 'PROBE.md')
 const CURRENT_STATE_FILE = join(COORDINATION_DIR, 'CURRENT_STATE.md')
 const ROLES_FILE = join(COORDINATION_DIR, 'AGENT_ROLES.json')
 const SESSION_FAILSAFES_FILE = join(COORDINATION_DIR, 'SESSION-FAILSAFES.md')
+const LOCK_FILE = join(COORDINATION_DIR, '.mission-control.lock')
 const RECENT_COMMIT_COUNT = Number(process.env.SAL0_COUNCIL_COMMITS || '10')
 const CLAUDE_BIN = process.env.SAL0_CLAUDE_BIN || 'claude'
 const AGENT_TIMEOUT_MS = Number(process.env.SAL0_COUNCIL_AGENT_TIMEOUT_MS || '120000')
@@ -174,6 +178,41 @@ function parseJsonObject(rawText) {
     throw new Error('Agent output did not contain a JSON object')
   }
   return JSON.parse(rawText.slice(start, end + 1))
+}
+
+function acquireRunLock() {
+  let descriptor
+  try {
+    descriptor = openSync(LOCK_FILE, 'wx')
+  } catch (error) {
+    if (error.code === 'EEXIST') {
+      throw new Error(`Mission Control is already running: ${LOCK_FILE}`)
+    }
+    throw error
+  }
+
+  writeFileSync(
+    descriptor,
+    `${stableJson({
+      pid: process.pid,
+      startedAt: new Date().toISOString(),
+      mode: runMode,
+    })}\n`,
+  )
+  closeSync(descriptor)
+
+  let released = false
+  return () => {
+    if (released) return
+    released = true
+    try {
+      unlinkSync(LOCK_FILE)
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error
+      }
+    }
+  }
 }
 
 function runSchemaValidationProof() {
@@ -493,6 +532,10 @@ function run() {
     process.exitCode = 1
     return
   }
+
+  const releaseLock = acquireRunLock()
+  process.once('exit', releaseLock)
+
   const priorSuccess = readLedger().find(
     (entry) => entry.hash === hash && entry.runMode === runMode && entry.status === 'success',
   )
@@ -510,6 +553,7 @@ function run() {
       dryRun,
     })
     console.log(`no change — packet ${hash8} already succeeded in ${priorSuccess.runDir}`)
+    releaseLock()
     return
   }
 
@@ -574,6 +618,8 @@ Next action: ${runAgents ? 'wire Gemini critique only after Claude output valida
     })
     console.error(error.message)
     process.exitCode = 1
+  } finally {
+    releaseLock()
   }
 }
 

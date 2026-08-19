@@ -1,0 +1,167 @@
+{
+  "agents": [
+    {
+      "displayName": "SAL0-01 Architect \u2014 Codex Desktop",
+      "id": "codex",
+      "lane": "Unity/Game",
+      "number": "SAL0-01",
+      "role": "Technical Lead",
+      "state": "WORKING"
+    },
+    {
+      "displayName": "SAL0-02 Runner \u2014 Codex CLI",
+      "id": "codex-cli",
+      "lane": "Coordination",
+      "number": "SAL0-02",
+      "role": "Local Execution",
+      "state": "WORKING"
+    },
+    {
+      "displayName": "SAL0-03 Director \u2014 OpenAI API",
+      "id": "chatgpt-openai",
+      "lane": "Coordination",
+      "number": "SAL0-03",
+      "role": "Product Decision",
+      "state": "UNKNOWN/UNREACHABLE"
+    },
+    {
+      "displayName": "SAL0-04 Builder \u2014 Claude CLI",
+      "id": "claude",
+      "lane": "Web",
+      "number": "SAL0-04",
+      "role": "Web/Code Work",
+      "state": "UNKNOWN/UNREACHABLE"
+    },
+    {
+      "displayName": "SAL0-05 Reviewer \u2014 Claude Chat",
+      "id": "claude-chat",
+      "lane": "Web",
+      "number": "SAL0-05",
+      "role": "Manual Critique",
+      "state": "DONE - NEED NEW TASK"
+    },
+    {
+      "displayName": "SAL0-06 Scout \u2014 Gemini Chat",
+      "id": "gemini",
+      "lane": "Coordination",
+      "number": "SAL0-06",
+      "role": "Google/Browser Review",
+      "state": "DONE - NEED NEW TASK"
+    },
+    {
+      "displayName": "SAL0-07 Challenger \u2014 Gemini API/CLI",
+      "id": "gemini-api-cli",
+      "lane": "Coordination",
+      "number": "SAL0-07",
+      "role": "Automated Critique",
+      "state": "UNKNOWN/UNREACHABLE"
+    },
+    {
+      "displayName": "SAL0-08 Inspector \u2014 Unity MCP",
+      "id": "unity-ai",
+      "lane": "Unity/Game",
+      "number": "SAL0-08",
+      "role": "Unity Evidence",
+      "state": "UNKNOWN/UNREACHABLE"
+    },
+    {
+      "displayName": "SAL0-09 Signal \u2014 Make Cloud",
+      "id": "make",
+      "lane": "Make Automation",
+      "number": "SAL0-09",
+      "role": "Outside Automation",
+      "state": "BLOCKED - NEED OWNER"
+    },
+    {
+      "displayName": "SAL0-10 Ledger \u2014 GitHub Cloud",
+      "id": "github",
+      "lane": "Coordination",
+      "number": "SAL0-10",
+      "role": "Source Of Truth",
+      "state": "UNKNOWN/UNREACHABLE"
+    }
+  ],
+  "controlLayer": {
+    "displayName": "Mission Control Core \u2014 Python Supervisor",
+    "id": "mission-control-core",
+    "isAgent": false,
+    "role": "Local coordinator/orchestrator",
+    "rules": [
+      "Coordinate agents by SAL0 role id, not by vendor or model name.",
+      "Build context packets from durable state before invoking any agent.",
+      "Check hashes and skip repeated successful runs before model calls.",
+      "Enforce timeouts, retries, schemas, logs, and evidence paths.",
+      "Never make product or technical judgments itself.",
+      "Never store secrets, tokens, cookies, or auth files."
+    ]
+  },
+  "createdAt": "2026-08-19T02:32:05Z",
+  "hash": "ca07c6e698821334795518bbdaba044fc54b4dac6194cbe11a1ccf9fc6b45042",
+  "nextAction": "Use this preflight before waking agents, opening browser rooms, or changing Make scenarios.",
+  "openUrls": {
+    "unityIssueHub": "https://github.com/Samco1983/Sal0mander-Jigsaw-Puzzle/issues/1",
+    "webBranch": "https://github.com/Samco1983/SAL0MANder-Web/tree/council/2026-08-18",
+    "webPullRequest": "https://github.com/Samco1983/SAL0MANder-Web/pull/new/council/2026-08-18"
+  },
+  "repos": {
+    "unity": {
+      "branch": "codex/git-hygiene-ignore-unity-temp",
+      "dirty": false,
+      "exists": true,
+      "hasOrigin": true,
+      "head": "49ac86c",
+      "statusShort": ""
+    },
+    "web": {
+      "branch": "council/2026-08-18",
+      "dirty": true,
+      "exists": true,
+      "hasOrigin": true,
+      "head": "ca14d1b",
+      "statusShort": "M docs/coordination/AGENT_ROLES.json\n M docs/coordination/CURRENT_STATE.md\n M docs/coordination/MISSION-CONTROL-SESSION.md\n M docs/coordination/SESSION-FAILSAFES.md\n M package.json\n M scripts/sal0-roles-validate.mjs\n?? docs/coordination/MISSION-CONTROL-CORE.md\n?? scripts/sal0-mission-control-core.py"
+    }
+  },
+  "schemaVersion": "sal0-mission-control-preflight-v0",
+  "tools": {
+    "claude": {
+      "available": false,
+      "name": "claude",
+      "path": ""
+    },
+    "codex": {
+      "available": true,
+      "name": "codex",
+      "path": "/Applications/ChatGPT.app/Contents/Resources/codex"
+    },
+    "gemini": {
+      "available": false,
+      "name": "gemini",
+      "path": ""
+    },
+    "gh": {
+      "available": false,
+      "name": "gh",
+      "path": ""
+    },
+    "git": {
+      "available": true,
+      "name": "git",
+      "path": "/usr/bin/git"
+    },
+    "node": {
+      "available": true,
+      "name": "node",
+      "path": "/usr/local/bin/node"
+    },
+    "npm": {
+      "available": true,
+      "name": "npm",
+      "path": "/usr/local/bin/npm"
+    },
+    "python3": {
+      "available": true,
+      "name": "python3",
+      "path": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3"
+    }
+  }
+}

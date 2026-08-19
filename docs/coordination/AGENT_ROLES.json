@@ -1,5 +1,19 @@
 {
   "schemaVersion": "sal0-agent-roles-v0",
+  "controlLayer": {
+    "id": "mission-control-core",
+    "displayName": "Mission Control Core — Python Supervisor",
+    "isAgent": false,
+    "role": "Local coordinator/orchestrator",
+    "rules": [
+      "Coordinate agents by SAL0 role id, not by vendor or model name.",
+      "Build context packets from durable state before invoking any agent.",
+      "Check hashes and skip repeated successful runs before model calls.",
+      "Enforce timeouts, retries, schemas, logs, and evidence paths.",
+      "Never make product or technical judgments itself.",
+      "Never store secrets, tokens, cookies, or auth files."
+    ]
+  },
   "defaultStopRules": [
     "no-material-change",
     "task-complete-and-verified",

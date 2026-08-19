@@ -27,9 +27,20 @@ const roleSchema = z
   })
   .strict()
 
+const controlLayerSchema = z
+  .object({
+    id: z.literal('mission-control-core'),
+    displayName: z.literal('Mission Control Core — Python Supervisor'),
+    isAgent: z.literal(false),
+    role: z.string().min(1),
+    rules: z.array(z.string().min(1)).min(1),
+  })
+  .strict()
+
 const rolesSchema = z
   .object({
     schemaVersion: z.literal('sal0-agent-roles-v0'),
+    controlLayer: controlLayerSchema,
     defaultStopRules: z.array(z.string().min(1)).min(1),
     agents: z.array(roleSchema).min(1),
   })

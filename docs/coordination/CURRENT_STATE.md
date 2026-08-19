@@ -4,6 +4,9 @@ Current focus:
 - Unity/Game P1-A/P1-B is frozen for human-visible acceptance evidence.
 - Web coordination is secondary unless needed for evidence, dashboards, or safe
   automation plumbing.
+- Our SAL0MANder Mission Control now uses a two-layer model: Mission Control
+  Core coordinates locally, while SAL0-01 through SAL0-10 are the worker,
+  reviewer, inspector, notification, and ledger roles.
 - Make belongs at the outside edge: notifications, Google Docs mirror, and
   off-hours inbound webhooks. It is not the local process orchestrator.
 
@@ -15,6 +18,8 @@ Known boundaries:
 - No live Make scenario changes without explicit confirmation.
 
 Next safe automation proof:
+- Run `npm run mission:preflight` to prove local readiness before waking agents
+  or opening browser rooms.
 - Build deterministic local council packets.
 - Skip repeated runs by packet hash before any model calls.
 - Save every run as evidence under `docs/coordination/runs/`.

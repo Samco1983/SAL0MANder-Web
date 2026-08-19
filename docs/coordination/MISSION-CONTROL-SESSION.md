@@ -13,6 +13,13 @@ Human-facing name:
 Internal automation name:
 - Council Supervisor
 
+Control layer:
+- Mission Control Core — Python Supervisor.
+- No SAL0 number because it is not a worker seat.
+- Coordinates packets, routing, schemas, retries, logs, and evidence.
+- Does not make product or technical judgments.
+- Routes by SAL0 role id, not vendor/model name.
+
 Agent roster:
 - SAL0-01 Architect — Codex Desktop — Technical Lead
 - SAL0-02 Runner — Codex CLI — Local Execution

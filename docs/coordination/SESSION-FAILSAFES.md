@@ -5,6 +5,11 @@ surface, and capability.
 
 ## Session Rules
 
+- Mission Control Core — Python Supervisor is the control layer, not an
+  agent. It has no SAL0 number.
+- The supervisor coordinates. Agents judge, execute, review, inspect, notify,
+  or store durable truth.
+- Route work by SAL0 role id, not vendor or model name.
 - A pinned browser chat is for human navigation only. It is not automation
   identity.
 - A CLI session id is automation identity only for that CLI surface.
