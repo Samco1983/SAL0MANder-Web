@@ -120,6 +120,36 @@ outcome: diff, test, commit, blocker, review verdict, or deploy decision.
 
 ---
 
+## Passing and turnovers
+
+Professional speed is not frantic. It is timing. The pass arrives when the
+teammate is ready to catch it, in the place where the next move is obvious.
+
+A pass must be catchable:
+
+| Bad pass | Why it hurts | Catchable version |
+| --- | --- | --- |
+| "Fix this" | no lane, no success check | "SAL0-04: fix Issue #2; success is `npm run verify` and one pushed commit" |
+| Unpushed commit | nobody else can see it | push immediately, then cite the hash |
+| Dirty tree signal | signal carries code by accident | refuse the signal until the tree is clean |
+| Long chat summary | agent has to translate it into work | issue, blocker, commit, or exact command |
+| Timeout with no reason | everyone stops but nobody knows why | pause file includes owner, reason, and resume condition |
+
+Turnovers are not shame. They are data. Count them by cause:
+
+- **bad pass:** receiver could not act because the handoff was vague or missing evidence;
+- **dropped pass:** receiver was assigned but did not acknowledge or produce output before the clock;
+- **travel:** agent changed files outside its lane;
+- **double dribble:** agent reported the same work twice or claimed a stale HEAD;
+- **shot clock violation:** no score, blocker, or timeout before the clock expired;
+- **own goal:** automation made the next run harder, dirtier, or less truthful.
+
+After two turnovers in the same cause, stop inventing plays and fix the system
+that produced them. After three turnovers in one session, call TIMEOUT and run
+DEPLOY CHECK before any new work starts.
+
+---
+
 ## The plays
 
 ### 1 · FAST BREAK — the default
@@ -198,6 +228,27 @@ bash scripts/sal0-control-room.sh
 ```
 
 *Call it when:* something is wrong and you do not yet know what.
+
+Timeout is not chaos time. A timeout has four required parts:
+
+```text
+TIMEOUT CALLED BY:
+WHY:
+WHAT IS PRESERVED:
+RESUME CONDITION:
+```
+
+During timeout:
+
+- no new worker starts;
+- preserve any dirty diff before deciding what to do with it;
+- read logs and git, not agent narration;
+- classify the state: `WORKING`, `DONE - NEED NEW TASK`, `BLOCKED - NEED OWNER`,
+  `WRONG LANE - REASSIGN`, or `UNKNOWN/UNREACHABLE`;
+- resume only with a clean tree or a deliberately preserved dirty tree and a
+  named owner.
+
+The point of timeout is to stop stacking mistakes, not to stop scoring.
 
 ### 6 · BASELINE RUN — prove the floor before changing it
 
