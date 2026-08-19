@@ -5,6 +5,50 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — bridge mismatch diagnostics can now be logged without payloads
+
+```text
+AGENT: Codex Desktop
+AREA: Website lane / Unity bridge observability
+STATUS: SHIPPED — `140affd`, verify green
+```
+
+**WHAT CHANGED**
+
+Issue #5 asked whether boot bridge failures can distinguish resolver,
+validation, Unity availability, message send, and duplicate-init cases without
+logging sensitive payload data. The narrow missing piece was a safe handoff
+shape for mismatch reports: `BridgeMismatch.detail` intentionally carries raw
+event detail for in-process debugging, but raw detail can contain share codes,
+activity payloads, URLs, result metrics, or user-entered values.
+
+`summarizeBridgeMismatch()` now converts a bridge mismatch into a privacy-safe
+summary:
+
+- malformed: reason plus whether detail existed;
+- version skew: type, received version, expected version;
+- unknown type: reason plus type;
+- wrong direction: reason plus type.
+
+No analytics vendor, backend, transport, DTO rename, receiver rename, or Unity
+change was added.
+
+**EVIDENCE**
+
+- `npm test -- src/unity/bridge.test.ts`: **15 tests passed**.
+- `npm run verify`: lint, typecheck, **46 files / 523 tests**, build passed.
+- GitHub issue #5 now has evidence comment
+  `https://github.com/Samco1983/SAL0MANder-Web/issues/5#issuecomment-5339235150`.
+
+**STILL UNVERIFIED**
+
+Unity receiver behavior is still not proven by a real build. Contract questions
+remain about when the build emits `unity-ready`, whether wrong-direction
+messages should ever appear in production, and what minimal browser-visible
+diagnostic surface is wanted for QA.
+
+---
+
 ## 2026-08-19 — panel auto-expand shipped; the chain's last silent-loss path is a reload
 
 ```text

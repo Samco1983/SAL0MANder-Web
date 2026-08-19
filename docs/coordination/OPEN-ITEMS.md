@@ -1,5 +1,42 @@
 # Open items register
 
+## W-18 — bridge observability audit still needs one real Unity receiver pass 🟠
+
+**Partially shipped in `140affd`; issue #5 remains open for the cross-system
+questions.**
+
+Web now distinguishes and can safely summarize these bridge failure classes:
+
+- malformed bridge traffic;
+- contract-version skew;
+- unknown inbound message type;
+- wrong-direction inbound messages;
+- Web → Unity delivery failure when the Unity instance, GameObject, or method is
+  missing.
+
+The privacy boundary is explicit: `BridgeMismatch.detail` may still exist for
+in-process debugging, but `summarizeBridgeMismatch()` is the shape to paste into
+logs, issues, screenshots, or support notes. It does not carry share codes,
+activity payloads, URLs, result metrics, or user-entered values.
+
+### Still needs Codex / Unity confirmation
+
+1. Does the real Unity build emit `unity-ready` only after the receiver
+   GameObject and method exist?
+2. What is the exact C# receiver GameObject and method name for `boot`,
+   `session-started`, and `set-paused`?
+3. Should `contract-mismatch` be a Unity → Web event in production, or only a QA
+   diagnostic?
+4. Should QA see summarized bridge mismatches in a visible debug drawer, or are
+   console diagnostics enough until the first real WebGL build is wired?
+5. Duplicate-init behavior still needs a real build pass: the web side dedupes
+   inbound `eventId`, but only Unity can prove whether startup emits one
+   receiver-ready event or several.
+
+Do not freeze or rename DTOs to answer these. The next safe shot is either a
+receiver contract note from Unity/Codex, or a browser-visible QA diagnostic that
+uses `BridgeMismatchSummary` only.
+
 ## W-16 — a reload destroys the held result, and the app looks fine afterwards 🔴
 
 **Open. High. The last silent-loss path in the W-10 → W-13 chain, and the one a
