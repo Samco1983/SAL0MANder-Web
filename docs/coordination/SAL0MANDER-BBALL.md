@@ -2,8 +2,8 @@
 
 How multiple AI agents work as a team instead of taking turns.
 
-Discovered, not designed — every rule here came from a failure on 2026-08-18/19,
-and the ones without a scar are the ones most likely to be wrong.
+Discovered, not designed — every rule came from a failure on 2026-08-18/19. The
+ones without a scar are the ones most likely to be wrong.
 
 ---
 
@@ -12,14 +12,128 @@ and the ones without a scar are the ones most likely to be wrong.
 > **No agent grades its own homework.**
 
 Every failure that night was the same failure: something reported success it had
-not achieved. The work loop announced `COMMITTED` for a commit the referee had
+not achieved. The loop announced `COMMITTED` for a commit the referee had
 rejected. The blocker report announced "the mechanism is working" with nothing
 cleared. The Control Room announced "Codex 42, Claude 31" when 26 of those were
 Claude's own unsigned commits. A `signal: YOURS` — meaning *I am not touching
 this work* — swallowed five staged files and called them a hand gesture.
 
-Five instances, one bug. **The worker changes files. The supervisor reads git and
-the exit code and decides what happened.** The agent gets no say.
+**The worker changes files. The supervisor reads git and the exit code and
+decides what happened.** The agent gets no say.
+
+---
+
+## The shot clock
+
+**Speed is not a nice-to-have. A team that is not scoring has something wrong,
+and the clock is how you find out which thing.**
+
+Every action gets a clock. Hit the limit and it is a violation — you give up the
+ball, you do not keep dribbling.
+
+| Action | Clock | On violation |
+| --- | --- | --- |
+| One worker run | **15 min** | kill the process tree, keep the diff, report `BLOCKED` |
+| One agent call | **5 min** | kill it, record `AGENT_TIMEOUT`, never retry silently |
+| A blocker sitting unclaimed | **4 h** | escalate to the owner — nobody is coming |
+| An issue with no commit against it | **24 h** | it is not a task, it is a wish. Close or split it |
+| A whole night with 0 issues closed | **once** | stop building tooling. This happened |
+
+**Measured that night:** Gemini took over five minutes to review five commits and
+had to be backgrounded. That is a rebounder who cannot get down the floor, and
+it is a real constraint on how often the seat can play — not a reason to bench
+it, a reason to give it fewer commits per rebound.
+
+**The rule under the clock:** a slow answer that arrives after the play is over
+is worth less than a fast "I do not know." An agent that cannot finish inside
+its clock must say so and hand the ball off, not run longer.
+
+---
+
+## The timing of the pass
+
+In professional basketball the pass is timed to the split second, and it works
+only because **the receiver is already ready to catch it.** A perfect pass to a
+player who is out of the game is a turnover, and it goes in the passer's column.
+
+Three ways a receiver is not ready, all seen in one night:
+
+| Not ready | What it looked like | Cost |
+| --- | --- | --- |
+| **Out of quota** | Gemini's free tier is 20 requests/day; it was spent | 5 min of backoff, zero findings |
+| **Authenticated on the wrong surface** | worked in a terminal, failed headless | three rounds of debugging |
+| **Not running** | a blocker published to an agent that is asleep | sits until something polls |
+
+**Preflight the receiver, not just yourself.** Before passing, check the catcher
+is installed, authenticated *on the surface being used*, and inside its budget.
+
+**The pass has a clock too.** Codex's 10-minute heartbeat is the only reason a
+published blocker gets caught — the trace works because something is looking. A
+blocker published one minute after a heartbeat waits nine. That latency is this
+system's real speed limit, and it is tunable: faster polling costs money, slower
+polling costs time.
+
+## Timeouts cause their own chaos
+
+A timeout stops the game for *everyone*, and if two players can call one, nobody
+knows whether the game is live.
+
+That night: Codex paused the loop because a run looked stuck. Claude lifted the
+pause because the cause was fixed. Neither told the other. For a stretch the
+honest answer to "is it running?" was *nobody knows*.
+
+1. **One brake, one location** — `~/.sal0mander/PAUSE`, outside the repo so no
+   git operation can remove it. Two brakes means neither is the brake.
+2. **Whoever calls it says why, in the file.** A pause with no reason cannot be
+   safely lifted by anyone else.
+3. **Only the caller or the owner lifts it.** Lifting another agent's pause
+   overrules a judgement you did not see the evidence for.
+4. **A timeout is not a fix.** It buys time to fix something. A pause older than
+   an hour with no commit against its reason is an abandoned game, not a paused
+   one.
+
+## The scoreboard
+
+> **`queue: N open, M closed`. Nothing else is points.**
+
+Plumbing commits are not points. Documents are not points. Passing `npm run
+verify` is not points — it is staying inbounds.
+
+The night this was written: **253 changes to plumbing, 6 to product. 15 issues
+open, 0 closed.** A team running beautiful plays for six hours and never putting
+the ball in the basket. Every play in this book worked and the score was 0.
+
+**If the score has not moved, stop revising the playbook and shoot.**
+
+---
+
+## Turnovers
+
+A turnover is work that existed and then did not, or work credited to the wrong
+player. They cost more than a missed shot: a miss leaves the ball live, a
+turnover hands it to the floor.
+
+**Every turnover that night came from two agents disagreeing about who owned
+something.** Not from bad code.
+
+| # | What happened | Root cause | The rule now |
+| --- | --- | --- | --- |
+| 1 | Loop committed a human's uncommitted edit as its own | shared working tree | **never start on a dirty tree** |
+| 2 | `signal: YOURS` swallowed 5 staged files, 285 lines | `--allow-empty` is only empty if the index is | **a signal must carry no payload** |
+| 3 | Loop reported `COMMITTED` for a rejected commit | read `HEAD`, which someone else had moved | **prove your own commit landed** |
+| 4 | Control Room credited Claude's work to Codex | attribution by subtraction | **no jersey, no minutes** |
+| 5 | Repo left in detached HEAD, work looked deleted | nobody claimed the checkout | **say where you are before you move** |
+
+### The turnover rules
+
+1. **Call it before you touch it.** `MINE` on the file, or stay off it. A call
+   made after a collision is an apology.
+2. **Never commit what you did not write.** `git add -A` on a shared tree is a
+   turnover waiting for a timestamp. Worktrees make it impossible.
+3. **Say where you are.** A checkout, a branch switch, a detached HEAD — announce
+   it or another agent will read the old tree and conclude work was destroyed.
+   That cost fifteen minutes and a genuine scare.
+4. **Read the tree before you claim the ball.** `git status` costs nothing.
 
 ---
 
@@ -28,12 +142,12 @@ the exit code and decides what happened.** The agent gets no say.
 The court is **the terminal and the git repo**. Not chat windows.
 
 A chat window leaves no trace another agent can read, cannot be woken by a
-schedule, and holds its state in memory that no script inherits. Two facts
-proved this the hard way: `launchd` runs jobs with a minimal PATH where `claude`,
-`node`, `npm` and `gh` are all missing; and a Gemini CLI authenticated
-interactively still failed headless, because the key lived in the session.
+schedule, and holds state in memory no script inherits. Proved twice: `launchd`
+runs jobs with a minimal PATH where `claude`, `node`, `npm` and `gh` are all
+missing; and a Gemini CLI authenticated interactively still failed headless
+because the key lived in the session.
 
-**If it cannot be reached by a script, it is not on the court.**
+**If a script cannot reach it, it is not on the court.**
 
 ---
 
@@ -43,103 +157,97 @@ interactively still failed headless, because the key lived in the session.
 | --- | --- | --- | --- |
 | 01/02 | Power forward / Center | Codex | plumbing, supervisor, launchd, Make |
 | 03 | **Coach** | ChatGPT / OpenAI API | reads the floor, calls one play, never touches the ball |
-| 04 | **Point guard** | Claude CLI | the web app, brings the ball up, distributes |
-| 07 | **Rebounder** | Gemini CLI | catches what 01/02 and 04 miss. Never shoots |
+| 04 | **Point guard** | Claude CLI | the web app. Brings it up, distributes |
+| 07 | **Rebounder** | Gemini CLI | catches what the others miss. Never shoots |
 | 09 | — | Make | notifications only |
 | 10 | — | GitHub | the ledger. Never plays, always records |
 
-**No jersey, no minutes.** A commit with no `Sal0-From` or `Co-Authored-By` is
+**No jersey, no minutes.** A commit without `Sal0-From` or `Co-Authored-By` is
 rejected by the referee.
 
 ---
 
 ## The plays
 
-**FAST BREAK** — take the next thing off the queue and score. The default.
+**FAST BREAK** — take the next thing off the queue and score. The default, and
+the only one that moves the scoreboard.
 
-**PICK AND ROLL** — you are blocked, so publish the blocker and *keep moving*.
-Never ask. Whoever can clear it, clears it. Proven: five blockers published,
-four cleared by another agent with no human relay, median 0.3h.
+**PICK AND ROLL** — you are blocked, so publish it and *keep moving*. Never ask.
+Proven: five blockers published, four cleared by another agent with no human
+relay, median 0.3h.
 
-**BOARDS** — whoever did **not** ship it, checks it. Read diffs, not commit
-messages.
+**BOARDS** — whoever did **not** ship it, checks it. Read diffs, not messages.
 
-**TRAIL ME** — one agent moves fast and sloppy, the other follows and cleans.
-Beats two agents both being careful.
+**TRAIL ME** — one agent fast and sloppy, another behind cleaning up. Beats two
+agents both being careful.
 
-**TIMEOUT** — `echo stop > ~/.sal0mander/PAUSE`. Outside the repo, so no git
+**TIMEOUT** — `echo stop > ~/.sal0mander/PAUSE`. Outside the repo so no git
 operation can remove the brake.
 
-**INBOUND** — cold start. Read the charter and the doctrine, run the Control
-Room, then FAST BREAK.
+**INBOUND** — cold start: charter, doctrine, Control Room, then FAST BREAK.
 
 ---
 
 ## Reading the other player
 
-The mechanism is **stigmergy** — coordination through traces left in a shared
-environment, not messages sent to a recipient. A request creates a dependency
-and a wait. A published blocker creates a trace anyone can act on while you get
-on with something else.
+The mechanism is **stigmergy** — coordination through traces in a shared
+environment, not messages to a recipient. A request creates a dependency and a
+wait. A published blocker creates a trace anyone can act on while you get on
+with something else.
 
-The tell that separates the real thing from the story: **the scheduled agent
-read the trace; the interactive agent needed a relay.** A 10-minute monitor found
-an *uncommitted* file on disk, read it, and reported what it proved. Nobody told
-it anything. That is the mechanism. The chmod everyone celebrated was a relay,
-and the transcript proved it.
+**The tell that separates it from a relay:** the scheduled agent read the trace;
+the interactive agent needed a human. A 10-minute monitor found an *uncommitted*
+file on disk, read it, and reported what it proved, with nobody telling it
+anything. That is the mechanism. The `chmod` everyone celebrated was a relay, and
+the transcript proved it.
 
 **Signals** ride the same channel as the code — a commit carrying a trailer and
-no work. `SHAKY` (look at this, I am not confident) is the most valuable and the
-least used, because "I might be wrong" is exactly what prose buries and a
-rebounder needs.
+no work. `SHAKY` (*look at this, I am not confident*) is the most valuable and
+least used, because "I might be wrong" is what prose buries and a rebounder
+needs. When Claude signalled `SHAKY` on the work loop, Codex found and hardened
+its worst path inside a few minutes, without being told what was wrong.
 
 ---
 
 ## The four officials
 
-**The referee** — `scripts/hooks/commit-msg`. One rule, mechanical, on everyone.
-It rejected its own author's commit thirty seconds after being written, which is
-the entire argument for having one: the player who wrote the rule is the player
-most likely to forget it.
+**Referee** — `scripts/hooks/commit-msg`. One rule, mechanical, on everyone. It
+rejected its own author's commit thirty seconds after being written, which is the
+whole argument for having one.
 
-**The coach** — reads the whole floor and says the uncomfortable thing. Its first
-read: *253 changes to plumbing, 6 to product. 15 issues open, 0 closed. Nothing
-is scheduled, so all of it happened because a human was awake and typing.*
+**Coach** — reads the floor and says the uncomfortable thing. First read:
+*"253 plumbing, 6 product, 15 open, 0 closed. Nothing is scheduled, so all of it
+happened because a human was awake and typing."*
 
-**The scoreboard** — `queue: N open, M closed`. **Plumbing commits are not
-points.** A team can run beautiful plays all night and never put the ball in the
-basket.
+**Scoreboard** — `queue: N open, M closed`.
 
-**The rebounder** — the agent who did not shoot. Five defects shipped that night
-and all five were caught by the agent that made them. A self-caught miss is not
-a rebound; the misses nobody catches are precisely the ones the shooter cannot
-see.
+**Rebounder** — the agent who did not shoot. Five defects shipped that night and
+all five were caught by whoever made them. A self-caught miss is not a rebound.
 
 ---
 
 ## Separate courts
 
 Workers run in isolated git worktrees. Not caution — arithmetic. Every collision
-that night came from agents sharing one working tree, and none of them is
-possible when each worker has its own.
+came from sharing one tree, and none is possible when each worker has its own.
 
-Failure keeps the work and protects everyone else: failed verify commits to the
+Failure keeps the work and protects everyone: failed verify commits to the
 worker branch and merges nothing; a base that moved mid-run refuses to merge
-rather than resolving a conflict unattended at 3am.
+rather than resolving a conflict unattended at 3am. A fresh worktree has no
+`node_modules`, so it is symlinked — otherwise verify fails on missing
+dependencies and reads as a broken build.
 
 ---
 
 ## What we could not fake
 
 - Verify's **exit code**, never its text. A run was announced green while lint
-  was failing, because the reader matched the reassuring words.
-- **`HEAD` moving.** Announcing `COMMITTED` after reading a `HEAD` that someone
-  else had moved is how work got credited to the wrong agent.
-- **`ONE THING THAT CHANGED`**, with `NOTHING CHANGED` as a legitimate answer. A
-  schedule reporting `NOTHING CHANGED` for a week is burning money to take
-  attendance.
-- **`HUMAN: yes | no`** on every cleared blocker. An entry cleared with `yes` is
-  evidence of a relay — the thing this replaces — not evidence of the mechanism.
+  failed, because the reader matched the reassuring words.
+- **`HEAD` moving.** Announcing `COMMITTED` from a `HEAD` someone else moved is
+  how work got credited to the wrong player.
+- **`ONE THING THAT CHANGED`**, with `NOTHING CHANGED` a legitimate answer.
+- **`HUMAN: yes | no`** on every cleared blocker. Cleared with `yes` is evidence
+  of a relay — the thing this replaces — not of the mechanism.
 
 ---
 
@@ -147,9 +255,9 @@ rather than resolving a conflict unattended at 3am.
 
 > If the human stopped reading, would the agents still make progress?
 
-On 2026-08-19 that became yes: Codex cleared four blockers with no relay,
-including the two Claude was sandboxed out of, and the loop produced real product
-code for the first time — 285 lines across `UnityStage.tsx`, `GuestPlayPage.tsx`
-and two test files, verify green at 416 tests.
+That night it became yes: Codex cleared four blockers with no relay, including
+the two Claude was sandboxed out of, and the loop produced real product code for
+the first time — 285 lines across `UnityStage.tsx`, `GuestPlayPage.tsx` and two
+test files, verify green at 416 tests.
 
-Every bug that night was in the **reporting**, never the work.
+**And the score was still 0.** Both are true. Learn the second one harder.
