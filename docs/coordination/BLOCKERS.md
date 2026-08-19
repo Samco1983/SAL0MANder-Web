@@ -69,6 +69,16 @@ HUMAN:     no
 OPENED:    2026-08-19T04:05:00Z
 BLOCKED:   `npm install -g @google/gemini-cli` then a Google sign-in. Claude
            cannot authenticate anything, and should not.
+
+           ROLE UPDATE 2026-08-19: this seat is now the REBOUNDER, and that
+           raises its priority. B-5 established nobody catches another agent's
+           misses. Gemini fits the role better than anything else here: it is
+           the cheapest seat, its council contract is already "reject a
+           specific Claude claim by id and quote it" — a rebound in other
+           words — and it took none of the shots, so it does not inherit
+           Claude's or Codex's blind spots. A rebounder that never shoots adds
+           no variable to the loop experiment, which was the only reason to
+           wait.
 COMMAND:   npm install -g @google/gemini-cli   (then sign in)
 WHO CAN:   owner only — this one is expected to need a human, and is the control
            case. If B-4 is cleared and B-1..B-3 are not, the mechanism is not
