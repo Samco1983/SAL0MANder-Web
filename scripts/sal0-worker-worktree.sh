@@ -26,6 +26,8 @@ LOG_DIR="$REPO/docs/coordination/runs/logs"
 PAUSE="$HOME/.sal0mander/PAUSE"
 WORKTREE_ROOT="$HOME/.sal0mander/worktrees"
 INSTRUCTIONS="${1:?usage: sal0-worker-worktree.sh <instructions-file>}"
+WORKER_CLOCK_SECONDS="${SAL0_WORKER_CLOCK_SECONDS:-1800}"
+WORKER_HEARTBEAT_SECONDS="${SAL0_WORKER_HEARTBEAT_SECONDS:-30}"
 
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
 
@@ -35,6 +37,54 @@ LOG="$LOG_DIR/worktree-$STAMP.log"
 exec >>"$LOG" 2>&1
 
 echo "=== worker worktree run $STAMP ==="
+
+kill_pid_tree() {
+  parent="$1"
+  for child in $(pgrep -P "$parent" 2>/dev/null || true); do
+    kill_pid_tree "$child"
+  done
+  kill "$parent" 2>/dev/null || true
+}
+
+run_worker_with_clock() {
+  output_file="$1"
+  echo "worker clock: ${WORKER_CLOCK_SECONDS}s; heartbeat: ${WORKER_HEARTBEAT_SECONDS}s"
+
+  "$CLAUDE" -p "$(cat .worker-instructions.md)" \
+    --permission-mode acceptEdits \
+    --allowedTools "Read,Edit,Write,Bash,Glob,Grep" \
+    --output-format json > "$output_file" &
+
+  worker_pid="$!"
+  elapsed=0
+  worker_exit=""
+
+  while kill -0 "$worker_pid" 2>/dev/null; do
+    sleep "$WORKER_HEARTBEAT_SECONDS"
+    elapsed=$((elapsed + WORKER_HEARTBEAT_SECONDS))
+    echo "worker still running: ${elapsed}s / ${WORKER_CLOCK_SECONDS}s"
+
+    if [ "$elapsed" -ge "$WORKER_CLOCK_SECONDS" ]; then
+      echo "AGENT_TIMEOUT: worker exceeded ${WORKER_CLOCK_SECONDS}s"
+      kill_pid_tree "$worker_pid"
+      sleep 2
+      for child in $(pgrep -P "$worker_pid" 2>/dev/null || true); do
+        kill -9 "$child" 2>/dev/null || true
+      done
+      kill -9 "$worker_pid" 2>/dev/null || true
+      wait "$worker_pid" 2>/dev/null || true
+      worker_exit=124
+      break
+    fi
+  done
+
+  if [ -z "$worker_exit" ]; then
+    wait "$worker_pid"
+    worker_exit="$?"
+  fi
+
+  return "$worker_exit"
+}
 
 if [ -f "$PAUSE" ]; then
   echo "PAUSED by $PAUSE: $(cat "$PAUSE" 2>/dev/null)"
@@ -89,10 +139,7 @@ cp "$INSTRUCTIONS" "$WORKTREE/.worker-instructions.md" 2>/dev/null || {
 
 cd "$WORKTREE" || exit 1
 
-"$CLAUDE" -p "$(cat .worker-instructions.md)" \
-  --permission-mode acceptEdits \
-  --allowedTools "Read,Edit,Write,Bash,Glob,Grep" \
-  --output-format json > "$LOG_DIR/worktree-$STAMP.json"
+run_worker_with_clock "$LOG_DIR/worktree-$STAMP.json"
 WORKER_EXIT=$?
 echo "worker exit: $WORKER_EXIT"
 
@@ -101,6 +148,12 @@ rm -f .worker-instructions.md
 DIRTY="$($GIT status --porcelain | grep -v '^?? node_modules' || true)"
 
 if [ -z "$DIRTY" ]; then
+  if [ "$WORKER_EXIT" -ne 0 ]; then
+    echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $WORKER_EXIT with no diff"
+    echo "No commit made. Next shot must be smaller or reassigned."
+    echo "=== end $STAMP ==="
+    exit 1
+  fi
   echo "ONE THING THAT CHANGED: NOTHING CHANGED"
   echo "=== end $STAMP ==="
   exit 0
@@ -109,6 +162,21 @@ fi
 FILES="$(echo "$DIRTY" | wc -l | tr -d ' ')"
 echo "worker changed $FILES file(s):"
 echo "$DIRTY"
+
+if [ "$WORKER_EXIT" -ne 0 ]; then
+  $GIT add -A
+  $GIT commit -q -m "worker: FAILED WORKER EXIT $STAMP
+
+Worker exit $WORKER_EXIT before verify. Not merged. Read the diff.
+
+Sal0-From: SAL0-04"
+  WORK_COMMIT="$($GIT rev-parse HEAD)"
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $WORKER_EXIT after changing files"
+  echo "Partial work preserved on branch $WORK_BRANCH (${WORK_COMMIT:0:8}). Base branch untouched."
+  trap - EXIT
+  cd "$REPO" && $GIT worktree remove --force "$WORKTREE" 2>/dev/null
+  exit 1
+fi
 
 npm run verify >"$LOG_DIR/worktree-verify-$STAMP.log" 2>&1
 VERIFY=$?

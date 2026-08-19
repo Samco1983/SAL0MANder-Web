@@ -16,6 +16,8 @@ GIT="/usr/bin/git"
 LOG_DIR="$REPO/docs/coordination/runs/logs"
 LOCK="$REPO/docs/coordination/.work-loop.lock"
 PAUSE="$HOME/.sal0mander/PAUSE"
+WORKER_CLOCK_SECONDS="${SAL0_WORKER_CLOCK_SECONDS:-1800}"
+WORKER_HEARTBEAT_SECONDS="${SAL0_WORKER_HEARTBEAT_SECONDS:-30}"
 # Instructions default to the real review loop. Pass a path to run something
 # else through the SAME pipeline — that is the point of the canary: proving a
 # different script works proves nothing about this one.
@@ -67,6 +69,54 @@ micro_huddle() {
   fi
   echo "Next shot: $next_shot"
   echo "Stop doing: $6"
+}
+
+kill_pid_tree() {
+  parent="$1"
+  for child in $(pgrep -P "$parent" 2>/dev/null || true); do
+    kill_pid_tree "$child"
+  done
+  kill "$parent" 2>/dev/null || true
+}
+
+run_worker_with_clock() {
+  output_file="$1"
+  echo "worker clock: ${WORKER_CLOCK_SECONDS}s; heartbeat: ${WORKER_HEARTBEAT_SECONDS}s"
+
+  "$CLAUDE" -p "$PROMPT" \
+    --permission-mode acceptEdits \
+    --allowedTools "Read,Edit,Write,Bash,Glob,Grep" \
+    --output-format json > "$output_file" &
+
+  worker_pid="$!"
+  elapsed=0
+  worker_exit=""
+
+  while kill -0 "$worker_pid" 2>/dev/null; do
+    sleep "$WORKER_HEARTBEAT_SECONDS"
+    elapsed=$((elapsed + WORKER_HEARTBEAT_SECONDS))
+    echo "worker still running: ${elapsed}s / ${WORKER_CLOCK_SECONDS}s"
+
+    if [ "$elapsed" -ge "$WORKER_CLOCK_SECONDS" ]; then
+      echo "AGENT_TIMEOUT: worker exceeded ${WORKER_CLOCK_SECONDS}s"
+      kill_pid_tree "$worker_pid"
+      sleep 2
+      for child in $(pgrep -P "$worker_pid" 2>/dev/null || true); do
+        kill -9 "$child" 2>/dev/null || true
+      done
+      kill -9 "$worker_pid" 2>/dev/null || true
+      wait "$worker_pid" 2>/dev/null || true
+      worker_exit=124
+      break
+    fi
+  done
+
+  if [ -z "$worker_exit" ]; then
+    wait "$worker_pid"
+    worker_exit="$?"
+  fi
+
+  return "$worker_exit"
 }
 
 # The brake lives outside the repo so no git operation can remove it.
@@ -137,10 +187,7 @@ fi
 # acceptEdits so it can write code without a human approving each edit.
 # A loop that stops to ask is not a loop.
 PROMPT="$(printf 'SAL0MANder work-loop instructions:\n\n%s' "$(cat "$SKILL")")"
-"$CLAUDE" -p "$PROMPT" \
-  --permission-mode acceptEdits \
-  --allowedTools "Read,Edit,Write,Bash,Glob,Grep" \
-  --output-format json > "$LOG_DIR/work-loop-$STAMP.json"
+run_worker_with_clock "$LOG_DIR/work-loop-$STAMP.json"
 EXIT=$?
 echo "claude exit code: $EXIT"
 
@@ -150,6 +197,18 @@ echo "claude exit code: $EXIT"
 DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
 
 if [ -z "$DIRTY" ]; then
+  if [ "$EXIT" -ne 0 ]; then
+    echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $EXIT with no diff"
+    micro_huddle \
+      "Worker failed or timed out without a repo diff." \
+      "Nothing changed." \
+      "The possession produced no reboundable code, so the next shot must be smaller or reassigned." \
+      "SAL0-01" \
+      "auto" \
+      "Letting a silent failed worker burn more clock."
+    echo "=== end $STAMP (exit $EXIT) ==="
+    exit 1
+  fi
   echo "ONE THING THAT CHANGED: NOTHING CHANGED"
   micro_huddle \
     "Worker exited without a repo diff." \
@@ -165,6 +224,20 @@ fi
 FILES="$(echo "$DIRTY" | wc -l | tr -d ' ')"
 echo "worker changed $FILES file(s):"
 echo "$DIRTY"
+
+if [ "$EXIT" -ne 0 ]; then
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $EXIT after changing files"
+  echo "Nothing committed. Working tree left as-is on purpose; read the diff before another shot."
+  micro_huddle \
+    "Worker failed or timed out after changing files." \
+    "Uncommitted diff preserved." \
+    "A partial diff is evidence, not a score; do not run verify and commit it after a killed worker." \
+    "SAL0-01 or SAL0-04" \
+    "auto" \
+    "Committing partial work from a failed possession."
+  echo "=== end $STAMP (exit $EXIT) ==="
+  exit 1
+fi
 
 # The gate. Exit code, never the text.
 npm run verify >"$LOG_DIR/verify-$STAMP.log" 2>&1
