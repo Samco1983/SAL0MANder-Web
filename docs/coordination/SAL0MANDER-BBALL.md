@@ -265,6 +265,27 @@ turnover hands it to the floor.
 **Every turnover that night came from two agents disagreeing about who owned
 something.** Not from bad code.
 
+### Turnover severity
+
+Not every turnover gets the same whistle. Some are useful pressure. Some are bad
+turnovers. Some stop the game.
+
+| Severity | Meaning | Response |
+| --- | --- | --- |
+| **Live-ball miss** | failed test, wrong approach, small bad diff, clear evidence | rebound it and keep playing |
+| **Bad turnover** | vague handoff, stale claim, wrong attribution, unpushed work, dirty tree collision | stop that possession, preserve evidence, assign the rebound |
+| **Flagrant turnover** | secret exposure, destructive command, cross-lane edit, force push, swallowed human work | immediate TIMEOUT, pause automation, owner review before resume |
+
+The system should tolerate more live-ball misses because they create learning.
+It should aggressively reduce bad turnovers because they waste team time. It
+should refuse flagrant turnovers because they can damage the project while
+Samuel is asleep.
+
+**More mistakes can be better than one slow perfect point, but only if the
+mistakes stay reboundable.** Once a mistake hides work, crosses lanes, touches
+secrets, or lies about success, it is not learning anymore. It is a possession
+that must be stopped.
+
 | # | What happened | Root cause | The rule now |
 | --- | --- | --- | --- |
 | 1 | Loop committed a human's uncommitted edit as its own | shared working tree | **never start on a dirty tree** |
