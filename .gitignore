@@ -41,3 +41,4 @@ docs/coordination/.checkin-monitor-state.json
 
 # Mission Control run lock (local runtime state, never committed)
 docs/coordination/.mission-control.lock
+docs/coordination/.work-loop.lock
