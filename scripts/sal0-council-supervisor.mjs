@@ -21,6 +21,7 @@ import { acquireRunLock, DEFAULT_STALE_MS } from './lib/sal0-run-lock.mjs'
 import { classifyAgentFailure, classifyOutputFailure } from './lib/sal0-agent-failure.mjs'
 import { collectPreflight, readPauseSwitch } from './lib/sal0-preflight.mjs'
 import { parseAgentEnvelope } from './lib/sal0-cost.mjs'
+import { collectRunEvidence, summariseChange } from './lib/sal0-evidence.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const COORDINATION_DIR = join(ROOT, 'docs', 'coordination')
@@ -431,6 +432,12 @@ function runClaudePosition(packet, runDir) {
     killSignal: 'SIGKILL',
   })
 
+  commandsRun.push({
+    command: `${CLAUDE_BIN} -p <packet> --output-format json`,
+    exitCode: result.status,
+    signal: result.signal,
+  })
+
   const timedOut = result.error?.code === 'ETIMEDOUT'
   if (result.error && result.pid) {
     if (reapProcessGroup(result.pid)) {
@@ -661,6 +668,13 @@ function run() {
 
   let modelCalls = 0
   let costUsd = null
+  let startCommit = null
+  try {
+    startCommit = git(['rev-parse', 'HEAD'])
+  } catch {
+    startCommit = null
+  }
+  const commandsRun = []
 
   try {
     runSchemaValidationProof()
@@ -690,6 +704,15 @@ ${claudePosition ? `Claude state: ${claudePosition.state}\nClaude next action: $
 Next action: ${runAgents ? 'wire Gemini critique only after Claude output validates repeatedly.' : 'run --run-agents once Claude CLI is available to capture the first validated POSITION.'}
 `
 
+    const evidence = collectRunEvidence({
+      root: ROOT,
+      runDir,
+      startCommit,
+      agentsInvoked: runAgents ? ['SAL0-04'] : [],
+      commands: commandsRun,
+    })
+    atomicWrite(join(runDir, 'EVIDENCE.json'), `${stableJson(evidence)}\n`)
+
     atomicWrite(join(runDir, 'RESULT.md'), result)
     appendLedger({
       hash,
@@ -702,6 +725,12 @@ Next action: ${runAgents ? 'wire Gemini critique only after Claude output valida
       modelCalls,
       costUsd,
       runMode,
+      scheduleContext: evidence.scheduleContext,
+      verificationLevel: evidence.verificationLevel,
+      oneThingThatChanged: summariseChange(evidence),
+      filesChanged: evidence.filesChanged.length,
+      commitsCreated: evidence.commitsCreated.length,
+      commands: evidence.commands,
       claudePosition: claudePosition ? 'pass' : 'not-run',
       schemaValidation: 'pass',
       dryRun,

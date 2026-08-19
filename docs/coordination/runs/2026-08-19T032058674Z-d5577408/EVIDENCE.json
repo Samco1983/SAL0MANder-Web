@@ -1,0 +1,15 @@
+{
+  "agentsInvoked": [],
+  "artifacts": [
+    "packet.json",
+    "preflight.json"
+  ],
+  "commands": [],
+  "commitsCreated": [],
+  "dirtyTree": true,
+  "filesChanged": [],
+  "headCommit": "ad76d9a1cbbd2ae41fcc0d8daada88793af23755",
+  "scheduleContext": "no-tty",
+  "startCommit": "ad76d9a1cbbd2ae41fcc0d8daada88793af23755",
+  "verificationLevel": "context-unknown"
+}
