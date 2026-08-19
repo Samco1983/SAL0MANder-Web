@@ -43,12 +43,17 @@ export function getOrCreateGuestToken(): string {
 }
 
 export function getGuestDisplayName(): string | undefined {
-  return safeGet(GUEST_NAME_KEY) ?? undefined
+  // A blank or whitespace-only value is absent, not a name. Without this a
+  // submitted-empty field becomes a "name" the UI then renders, labelling a
+  // student with nothing — and the no-account invariant is precisely about
+  // never requiring one, so an empty one must read as none.
+  const stored = safeGet(GUEST_NAME_KEY)?.trim()
+  return stored ? stored : undefined
 }
 
 /** Optional, cosmetic, student-chosen. Never verified, never required. */
 export function setGuestDisplayName(name: string): void {
-  safeSet(GUEST_NAME_KEY, name.slice(0, 40))
+  safeSet(GUEST_NAME_KEY, name.trim().slice(0, 40))
 }
 
 export function getGuestIdentity(): GuestIdentity {
