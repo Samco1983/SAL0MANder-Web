@@ -21,6 +21,25 @@ this work* — swallowed five staged files and called them a hand gesture.
 **The worker changes files. The supervisor reads git and the exit code and
 decides what happened.** The agent gets no say.
 
+## Rule hygiene
+
+Too many rules becomes its own turnover. A rule earns its place only if it does
+at least one of these:
+
+- prevents a repeated bad turnover;
+- makes the next pass easier to catch;
+- protects secrets, lanes, or deployability;
+- turns a vague report into evidence;
+- moves the win condition faster.
+
+If a rule does none of those, delete it or demote it to an example. The playbook
+should stay small enough that a cold agent can read it and start playing before
+the shot clock expires.
+
+That is why speed matters. The clock exposes rules that sound smart but do not
+help the next play. If a rule slows the team down without improving score,
+safety, evidence, or learning, it is not discipline — it is drag.
+
 ---
 
 ## The shot clock
