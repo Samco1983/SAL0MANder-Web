@@ -20,7 +20,7 @@ import { z } from 'zod'
 import { acquireRunLock, DEFAULT_STALE_MS } from './lib/sal0-run-lock.mjs'
 import { classifyAgentFailure, classifyOutputFailure } from './lib/sal0-agent-failure.mjs'
 import { collectPreflight, readPauseSwitch } from './lib/sal0-preflight.mjs'
-import { parseAgentEnvelope, summariseCost } from './lib/sal0-cost.mjs'
+import { parseAgentEnvelope } from './lib/sal0-cost.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const COORDINATION_DIR = join(ROOT, 'docs', 'coordination')
