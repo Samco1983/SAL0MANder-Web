@@ -14,6 +14,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 
+import { oldestPending, parseEnvelope, trustedAuthors } from './lib/sal0-checkin-select.mjs'
+
 const HUB_REPO = process.env.SAL0_HUB_REPO || 'Samco1983/Sal0mander-Jigsaw-Puzzle'
 const HUB_ISSUE = Number(process.env.SAL0_HUB_ISSUE || '1')
 const CODEX_BIN =
@@ -25,9 +27,7 @@ const STATE_FILE =
   process.env.SAL0_CHECKIN_MONITOR_STATE ||
   new URL('../docs/coordination/.checkin-monitor-state.json', import.meta.url).pathname
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || ''
-const REQUEST_MARKERS = ['CHECK_IN_REQUEST', 'ACTION REQUIRED']
-const PROCESSED_MARKERS = ['CHECK_IN_PROCESSED']
-const VALID_LANES = new Set(['Game', 'Unity', 'Web', 'Website', 'Seam', 'Coordination'])
+const TRUSTED_AUTHORS = trustedAuthors()
 
 const args = new Set(process.argv.slice(2))
 const accept = args.has('--accept')
@@ -94,54 +94,6 @@ async function fetchIssueComments() {
     comments.push(...pageComments)
     if (pageComments.length < 100) return comments
     page += 1
-  }
-}
-
-function oldestPending(comments, state) {
-  const seen = new Set(state.seenCommentIds)
-  return comments
-    .filter((comment) => REQUEST_MARKERS.some((marker) => comment.body?.includes(marker)))
-    .filter((comment) => !PROCESSED_MARKERS.some((marker) => comment.body?.includes(marker)))
-    .filter((comment) => !seen.has(comment.id))
-    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())[0]
-}
-
-function readField(body, fieldName) {
-  const fieldStart = new RegExp(`^${fieldName}:\\s*(.*)$`, 'im')
-  const match = body.match(fieldStart)
-  if (!match || match.index === undefined) return ''
-
-  const firstLine = match[1]?.trim() || ''
-  const afterField = body.slice(match.index + match[0].length)
-  const nextField = afterField.search(/^\w[\w /-]*:\s*/m)
-  const rest = nextField >= 0 ? afterField.slice(0, nextField) : afterField
-  return [firstLine, rest.trim()].filter(Boolean).join('\n').trim()
-}
-
-function parseEnvelope(body) {
-  const marker = REQUEST_MARKERS.find((candidate) => body.includes(candidate)) || ''
-  const lane = readField(body, 'Lane')
-  const request = readField(body, 'Request')
-  const expectedEvidence = readField(body, 'Expected evidence')
-
-  const problems = []
-  if (marker !== 'CHECK_IN_REQUEST') {
-    problems.push('use CHECK_IN_REQUEST for dispatcher-ready work')
-  }
-  if (!VALID_LANES.has(lane)) {
-    problems.push(`Lane must be one of: ${[...VALID_LANES].join(', ')}`)
-  }
-  if (!request) {
-    problems.push('Request field is required')
-  }
-
-  return {
-    marker,
-    lane,
-    request,
-    expectedEvidence,
-    isStructured: problems.length === 0,
-    problems,
   }
 }
 
@@ -224,7 +176,7 @@ What I will not touch:`)
 async function main() {
   const state = readState()
   const comments = await fetchIssueComments()
-  const pending = oldestPending(comments, state)
+  const pending = oldestPending(comments, state, { trustedAuthors: TRUSTED_AUTHORS })
 
   state.lastCheckedAt = new Date().toISOString()
 
