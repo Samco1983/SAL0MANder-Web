@@ -1,6 +1,27 @@
 # Open items register
 
-## W-12 — the W-10 fix loses the data it was written to save 🔴
+## W-12 — ✅ RESOLVED — W-10 failure paths surface completed results
+
+Resolved 2026-08-18 in `630c403 web: surface undeliverable guest results`.
+
+The fix:
+
+- tags buffered early results with the `clientAttemptId` they were produced
+  under;
+- refuses to flush an old buffered result into a new attempt;
+- surfaces a completed result as `result-undeliverable` when `POST /sessions`
+  rejects after Unity already finished;
+- keeps the completed result, attempt id, and error together for a later
+  teacher/admin reporting surface.
+
+Evidence:
+
+- focused run: `npm test -- src/routes/guest-play/resultBuffering.test.ts` —
+  7 tests passed;
+- full run: `npm run verify` — lint, typecheck, 418 tests, and production build
+  passed.
+
+### Original finding
 
 **Found 2026-08-19 in the assigned adversarial review of Web head `f5f55c9`.
 Full evidence in [`WEB-HEAD-REVIEW-f5f55c9.md`](./WEB-HEAD-REVIEW-f5f55c9.md).
@@ -36,10 +57,8 @@ no `clientAttemptId`, so it cannot tell which attempt it belongs to.
 3. Only then clear the buffer in `reset()` — clearing it first would destroy the
    same data silently.
 
-**Not yet implemented.** The review was scoped no-edit by the supervisor
-directive. This needs either a fresh ACK to implement, or an owner call on
-whether an undeliverable completion gets a visible surface now rather than
-waiting for the teacher/admin reporting work W-10 deferred.
+The remaining UI/reporting surface is separate future teacher/admin product
+work. The data-loss and wrong-attempt paths are fixed.
 
 ## W-11 — `unity-ready` is now load-bearing, and the receiver names are still provisional 🟠
 
