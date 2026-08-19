@@ -155,6 +155,37 @@ without anyone naming a number was just a rest.
 **Speed wins possessions. Huddles win games.** Both, in the right order: huddle
 to pick the play, then run it on the clock.
 
+### Micro-huddles
+
+After every play or major checkpoint, hold one small discussion before the next
+handoff. Not a meeting, not a new planning phase — a quick read of what just
+happened so the next pass is timed better.
+
+The micro-huddle has a clock:
+
+| Situation | Clock | Output |
+| --- | --- | --- |
+| Clean score | 2 minutes | next shot and receiver |
+| Live-ball miss | 3 minutes | what was learned and who rebounds |
+| Bad turnover | 5 minutes | cause, preserved evidence, prevention rule |
+| Flagrant turnover | no clock | TIMEOUT until owner clears resume |
+
+Use this format:
+
+```text
+MICRO-HUDDLE
+What just happened:
+What changed:
+What did we learn:
+Next receiver:
+Next shot:
+Stop doing:
+```
+
+A micro-huddle earns its time only if it makes the next possession clearer. If
+it creates more than one next play, it is no longer a micro-huddle — call a real
+huddle or choose one shot and move.
+
 ## The scoreboard
 
 > **`queue: N open, M closed`. Nothing else is points.**
