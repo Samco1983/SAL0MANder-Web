@@ -402,6 +402,44 @@ describe('correlation guards — adversarial', () => {
   })
 })
 
+describe('the bridge subscription must outlive a render', () => {
+  it('subscribes once per page, not once per render', async () => {
+    /*
+     * `onUnityMessage` mints a per-subscription `eventId` deduper. A listener
+     * rebuilt on every render therefore starts every render with an empty
+     * dedupe window, and the `API_CONTRACT.md` §WebGL bridge requirement that
+     * receivers deduplicate `eventId` is not actually in force at page level —
+     * it is only masked by `usePlaySession` refusing a second submit from its
+     * own state machine.
+     *
+     * Proven white-box on purpose: with the mask in place there is no black-box
+     * assertion that can tell a live dedupe window from a discarded one. The
+     * mutation that shows the mask is real — making `EventDeduper.accept`
+     * always return true leaves every other test in this file green.
+     */
+    const added = vi.spyOn(window, 'addEventListener')
+    const count = () => added.mock.calls.filter(([type]) => type === UNITY_EVENT_NAME).length
+
+    const start = vi.spyOn(api.sessions, 'start')
+    renderPlay(MOCK_SHARE_CODES.ok)
+    // Every bridge consumer on this page mounts on the first commit.
+    const atFirstPaint = count()
+    expect(atFirstPaint).toBeGreaterThan(0)
+
+    await screen.findByText(/Fractions Review/i)
+    unity.modeSelected('classic-puzzle', undefined, live())
+    await waitFor(() => expect(start).toHaveBeenCalledTimes(1))
+    await settleSession(start)
+    const sid = await activeSessionId(start)
+    unity.finished('fin-1', liveWithSession(sid))
+    await waitFor(() => expect(screen.getByText(/version:/)).toBeInTheDocument())
+
+    // Loading → ready → mode pinned → starting → active → submitting →
+    // finished is a long chain of renders. None of them may cost a listener.
+    expect(count()).toBe(atFirstPaint)
+  })
+})
+
 describe('reconnect', () => {
   it('reuses the stored attempt id after a reload', async () => {
     const first = renderPlay(MOCK_SHARE_CODES.ok)

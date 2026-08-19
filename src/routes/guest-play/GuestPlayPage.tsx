@@ -169,6 +169,20 @@ export function GuestPlayPage() {
   })
   correlationRef.current = { attemptId: clientAttemptId, sessionId }
 
+  /**
+   * `submit` through a ref, for a reason the ref above only half covered.
+   *
+   * `usePlaySession` returns a fresh object every render, so depending on
+   * `session` re-subscribed on **every render** — not merely when the session
+   * id arrived. `onUnityMessage` mints a per-subscription `eventId` deduper, so
+   * the page's dedupe window was thrown away each time, and the `API_CONTRACT`
+   * §WebGL bridge requirement that receivers deduplicate `eventId` was met only
+   * incidentally, by `usePlaySession` refusing to submit twice from its own
+   * state machine. One subscription per page, created once, keeps the window.
+   */
+  const submitRef = useRef(session.submit)
+  submitRef.current = session.submit
+
   /** Handed back to Unity so it can correlate what it later emits. */
   const sessionStarted = useMemo(
     () =>
@@ -220,7 +234,7 @@ export function GuestPlayPage() {
         return
       }
 
-      void session.submit({
+      void submitRef.current({
         status: 'completed',
         durationMs: message.durationMs,
         questionsAnswered: message.questionsAnswered,
@@ -230,7 +244,7 @@ export function GuestPlayPage() {
         completedAt: new Date().toISOString(),
       })
     })
-  }, [session])
+  }, [])
 
   return (
     <AppShell fill contained={false}>

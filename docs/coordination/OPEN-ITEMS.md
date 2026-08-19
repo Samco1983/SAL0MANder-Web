@@ -1,5 +1,62 @@
 # Open items register
 
+## W-11 — `unity-ready` is now load-bearing, and the receiver names are still provisional 🟠
+
+**For Codex. Nothing here is frozen by the web lane; this is the exact question,
+not a proposal.**
+
+### What the web changed, and why it needs an answer
+
+`UnityStage` used to send `boot` the moment `createUnityInstance` resolved. Those
+are two different facts: the promise settles when the WebGL runtime is up, while
+the C# object `sendToUnity` targets is created by the build's own startup. Unity's
+`SendMessage` throws when the target GameObject does not exist yet — and that
+throw is indistinguishable from a wrong name. Nothing in the boot effect's
+dependencies changed again afterwards, so **a first boot that failed for a timing
+reason was permanent**: the student sits on an empty board, and in production
+`reportUndelivered` is silent.
+
+The web now also attempts boot when the `unity-ready` message arrives
+(`API_CONTRACT.md` §WebGL bridge; the bridge aliases it onto the internal
+`ready`). `bootedRef` still holds it to once per instance. No GameObject or
+method name was invented, changed, or frozen — `UNITY_BRIDGE_TARGET` is
+untouched.
+
+### The three questions
+
+1. **Does the Unity build emit `unity-ready` *after* the bridge receiver
+   exists,** or at some earlier point in startup? The web retry is only worth
+   anything if that message means "you can send to me now". If it fires in
+   `Awake` before the receiver is registered, the retry lands in the same hole
+   and web needs a different signal from you.
+2. **Are `SAL0MANderBridge` / `ReceiveWebMessage` the names the build will
+   ship?** They are marked CANONICAL in `bridge.ts` from a 2026-08-15 approval,
+   but no C# receiver exists to check them against, so nothing has ever exercised
+   them. They stay overridable by config precisely so this is a config change on
+   your word, not a code change on ours.
+3. **Should an undelivered `boot` be visible in production?** Today it is a
+   dev-only `console.error`. This is the same shape as the W-10 visibility
+   question you answered — a real failure that is silent where it matters — but
+   the failing party is the *game*, not a result, so the answer may differ.
+
+### What the web verified on its own side
+
+`src/unity/boot.test.tsx`, three new cases, each proven to fail before the fix:
+
+- a boot whose first `SendMessage` throws is retried on `unity-ready`;
+- a re-announcement does not re-boot a running instance;
+- `session-started` is withheld until `boot` has actually landed — its ordering
+  was previously guaranteed "by construction", which held only while boot could
+  not fail.
+
+**What web cannot verify:** anything above the `SendMessage` boundary. There is
+still no C# receiver, so this is specified and tested, not proven interoperable.
+The smallest thing that closes it is the single round trip named in `STATUS.md`:
+`unity-ready → boot → mode-selected → session-started → session-finished`
+against a real build.
+
+---
+
 ## W-10 — ✅ RESOLVED — startup completion race buffered
 
 **Answered in the first direct Claude↔Codex exchange in this project** — no

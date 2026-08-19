@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { resolveUnityBuildConfig } from './buildConfig'
 import {
   BRIDGE_VERSION,
+  onUnityMessage,
   sendToUnity,
   type UnityMessageTarget,
   type WebToUnityMessage,
@@ -58,6 +59,31 @@ export function UnityStage({
   const bootedRef = useRef(false)
 
   /**
+   * How many times Unity has announced, from inside the build, that its bridge
+   * receiver exists.
+   *
+   * The loader promise resolving is a *different fact*: `createUnityInstance`
+   * settles when the WebGL runtime is up, while the C# object `sendToUnity`
+   * targets is created by the build's own startup, which has not necessarily
+   * run. Unity's `SendMessage` throws when the target does not exist yet, so a
+   * first boot can fail for a reason that resolves a moment later — and nothing
+   * the boot effect depends on would ever change again. The student is left on
+   * an empty board with no error anywhere.
+   *
+   * Counted rather than flagged so a re-announcement re-runs the send effects;
+   * `bootedRef` and `sentSessionRef` are what keep it to once each. The message
+   * name is `API_CONTRACT.md` §WebGL bridge's `unity-ready`, which the bridge
+   * aliases onto `ready` — nothing new is being asserted about Unity here.
+   */
+  const [handshakes, setHandshakes] = useState(0)
+  useEffect(() => {
+    return onUnityMessage((message) => {
+      if (message.type !== 'ready') return
+      setHandshakes((n) => n + 1)
+    })
+  }, [])
+
+  /**
    * Boot Unity once, as soon as both halves exist.
    *
    * The activity fetch and the WebGL load race, and either can win: on a warm
@@ -65,7 +91,9 @@ export function UnityStage({
    * other way round. Keying on both means the order does not matter.
    *
    * `bootedRef` makes it exactly once per instance. A second `boot` would ask a
-   * running game to reload an activity a student is already playing.
+   * running game to reload an activity a student is already playing — so a
+   * failed send deliberately leaves the flag alone and is retried, while a
+   * delivered one is never repeated.
    */
   useEffect(() => {
     if (!boot || bootedRef.current || state.status !== 'ready') return
@@ -75,19 +103,23 @@ export function UnityStage({
       ...boot,
     })
     if (sent) bootedRef.current = true
-  }, [boot, state.status])
+  }, [boot, state.status, handshakes])
 
   /**
    * Hand Unity the canonical session id once the web has one.
    *
-   * Ordered after boot by construction: a session only exists after the bundle
-   * resolved, and boot fires the moment the bundle and the instance both do.
+   * Ordered after boot *explicitly*, not by construction. The old reasoning —
+   * a session only exists after the bundle resolved, and boot fires the moment
+   * the bundle and the instance both do — holds only while boot cannot fail.
+   * It can, and a session id reaching a build that never received its activity
+   * names a session for a game that was never started.
+   *
    * Sent once per session id — resending would tell a running game its session
    * restarted.
    */
   const sentSessionRef = useRef<string | undefined>(undefined)
   useEffect(() => {
-    if (!sessionStarted || state.status !== 'ready') return
+    if (!sessionStarted || state.status !== 'ready' || !bootedRef.current) return
     if (sentSessionRef.current === sessionStarted.sessionId) return
     const sent = sendToUnity(instanceRef.current, {
       type: 'session-started',
@@ -95,7 +127,7 @@ export function UnityStage({
       ...sessionStarted,
     })
     if (sent) sentSessionRef.current = sessionStarted.sessionId
-  }, [sessionStarted, state.status])
+  }, [sessionStarted, state.status, handshakes])
 
   useEffect(() => {
     if (!config || !canvasRef.current) return
@@ -158,8 +190,11 @@ export function UnityStage({
       cancelled = true
       void instance?.Quit()
       instanceRef.current = null
-      // A fresh instance is an unbooted one.
+      // A fresh instance is an unbooted one — and one that has been told
+      // nothing. Resetting only `bootedRef` would boot the replacement into an
+      // activity and never tell it which session it is playing.
       bootedRef.current = false
+      sentSessionRef.current = undefined
       script.remove()
     }
     // Only the resolved build identity may restart Unity. `config` is derived
