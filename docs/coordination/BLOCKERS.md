@@ -36,8 +36,8 @@ BLOCKED:   Claude's sandbox denies `launchctl` and copying into ~/Library/Launch
 COMMAND:   cp docs/coordination/launchd/com.sal0mander.work-loop.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.sal0mander.work-loop.plist
 WHO CAN:   Codex CLI, or the owner in Terminal
 AUTO:      no
-CLEARED:
-HUMAN:
+CLEARED:   2026-08-19T04:29:00Z Codex — launchd plist installed and label loads; pause switch remains ON
+HUMAN:     no
 
 ### B-2 · execute stage not wired into the supervisor · Claude (SAL0-04)
 OPENED:    2026-08-19T04:05:00Z

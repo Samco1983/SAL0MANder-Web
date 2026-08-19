@@ -59,9 +59,9 @@ print_status() {
     echo "launchd plist: not installed"
   fi
 
-  if launchctl list 2>/dev/null | grep -q "$LABEL"; then
+  if launchctl list "$LABEL" >/dev/null 2>&1; then
     echo "launchd job: loaded"
-    launchctl list 2>/dev/null | grep "$LABEL" | sed 's/^/  /'
+    launchctl list "$LABEL" 2>/dev/null | sed 's/^/  /'
   else
     echo "launchd job: not loaded"
   fi
@@ -153,4 +153,3 @@ case "${1:-}" in
   ""|-h|--help|help) usage ;;
   *) echo "unknown command: $1"; usage; exit 2 ;;
 esac
-
