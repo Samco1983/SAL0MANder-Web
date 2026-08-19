@@ -1,7 +1,7 @@
 # SAL0MANder Mission Control Preflight
 
-Created: 2026-08-19T02:37:46Z
-Hash: `23361f7257ec7110dc713c5fe95eb129de500d6d91f79a98780fad4d1abf9a4a`
+Created: 2026-08-19T02:38:29Z
+Hash: `e911b38ac62de167ce171eb241dd9618e7fe0f2a86387c1f1ca838a24737ec22`
 
 ## Control Layer
 
@@ -22,7 +22,7 @@ Hash: `23361f7257ec7110dc713c5fe95eb129de500d6d91f79a98780fad4d1abf9a4a`
 
 ## Repos
 
-- web: `council/2026-08-18` at `ca14d1b` (dirty)
+- web: `council/2026-08-18` at `57e0a35` (dirty)
 - unity: `codex/git-hygiene-ignore-unity-temp` at `49ac86c` (clean)
 
 ## Run Lock
@@ -45,20 +45,20 @@ Hash: `23361f7257ec7110dc713c5fe95eb129de500d6d91f79a98780fad4d1abf9a4a`
 
 ## Disk
 
-- OK: 676.06 GB free at `/Users/samuel_saldivar/Desktop/SAL0MANder-Web`
+- OK: 676.05 GB free at `/Users/samuel_saldivar/Desktop/SAL0MANder-Web`
 
 ## Agent States
 
-- SAL0-01 SAL0-01 Architect — Codex Desktop: WORKING
-- SAL0-02 SAL0-02 Runner — Codex CLI: WORKING
-- SAL0-03 SAL0-03 Director — OpenAI API: UNKNOWN/UNREACHABLE
-- SAL0-04 SAL0-04 Builder — Claude CLI: WORKING
-- SAL0-05 SAL0-05 Reviewer — Claude Chat: DONE - NEED NEW TASK
-- SAL0-06 SAL0-06 Scout — Gemini Chat: DONE - NEED NEW TASK
-- SAL0-07 SAL0-07 Challenger — Gemini API/CLI: UNKNOWN/UNREACHABLE
-- SAL0-08 SAL0-08 Inspector — Unity MCP: UNKNOWN/UNREACHABLE
-- SAL0-09 SAL0-09 Signal — Make Cloud: BLOCKED - NEED OWNER
-- SAL0-10 SAL0-10 Ledger — GitHub Cloud: WORKING
+- SAL0-01 Architect — Codex Desktop: WORKING
+- SAL0-02 Runner — Codex CLI: WORKING
+- SAL0-03 Director — OpenAI API: UNKNOWN/UNREACHABLE
+- SAL0-04 Builder — Claude CLI: WORKING
+- SAL0-05 Reviewer — Claude Chat: DONE - NEED NEW TASK
+- SAL0-06 Scout — Gemini Chat: DONE - NEED NEW TASK
+- SAL0-07 Challenger — Gemini API/CLI: UNKNOWN/UNREACHABLE
+- SAL0-08 Inspector — Unity MCP: UNKNOWN/UNREACHABLE
+- SAL0-09 Signal — Make Cloud: BLOCKED - NEED OWNER
+- SAL0-10 Ledger — GitHub Cloud: WORKING
 
 ## Browser Links
 
