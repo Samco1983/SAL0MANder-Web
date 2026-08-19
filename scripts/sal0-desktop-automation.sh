@@ -17,6 +17,7 @@ PAUSE_FILE="$PAUSE_DIR/PAUSE"
 LOG_DIR="$HOME/.sal0mander/logs"
 WRAPPER_DIR="$HOME/.sal0mander/bin"
 WRAPPER="$WRAPPER_DIR/sal0-work-loop-launchd.sh"
+CLAUDE_TOKEN_FILE="$HOME/.sal0mander/secrets/claude_oauth_token"
 
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
 
@@ -92,6 +93,13 @@ print_status() {
     echo "pause: off"
   fi
 
+  if [ -f "$CLAUDE_TOKEN_FILE" ]; then
+    token_mode="$(stat -f %Lp "$CLAUDE_TOKEN_FILE" 2>/dev/null || echo unknown)"
+    echo "claude token file: present, mode $token_mode"
+  else
+    echo "claude token file: absent"
+  fi
+
   echo
   echo "tools:"
   for tool in git gh node npm python3 claude gemini; do
@@ -121,12 +129,17 @@ print_status() {
 
 prepare_runtime_repo() {
   mkdir -p "$(dirname "$RUNTIME_REPO")" "$LOG_DIR"
+  clone_source="$(git -C "$REPO" remote get-url origin 2>/dev/null || echo "$REPO")"
   if [ -d "$RUNTIME_REPO/.git" ]; then
+    current_origin="$(git -C "$RUNTIME_REPO" remote get-url origin 2>/dev/null || echo '')"
+    if [ "$current_origin" != "$clone_source" ]; then
+      git -C "$RUNTIME_REPO" remote set-url origin "$clone_source"
+    fi
     git -C "$RUNTIME_REPO" fetch origin
     git -C "$RUNTIME_REPO" checkout council/2026-08-18
     git -C "$RUNTIME_REPO" pull --ff-only origin council/2026-08-18
   else
-    git clone "$REPO" "$RUNTIME_REPO"
+    git clone "$clone_source" "$RUNTIME_REPO"
     git -C "$RUNTIME_REPO" checkout council/2026-08-18
   fi
 }
@@ -142,6 +155,7 @@ cd /tmp || exit 1
 export SAL0_REPO="$RUNTIME_REPO"
 export SAL0_LOG_DIR="$LOG_DIR"
 export SAL0_LOCK="$HOME/.sal0mander/work-loop.lock"
+export SAL0_CLAUDE_TOKEN_FILE="$HOME/.sal0mander/secrets/claude_oauth_token"
 exec /bin/bash "$RUNTIME_REPO/scripts/sal0-work-loop.sh"
 EOF
   chmod 755 "$WRAPPER"

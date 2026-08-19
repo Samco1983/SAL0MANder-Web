@@ -16,6 +16,7 @@ GIT="/usr/bin/git"
 LOG_DIR="${SAL0_LOG_DIR:-$REPO/docs/coordination/runs/logs}"
 LOCK="${SAL0_LOCK:-$REPO/docs/coordination/.work-loop.lock}"
 PAUSE="$HOME/.sal0mander/PAUSE"
+CLAUDE_TOKEN_FILE="${SAL0_CLAUDE_TOKEN_FILE:-$HOME/.sal0mander/secrets/claude_oauth_token}"
 WORKER_CLOCK_SECONDS="${SAL0_WORKER_CLOCK_SECONDS:-1800}"
 WORKER_HEARTBEAT_SECONDS="${SAL0_WORKER_HEARTBEAT_SECONDS:-30}"
 # Instructions default to the real review loop. Pass a path to run something
@@ -192,6 +193,26 @@ fi
 if [ ! -x "$CLAUDE" ]; then
   echo "FATAL: claude not executable at $CLAUDE"
   exit 1
+fi
+
+if [ -f "$CLAUDE_TOKEN_FILE" ]; then
+  token_mode="$(stat -f %Lp "$CLAUDE_TOKEN_FILE" 2>/dev/null || echo unknown)"
+  if [ "$token_mode" != "600" ]; then
+    echo "AGENT_UNAVAILABLE: Claude token file exists but must be chmod 600: $CLAUDE_TOKEN_FILE"
+    micro_huddle \
+      "Claude token file exists with unsafe permissions." \
+      "Nothing changed." \
+      "A token file can wake the player, but only if the file is private to the user." \
+      "SAL0-01" \
+      "auto" \
+      "Running an unattended worker with loose credential-file permissions."
+    echo "=== end $STAMP (exit 1) ==="
+    exit 1
+  fi
+  export CLAUDE_CODE_OAUTH_TOKEN="$(cat "$CLAUDE_TOKEN_FILE")"
+  echo "claude token source: file present with mode 600"
+else
+  echo "claude token source: none; using CLI cached login if available"
 fi
 
 # acceptEdits so it can write code without a human approving each edit.
