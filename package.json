@@ -37,6 +37,7 @@
     "mission:desktop:resume": "bash scripts/sal0-desktop-automation.sh resume",
     "mission:desktop:logs": "bash scripts/sal0-desktop-automation.sh logs",
     "mission:next-task": "bash scripts/sal0-next-task.sh",
+    "mission:signals": "bash scripts/sal0-signal.sh --read",
     "make:payload:nudge": "node scripts/sal0-make-payload.mjs nudge-agents",
     "make:payload:done": "node scripts/sal0-make-payload.mjs done-need-new-task",
     "make:payload:blockers": "node scripts/sal0-make-payload.mjs blocker-status",

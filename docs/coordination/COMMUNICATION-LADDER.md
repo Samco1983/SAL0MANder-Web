@@ -31,6 +31,8 @@ Use the channel that matches the job:
 - `npm run mission:control-room`: prints the one-screen operating dashboard:
   who worked, what is queued, what ran, what cost evidence exists, and what is
   blocked.
+- `npm run mission:signals`: reads short commit-trailer calls between agents,
+  such as `SHAKY`, `BOARDS`, `TRAIL`, `MINE`, and `YOURS`.
 - `npm run mission:preflight`: writes local readiness evidence.
 - `npm run mission:urls`: prints the browser URLs to open.
 - `npm run mission:desktop:status`: checks local launchd and pause state.
