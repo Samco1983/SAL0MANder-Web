@@ -109,11 +109,35 @@ export function classifyAgentFailure({ error, status, signal, stderr = '', timed
   )
 }
 
+/**
+ * Some CLIs report an in-run failure as their *result on stdout* rather than on
+ * stderr with a non-zero exit — Claude Code documents exactly this for missing
+ * authentication. Without this check, an unauthenticated CLI produces prose on
+ * stdout, fails to parse, and gets filed as the model's judgment. Scan stdout
+ * for the same infrastructure signals before attributing anything to a model.
+ */
+export function detectInfrastructureInOutput(raw) {
+  const text = String(raw || '')
+  if (!text.trim()) return null
+  if (POLICY_PATTERNS.some((pattern) => pattern.test(text))) {
+    return build(FAILURE.TOOL_POLICY_DENIED, 'stdout reports a policy block, not a model answer', text.slice(0, 400))
+  }
+  if (AUTH_PATTERNS.some((pattern) => pattern.test(text))) {
+    return build(FAILURE.AGENT_AUTH, 'stdout reports an auth failure, not a model answer', text.slice(0, 400))
+  }
+  return null
+}
+
 /** Classify output that the model did produce. These are model-attributable. */
 export function classifyOutputFailure(raw, { schemaError } = {}) {
   if (!raw || !String(raw).trim()) {
     return build(FAILURE.OUTPUT_EMPTY, 'agent returned no output', '')
   }
+
+  // Infrastructure masquerading as an answer wins over any model attribution.
+  const masked = detectInfrastructureInOutput(raw)
+  if (masked) return masked
+
   if (schemaError) {
     return build(FAILURE.OUTPUT_SCHEMA_INVALID, 'output parsed but failed its schema', String(schemaError))
   }

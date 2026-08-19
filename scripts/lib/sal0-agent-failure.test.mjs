@@ -62,3 +62,26 @@ describe('classifyOutputFailure', () => {
     }
   })
 })
+
+describe('infrastructure reported on stdout', () => {
+  it('does not blame the model when stdout carries an auth failure', () => {
+    // Claude Code documents printing in-run failures, such as missing
+    // authentication, as the result on stdout rather than on stderr.
+    const raw = 'Invalid API key · Please run /login'
+    const verdict = classifyOutputFailure(raw)
+    expect(verdict.failureClass).toBe(FAILURE.AGENT_AUTH)
+    expect(verdict.attribution).toBe(ATTRIBUTION.INFRASTRUCTURE)
+    expect(isModelAttributable(verdict.failureClass)).toBe(false)
+  })
+
+  it('does not blame the model when stdout carries a policy block', () => {
+    const verdict = classifyOutputFailure('The Edit tool is not allowed by policy.')
+    expect(verdict.attribution).toBe(ATTRIBUTION.INFRASTRUCTURE)
+  })
+
+  it('still blames the model for ordinary unparseable prose', () => {
+    const verdict = classifyOutputFailure('I think the next step is to refactor the router.')
+    expect(verdict.failureClass).toBe(FAILURE.OUTPUT_UNPARSEABLE)
+    expect(verdict.attribution).toBe(ATTRIBUTION.MODEL)
+  })
+})
