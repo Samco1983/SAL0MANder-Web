@@ -30,6 +30,8 @@ const RUNS_DIR = join(COORDINATION_DIR, 'runs')
 const LEDGER_FILE = join(RUNS_DIR, 'ledger.jsonl')
 const PROBE_FILE = join(COORDINATION_DIR, 'PROBE.md')
 const CURRENT_STATE_FILE = join(COORDINATION_DIR, 'CURRENT_STATE.md')
+const ROLES_FILE = join(COORDINATION_DIR, 'AGENT_ROLES.json')
+const SESSION_FAILSAFES_FILE = join(COORDINATION_DIR, 'SESSION-FAILSAFES.md')
 const RECENT_COMMIT_COUNT = Number(process.env.SAL0_COUNCIL_COMMITS || '10')
 const CLAUDE_BIN = process.env.SAL0_CLAUDE_BIN || 'claude'
 const AGENT_TIMEOUT_MS = Number(process.env.SAL0_COUNCIL_AGENT_TIMEOUT_MS || '120000')
@@ -459,6 +461,14 @@ function buildPacket() {
       currentState: {
         path: 'docs/coordination/CURRENT_STATE.md',
         body: readOptional(CURRENT_STATE_FILE),
+      },
+      agentRoles: {
+        path: 'docs/coordination/AGENT_ROLES.json',
+        body: JSON.parse(readOptional(ROLES_FILE)),
+      },
+      sessionFailsafes: {
+        path: 'docs/coordination/SESSION-FAILSAFES.md',
+        body: readOptional(SESSION_FAILSAFES_FILE),
       },
       recentCommits: recentProductCommits(),
     },

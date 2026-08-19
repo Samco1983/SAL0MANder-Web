@@ -5,17 +5,24 @@ This is the local proof-of-life for the council architecture.
 Codex's technical ruling for this layer lives in
 `CODEX-TECHNICAL-RULING-COUNCIL.md`.
 
+Agent roles and session fail-safes live in `AGENT_ROLES.json` and
+`SESSION-FAILSAFES.md`.
+
 Current status:
 - `npm run council:dry-run` builds a deterministic context packet.
 - `npm run --silent council:print-packet` prints the exact packet for review
   before any external model handoff.
 - `npm run council:validate-schemas` proves the strict output schemas without
   calling any models.
+- `npm run council:roles:validate` proves the machine-readable role registry is
+  valid.
 - `npm run council:run-agents` runs Claude POSITION only, then saves and
   validates raw + parsed output. It refuses to run unless the caller also passes
   `--allow-external-claude`. Gemini and OpenAI stay disabled.
 - The packet reads `PROBE.md`, `CURRENT_STATE.md`, and the last 10 non-council
   commit messages.
+- The packet also includes `AGENT_ROLES.json` and `SESSION-FAILSAFES.md`, so
+  workers receive the role map instead of relying on remembered chat context.
 - The packet uses the latest non-council commit as `productHead`, so committing
   council run evidence does not trigger another council run.
 - The supervisor computes a SHA-256 hash.
