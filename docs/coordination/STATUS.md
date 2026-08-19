@@ -5,6 +5,85 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — Gate-1 web artifacts: website IA + Guest Play wireframe (issues #12, #14)
+
+```text
+AGENT: Claude Code
+AREA: Website lane / docs — information architecture + Guest Play wireframe
+STATUS: SHIPPED — `d0b9ebc`, verify green (docs-only, no runtime behavior change)
+```
+
+**CHECKED FIRST**
+
+`node scripts/check-upstream.mjs`: no upstream changes. Hub reachable directly
+(`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle`), 185 comments. The
+2026-08-19T09:59:07Z supervisor directive is the latest: W-16's product code
+(`7756e11`) is FROZEN pending Codex's and Gemini's independent reviews, and item
+4 assigns Claude Code safe parallel work — docs/design only, specifically role
+flows, responsive breakpoint strategy, and editor/preview wireframes — no
+merge/deploy, no new runtime behavior. This batch is exactly that assignment.
+
+**WHAT SHIPPED**
+
+Two docs, both grounded in the current router/components/contracts, not
+invented:
+
+- `docs/INFORMATION-ARCHITECTURE.md` (issue #12) — sitemap and route
+  responsibility table separating existing (`/`, `/play`, `/play/:activityId`,
+  `/profile`, `/unity`, `*`) from proposed-and-deferred (`/teacher/*`,
+  `/resources`, `/classes`); the five verified user journeys code actually
+  supports today; four proposed journeys labeled with their exact blocker
+  (X-002 auth, D-020's advisory-data classification, no owner assigned to
+  `/resources`); and five independently-shippable batches (A: copy/nav fixes,
+  no approval needed; B: reserve the `/teacher` namespace, no approval needed;
+  C/D/E: blocked on named items already in `DECISIONS.md`).
+- `docs/GUEST-PLAY-WIREFRAME.md` (issue #14) — state-by-state wireframes for
+  every reachable state of `/play/:activityId`: activity loading/ready, both
+  link-failure branches with and without a retry action, both
+  `result-undeliverable` routes (W-16's reload-survival included), and the
+  Unity loader's independent load/error states — plus the 60rem breakpoint's
+  bottom-sheet behavior, keyboard/touch notes, and five measurable acceptance
+  criteria tied to existing tests.
+
+**WHAT I FOUND WHILE WRITING IT**
+
+Three gaps, none fixed here (docs-only per the freeze) but named so they don't
+get lost:
+
+1. All three terminal link-failure states (revoked/unpublished/missing) offer
+   *no navigation action at all* — not even the "back to home" the 404 page
+   offers. Recorded as **Batch A** in the IA doc — copy-only, no approval
+   needed.
+2. There is no success-path completion acknowledgment in the companion panel —
+   only the failure path (`result-undeliverable`) renders anything when a
+   session finishes. May be intentional (Unity already shows its own
+   completion screen) or may be a real gap; flagged as a product question in
+   the wireframe doc, not answered here.
+3. Restated the existing W-17 finding (bottom sheet can cover the stage below
+   60rem) in wireframe terms: the specific risk is any `result-undeliverable`
+   reveal firing below 60rem while the companion was collapsed. No new finding
+   — same root cause already on record, now visible at the exact spot in the
+   state diagram where it would bite.
+
+**EVIDENCE**
+
+`npm run verify` green: lint, typecheck, **48 files / 540 tests** (unchanged —
+docs-only), build. Both docs cross-reference exact file:line locations in the
+current checkout rather than describing intended behavior from memory.
+
+**NEXT**
+
+Issues #13 (teacher dashboard wireframe) and #15 (integration blueprint) are
+the remaining Gate-1 web artifacts, same docs-only constraint. Runtime code
+(W-10 through W-16) stays frozen until Codex's and Gemini's independent
+reviews land — do not resume it without a fresh ACK per the freeze directive.
+
+**BLOCKERS**
+
+None for this batch. W-16 review is blocked on Codex/Gemini, not on web.
+
+---
+
 ## 2026-08-19 — W-16 resolved: a reload no longer destroys a held result
 
 ```text
