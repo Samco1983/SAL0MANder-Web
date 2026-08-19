@@ -49,7 +49,7 @@ Nothing. This is worth stating plainly rather than implying with silence:
   Nothing resembling `GET /activities` (a teacher's own list) exists in the
   mock, the contracts, or `src/api/endpoints/`.
 - No endpoint mints or revokes a share code. The three demo codes in
-  `MOCK_SHARE_CODES` (`mockTransport.ts:39-43`) are hardcoded fixtures for
+  `MOCK_SHARE_CODES` (`mockTransport.ts:36-40`) are hardcoded fixtures for
   exercising the *resolution* path (ok / revoked / unpublished), not a working
   creation flow — there is no `POST` that produces a new one.
 - No endpoint aggregates session results per activity. `sessionsApi`
@@ -89,7 +89,7 @@ What *does* exist and is directly reusable:
 | --- | --- | --- |
 | List of a teacher's activities | `ActivitySummarySchema` + `PageSchema` | Types exist; no endpoint, no auth to scope "a teacher's" |
 | Which version is currently live | `ActivitySummary.publishedVersionId` | Field exists; nothing publishes today (Unity-owned per charter) |
-| A share link/code for an activity | `ShareCodeSchema`, `buildShareLink()` (`config/routes.ts:30-33`) | Code shape and link-building exist; no mint/revoke endpoint |
+| A share link/code for an activity | `ShareCodeSchema`, `buildShareLink()` (`src/config/routes.ts:30-33`) | Code shape and link-building exist; no mint/revoke endpoint |
 | Whether a link is currently active | — | Nothing. `LINK_FAILURES` in the mock hardcodes revoked/unpublished as *fixtures*, not as a live toggle a teacher could flip |
 | Aggregate play counts per activity | — | Nothing reads `SessionResult` back. Sessions are write-only from the teacher's perspective today |
 | Per-student results | — | Deliberately not proposed here — see §5.3 |
@@ -238,7 +238,7 @@ status line and the two write actions.
 
 **"Turn off this link"** is a proposed name for the operation `LINK_FAILURES`
 already models as a *fixture* — `SHARE_LINK_REVOKED`
-(`mockTransport.ts:124-127`). The mock can already represent "this link is
+(`mockTransport.ts:104-122`). The mock can already represent "this link is
 revoked" as a response; nothing can *cause* that state from the UI yet. The
 button name is deliberately not "delete" — revoking a link must not delete
 the activity or its play history, matching D-017's later ruling that a share
@@ -358,7 +358,7 @@ identically if left unstated:
   (issue #13's DO NOT: "no contract freeze" extends to no contract
   *expansion* either, without it being named as a proposal to Codex first).
 - **No raw guest token surfaced to a teacher.** `/profile` shows a truncated
-  token to the guest who owns it (`GuestPlayPage.tsx:360`); nothing proposes
+  token to the guest who owns it (`ProfilePage.tsx:23`); nothing proposes
   a teacher-facing view of any student's token, which would let a teacher
   correlate a specific device across activities without that device's owner
   choosing to be identified.

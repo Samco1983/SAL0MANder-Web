@@ -226,7 +226,7 @@ an edge case. Public immutable CDN URLs solve expiry only for AI assets.
 
 **What this decision does NOT settle** — see D-017.
 
-## D-017 — OPEN: "private storage" is not "private from students"
+## D-017 — RESOLVED: "private storage" is not "private from students"
 
 **Raised** · 2026-08-15 · **needs an owner answer before uploads ship**
 

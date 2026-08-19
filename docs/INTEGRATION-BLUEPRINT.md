@@ -53,7 +53,7 @@ disambiguation.
 
 | Identifier | Minted by | Lifetime | Purpose | Schema |
 | --- | --- | --- | --- | --- |
-| `ActivityId` | Unity (client-minted per D-004's "IDs never renumbered" rationale) | Permanent | Names the activity itself, across all its versions | `ids.ts:17,38` |
+| `ActivityId` | Unity today, per a code comment (`ids.ts:4-7`) — **not settled by any decision.** `DECISIONS.md`'s own deferred table lists **X-010, "who mints activity IDs,"** as an open joint-agreement item with Codex | Permanent | Names the activity itself, across all its versions | `ids.ts:17,38` |
 | `ActivityVersionId` | Unity, on publish | Permanent, one per published snapshot | Pins exactly what a session is playing (`activity.ts:58-67`) | `ids.ts:18,39` |
 | `ShareCode` | **PROPOSED** — nothing mints one yet (§2 gap table in `TEACHER-DASHBOARD-WIREFRAME.md`) | Revocable, independent of the activity | Human-typable, killable distribution handle — distinct from `ActivityId` on purpose (`share.ts:19-30`) | `share.ts:31-43` |
 | `SessionId` | Web backend / mock, on `POST /sessions` | One per play attempt that reached session-start | The canonical session Unity correlates its events against | `ids.ts:20,41` |
@@ -71,7 +71,7 @@ correlation guard in `GuestPlayPage.tsx` and `bridge.ts`'s `correlateAttempt`
 keys on whichever of the two is actually available at that point in the
 handshake — `mode-selected` only requires the attempt to match (no session
 exists yet), while `session-finished` requires the session to match too
-(`bridge.ts:262-263`, `requireSession: true`). Treating them as
+(`GuestPlayPage.tsx:262`, `requireSession: true`, checked at `bridge.ts:493,503`). Treating them as
 interchangeable would either let a superseded boot's `mode-selected` leak
 through (attempt matched, but there's no session to check) or block a
 legitimate `mode-selected` that hasn't reached `session-finished` yet.
@@ -190,8 +190,12 @@ must carry at least `pieceCount` questions, every `linkedPieceIndex` must fit
 inside `pieceCount` — so a malformed bundle fails at the API boundary rather
 than stranding a student mid-puzzle. `PuzzleAssetSchema` carries
 `assetId + checksum` as identity and `downloadUrl` as pure transport
-(`share.ts:70-88`), consistent with D-007's "signed URL is transport, not
-identity" ruling.
+(`share.ts:70-88`). Note: `share.ts:74`'s own comment attributes this
+"signed URL is transport, not identity" framing to D-007, but D-007
+(`DECISIONS.md:76-82`) is actually about idempotency keys on writes and says
+nothing about signed URLs — a pre-existing wrong citation in the code comment,
+propagated here rather than introduced by this doc. The correct D-007
+citation is the idempotency-conflict behavior at §7 (Flow 9) below.
 
 The play-mode question — one allowed mode vs. Student Choice — is derived,
 never a stored third value (`isStudentChoice()`, `share.ts:165-168`). For a
@@ -233,7 +237,7 @@ independent of activity-resolution state (`GUEST-PLAY-WIREFRAME.md` §3.5).
 
 **Confirmed by `bridge.ts`'s own comments, not by observation:** *"no Unity C#
 receiver exists yet, and Codex reports the legacy `.jslib` uses incompatible
-DOM event names and shapes"* (`bridge.ts:169-171`). Everything above is
+DOM event names and shapes"* (`bridge.ts:168-169`). Everything above is
 correct against the bridge's own type contract and has never been run against
 a real build — the single largest gap in this entire blueprint, restated
 because it is the fact every other IMPLEMENTED tag in this document is
@@ -278,7 +282,7 @@ retry a distinct write and double-count the completion. `startKeyFor` and
 enforces the other half of D-007 as a first-class behavior, not an
 afterthought: replaying an idempotency key with a **different** request body
 throws `conflict` rather than silently returning the first response
-(`mockTransport.ts:187-196`) — this is what stands in for the "same
+(`mockTransport.ts:167-178`) — this is what stands in for the "same
 idempotency key with a different request body must be rejected" reconciled
 direction named in this repo's own work-loop instructions.
 
@@ -337,7 +341,7 @@ one.
 | Activity resolve — offline/transient | `error.retryable` from the transport | Yes — `[Try again]` re-invokes the fetch | IMPLEMENTED |
 | Session start — offline/server error | Buffered if a `session-finished` already raced ahead of it; otherwise surfaces as `result-undeliverable` with `retryable: false` (no session exists to resend against) | Partial — see `canRetry` gating | IMPLEMENTED (W-12/W-13) |
 | Session start — duplicate submit (retried write) | `idempotencyKey = startKeyFor(...)`, same key replays the same response | Yes, by construction — same key ⇒ same session | IMPLEMENTED |
-| Session start — idempotency key reused with a *different* body | Mock throws `conflict` (409) rather than silently replaying (`mockTransport.ts:187-196`) | No — this is the bug-detection path, not a retry path | IMPLEMENTED in the mock; **NEEDS CLOUD REVIEW** for whether a real backend enforces the same |
+| Session start — idempotency key reused with a *different* body | Mock throws `conflict` (409) rather than silently replaying (`mockTransport.ts:167-178`) | No — this is the bug-detection path, not a retry path | IMPLEMENTED in the mock; **NEEDS CLOUD REVIEW** for whether a real backend enforces the same |
 | Result submit — network/server failure | Held via `resultHold.ts`, surfaced as `result-undeliverable`, retryable | Yes — `[Try saving again]`, survives reload (W-16) | IMPLEMENTED, mutation-verified |
 | Result submit — reload before delivery | `resultHold.ts` rehydrates on the session-start effect's first live run | Yes | IMPLEMENTED (W-16) |
 | Version/checksum mismatch on the delivered asset | Nothing in this repo | — | **UNRESOLVED** — flagged in Flow 4 above |
@@ -431,6 +435,11 @@ a confirmed pass or a concrete named defect the moment that trip runs once.
    alone.
 5. **Flow 1/`TEACHER-DASHBOARD-WIREFRAME.md` §6 — does Teacher Studio expose
    any URL scheme a web "Edit in Teacher Studio" link could target?**
+6. **§2's identifier table — `ActivityId` minting is X-010, still open per
+   `DECISIONS.md`'s deferred table, not settled by any decision (an earlier
+   draft of this doc cited D-004, which is unrelated). Is client-minted still
+   the working assumption, or has this been discussed and just not
+   recorded?**
 
 ## 9. Questions for Gemini
 
@@ -461,3 +470,11 @@ build) passes with this document added, because it is a docs-only change —
 that is evidence the repository is still healthy, not evidence any flow
 above works end to end against production infrastructure that does not yet
 exist.
+
+**Also not modeled anywhere in this document, and worth naming rather than
+leaving implicit:** none of the nine flows above are analyzed at 30 (one
+classroom), 1,000 (one school), or 10,000+ (district) concurrent sessions.
+That is defensible pre-backend — there is nothing to load-test — but it means
+"the web half is specified and tested" should not be read as "the web half is
+sized." The mock's in-memory `Map` gives zero signal here either way. Worth a
+design question once a real backend topology is chosen, not a blocker now.

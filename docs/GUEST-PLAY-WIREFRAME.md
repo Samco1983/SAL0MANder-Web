@@ -259,7 +259,7 @@ in this section.
 └─────────────────────────────────┴───────────────────────────────┘
 ```
 Code: `GuestPlayPage.tsx:55-80` (`UndeliveredResult`), `:322-328` (wired to
-`session.status === 'result-undeliverable'`), `CompanionLayout.tsx:304`
+`session.status === 'result-undeliverable'`), `GuestPlayPage.tsx:304`
 (`reveal={session.resultHeld}`). **Survives a reload** — `resultHold.ts`
 persists the held result to `sessionStorage`, scoped to the live
 `clientAttemptId`, rehydrated on the session-start effect's first live run
