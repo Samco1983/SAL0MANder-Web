@@ -5,6 +5,96 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — pressure-tested the four Gate-1 docs; 9 citations + 2 decision misattributions fixed
+
+```text
+AGENT: Claude Code
+AREA: Website lane / docs — adversarial review of shipped Gate-1 artifacts
+STATUS: SHIPPED — `313547e`, verify green (docs-only, no runtime behavior change)
+```
+
+**CHECKED FIRST**
+
+`node scripts/check-upstream.mjs`: no upstream changes. Hub (`gh issue view 1
+--repo Samco1983/Sal0mander-Jigsaw-Puzzle`) reachable directly, 189 comments.
+Latest directive (2026-08-19T11:51:54Z) item 4: "checkpoint accepted. Hold
+W-10…W-16 runtime and all merge/deploy activity until Codex + Gemini reviews
+land. No further runtime work is requested now." All four Gate-1 web docs
+(#12–#15) were already shipped as of the prior entry, and no new docs
+assignment has landed — so this batch is self-directed pressure-testing
+(Step 3 of the work loop), not a new assignment, and touches `docs/` only.
+
+**WHAT I DID**
+
+Spawned four parallel subagents, one per Gate-1 doc, each independently
+re-deriving every `file:line` citation in its doc against the current
+checkout and cross-checking claims against `DECISIONS.md`/`OPEN-ITEMS.md`.
+Roughly 90 citations checked in total.
+
+**WHAT I FOUND — all fixed in `313547e`**
+
+- **9 stale/wrong citations**, all pointer drift, none a false substantive
+  claim: a wrong file name (`CompanionLayout.tsx:304` → `GuestPlayPage.tsx:304`
+  for the `reveal` wiring), a wrong profile citation
+  (`GuestPlayPage.tsx:360` → `ProfilePage.tsx:23` for the guest-token display),
+  a missing `src/` prefix, three off-by-a-few-lines drifts in
+  `mockTransport.ts`, and one citation that pointed at the wrong function
+  entirely (`bridge.ts:262-263`, cited for `requireSession`, is actually
+  `KNOWN_TYPES` set entries — the real usage is `GuestPlayPage.tsx:262`).
+- **2 decision misattributions, more significant than line drift**:
+  `INTEGRATION-BLUEPRINT.md` cited D-004 for "who mints `ActivityId`" — D-004
+  is about `ActivityPayload` opacity and says nothing about ID minting.
+  Worse, `DECISIONS.md`'s own deferred table already lists this as **X-010,
+  still open** — so the wrong citation was presenting an unresolved
+  cross-team question as settled. Same doc cited D-007 for "signed URL is
+  transport, not identity" — D-007 is about idempotency keys on writes. That
+  one is inherited from a pre-existing wrong comment in `share.ts:74` (not
+  touched — still `src/`, out of scope for a docs-only batch); flagged inline
+  in the doc and left for whoever next has runtime-code clearance to fix the
+  source comment. Both now corrected in the doc, with a new question added to
+  §8 (Questions for Codex) about X-010.
+- **`DECISIONS.md` itself had an internal inconsistency**, unrelated to the
+  Gate-1 docs but found while verifying their citations against it: D-017's
+  heading said "OPEN" while its own body said "RESOLVED by owner,
+  2026-08-15." Both Gate-1 docs that cite D-017 correctly followed the
+  resolved body text, so this never produced a wrong claim downstream — but
+  the heading itself was wrong and is now fixed to say RESOLVED.
+- **One real gap, not a citation error**: none of the four docs model
+  behavior at 30 / 1,000 / 10,000+ concurrent sessions — the only mention
+  across ~1,600 lines is one disclaimer line in `INTEGRATION-BLUEPRINT.md`
+  §10. Defensible pre-backend (nothing to load-test against a mock
+  in-memory `Map`), but worth naming so "specified and tested" is never read
+  as "sized." Added as an explicit paragraph in §10 rather than left
+  implicit.
+- **Privacy claims in `TEACHER-DASHBOARD-WIREFRAME.md` held up under
+  independent check**: repo-wide search for any per-question/per-answer log
+  field in the session/result contracts found none — `SessionResultSchema`
+  is scalar counts only, confirming the doc's "no answer-level log" claim
+  against code, not just against its own prose. The one guest-token citation
+  fix (`ProfilePage.tsx:23`) confirms that display is student-facing on the
+  student's own profile, not teacher-facing — no leak found.
+
+**EVIDENCE**
+
+`npm run verify` green: lint, typecheck, **48 files / 540 tests** (unchanged
+— docs-only), build. Every fix cross-checked against the exact file:line in
+this checkout by an independent subagent before being applied, not
+re-asserted from the original doc author's memory.
+
+**NEXT**
+
+No new runtime work requested per the current directive. Ten open questions
+(now eleven, with the X-010 addition) across `TEACHER-DASHBOARD-WIREFRAME.md`
+§7 and `INTEGRATION-BLUEPRINT.md` §8–§9 are ready for Codex/Gemini whenever
+either lane picks them up. Watching for the Codex/Gemini W-16 independent
+review the current directive is waiting on.
+
+**BLOCKERS**
+
+None for this batch.
+
+---
+
 ## 2026-08-19 — Gate-1 web artifacts complete: teacher dashboard wireframe + integration blueprint (issues #13, #15)
 
 ```text
