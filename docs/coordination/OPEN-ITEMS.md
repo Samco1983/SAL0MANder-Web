@@ -1,5 +1,87 @@
 # Open items register
 
+## W-13 — ✅ RESOLVED — the *other* end of the session was still losing results
+
+Resolved 2026-08-19 in `602395e web: stop losing a result when the submission is
+what fails`.
+
+**Found by re-reviewing W-12's own fix.** W-12 built the `result-undeliverable`
+state — result, attempt id, reason, held together — and wired it to exactly one
+failure: `POST /sessions` rejecting during the startup race. Two things were
+wrong with that, and both were invisible behind a green 494-test suite.
+
+| Defect | Consequence |
+| --- | --- |
+| A failing `POST /sessions/{id}/result` set `{ status: 'error', error }` | The student's completed numbers were discarded in one assignment. This is the **more likely** failure — it happens at the *end* of a session, after all the work, not at the start. |
+| No component read `result-undeliverable` | Even the case W-12 did catch was invisible. From outside the app, a state nothing renders is indistinguishable from not having the state. |
+
+The second is the one worth remembering. W-12 was reported resolved, was
+resolved at the hook layer, and shipped a product behaviour identical to the
+defect it fixed, because "the state exists" was mistaken for "someone can see
+it". A held result nobody renders is a held result nobody has.
+
+### What shipped
+
+- both failure routes hold the result with the attempt id that produced it;
+- `retryDelivery()` takes whichever route is missing — resend against the same
+  session (`resultKeyFor` is a pure function of the session, so the server sees
+  one write), or, when no session ever opened, re-run the start under the same
+  `clientAttemptId`, which *is* the idempotency key, and let the existing buffer
+  flush deliver it. This closes the "retry session start with the same
+  idempotency identity" half of the 2026-08-19 supervisor ruling, which W-12
+  had not done;
+- `canRetry` reports whether that would do anything, so the button is never a
+  silent no-op — the same defect in a new costume;
+- the attempt identity is cleared **only on success**. Ending it while a result
+  is undelivered would let a reload orphan the result;
+- a `role="alert"` notice in the companion panel: warning, not danger, never
+  over the stage. A save problem must not read to a child as a game problem.
+
+### Evidence
+
+- `npm run verify` green: 46 files / **507 tests**, lint, typecheck, build.
+- Every new assertion mutation-checked, not merely run: removing the surface
+  fails 3 tests, reverting the failure state fails 8, clearing the start key on
+  failure fails 1, removing the start-retry route fails 1, forcing `canRetry`
+  true fails 1. The `canRetry` test **survived** its first mutation and was
+  rewritten until it bit — recorded because a surviving mutation is exactly the
+  kind of thing a passing suite hides.
+
+### Still open, deliberately
+
+The notice lives in the companion panel, which is collapsible. A student who has
+collapsed it will not see the alert. Moving it would violate non-negotiable #4's
+spirit — nothing may overlay the stage — so this is a **product question for the
+owner**, not something the web lane should decide: does an undelivered result
+warrant expanding a collapsed panel?
+
+## W-14 — a stale buffer can swallow the newer attempt's result 🟠
+
+**Latent, not live. Found while fixing W-13; recorded rather than fixed because
+fixing it now would be fixing a path nothing can reach.**
+
+`usePlaySession.submit` buffers an early result with `pendingResultRef.current
+??= {...}`. The `??=` keeps the *first* occupant of the slot. If a buffer from an
+abandoned attempt is still in the slot when a new attempt's result arrives early,
+the new result is dropped silently and the stale one is later surfaced — so the
+student sees an alert about the wrong attempt, and the real result is gone with
+no signal. Same class as F-2, one layer up.
+
+**Why it cannot happen today:** every path that could leave a stale buffer
+consumes it first, and `reset()` — the one caller that renews an attempt — is
+**not wired to anything in `GuestPlayPage`**. There is no "play again" button.
+
+**Why it must be fixed before there is one.** The moment "play again" ships, the
+sequence is: student finishes while `POST /sessions` is in flight → taps play
+again → the effect tears down without resolving → the slot still holds attempt
+1 → attempt 2's result hits `??=` and vanishes.
+
+**Proposed fix, when "play again" is built:** the slot takes the newest result
+(only the live attempt's can still be delivered) and the displaced one is routed
+to `result-undeliverable` rather than dropped. Single slot, explicit eviction
+rule, no silence. Do not simply clear the buffer in `reset()` — that is the
+silent destruction W-10 forbade, wearing the shape of a fix.
+
 ## W-12 — ✅ RESOLVED — W-10 failure paths surface completed results
 
 Resolved 2026-08-18 in `630c403 web: surface undeliverable guest results`.

@@ -5,6 +5,115 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — W-12's own fix reviewed; the harder half of the same defect was still live
+
+```text
+AGENT: Claude Code
+AREA: Website lane / Guest Play result delivery
+STATUS: SHIPPED — `602395e`, verify green, mutation-verified
+```
+
+**WHAT CHANGED**
+
+Upstream: no change (`check-upstream.mjs` clean). Hub: 177 comments, two new.
+The 2026-08-19T06:11Z supervisor comment accepts the `f5f55c9` FAIL, authorises
+W-12 implementation, and **resolves C-2**: Claude owns Web Teacher Studio /
+Activities IA, the responsive editor/preview shell, role flows and the web-side
+bridge. Codex owns the Unity surfaces. C-1 (the two-mailbox contradiction) is
+assigned to Codex to correct in `P1_PROCESS.md`.
+
+Both items that directive assigned were already landed before this run —
+W-12 in `630c403`, F-3/F-4/F-5 in `13ace35` (selection, parsing and trust
+extracted to `scripts/lib/sal0-checkin-select.mjs` with 168 lines of tests).
+
+**WHAT I FOUND**
+
+So I reviewed W-12's fix rather than restating it, and it was half a fix.
+
+`result-undeliverable` — the state W-12 built to hold a completed result with
+its attempt id and reason — was reachable from exactly one failure: `POST
+/sessions` rejecting during the startup race. A failing **`POST
+/sessions/{id}/result`** still collapsed into `{ status: 'error', error }`,
+discarding the student's numbers. That is the more likely of the two: it fires
+at the *end* of a session, after all the work, not at the start.
+
+And **nothing rendered `result-undeliverable`**. It appeared in no component.
+So even the case W-12 did catch was invisible — which from outside the app is
+indistinguishable from not having the state.
+
+That second one is the finding worth keeping. W-12 was reported resolved, was
+genuinely resolved at the hook layer, and shipped a product behaviour identical
+to the defect it fixed. "The state exists" had been mistaken for "someone can
+see it". The supervisor's ruling was explicit — *a visible in-product state
+now* — and a 494-test green suite said nothing.
+
+**WHAT I SHIPPED** — `602395e`
+
+- Both failure routes hold the result with the attempt that produced it.
+- `retryDelivery()` takes whichever route is missing: resend against the same
+  session (`resultKeyFor` is a pure function of the session, so it is one
+  write), or, when no session ever opened, re-run the start under the same
+  `clientAttemptId` — which *is* the idempotency key — and let the existing
+  buffer flush deliver it. This closes the "retry the start with the same
+  idempotency identity" half of the ruling that W-12 left undone.
+- `canRetry` reports whether that would do anything, so the button is never a
+  silent no-op.
+- The attempt identity is cleared **only on success**; ending it while a result
+  is undelivered would let a reload orphan the result.
+- A `role="alert"` notice in the companion panel — warning, not danger, never
+  over the stage. A save problem must not read to a child as a game problem.
+
+**EVIDENCE**
+
+- `npm run verify` green: lint, typecheck, **46 files / 507 tests**, build
+  (197 modules, 265ms). Was 494 tests before this batch.
+- Defect proven test-first: the new assertions failed 5/6 against the unmodified
+  head, with `expected "result-undeliverable" to be "error"`.
+- Every new assertion mutation-checked. Removing the surface fails 3; reverting
+  the failure state fails 8; clearing the start key on failure fails 1; removing
+  the start-retry route fails 1; forcing `canRetry` true fails 1.
+- **One mutation survived first time** — `canRetry: true` passed the whole
+  suite, because the test drove the attempt-id change through a path that
+  restarted the session and left `result-undeliverable` before the guard was
+  reached. Rewritten through `enabled: false`, which is the combination that
+  actually reaches it. Recorded because a surviving mutation is exactly what a
+  passing suite hides, and it is the second time in two runs that a green suite
+  covered a data-loss path.
+
+**ALSO FOUND — W-14, latent**
+
+`pendingResultRef.current ??= {...}` keeps the *first* occupant of the buffer
+slot. A stale buffer from an abandoned attempt would therefore swallow the newer
+attempt's result silently — the F-2 shape, one layer up. **Not reachable today**:
+`reset()` is not wired to anything in `GuestPlayPage`, so there is no "play
+again". It becomes live the day one ships. Fix and reasoning recorded in
+`OPEN-ITEMS.md`; deliberately not fixed now, because a fix to an unreachable
+path is untestable and the obvious version of it (clear the buffer on reset) is
+the silent destruction W-10 forbade wearing the shape of a fix.
+
+**NEEDS AN OWNER DECISION**
+
+1. **The notice lives in a collapsible panel.** A student who collapsed the
+   companion panel will not see that their result failed to save. Moving it
+   would overlay the stage, which non-negotiable #4 exists to prevent. Does an
+   undelivered result warrant expanding a collapsed panel? Web will not decide
+   a student-facing interruption unilaterally.
+2. **C-1 is still open on Codex's side** — `P1_PROCESS.md` names the obsolete
+   `sal0mander-brain-command` mailbox. All traffic is in
+   `Sal0mander-Jigsaw-Puzzle` Issue #1.
+
+**NEXT**
+
+C-2 is resolved, so the Gate-1 web artifacts are unblocked: role flows,
+responsive breakpoint strategy, and the editor/preview shell wireframes
+(web issues #12–#15). That is the next batch.
+
+**BLOCKERS**
+
+None.
+
+---
+
 ## 2026-08-19 — assigned review of `f5f55c9` returns FAIL; the hub was reachable all along
 
 ```text
