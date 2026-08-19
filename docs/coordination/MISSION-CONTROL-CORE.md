@@ -65,6 +65,9 @@ Make, or manual copy/paste packets.
 Use `npm run mission:control-room` as the first human-readable status view
 before sending Samuel into raw terminal logs.
 
+Use `docs/coordination/MISTAKE-LEDGER-2026-08-18.md` when a new agent needs the
+short version of what went wrong and which operating rules came from it.
+
 ## Local Barrier Rules
 
 - Prefer absolute or discovered binary paths so launchd and Codex Desktop do
