@@ -175,9 +175,8 @@ describe('a result that beats its own session', () => {
     await act(async () => result.current.submit(outcome))
     await act(async () => reject(new ApiError({ code: 'timeout', message: 'slow wifi' })))
 
-    await waitFor(() => expect(result.current.status).toBe('result-undeliverable'))
-    expect(result.current).toMatchObject({
-      status: 'result-undeliverable',
+    await waitFor(() => expect(result.current.undelivered).toHaveLength(1))
+    expect(result.current.undelivered[0]).toMatchObject({
       attemptId: 'attempt-1',
       result: outcome,
     })
@@ -204,12 +203,145 @@ describe('a result that beats its own session', () => {
     await waitFor(() => expect(start).toHaveBeenCalledTimes(2))
     await releaseOld()
 
-    await waitFor(() => expect(result.current.status).toBe('result-undeliverable'))
-    expect(result.current).toMatchObject({
-      status: 'result-undeliverable',
+    await waitFor(() => expect(result.current.undelivered).toHaveLength(1))
+    expect(result.current.undelivered[0]).toMatchObject({
       attemptId: 'attempt-1',
       result: outcome,
     })
     expect(submitResult).not.toHaveBeenCalled()
+  })
+
+  it('keeps the new attempt playable while the orphan is recorded', async () => {
+    // Recording attempt 1's loss must not cost the student attempt 2. Holding
+    // the orphan *as a status* dropped the live session, and attempt 2's own
+    // completion was then discarded as "not active" — the same data loss, one
+    // attempt further along.
+    const newSession = { ...session, id: 'ses_new' }
+    let releaseOld: () => void = () => {}
+    start
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          releaseOld = () => resolve({ ...session, id: 'ses_old' })
+        }),
+      )
+      .mockResolvedValueOnce(newSession)
+
+    const { result, rerender } = setupWithAttempt('attempt-1')
+    await waitFor(() => expect(result.current.status).toBe('starting'))
+    await act(async () => result.current.submit(outcome))
+
+    rerender({ attemptId: 'attempt-2' })
+    await waitFor(() => expect(start).toHaveBeenCalledTimes(2))
+    await releaseOld()
+    await waitFor(() => expect(result.current.undelivered).toHaveLength(1))
+
+    expect(result.current).toMatchObject({ status: 'active', session: newSession })
+
+    // Attempt 2 finishes for real, and it is recorded.
+    const second = { ...outcome, questionsCorrect: 2 }
+    await act(async () => result.current.submit(second))
+    await waitFor(() => expect(submitResult).toHaveBeenCalledTimes(1))
+    expect(submitResult.mock.calls[0]?.[1]).toMatchObject({ sessionId: 'ses_new', ...second })
+  })
+})
+
+describe('a result that arrives after its session already failed', () => {
+  /**
+   * The ordering the buffer never covered, and the likelier one in a
+   * classroom: the start fails fast against a dead connection, the student
+   * plays on — a failure must never stop a student playing — and finishes into
+   * a state that had already given up.
+   */
+  it('is recorded, not dropped, when the session start failed first', async () => {
+    start.mockRejectedValue(new ApiError({ code: 'network_error', message: 'offline' }))
+    const { result } = setup()
+    await waitFor(() => expect(result.current.status).toBe('error'))
+
+    await act(async () => result.current.submit(outcome))
+
+    expect(result.current.undelivered).toHaveLength(1)
+    expect(result.current.undelivered[0]).toMatchObject({
+      attemptId: 'attempt-1',
+      result: outcome,
+    })
+    expect(result.current.undelivered[0]?.reason.code).toBe('network_error')
+  })
+
+  it('is recorded, not dropped, when the result submission itself fails', async () => {
+    submitResult.mockRejectedValue(new ApiError({ code: 'timeout', message: 'slow wifi' }))
+    const { result } = setup()
+    await waitFor(() => expect(result.current.status).toBe('active'))
+
+    await act(async () => result.current.submit(outcome))
+
+    await waitFor(() => expect(result.current.undelivered).toHaveLength(1))
+    expect(result.current.undelivered[0]).toMatchObject({
+      attemptId: 'attempt-1',
+      result: outcome,
+    })
+    expect(result.current.undelivered[0]?.reason.code).toBe('timeout')
+  })
+
+  it('records one entry per attempt, however many times it is reported', async () => {
+    start.mockRejectedValue(new ApiError({ code: 'network_error', message: 'offline' }))
+    const { result } = setup()
+    await waitFor(() => expect(result.current.status).toBe('error'))
+
+    await act(async () => result.current.submit(outcome))
+    await act(async () => result.current.submit({ ...outcome, questionsCorrect: 0 }))
+
+    expect(result.current.undelivered).toHaveLength(1)
+    expect(result.current.undelivered[0]?.result).toMatchObject({ questionsCorrect: 4 })
+  })
+})
+
+describe('re-sending a result that never landed', () => {
+  it('delivers it under the same attempt identity, so it cannot double-count', async () => {
+    submitResult.mockRejectedValueOnce(new ApiError({ code: 'timeout', message: 'slow wifi' }))
+    const { result } = setup()
+    await waitFor(() => expect(result.current.status).toBe('active'))
+    await act(async () => result.current.submit(outcome))
+    await waitFor(() => expect(result.current.canRetryDelivery).toBe(true))
+
+    await act(async () => result.current.retryDelivery())
+
+    await waitFor(() => expect(result.current.status).toBe('finished'))
+    expect(result.current.undelivered).toHaveLength(0)
+    // Same idempotency key on the start, same derived key on the result: the
+    // retry resolves to one session and one recorded result.
+    expect(start.mock.calls[1]?.[1]).toBe('attempt-1')
+    expect(submitResult.mock.calls.every((call) => call[2] === 'ses_1:result')).toBe(true)
+  })
+
+  it('is not offered for a result belonging to some other attempt', async () => {
+    // Re-sending it would write attempt 1's numbers against attempt 2's
+    // session — the corruption W-12 was opened for.
+    start.mockRejectedValue(new ApiError({ code: 'network_error', message: 'offline' }))
+    const { result, rerender } = setupWithAttempt('attempt-1')
+    await waitFor(() => expect(result.current.status).toBe('error'))
+    await act(async () => result.current.submit(outcome))
+
+    rerender({ attemptId: 'attempt-2' })
+
+    await waitFor(() => expect(result.current.canRetryDelivery).toBe(false))
+    expect(result.current.undelivered).toHaveLength(1)
+  })
+})
+
+describe('starting a fresh attempt', () => {
+  it('records a still-buffered result rather than clearing it away', async () => {
+    // "Play again" must not be a quiet delete of the game just finished.
+    pendingStart()
+    const { result } = setup()
+    await waitFor(() => expect(result.current.status).toBe('starting'))
+    await act(async () => result.current.submit(outcome))
+
+    await act(async () => result.current.reset())
+
+    expect(result.current.undelivered).toHaveLength(1)
+    expect(result.current.undelivered[0]).toMatchObject({
+      attemptId: 'attempt-1',
+      result: outcome,
+    })
   })
 })
