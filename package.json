@@ -24,6 +24,7 @@
     "council:print-packet": "node scripts/sal0-council-supervisor.mjs --print-packet",
     "council:roles:validate": "node scripts/sal0-roles-validate.mjs",
     "council:run-agents": "node scripts/sal0-council-supervisor.mjs --run-agents",
+    "council:execute": "node scripts/sal0-council-supervisor.mjs --run-agents --execute",
     "council:validate-schemas": "node scripts/sal0-council-supervisor.mjs --validate-schemas",
     "mission:preflight": "python3 scripts/sal0-mission-control-core.py",
     "mission:control-room": "bash scripts/sal0-control-room.sh",

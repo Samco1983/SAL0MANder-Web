@@ -26,6 +26,8 @@ Use the channel that matches the job:
   `docs/coordination/ops/CURRENT-TASK.md`.
 - `scripts/sal0-work-loop.sh`: runs Claude CLI from terminal and reports
   commits/logs.
+- `npm run council:execute`: runs Claude POSITION, screens the proposed
+  nextAction, and hands one approved action to the work loop.
 - `scripts/sal0-external-packet.mjs`: builds a redacted packet for manual or
   external agent handoff.
 - `npm run mission:control-room`: prints the one-screen operating dashboard:

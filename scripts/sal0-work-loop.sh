@@ -65,7 +65,7 @@ echo "branch: $BRANCH  head: $BEFORE"
 # swept it into a commit labelled as the loop's own work. The loop cannot tell
 # its output from anyone else's once it starts, so the only honest moment to
 # check is before.
-PRE_DIRTY="$($GIT status --porcelain)"
+PRE_DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
 if [ -n "$PRE_DIRTY" ]; then
   echo "BLOCKED - NEED OWNER — working tree was already dirty before this run:"
   echo "$PRE_DIRTY"
@@ -96,7 +96,7 @@ echo "claude exit code: $EXIT"
 # The worker is told NOT to commit, so HEAD never moves on its own. Its output
 # arrives as an uncommitted working tree — that is what has to be looked at.
 # Comparing HEAD before and after can only ever report NOTHING CHANGED.
-DIRTY="$($GIT status --porcelain)"
+DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
 
 if [ -z "$DIRTY" ]; then
   echo "ONE THING THAT CHANGED: NOTHING CHANGED"
@@ -121,7 +121,7 @@ if [ "$VERIFY" -ne 0 ]; then
   exit 1
 fi
 
-$GIT add -A
+$GIT add -A -- . ':(exclude)docs/coordination/runs'
 $GIT commit -q -m "web: automated work loop $STAMP
 
 Task instructions: $SKILL

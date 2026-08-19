@@ -100,6 +100,11 @@ Environment:
   process.exit(0)
 }
 
+if (executeAction && !runAgents) {
+  console.error('Refusing --execute without --run-agents. There is no validated nextAction to execute.')
+  process.exit(1)
+}
+
 const stateSchema = z.enum([
   'WORKING',
   'DONE - NEED NEW TASK',
@@ -491,6 +496,110 @@ function runClaudePosition(packet, runDir, commandsRun) {
   return { position: parsed, costUsd: envelope.costUsd, sessionId: envelope.sessionId }
 }
 
+function buildPacketSummary(packet) {
+  return [
+    `repo: ${packet.repo.root}`,
+    `branch: ${packet.repo.branch}`,
+    `head: ${packet.repo.productHead}`,
+    `status: ${packet.repo.status || 'clean'}`,
+    '',
+    'probe:',
+    packet.sources.probe.body,
+    '',
+    'current state:',
+    packet.sources.currentState.body,
+    '',
+    'recent commits:',
+    packet.sources.recentCommits,
+  ].join('\n')
+}
+
+function runExecuteStage(nextAction, packet, runDir, commandsRun) {
+  const screen = screenAction(nextAction)
+  atomicWrite(join(runDir, '02-execute.screen.json'), `${stableJson(screen)}\n`)
+
+  if (!screen.allowed) {
+    return {
+      ...screen,
+      filesChanged: [],
+      commit: null,
+      log: null,
+      line: describeOutcome(screen),
+    }
+  }
+
+  const promptPath = join(runDir, '02-execute-prompt.md')
+  atomicWrite(promptPath, buildExecutePrompt(nextAction, buildPacketSummary(packet)))
+
+  const result = spawnSync('bash', ['scripts/sal0-work-loop.sh', promptPath], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 8,
+    timeout: AGENT_TIMEOUT_MS * 2,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: true,
+    killSignal: 'SIGKILL',
+  })
+
+  commandsRun.push({
+    command: `bash scripts/sal0-work-loop.sh ${relativeToRoot(promptPath)}`,
+    exitCode: result.status,
+    signal: result.signal,
+  })
+
+  if (result.error && result.pid) {
+    if (reapProcessGroup(result.pid)) {
+      repairs.push(`killed execute process group ${result.pid} after work-loop failed`)
+    }
+  }
+
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`
+  atomicWrite(join(runDir, '02-execute.raw.txt'), output)
+
+  const commitMatch = output.match(/COMMITTED\s+([0-9a-f]{7,40})/i)
+  const filesMatch = output.match(/worker changed \d+ file\(s\):\n([\s\S]*?)\n\nnpm run verify exit:/)
+  const filesChanged = filesMatch
+    ? filesMatch[1]
+        .split('\n')
+        .map((line) => line.trim().replace(/^[ MADRCU?!]{1,2}\s+/, ''))
+        .filter(Boolean)
+    : []
+
+  if (result.status === 0 && commitMatch) {
+    const outcome = {
+      allowed: true,
+      outcome: EXECUTE_OUTCOME.COMMITTED,
+      reason: screen.reason,
+      commit: commitMatch[1],
+      filesChanged,
+      log: join(runDir, '02-execute.raw.txt'),
+    }
+    return { ...outcome, line: describeOutcome(outcome) }
+  }
+
+  if (result.status === 0 && output.includes('NOTHING CHANGED')) {
+    const outcome = {
+      allowed: true,
+      outcome: EXECUTE_OUTCOME.NOTHING_CHANGED,
+      reason: 'worker produced no diff',
+      filesChanged: [],
+      commit: null,
+      log: join(runDir, '02-execute.raw.txt'),
+    }
+    return { ...outcome, line: describeOutcome(outcome) }
+  }
+
+  const outcome = {
+    allowed: true,
+    outcome: EXECUTE_OUTCOME.BLOCKED,
+    reason: `work-loop exited ${result.status ?? result.signal ?? 'unknown'}`,
+    filesChanged,
+    commit: null,
+    log: join(runDir, '02-execute.raw.txt'),
+  }
+  return { ...outcome, line: describeOutcome(outcome) }
+}
+
 function reapProcessGroup(pid) {
   try {
     process.kill(-pid, 'SIGKILL')
@@ -690,14 +799,24 @@ function run() {
   try {
     runSchemaValidationProof()
     let claudePosition = null
+    let executeResult = null
     if (runAgents) {
       const outcome = runClaudePosition(packet, runDir, commandsRun)
       claudePosition = outcome.position
       costUsd = outcome.costUsd
       modelCalls = 1
+
+      if (executeAction) {
+        executeResult = runExecuteStage(claudePosition.nextAction, packet, runDir, commandsRun)
+        atomicWrite(join(runDir, '02-execute.result.json'), `${stableJson(executeResult)}\n`)
+      }
     }
 
-    const baseStatus = runAgents ? 'CLAUDE POSITION CAPTURED' : 'DRY RUN'
+    const baseStatus = executeAction
+      ? `EXECUTE ${executeResult?.outcome ?? 'UNKNOWN'}`
+      : runAgents
+        ? 'CLAUDE POSITION CAPTURED'
+        : 'DRY RUN'
     const result = `# SAL0MANder Council Result
 
 Status: ${repairs.length > 0 ? `SUCCESS_WITH_REPAIRS (${baseStatus})` : baseStatus}
@@ -712,7 +831,8 @@ writing. It also proved strict local schemas for Claude POSITION, Gemini
 CRITIQUE, and OpenAI DECISION.
 
 ${claudePosition ? `Claude state: ${claudePosition.state}\nClaude next action: ${claudePosition.nextAction.action}\n` : 'Claude/Gemini/OpenAI calls are intentionally not wired in dry-run.\n'}
-Next action: ${runAgents ? 'wire Gemini critique only after Claude output validates repeatedly.' : 'run --run-agents once Claude CLI is available to capture the first validated POSITION.'}
+${executeResult ? `Execute stage: ${executeResult.line}\n` : ''}
+Next action: ${executeAction ? 'read the execute result and only schedule this mode after repeated clean hand runs.' : runAgents ? 'wire Gemini critique only after Claude output validates repeatedly.' : 'run --run-agents once Claude CLI is available to capture the first validated POSITION.'}
 `
 
     const evidence = collectRunEvidence({
@@ -743,6 +863,14 @@ Next action: ${runAgents ? 'wire Gemini critique only after Claude output valida
       commitsCreated: evidence.commitsCreated.length,
       commands: evidence.commands,
       claudePosition: claudePosition ? 'pass' : 'not-run',
+      executeStage: executeResult
+        ? {
+            outcome: executeResult.outcome,
+            reason: executeResult.reason,
+            commit: executeResult.commit,
+            filesChanged: executeResult.filesChanged.length,
+          }
+        : 'not-run',
       schemaValidation: 'pass',
       dryRun,
     })
