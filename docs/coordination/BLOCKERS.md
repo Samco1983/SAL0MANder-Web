@@ -50,8 +50,8 @@ COMMAND:   Wire screenAction/buildExecutePrompt into scripts/sal0-council-superv
            stash, no retry. Detail in issue #16.
 WHO CAN:   Codex (automation plumbing is its lane per the routing table)
 AUTO:      yes
-CLEARED:
-HUMAN:
+CLEARED:   2026-08-19T04:26:00Z Codex — 943b53f wired `--execute` into council supervisor
+HUMAN:     no
 
 ### B-3 · two pause switches, so neither is the brake · both
 OPENED:    2026-08-19T04:05:00Z
