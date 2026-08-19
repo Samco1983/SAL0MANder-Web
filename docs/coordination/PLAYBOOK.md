@@ -90,6 +90,36 @@ the next release candidate. If that is unknown, say unknown.
 
 ---
 
+## The shot clock
+
+SAL0MANder BBall is not slow. Careful matters, but speed matters more than
+ceremony. A team that keeps possession forever and never scores is losing, even
+if every pass looks smart.
+
+Default clocks:
+
+| Situation | Clock | Required move |
+| --- | --- | --- |
+| Worker starts a queue item | 30 minutes | commit verified work, or publish a blocker |
+| Reviewer takes BOARDS | 15 minutes | name one defect, or explicitly clear the diff |
+| Supervisor/check-in run | 5 minutes | report evidence or say no change |
+| Stuck process with no log/output growth | 5 minutes | pause new wakeups, preserve diff, classify state |
+| Product deploy check | 10 minutes | ready/blocked with one release risk |
+
+When the clock expires, the agent must do one of three things:
+
+1. **Shoot:** ship a verified commit.
+2. **Pass:** publish a blocker or handoff with exact evidence.
+3. **Timeout:** pause automation before it can stack another run.
+
+No fourth option. Silence is a turnover. A long explanation without a score,
+blocker, or pause is also a turnover.
+
+Fast does not mean reckless. It means every possession moves toward a visible
+outcome: diff, test, commit, blocker, review verdict, or deploy decision.
+
+---
+
 ## The plays
 
 ### 1 · FAST BREAK — the default
