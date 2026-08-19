@@ -194,6 +194,7 @@ open.
 ## Current Operating Fixes
 
 - `npm run mission:control-room` for one-screen status.
+- `npm run mission:blockers` for the open-blocker / human-relay measurement.
 - `npm run mission:preflight` before waking agents.
 - `npm run council:external-packet` for browser/chat handoffs.
 - GitHub issues as the non-terminal work queue.
@@ -216,4 +217,3 @@ open.
 The system does not need perfect agents. It needs agents that leave evidence,
 state blockers in the open, refuse dangerous work, and keep moving on the next
 safe task.
-

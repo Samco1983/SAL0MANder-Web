@@ -42,6 +42,12 @@ To print the one-screen human status dashboard:
 npm run mission:control-room
 ```
 
+To measure open blockers and whether humans are still acting as the relay:
+
+```bash
+npm run mission:blockers
+```
+
 To print the human/browser links without writing a new preflight report:
 
 ```bash

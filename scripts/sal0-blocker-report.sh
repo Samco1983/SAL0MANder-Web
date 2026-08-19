@@ -25,11 +25,17 @@ import re, sys
 from datetime import datetime, timezone
 
 text = open(sys.argv[1]).read()
+# Drop fenced code — the format template inside it looks exactly like an entry.
+text = re.sub(r"```.*?```", "", text, flags=re.S)
 blocks = re.split(r"^### ", text, flags=re.M)[1:]
 now = datetime.now(timezone.utc)
 
 def field(block, name):
-    m = re.search(rf"^{name}:\s*(.*)$", block, flags=re.M)
+    # [^\S\n]* not \s* — \s matches newlines, so an empty "CLEARED:" would
+    # swallow the line break and return the NEXT field's text as its value.
+    # That made every unclaimed blocker read as cleared, and the verdict said
+    # the mechanism worked when nothing had happened at all.
+    m = re.search(rf"^{name}:[^\S\n]*(.*)$", block, flags=re.M)
     return (m.group(1).strip() if m else "")
 
 def parse(ts):

@@ -27,6 +27,7 @@
     "council:validate-schemas": "node scripts/sal0-council-supervisor.mjs --validate-schemas",
     "mission:preflight": "python3 scripts/sal0-mission-control-core.py",
     "mission:control-room": "bash scripts/sal0-control-room.sh",
+    "mission:blockers": "bash scripts/sal0-blocker-report.sh",
     "mission:urls": "python3 scripts/sal0-mission-control-core.py --print-open-urls",
     "council:costs": "node scripts/sal0-council-costs.mjs",
     "council:external-packet": "node scripts/sal0-external-packet.mjs"
