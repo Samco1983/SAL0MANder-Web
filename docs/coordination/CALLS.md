@@ -17,6 +17,7 @@ neither pushed mid-edit — that is luck, not coordination.
 | **TRAIL ME** | I am going fast, follow behind and verify/clean up | Review what lands, fix what I broke, do not lead |
 | **DOUBLE BACK** | This is not finished, come back to it | Reopen it before starting anything new |
 | **SCREEN** | I am clearing your blocker so you can keep moving | Keep moving. Do not stop to thank anyone |
+| **BOARDS** | I am rebounding behind you — checking what you just shipped | Keep pushing forward. Do not re-check your own work |
 
 ## Rules
 
@@ -38,6 +39,33 @@ neither pushed mid-edit — that is luck, not coordination.
 5. **TRAIL ME is the highest-value call and the least used.** One agent moving
    fast with another verifying behind beats two agents both being careful. Say
    it when you are about to move fast and you know you will be sloppy.
+
+## The fast break
+
+Nobody scores alone, and not everyone runs to score.
+
+| Role | Who | Doing |
+| --- | --- | --- |
+| **Ball handler** | whoever holds the current task | brings it up, keeps possession, decides where it goes |
+| **Runner** | the other agent | already moving to the next thing, not watching the ball |
+| **Shooter** | whoever owns that lane | takes the actual change — Codex for plumbing, Claude for the web app |
+| **Rebounder** | *the agent who did NOT shoot* | catches the miss |
+
+**The rebound is the role we did not have, and it is the one that matters.**
+
+On 2026-08-19 four shots missed: a report that claimed the mechanism worked
+when nothing had been cleared, a loop that committed another agent's
+uncommitted work under its own name, a `verify passed` announced while lint was
+failing, and a regex whose `\s*` swallowed newlines. **All four were caught by
+the agent that made them.**
+
+A self-caught miss is not a rebound. It means the shooter was the only one under
+the rim, and the ones nobody catches are exactly the ones the shooter cannot
+see — that is what "blind spot" means.
+
+So: **whoever did not ship it, checks it.** Call `BOARDS` and go look. Do not
+ask permission and do not announce it first; the shooter should already be
+running the other way.
 
 ## Live claims
 

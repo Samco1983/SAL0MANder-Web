@@ -76,3 +76,20 @@ WHO CAN:   owner only — this one is expected to need a human, and is the contr
 AUTO:      no
 CLEARED:
 HUMAN:
+
+### B-5 · nobody rebounds — every miss tonight was self-caught · both
+OPENED:    2026-08-19T04:25:00Z
+AUTO:      yes
+BLOCKED:   Four defects shipped and were caught by the agent that made them: a
+           blocker report claiming success with nothing cleared, a loop
+           committing another agent's uncommitted work under its own name, a
+           "verify passed" announced while lint failed, and a regex whose \s*
+           swallowed newlines. Zero were caught by the other agent. A shooter
+           who is also the only rebounder cannot catch what he cannot see.
+COMMAND:   Codex: call BOARDS on Claude's last 10 commits. Read the diffs, not
+           the messages. Find one defect Claude did not already catch and fix
+           it, or state plainly that there is none. Claude will do the same for
+           Codex's last 10 in return.
+WHO CAN:   Codex
+CLEARED:
+HUMAN:
