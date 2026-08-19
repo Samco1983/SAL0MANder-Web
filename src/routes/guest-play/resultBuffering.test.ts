@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
+import { ApiError } from '@api/errors'
 import type { PlayerIdentity, SessionResult } from '@contracts/v1'
 import { usePlaySession } from './usePlaySession'
 
@@ -71,6 +72,20 @@ const setup = () =>
       clientAttemptId: 'attempt-1',
       enabled: true,
     }),
+  )
+
+const setupWithAttempt = (clientAttemptId: string) =>
+  renderHook(
+    ({ attemptId }) =>
+      usePlaySession({
+        activityId: 'act_1',
+        activityVersionId: 'av_1',
+        identity,
+        selectedPlayMode: 'classic-puzzle',
+        clientAttemptId: attemptId,
+        enabled: true,
+      }),
+    { initialProps: { attemptId: clientAttemptId } },
   )
 
 beforeEach(() => {
@@ -145,5 +160,56 @@ describe('a result that beats its own session', () => {
     rerender()
 
     expect(submitResult).toHaveBeenCalledTimes(1)
+  })
+
+  it('surfaces the completed result when session start rejects', async () => {
+    let reject: (error: Error) => void = () => {}
+    start.mockReturnValue(
+      new Promise((_resolve, rejectStart) => {
+        reject = rejectStart
+      }),
+    )
+    const { result } = setup()
+    await waitFor(() => expect(result.current.status).toBe('starting'))
+
+    await act(async () => result.current.submit(outcome))
+    await act(async () => reject(new ApiError({ code: 'timeout', message: 'slow wifi' })))
+
+    await waitFor(() => expect(result.current.status).toBe('result-undeliverable'))
+    expect(result.current).toMatchObject({
+      status: 'result-undeliverable',
+      attemptId: 'attempt-1',
+      result: outcome,
+    })
+    expect(submitResult).not.toHaveBeenCalled()
+  })
+
+  it('does not flush an old buffered result into a new attempt', async () => {
+    const oldSession = { ...session, id: 'ses_old' }
+    const newSession = { ...session, id: 'ses_new' }
+    let releaseOld: () => void = () => {}
+    start
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          releaseOld = () => resolve(oldSession)
+        }),
+      )
+      .mockResolvedValueOnce(newSession)
+
+    const { result, rerender } = setupWithAttempt('attempt-1')
+    await waitFor(() => expect(result.current.status).toBe('starting'))
+    await act(async () => result.current.submit(outcome))
+
+    rerender({ attemptId: 'attempt-2' })
+    await waitFor(() => expect(start).toHaveBeenCalledTimes(2))
+    await releaseOld()
+
+    await waitFor(() => expect(result.current.status).toBe('result-undeliverable'))
+    expect(result.current).toMatchObject({
+      status: 'result-undeliverable',
+      attemptId: 'attempt-1',
+      result: outcome,
+    })
+    expect(submitResult).not.toHaveBeenCalled()
   })
 })

@@ -9,6 +9,12 @@ export type PlaySessionState =
   | { status: 'active'; session: PlaySession }
   | { status: 'submitting'; session: PlaySession }
   | { status: 'finished'; session: PlaySession }
+  | {
+      status: 'result-undeliverable'
+      attemptId: string
+      result: Omit<SessionResult, 'sessionId'>
+      error: ApiError
+    }
   | { status: 'error'; error: ApiError }
 
 export type PlaySessionApi = PlaySessionState & {
@@ -48,6 +54,11 @@ type Input = {
   enabled: boolean
 }
 
+type PendingResult = {
+  attemptId: string
+  result: Omit<SessionResult, 'sessionId'>
+}
+
 /**
  * Owns the play session against the mock backend.
  *
@@ -76,8 +87,8 @@ export function usePlaySession({
   const identityRef = useRef(identity)
   identityRef.current = identity
 
-  /** A result that arrived before the session did. Held, never discarded. */
-  const pendingResultRef = useRef<Omit<SessionResult, 'sessionId'> | undefined>(undefined)
+  /** A result that arrived before the session did. Held with its attempt id. */
+  const pendingResultRef = useRef<PendingResult | undefined>(undefined)
 
   useEffect(() => {
     // No mode, no session. See the field docs above.
@@ -107,6 +118,17 @@ export function usePlaySession({
       })
       .catch((error: unknown) => {
         if (!active || controller.signal.aborted) return
+        const held = pendingResultRef.current
+        if (held?.attemptId === idempotencyKey) {
+          pendingResultRef.current = undefined
+          setState({
+            status: 'result-undeliverable',
+            attemptId: held.attemptId,
+            result: held.result,
+            error: toApiError(error),
+          })
+          return
+        }
         setState({ status: 'error', error: toApiError(error) })
       })
 
@@ -131,7 +153,9 @@ export function usePlaySession({
        * arrival is a duplicate rather than something to queue.
        */
       if (state.status === 'idle' || state.status === 'starting') {
-        pendingResultRef.current ??= result
+        if (clientAttemptId) {
+          pendingResultRef.current ??= { attemptId: clientAttemptId, result }
+        }
         return
       }
 
@@ -155,7 +179,7 @@ export function usePlaySession({
         setState({ status: 'error', error: toApiError(error) })
       }
     },
-    [state],
+    [state, clientAttemptId],
   )
 
   /**
@@ -168,9 +192,22 @@ export function usePlaySession({
   useEffect(() => {
     if (state.status !== 'active' || !pendingResultRef.current) return
     const buffered = pendingResultRef.current
+    if (buffered.attemptId !== clientAttemptId) {
+      pendingResultRef.current = undefined
+      setState({
+        status: 'result-undeliverable',
+        attemptId: buffered.attemptId,
+        result: buffered.result,
+        error: new ApiError({
+          code: 'conflict',
+          message: 'A completed result belonged to a previous play attempt.',
+        }),
+      })
+      return
+    }
     pendingResultRef.current = undefined
-    void submit(buffered)
-  }, [state.status, submit])
+    void submit(buffered.result)
+  }, [state.status, submit, clientAttemptId])
 
   /** Start a fresh attempt — "play again", not a reload. */
   const reset = useCallback(() => {
