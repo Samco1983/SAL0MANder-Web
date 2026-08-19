@@ -48,6 +48,12 @@ To measure open blockers and whether humans are still acting as the relay:
 npm run mission:blockers
 ```
 
+To inspect local Mac launchd/pause/log state:
+
+```bash
+npm run mission:desktop:status
+```
+
 To print the human/browser links without writing a new preflight report:
 
 ```bash
@@ -74,6 +80,9 @@ before sending Samuel into raw terminal logs.
 Use `docs/coordination/MISTAKE-LEDGER-2026-08-18.md` when a new agent needs the
 short version of what went wrong and which operating rules came from it.
 
+Use `docs/coordination/DESKTOP-MAKE-AUTOMATION.md` for the boundary between
+local launchd scripts and Make Cloud buttons/webhooks.
+
 ## Local Barrier Rules
 
 - Prefer absolute or discovered binary paths so launchd and Codex Desktop do
@@ -81,7 +90,7 @@ short version of what went wrong and which operating rules came from it.
 - Prove GitHub CLI auth with `gh auth status`, but never write token lines into
   evidence.
 - Use `.mission-control.lock` to stop overlapping council runs.
-- Treat `MISSION_CONTROL_PAUSE` as the human kill switch. If the file exists,
+- Treat `~/.sal0mander/PAUSE` as the human kill switch. If the file exists,
   automatic wakeups should stop before touching agents.
 - Flag stale locks separately from active locks so routine crashes are visible.
 - Check GitHub/Google network reachability before blaming an agent.

@@ -33,6 +33,9 @@ Use the channel that matches the job:
   blocked.
 - `npm run mission:preflight`: writes local readiness evidence.
 - `npm run mission:urls`: prints the browser URLs to open.
+- `npm run mission:desktop:status`: checks local launchd and pause state.
+- `npm run make:payload:nudge`: creates a Make-ready button payload without
+  editing Make.
 
 ## Do Not Overload Terminal
 
@@ -120,6 +123,8 @@ Make should not orchestrate local code. It should:
 - send phone/email/browser notifications;
 - write the Google Docs mirror;
 - record Make run ids.
+
+For the local/Make boundary, see `DESKTOP-MAKE-AUTOMATION.md`.
 
 ## Escalation Ladder
 

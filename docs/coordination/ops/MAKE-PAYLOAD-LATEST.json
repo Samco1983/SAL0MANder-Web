@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "source": "make-button",
+  "requestedBy": "Samuel",
+  "requestedAtUtc": "2026-08-19T04:12:54.253Z",
+  "button": "blocker-status",
+  "reason": "manual-button",
+  "repo": "Samco1983/SAL0MANder-Web",
+  "branch": "council/2026-08-18",
+  "idempotencyKey": "make-blocker-status-202608190412",
+  "safety": {
+    "noSecrets": true,
+    "noLiveMakeMutationFromLocalScript": true,
+    "noCrossLaneMutation": true,
+    "githubIsLedger": true
+  },
+  "target": {
+    "kind": "local-command-report",
+    "command": "npm run mission:blockers"
+  },
+  "expectedAction": "Report open blockers and whether a human relay is still required."
+}

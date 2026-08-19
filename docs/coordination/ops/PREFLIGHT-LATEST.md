@@ -1,7 +1,7 @@
 # SAL0MANder Mission Control Preflight
 
-Created: 2026-08-19T03:45:07Z
-Hash: `91a04c782ab8a0417e1c8cfc516e89defc03d2f318de956a4b816a53aaea231a`
+Created: 2026-08-19T04:10:33Z
+Hash: `8e2553e34c0b4c9953198efb2109bd0f4d0018f6421f88ddb43388b369b3f208`
 
 ## Control Layer
 
@@ -22,7 +22,7 @@ Hash: `91a04c782ab8a0417e1c8cfc516e89defc03d2f318de956a4b816a53aaea231a`
 
 ## Repos
 
-- web: `council/2026-08-18` at `97f1601` (dirty)
+- web: `council/2026-08-18` at `d4b9062` (dirty)
 - unity: `codex/git-hygiene-ignore-unity-temp` at `49ac86c` (clean)
 
 ## Run Lock
@@ -31,7 +31,7 @@ Hash: `91a04c782ab8a0417e1c8cfc516e89defc03d2f318de956a4b816a53aaea231a`
 
 ## Pause Switch
 
-- OK: no pause file at `/Users/samuel_saldivar/Desktop/SAL0MANder-Web/docs/coordination/MISSION_CONTROL_PAUSE`
+- OK: no pause file at `/Users/samuel_saldivar/.sal0mander/PAUSE`
 
 ## Network
 
@@ -45,7 +45,7 @@ Hash: `91a04c782ab8a0417e1c8cfc516e89defc03d2f318de956a4b816a53aaea231a`
 
 ## Disk
 
-- OK: 677.01 GB free at `/Users/samuel_saldivar/Desktop/SAL0MANder-Web`
+- OK: 676.95 GB free at `/Users/samuel_saldivar/Desktop/SAL0MANder-Web`
 
 ## Agent States
 

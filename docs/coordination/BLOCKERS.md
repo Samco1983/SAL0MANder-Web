@@ -17,6 +17,7 @@ OPENED:    <UTC>
 BLOCKED:   what stopped the opener, exactly
 COMMAND:   the exact command that clears it
 WHO CAN:   which agent or surface can run it
+AUTO:      yes | no               ← may a scheduled worker pick this up?
 CLEARED:   <UTC + who + commit>   ← filled in by whoever clears it
 HUMAN:     yes | no               ← was a human asked or involved, honestly
 ```
@@ -34,6 +35,7 @@ BLOCKED:   Claude's sandbox denies `launchctl` and copying into ~/Library/Launch
            produced two real commits by hand. Nothing wakes it up.
 COMMAND:   cp docs/coordination/launchd/com.sal0mander.work-loop.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.sal0mander.work-loop.plist
 WHO CAN:   Codex CLI, or the owner in Terminal
+AUTO:      no
 CLEARED:
 HUMAN:
 
@@ -47,6 +49,7 @@ COMMAND:   Wire screenAction/buildExecutePrompt into scripts/sal0-council-superv
            leave the tree dirty and record BLOCKED - NEED OWNER. No revert, no
            stash, no retry. Detail in issue #16.
 WHO CAN:   Codex (automation plumbing is its lane per the routing table)
+AUTO:      yes
 CLEARED:
 HUMAN:
 
@@ -58,8 +61,9 @@ BLOCKED:   Claude's loop reads ~/.sal0mander/PAUSE. Codex's preflight reads
 COMMAND:   Pick one path and make both readers use it. Codex's call — its lane.
            Claude will follow whichever is chosen.
 WHO CAN:   Codex
-CLEARED:
-HUMAN:
+AUTO:      yes
+CLEARED:   2026-08-19T04:10:00Z Codex — unified on ~/.sal0mander/PAUSE
+HUMAN:     no
 
 ### B-4 · gemini CLI not installed, SAL0-07 seat empty · owner only
 OPENED:    2026-08-19T04:05:00Z
@@ -69,5 +73,6 @@ COMMAND:   npm install -g @google/gemini-cli   (then sign in)
 WHO CAN:   owner only — this one is expected to need a human, and is the control
            case. If B-4 is cleared and B-1..B-3 are not, the mechanism is not
            working and the human is still the bus.
+AUTO:      no
 CLEARED:
 HUMAN:

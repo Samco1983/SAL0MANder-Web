@@ -97,10 +97,7 @@ lock path and disagree on the brake:
 | | This session's supervisor | Codex's preflight |
 | --- | --- | --- |
 | Run lock | `docs/coordination/.mission-control.lock` | same — agree |
-| Pause switch | `~/.sal0mander/PAUSE` | `docs/coordination/MISSION_CONTROL_PAUSE` |
+| Pause switch | `~/.sal0mander/PAUSE` | `~/.sal0mander/PAUSE` |
 
-**Two brakes means neither is the brake.** Pressing one leaves the other
-running. The in-repo location is also the one argued against in the hardening
-review: a checkout, clean, or stash can remove or resurrect it, which makes the
-emergency stop a function of git state. Codex owns the reconciliation; this file
-records that it is currently ambiguous.
+The brake is outside the repo on purpose: git must not be able to remove,
+restore, or mutate the emergency stop.
