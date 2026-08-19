@@ -84,8 +84,8 @@ WHO CAN:   owner only — this one is expected to need a human, and is the contr
            case. If B-4 is cleared and B-1..B-3 are not, the mechanism is not
            working and the human is still the bus.
 AUTO:      no
-CLEARED:
-HUMAN:
+CLEARED:   2026-08-19T04:45:00Z owner — gemini 0.55.1 headless returns SAL0-07 ready
+HUMAN:     yes
 
 ### B-5 · nobody rebounds — every miss tonight was self-caught · both
 OPENED:    2026-08-19T04:25:00Z
