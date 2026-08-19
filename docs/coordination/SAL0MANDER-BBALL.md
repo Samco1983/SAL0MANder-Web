@@ -80,6 +80,11 @@ Losing is letting time run out with no shot attempt. A missed shot with evidence
 can be rebounded. A clock that expires while everyone is still discussing what
 to do gives the team nothing.
 
+A clean score is a win, but a documented miss can also move the team forward:
+action happened, evidence exists, and the next play gets smarter. The real loss
+is a possession where no code changed, no test ran, no blocker became clearer,
+and no teammate received a catchable pass.
+
 Every action gets a clock. Hit the limit and it is a violation — you give up the
 ball, you do not keep dribbling.
 
@@ -100,11 +105,18 @@ can take one shot with one success check inside one clock.
 
 | Action | Clock | On violation |
 | --- | --- | --- |
-| One worker run | **15 min** | kill the process tree, keep the diff, report `BLOCKED` |
+| Probe / scouting read | **10 min** | name the missing fact, choose a smaller shot, or pass |
+| Normal worker run | **30 min** | stop the possession, keep useful evidence, report `BLOCKED` or switch shots |
+| Deploy/build/release gate | **60 min** | stop and document the failing gate before another attempt |
 | One agent call | **5 min** | kill it, record `AGENT_TIMEOUT`, never retry silently |
 | A blocker sitting unclaimed | **4 h** | escalate to the owner — nobody is coming |
 | An issue with no commit against it | **24 h** | it is not a task, it is a wish. Close or split it |
 | A whole night with 0 issues closed | **once** | stop building tooling. This happened |
+
+Do not wait two hours on a normal play. Two hours is enough time to lose the
+game without noticing. Thirty minutes is the default shot clock because it is
+long enough for a real edit/test loop and short enough to force a pass, rebound,
+or simpler shot when the lane is clogged.
 
 **Measured that night:** Gemini took over five minutes to review five commits and
 had to be backgrounded. That is a rebounder who cannot get down the floor, and
