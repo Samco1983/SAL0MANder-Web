@@ -193,3 +193,27 @@ and `git log` is the conversation.
 
 The test of whether you are doing it: **if the human stopped reading, would the
 two agents still make progress?** Tonight the answer became yes.
+
+## 12. Make the call before you open the file
+
+Rule 11 explains how two agents coordinate without messages. This is what to do
+when that is not enough — when you are both about to run the same lane.
+
+On 2026-08-19 Claude and Codex edited `scripts/sal0-next-task.sh` at the same
+time. Neither made a call. It survived only because neither pushed mid-edit,
+which is luck.
+
+The vocabulary is in `docs/coordination/CALLS.md`: **MINE · YOURS · SWITCH ·
+TRAIL ME · DOUBLE BACK · SCREEN.** Six calls, one line each, made while moving.
+
+Four things that make it work rather than become paperwork:
+
+- **Every claim expires.** A forgotten MINE must never wedge the other agent,
+  the same way a stale lock must never wedge a run.
+- **The lane owner leads.** Codex leads automation plumbing; Claude leads the
+  web app. In your own lane your call wins, with no negotiation.
+- **Silence is not a claim.** Any uncalled file is fair game.
+- **TRAIL ME is the most valuable call and the least used.** One agent moving
+  fast with another verifying behind beats two agents both being careful.
+
+A call made after a collision is an apology, not a call.
