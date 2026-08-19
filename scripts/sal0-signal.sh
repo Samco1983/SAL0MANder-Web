@@ -59,8 +59,22 @@ if [ -z "$SIGNAL" ] || ! printf '%s\n' $VOCAB | grep -qx "$SIGNAL"; then
   exit 2
 fi
 
-# An empty commit on purpose. The signal IS the message; attaching work to it
-# would make the other agent read a diff to find the gesture.
+# Refuse to signal from a dirty tree.
+#
+# `git commit --allow-empty` is empty only when the index is. On 2026-08-19 a
+# `signal: YOURS` — whose entire meaning was "I am not touching this work" —
+# swallowed five staged files and 285 lines from another agent's run, and
+# labelled them as a hand gesture. The signal is supposed to carry no payload;
+# the only way to guarantee that is to check before sending.
+if [ -n "$(git status --porcelain)" ]; then
+  echo "BLOCKED - NEED OWNER — refusing to signal from a dirty tree:" >&2
+  git status --porcelain >&2
+  echo "A signal must carry no payload. Commit or stash first." >&2
+  exit 1
+fi
+
+# Empty on purpose. The signal IS the message; attaching work to it would make
+# the other agent read a diff to find the gesture.
 git commit -q --allow-empty -m "signal: $SIGNAL${TARGET:+ $TARGET}
 
 ${NOTE:-no note}

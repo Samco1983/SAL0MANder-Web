@@ -122,11 +122,29 @@ if [ "$VERIFY" -ne 0 ]; then
 fi
 
 $GIT add -A -- . ':(exclude)docs/coordination/runs'
-$GIT commit -q -m "web: automated work loop $STAMP
+# Signed, or the referee rejects it — which is what happened on the first real
+# run: the commit was blocked, the loop read HEAD, found the PREVIOUS commit,
+# and reported COMMITTED for work that was never saved.
+if ! $GIT commit -q -m "web: automated work loop $STAMP
 
 Task instructions: $SKILL
-npm run verify exit 0 before commit."
+npm run verify exit 0 before commit.
+
+Sal0-From: SAL0-04"; then
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — commit was rejected"
+  echo "The worker's changes are still in the working tree. Nothing was lost."
+  echo "=== end $STAMP (exit 1) ==="
+  exit 1
+fi
 AFTER="$($GIT rev-parse HEAD)"
+
+# Never report success from HEAD alone. HEAD moves for reasons that have
+# nothing to do with this run.
+if [ "$AFTER" = "$BEFORE" ]; then
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — HEAD did not move; nothing was committed"
+  echo "=== end $STAMP (exit 1) ==="
+  exit 1
+fi
 
 echo "ONE THING THAT CHANGED: COMMITTED ${AFTER:0:8} — $FILES file(s), verify passed"
 $GIT --no-pager log --oneline -1
