@@ -28,6 +28,9 @@ Use the channel that matches the job:
   commits/logs.
 - `scripts/sal0-external-packet.mjs`: builds a redacted packet for manual or
   external agent handoff.
+- `npm run mission:control-room`: prints the one-screen operating dashboard:
+  who worked, what is queued, what ran, what cost evidence exists, and what is
+  blocked.
 - `npm run mission:preflight`: writes local readiness evidence.
 - `npm run mission:urls`: prints the browser URLs to open.
 
@@ -85,6 +88,18 @@ npm run mission:urls
 ```
 
 Mission Control should print URLs before expecting Samuel to hunt through tabs.
+
+## Control Room View
+
+Use this when Samuel asks "is everyone doing something?" or "what is broken?":
+
+```bash
+npm run mission:control-room
+```
+
+This is the preferred status surface before asking a human to inspect raw logs.
+It reports from evidence: commits, issues, run logs, launchd state, and the
+ledger.
 
 ## Google Docs Mirror Later
 

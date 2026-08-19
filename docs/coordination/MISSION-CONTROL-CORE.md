@@ -36,6 +36,12 @@ That command writes:
 Use the latest preflight before waking agents, opening browser rooms, changing
 Make routes, or asking for manual copy/paste override.
 
+To print the one-screen human status dashboard:
+
+```bash
+npm run mission:control-room
+```
+
 To print the human/browser links without writing a new preflight report:
 
 ```bash
@@ -55,6 +61,9 @@ document bodies.
 See `docs/coordination/COMMUNICATION-LADDER.md` for the rule on when to use
 GitHub, terminal, browser links, desktop notifications, Google Docs mirrors,
 Make, or manual copy/paste packets.
+
+Use `npm run mission:control-room` as the first human-readable status view
+before sending Samuel into raw terminal logs.
 
 ## Local Barrier Rules
 

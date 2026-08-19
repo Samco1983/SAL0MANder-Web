@@ -1,11 +1,11 @@
 {
   "schemaVersion": "sal0-external-handoff-packet-v0",
-  "createdAt": "2026-08-19T03:59:00.536Z",
+  "createdAt": "2026-08-19T04:01:14.692Z",
   "repo": {
     "root": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/",
     "branch": "council/2026-08-18",
-    "head": "2870548",
-    "status": "M docs/coordination/MISSION-CONTROL-CORE.md\n M docs/coordination/SURFACE-MAP.md\n?? docs/coordination/COMMUNICATION-LADDER.md"
+    "head": "527697b",
+    "status": "M docs/coordination/COMMUNICATION-LADDER.md\n M docs/coordination/MISSION-CONTROL-CORE.md\n M package.json"
   },
   "missionControl": {
     "controlLayer": "Mission Control Core — Python Supervisor",
@@ -105,7 +105,7 @@
     {
       "path": "docs/coordination/MISSION-CONTROL-CORE.md",
       "exists": true,
-      "lineCount": 97,
+      "lineCount": 106,
       "headings": [
         "Mission Control Core",
         "Job",
@@ -176,6 +176,10 @@
   ],
   "recentCommits": [
     {
+      "hash": "527697b",
+      "subject": "council: add the SAL0MANder Control Room"
+    },
+    {
       "hash": "2870548",
       "subject": "council: feed the loop from the GitHub issue queue and report back on it"
     },
@@ -210,10 +214,6 @@
     {
       "hash": "97f1601",
       "subject": "council: make work-loop executable"
-    },
-    {
-      "hash": "ece2c72",
-      "subject": "council: harden execute-stage refusals"
     }
   ],
   "rules": [
@@ -222,5 +222,5 @@
     "Ask for a specific file excerpt when more context is required.",
     "Do not touch Unity, secrets, auth files, live Make scenarios, or unrelated repos."
   ],
-  "hash": "1838821325649687b54f12bf96a5be8c4744aac754094369d60ce43dd9431119"
+  "hash": "15b371a67df53625d3522271a2f2008865f758164c22d8d8434943185f3a67ee"
 }
