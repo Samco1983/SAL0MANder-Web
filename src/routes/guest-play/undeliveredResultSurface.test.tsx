@@ -111,6 +111,12 @@ describe('a result the backend would not take', () => {
 
     const notice = await screen.findByRole('alert')
     expect(notice).toHaveTextContent(/isn't saved yet/i)
+    // W-16: the notice must not promise durability the app does not have —
+    // the result lives in memory only and a reload loses it, so the copy must
+    // tell the student to keep the tab open rather than claim the device (or
+    // "nothing is lost" unconditionally) is holding it for them.
+    expect(notice).toHaveTextContent(/keep this tab open/i)
+    expect(notice).not.toHaveTextContent(/this device is holding/i)
     // The game stage is still mounted and was never replaced by the failure.
     // The notice lives in the companion panel, not over the stage.
     const stage = screen.getByLabelText('Game stage')

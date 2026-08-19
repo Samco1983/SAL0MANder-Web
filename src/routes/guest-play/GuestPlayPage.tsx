@@ -66,8 +66,8 @@ function UndeliveredResult({
       <h2 className={styles.undeliveredTitle}>Your finished activity isn't saved yet</h2>
       <p className={styles.undeliveredBody}>
         {retryable
-          ? 'You finished — nothing is lost. Saving it to your teacher did not go through, so try again when the connection is back.'
-          : 'You finished — nothing is lost. This device is holding your result until it can be saved.'}
+          ? 'You finished — nothing is lost yet. Saving it to your teacher did not go through, so try again when the connection is back. Keep this tab open until it saves.'
+          : "You finished — nothing is lost yet. Keep this tab open until it can be saved — closing or reloading it before then will lose the result."}
       </p>
       {retryable ? (
         <Button className={styles.retry} onClick={retry}>

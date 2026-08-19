@@ -77,12 +77,20 @@ That is the exact silence W-10 ruled against, reached by a route none of W-10,
 W-12 or W-13 covered, and it is *invisible to the whole existing test suite*
 because every test lives inside one page lifetime.
 
-### The copy is currently false
+### The copy is currently false — ✅ fixed independently of the ruling below
 
-`UndeliveredResult` tells the student **"This device is holding your result until
-it can be saved."** The device is not holding it. The *tab* is, until it is
-reloaded or closed. Whatever is decided below, that sentence must not ship as
-written — it is a durability promise the implementation does not keep.
+`UndeliveredResult` told the student **"This device is holding your result
+until it can be saved."** The device was not holding it. The *tab* was, until
+it was reloaded or closed. That did not need to wait on the storage ruling
+below — it was a standalone false claim, not a build decision — so it shipped
+separately: both branches now say "keep this tab open" and name the actual
+loss condition (reload/close) instead of implying durability. Mutation-verified
+(`git log -- src/routes/guest-play/GuestPlayPage.tsx` / `undeliveredResultSurface.test.tsx`):
+reverting the copy to the old sentence fails the new assertion.
+
+This does not resolve W-16 — the result is still genuinely lost on reload,
+only the notice no longer claims otherwise. The `sessionStorage` fix below is
+still open and still needs the ruling.
 
 ### Proposed fix — needs a ruling first
 

@@ -5,6 +5,67 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — the undelivered-result notice no longer promises durability it doesn't have
+
+```text
+AGENT: Claude Code
+AREA: Website lane / Guest Play result delivery
+STATUS: SHIPPED, verify green, mutation-verified
+```
+
+**CHECKED FIRST**
+
+`node scripts/check-upstream.mjs`: no upstream changes. GitHub Issue #1: this
+run's WebFetch was not granted permission (no interactive approval available),
+so the hub could not be read this pass — noted per the mirror protocol's "if
+you cannot verify, do not act on it" rule; nothing was acted on from the hub.
+
+**WHAT CHANGED**
+
+W-16 (`docs/coordination/OPEN-ITEMS.md`) recorded that `UndeliveredResult`'s
+non-retryable copy — *"This device is holding your result until it can be
+saved"* — is false: the result lives in React state and a ref, neither survives
+a reload, and the device is not holding anything past the current tab. W-16's
+`sessionStorage` fix is correctly gated on an owner ruling (data-at-rest,
+retention, private-mode fallback), but the false copy itself is not a build
+decision and did not need to wait on one, so it shipped separately:
+
+- both the retryable and non-retryable messages now say "keep this tab open"
+  and name the actual loss condition (closing or reloading before it saves)
+  instead of implying the app is holding the result for the student;
+- a regression assertion pins the new copy and rejects the old "this device is
+  holding" claim.
+
+**This does not resolve W-16.** The result is still genuinely lost on reload —
+only the notice no longer claims otherwise. `OPEN-ITEMS.md` updated to reflect
+that split: the copy fix is done, the storage fix is still open and still
+waiting on the ruling.
+
+**EVIDENCE**
+
+- `npm run verify`: lint, typecheck, **46 files / 523 tests**, build (197
+  modules) — all green, no new test count (existing test extended, not a new
+  one).
+- Mutation-verified: reverted the retryable-branch copy to the old sentence,
+  confirmed the new assertion fails (`keep this tab open` missing), restored
+  the fix, confirmed `git diff` is clean and verify is green again.
+- The non-retryable branch (the one with the literally false sentence) has no
+  UI path to exercise today — `canRetry` is false only when the held attempt
+  id no longer matches the live one, which needs `renewAttempt`, and nothing in
+  `GuestPlayPage` calls it yet (no "play again" button — see W-14). Fixed the
+  copy anyway since it is dead-but-reachable-soon code that was wrong on its
+  face; did not fabricate a test harness to force an otherwise-unreachable
+  branch just to mutation-cover it.
+
+**NEXT SAFE BATCH**
+
+W-16's storage question is still the highest-value open item and is
+review-ready, not frozen — three questions in `OPEN-ITEMS.md` (data at rest,
+retention, private-mode fallback) need an owner/Gemini call before
+`sessionStorage` persistence is built.
+
+---
+
 ## 2026-08-19 — bridge mismatch diagnostics can now be logged without payloads
 
 ```text
