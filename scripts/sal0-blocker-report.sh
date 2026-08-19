@@ -47,6 +47,11 @@ def parse(ts):
 open_n = cleared_n = human_n = 0
 durations = []
 rows = []
+# Catch and shoot. A pass is a published blocker; a shot is another agent
+# clearing it. An assist only counts when the passer and the scorer differ —
+# clearing your own blocker is not a pass, it is just finishing.
+assists = {}
+bricks = 0
 
 for b in blocks:
     title = b.split("\n", 1)[0].strip()
@@ -57,6 +62,13 @@ for b in blocks:
         cleared_n += 1
         if human.startswith("yes"):
             human_n += 1
+            bricks += 1
+        else:
+            # Who passed (the title names the blocked agent) and who scored.
+            scorer = " ".join(cleared_raw.split()[1:3]) or "unknown"
+            passer = title.split("·")[-1].strip() if "·" in title else "unknown"
+            if scorer.split()[0] not in passer:
+                assists[scorer] = assists.get(scorer, 0) + 1
         ct = parse(cleared_raw.split()[0]) if cleared_raw.split() else None
         if opened and ct:
             hrs = (ct - opened).total_seconds() / 3600
@@ -79,6 +91,14 @@ print(f"  open: {open_n}   cleared: {cleared_n}")
 
 if durations:
     print(f"  median time to clear: {sorted(durations)[len(durations)//2]:.1f}h")
+
+if assists:
+    print()
+    print("  CATCH AND SHOOT")
+    for who, n in sorted(assists.items(), key=lambda kv: -kv[1]):
+        print(f"    {who}: {n} assist(s) — cleared a blocker another agent published")
+    if bricks:
+        print(f"    {bricks} needed a human — not an assist, that is a relay")
 
 if cleared_n:
     rate = human_n * 100 // cleared_n
