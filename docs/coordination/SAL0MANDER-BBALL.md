@@ -207,6 +207,20 @@ that is what a huddle is for, and it is why the coach seat exists.
 - **After any turnover.** Not to assign blame — to name the rule that prevents
   the next one.
 
+### Coaching cadence
+
+Coaching is not constant interruption. Coaching happens on rhythm:
+
+| Game moment | Mission Control version | Coach asks |
+| --- | --- | --- |
+| Quarter check | every 3 hours or 10 commits | Are we winning this stretch? |
+| Halftime | midpoint of a work session or before sleep | What changed, what failed, what is the second-half plan? |
+| End of game | morning / release / owner review | Did the win condition move? |
+| Emergency timeout | flagrant turnover or unsafe state | Can play continue safely? |
+
+Between those moments, agents play. The coach can adjust the strategy, but the
+coach should not dribble the ball for the team.
+
 ### How to huddle
 
 Stop. Read the Control Room. Say the uncomfortable number out loud. Name **one**
