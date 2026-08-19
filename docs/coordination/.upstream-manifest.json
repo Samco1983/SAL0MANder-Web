@@ -1,6 +1,10 @@
 {
-  "checkedAt": "2026-08-17T01:20:43.947Z",
+  "checkedAt": "2026-08-19T05:09:22.154Z",
   "files": {
+    "BLUEPRINT.md": {
+      "hash": "b8713f868350",
+      "lines": 412
+    },
     "contracts/API_CONTRACT.md": {
       "hash": "cd17e8f5fe3e",
       "lines": 268
@@ -14,16 +18,48 @@
       "lines": 143
     },
     "coordination/AGENT_WORKFLOW.md": {
-      "hash": "7d8421ad1192",
-      "lines": 80
+      "hash": "70595116c286",
+      "lines": 130
+    },
+    "coordination/CLAUDE_HANDOFF.md": {
+      "hash": "38bf03f86288",
+      "lines": 30
     },
     "coordination/CURRENT_STATE.md": {
-      "hash": "61e9b696aaf0",
-      "lines": 91
+      "hash": "a769436f5b20",
+      "lines": 106
     },
     "coordination/DECISIONS.md": {
       "hash": "c1878bdaf3f6",
       "lines": 74
+    },
+    "coordination/OVERNIGHT_SHIFT.md": {
+      "hash": "ed6c4fca1727",
+      "lines": 142
+    },
+    "coordination/P1A_RENDERED_EVIDENCE.md": {
+      "hash": "5b04b46749b3",
+      "lines": 111
+    },
+    "coordination/P1_GATE1_STUDENT_PLAY_PACKAGE.md": {
+      "hash": "561648d6d32b",
+      "lines": 125
+    },
+    "coordination/P1_HUMAN_TEST_INPUT.md": {
+      "hash": "622724f6169b",
+      "lines": 144
+    },
+    "coordination/P1_PROCESS.md": {
+      "hash": "3726d589a80e",
+      "lines": 134
+    },
+    "coordination/V1_PLAN_AUDIT_REQUEST.md": {
+      "hash": "430c054ca41d",
+      "lines": 141
+    },
+    "coordination/WORKSPACE_SPLIT.md": {
+      "hash": "a7b1fb47ec3b",
+      "lines": 48
     }
   }
 }
