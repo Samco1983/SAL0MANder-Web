@@ -42,6 +42,16 @@ To print the human/browser links without writing a new preflight report:
 npm run mission:urls
 ```
 
+To build a redacted packet for manual or external agent handoff:
+
+```bash
+npm run council:external-packet
+```
+
+That writes `docs/coordination/ops/EXTERNAL-HANDOFF-LATEST.json`. It keeps
+source pointers, role names, repo state, and commit evidence, but omits full
+document bodies.
+
 ## Local Barrier Rules
 
 - Prefer absolute or discovered binary paths so launchd and Codex Desktop do

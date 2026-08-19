@@ -133,4 +133,30 @@ $GIT --no-pager log --oneline -1
 
 $GIT push origin "$BRANCH" && echo "pushed" || echo "PUSH FAILED"
 
+# Report back on the issue that generated the work. GitHub Issues are the one
+# channel every agent reads without a human relaying it, and a queue nobody
+# reports into is a queue nobody can trust.
+ISSUE="$(grep -m1 'Work GitHub issue #' "$SKILL" 2>/dev/null | grep -o '[0-9]\+' | head -1 || true)"
+if [ -n "${ISSUE:-}" ] && command -v gh >/dev/null 2>&1; then
+  if gh issue comment "$ISSUE" --repo Samco1983/SAL0MANder-Web --body "Automated work loop \`$STAMP\`
+
+**ONE THING THAT CHANGED:** COMMITTED \`${AFTER:0:8}\` — $FILES file(s), \`npm run verify\` exit 0
+
+Files touched:
+\`\`\`
+$(echo "$DIRTY" | head -20)
+\`\`\`
+
+https://github.com/Samco1983/SAL0MANder-Web/commit/$AFTER" >/dev/null 2>&1; then
+    echo "commented on issue #$ISSUE"
+  else
+    echo "issue comment failed"
+  fi
+fi
+
+# Reaches a screen without anyone opening a terminal.
+if command -v osascript >/dev/null 2>&1; then
+  osascript -e "display notification \"$FILES file(s) committed ${AFTER:0:8}\" with title \"SAL0MANder work loop\"" >/dev/null 2>&1 || true
+fi
+
 echo "=== end $STAMP (exit $EXIT) ==="
