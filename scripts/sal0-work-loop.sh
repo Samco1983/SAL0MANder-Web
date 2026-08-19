@@ -58,6 +58,22 @@ BEFORE="$($GIT rev-parse HEAD)"
 BRANCH="$($GIT rev-parse --abbrev-ref HEAD)"
 echo "branch: $BRANCH  head: $BEFORE"
 
+# Refuse to start on a dirty tree.
+#
+# This is not caution, it is a bug fix. Run 20260819T035153Z started while a
+# human's edit to src/app/RouteError.tsx was uncommitted, and `git add -A`
+# swept it into a commit labelled as the loop's own work. The loop cannot tell
+# its output from anyone else's once it starts, so the only honest moment to
+# check is before.
+PRE_DIRTY="$($GIT status --porcelain)"
+if [ -n "$PRE_DIRTY" ]; then
+  echo "BLOCKED - NEED OWNER — working tree was already dirty before this run:"
+  echo "$PRE_DIRTY"
+  echo "Refusing to start. Commit or stash the existing changes, then re-run."
+  echo "=== end $STAMP (refused) ==="
+  exit 1
+fi
+
 if [ ! -f "$SKILL" ]; then
   echo "FATAL: work instructions missing at $SKILL"
   exit 1
