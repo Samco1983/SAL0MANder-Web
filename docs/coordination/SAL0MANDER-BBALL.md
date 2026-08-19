@@ -698,6 +698,63 @@ that must be stopped.
 
 ---
 
+## Credentials: the failure that cost a night
+
+**An agent that works when you type at it can be completely unreachable on a
+schedule, and the logs will not say so.**
+
+On 2026-08-19 every unattended run reported "nothing changed" for eight hours.
+The loop was not failing at its task — it was never calling a model. Claude
+looked for credentials in the macOS Keychain, a launchd job has no unlocked
+login session, so it got "Not logged in" back in **109 milliseconds** and the
+log read like there was simply no work to do.
+
+Gemini failed the identical way earlier the same night: authenticated fine in a
+terminal, `API_KEY_INVALID` headless, because the key lived in the interactive
+session and a script inherits nothing.
+
+### The rule
+
+**Test from the environment the work will run in, not the one you are standing
+in.** One command reproduces it:
+
+```bash
+env -i HOME="$HOME" PATH="/usr/bin:/bin:$HOME/.local/bin" <tool> <probe>
+```
+
+`env -i` strips the environment to what launchd actually hands a job. It found
+in seconds what eight hours of testing-at-a-prompt missed, because a prompt has
+a login session, a keychain and a full PATH, and a scheduled job has none of
+them.
+
+### The fix
+
+Move the credential from a place launchd cannot read to one it can. Nothing
+else changed — the runner already read the file path; the file simply did not
+exist.
+
+| Agent | Interactive | Scheduled |
+| --- | --- | --- |
+| Claude | Keychain | `claude setup-token` → file → `CLAUDE_CODE_OAUTH_TOKEN` |
+| Gemini | interactive session | Keychain, read at call time by `sal0-gemini.sh` |
+
+`bash scripts/sal0-doctor.sh` now runs this check for every agent, and it is the
+first thing `sal0 check` does.
+
+### Three things that are not the same thing
+
+**Installed ≠ authenticated ≠ reachable when scheduled.** Treating those as one
+thing cost this project a night, twice, with two different vendors. An agent is
+not on the roster until the third one is proven.
+
+### The instrument lies too
+
+The doctor itself then reported FAIL for a working system — it tested raw
+`claude` without the token the runner passes, and merged stderr into a stream it
+was about to JSON-parse. **A check that cries wolf is one people stop reading**,
+which is the same damage as one that lies green. Instruments get verified
+against reality like everything else.
+
 ## The court
 
 The court is **the terminal and the git repo**. Not chat windows.
