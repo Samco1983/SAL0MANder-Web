@@ -67,6 +67,25 @@ Three ways a receiver is not ready, all seen in one night:
 **Preflight the receiver, not just yourself.** Before passing, check the catcher
 is installed, authenticated *on the surface being used*, and inside its budget.
 
+**Predict the next pass.** Mission Control should not wait for a worker to go
+silent before thinking about the next receiver. Watch the floor: open issues,
+dirty diffs, stale logs, failed checks, fresh commits, quota state, and who last
+touched the ball. When the next pass is likely, prepare the catch packet before
+the handoff lands:
+
+```text
+PREDICTED NEXT RECEIVER:
+WHY:
+CATCH PACKET READY: yes | no
+UNCERTAINTY:
+```
+
+Prediction is not pretending to know. If the receiver or success check is
+unclear, say so and pass a smaller job. The teammate should feel the pass
+arrive, not decode it.
+
+**Fast enough to score. Clear enough to catch. Honest enough to recover.**
+
 **The pass has a clock too.** Codex's 10-minute heartbeat is the only reason a
 published blocker gets caught — the trace works because something is looking. A
 blocker published one minute after a heartbeat waits nine. That latency is this
