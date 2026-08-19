@@ -51,6 +51,20 @@ export type PlaySessionApi = PlaySessionState & {
    * defect this state exists to fix, so the surface asks rather than guesses.
    */
   canRetry: boolean
+  /**
+   * A completed result exists and the backend has not taken it yet.
+   *
+   * Distinct from `status === 'result-undeliverable'`, which is a momentary
+   * state: a retry passes through `submitting`, and on the start-failure route
+   * through `starting` and `active` as well, before landing back here or on
+   * `finished`. A surface that watched the status alone would therefore take
+   * itself down and put itself back up on every failed retry.
+   *
+   * This stays true from the first held result until one is actually
+   * delivered, so "there is something the student needs to see" is answerable
+   * without knowing which leg of the retry the session is on.
+   */
+  resultHeld: boolean
   reset: () => void
 }
 
@@ -306,13 +320,28 @@ export function usePlaySession({
     void submit(buffered.result)
   }, [state.status, submit, clientAttemptId])
 
+  /**
+   * Held from the first failure until a result is delivered. See
+   * {@link PlaySessionApi.resultHeld} for why the status alone will not do.
+   *
+   * Only `finished` lowers it. Not `idle`, not `starting` — the start-failure
+   * retry route goes through both on its way to delivering the held result,
+   * and lowering it there is precisely the flicker this exists to prevent.
+   */
+  const [resultHeld, setResultHeld] = useState(false)
+  useEffect(() => {
+    if (state.status === 'result-undeliverable') setResultHeld(true)
+    else if (state.status === 'finished') setResultHeld(false)
+
+  }, [state.status])
+
   /** Start a fresh attempt — "play again", not a reload. */
   const reset = useCallback(() => {
     onRenewAttempt?.()
     setAttempt((n) => n + 1)
   }, [onRenewAttempt])
 
-  return { ...state, submit, retryDelivery, canRetry, reset }
+  return { ...state, submit, retryDelivery, canRetry, resultHeld, reset }
 }
 
 function toApiError(error: unknown): ApiError {

@@ -158,3 +158,172 @@ describe('a result the backend would not take', () => {
     await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
   })
 })
+
+/**
+ * W-15 — the notice in a panel the student had closed.
+ *
+ * W-13 shipped the notice into the companion panel, which is collapsible, and
+ * left the gap open in writing: a student who had collapsed it would never see
+ * that their result failed to save. The panel is where the notice belongs —
+ * nothing may cover the stage — so the panel has to open instead.
+ *
+ * Ruled 2026-08-19: expand automatically on either failure route, do not
+ * overlay the stage, do not take focus, and give the student's collapse
+ * preference back once the result is delivered.
+ */
+
+const COLLAPSE_KEY = 'sal0mander.companion.collapsed'
+const panelState = () =>
+  screen.getByRole('button', { name: /companion/i }).getAttribute('aria-expanded')
+
+/** The student closed the companion panel on a previous visit. */
+const studentCollapsedThePanel = () => localStorage.setItem(COLLAPSE_KEY, 'true')
+
+/**
+ * The *other* failure route: `POST /sessions` never succeeds, and the student
+ * finishes while it is still in flight. No session is ever opened, so the held
+ * result has no session to name — the route W-12 built and W-13 kept.
+ */
+async function startFailureToUndeliverable() {
+  let rejectStart: (reason: unknown) => void = () => {}
+  const start = vi
+    .spyOn(api.sessions, 'start')
+    .mockImplementation(() => new Promise((_, reject) => (rejectStart = reject)))
+
+  renderPlay(MOCK_SHARE_CODES.ok)
+  await screen.findByText(/Fractions Review/i)
+
+  emit({ type: 'ready', version: BRIDGE_VERSION, eventId: `ready-${++seq}` })
+  emit({
+    type: 'mode-selected',
+    version: BRIDGE_VERSION,
+    selectedPlayMode: 'classic-puzzle',
+    eventId: `mode-${++seq}`,
+    ...live(),
+  })
+  expect(start).toHaveBeenCalled()
+
+  // Finishes before the start resolves — the race a four-piece puzzle wins.
+  emit({
+    type: 'session-finished',
+    version: BRIDGE_VERSION,
+    durationMs: 900,
+    questionsAnswered: 4,
+    questionsCorrect: 4,
+    piecesPlaced: 4,
+    piecesTotal: 4,
+    eventId: `fin-${++seq}`,
+    ...live(),
+  })
+
+  await act(async () => {
+    rejectStart(new ApiError({ code: 'network_error', message: 'offline' }))
+    await Promise.resolve()
+  })
+}
+
+describe('an undelivered result the student cannot see', () => {
+  it('opens the panel when the submission is what failed', async () => {
+    studentCollapsedThePanel()
+    const start = vi.spyOn(api.sessions, 'start')
+    vi.spyOn(api.sessions, 'submitResult').mockRejectedValue(
+      new ApiError({ code: 'network_error', message: 'offline' }),
+    )
+
+    await playToCompletion(start)
+
+    await screen.findByRole('alert')
+    expect(panelState()).toBe('true')
+  })
+
+  it('opens the panel when the session never started', async () => {
+    studentCollapsedThePanel()
+
+    await startFailureToUndeliverable()
+
+    await screen.findByRole('alert')
+    expect(panelState()).toBe('true')
+  })
+
+  it('keeps the notice out of the stage and off the keyboard', async () => {
+    studentCollapsedThePanel()
+    const start = vi.spyOn(api.sessions, 'start')
+    vi.spyOn(api.sessions, 'submitResult').mockRejectedValue(
+      new ApiError({ code: 'network_error', message: 'offline' }),
+    )
+
+    await playToCompletion(start)
+    const notice = await screen.findByRole('alert')
+
+    // Opening the panel must not turn a save problem into a game interruption.
+    expect(screen.getByLabelText('Game stage')).not.toContainElement(notice)
+    expect(document.activeElement).toBe(document.body)
+  })
+
+  it('gives the collapsed panel back once the result is saved', async () => {
+    studentCollapsedThePanel()
+    const start = vi.spyOn(api.sessions, 'start')
+    const submitResult = vi
+      .spyOn(api.sessions, 'submitResult')
+      .mockRejectedValueOnce(new ApiError({ code: 'network_error', message: 'offline' }))
+
+    await playToCompletion(start)
+    await screen.findByRole('alert')
+    expect(panelState()).toBe('true')
+
+    await userEvent.click(screen.getByRole('button', { name: /try saving again/i }))
+    await waitFor(() => expect(submitResult).toHaveBeenCalledTimes(2))
+
+    // The reveal was the app borrowing the panel, not overruling the student.
+    await waitFor(() => expect(panelState()).toBe('false'))
+    expect(localStorage.getItem(COLLAPSE_KEY)).toBe('true')
+  })
+
+  it('does not close and re-open the panel when a retry fails too', async () => {
+    studentCollapsedThePanel()
+    const start = vi.spyOn(api.sessions, 'start')
+    const submitResult = vi
+      .spyOn(api.sessions, 'submitResult')
+      .mockRejectedValue(new ApiError({ code: 'network_error', message: 'offline' }))
+
+    await playToCompletion(start)
+    await screen.findByRole('alert')
+    expect(panelState()).toBe('true')
+
+    // Watch the layout itself, because the flicker is a transient: a retry
+    // passes through `submitting`, and a surface keyed on the status alone
+    // collapses the panel there and re-expands it when the retry fails.
+    const layout = document.querySelector('[data-collapsed]')
+    if (!layout) throw new Error('companion layout not found')
+    const seen: (string | null)[] = []
+    const observer = new MutationObserver((records) =>
+      records.forEach((r) => seen.push((r.target as HTMLElement).getAttribute('data-collapsed'))),
+    )
+    observer.observe(layout, { attributes: true, attributeFilter: ['data-collapsed'] })
+
+    await userEvent.click(screen.getByRole('button', { name: /try saving again/i }))
+    await waitFor(() => expect(submitResult).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument())
+    observer.disconnect()
+
+    // On a flaky connection a student may press this several times. The panel
+    // must not flap shut and open again each time.
+    expect(seen).not.toContain('true')
+    expect(panelState()).toBe('true')
+  })
+
+  it('leaves an open panel open, and never writes a preference of its own', async () => {
+    // No stored preference at all: the reveal must not invent one, or the next
+    // visit inherits a collapse state the student never chose.
+    const start = vi.spyOn(api.sessions, 'start')
+    vi.spyOn(api.sessions, 'submitResult').mockRejectedValue(
+      new ApiError({ code: 'network_error', message: 'offline' }),
+    )
+
+    await playToCompletion(start)
+    await screen.findByRole('alert')
+
+    expect(panelState()).toBe('true')
+    expect(localStorage.getItem(COLLAPSE_KEY)).toBeNull()
+  })
+})
