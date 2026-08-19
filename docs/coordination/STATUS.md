@@ -5,6 +5,113 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — assigned review of `f5f55c9` returns FAIL; the hub was reachable all along
+
+```text
+AGENT: Claude Code
+AREA: Website lane / adversarial review of published Web head
+STATUS: REVIEW READY — FAIL returned with evidence; no edits to the reviewed head
+```
+
+**WHAT CHANGED**
+
+Codex published fifteen new/changed docs upstream — Blueprint, `P1_PROCESS`,
+`OVERNIGHT_SHIFT`, `CLAUDE_HANDOFF`, the P1 Gate-1 Student Play package, and the
+v1 plan audit request. All read; `check-upstream.mjs --accept` run.
+
+The material change: **P1 is the active phase**, gated by three human gates, and
+stages 1–3 (discovery, system design, ASCII wireframes) are the autonomous
+pre-Gate-1 batch. The Blueprint also reframes this repo as the *platform shell*
+for a multi-game SAL0MANder, not the jigsaw website.
+
+**WHAT I FOUND FIRST**
+
+The hub is readable. `gh` is authenticated as `Samco1983`; Issue #1 returns 175
+comments. Every web-lane doc saying otherwise was stale.
+
+Reading it showed the ChatGPT Supervisor had marked Claude Code **INACTIVE for
+~11 hours across six consecutive directives**, each repeating the same assigned
+task: *no-edit adversarial review of Web head `f5f55c9`, return PASS/FAIL with
+evidence.* The lane was never blocked. It was operating on an expired
+assumption about its own access. That is now corrected in `OPEN-ITEMS.md`.
+
+**WHAT I SHIPPED**
+
+The assigned review, in
+[`WEB-HEAD-REVIEW-f5f55c9.md`](./WEB-HEAD-REVIEW-f5f55c9.md). **Verdict: FAIL.**
+
+`f5f55c9` is green on every gate — lint, typecheck, 33 files / 336 tests, build.
+It also contains four defects, two of which lose or corrupt a student's
+completed work, inside the code written to implement the W-10 anti-data-loss
+ruling:
+
+- **F-1** — a buffered completion is silently discarded when `POST /sessions`
+  rejects. No submit, no retry, no report. The ref's own comment claims "held,
+  never discarded."
+- **F-2** — `reset()` does not clear the buffer, so attempt 1's result is
+  written against attempt 2's session and attempt 2's real result is then
+  dropped. Two wrong records, no signal.
+- **F-3** — the check-in monitor cannot reach a real request: `ACTION REQUIRED`
+  in `REQUEST_MARKERS` matches 38 of 46 hub comments (83% false positives), and
+  the first genuine `CHECK_IN_REQUEST` sits at queue position 25 of 46.
+- **F-4** — `readField` truncates any request containing a bare URL, silently,
+  in the packet handed to another agent under `--override`.
+- **F-5** — no author trust filter, where Codex's own `OVERNIGHT_SHIFT.md`
+  requires `author:Samco1983` for the equivalent Unity selector.
+
+F-1 and F-2 are filed as **W-12**. All are live at `council/2026-08-18` too —
+`usePlaySession.ts` and `sal0-checkin-monitor.mjs` are byte-identical between
+the two heads, so none of this is a stale finding against a superseded commit.
+
+**EVIDENCE**
+
+- `npm run verify` at detached `f5f55c9`: lint pass (warnings only), typecheck
+  pass, 33 files / 336 tests pass, build pass (197 modules, 280ms).
+- F-1 and F-2 each proven by a temporary Vitest case, run green, then deleted.
+  `git log --all -- src/routes/guest-play/__scratch-review.test.ts` is empty —
+  it never entered a commit, and the reviewed head was never edited.
+- F-3 measured against the live hub, 175 comments, counts in the review doc.
+- F-4 proven by direct execution of the `readField` regex on a three-line
+  request; two of three lines silently dropped.
+
+**THE GREEN SUITE IS PART OF THE FINDING.** All five existing tests in
+`resultBuffering.test.ts` assume the session eventually succeeds. Nothing
+exercises a failing start. That is exactly how a 336-test suite passes over a
+data-loss path — worth remembering the next time a lane reports "verify green"
+as though it were a review.
+
+**NEEDS AN OWNER / CODEX DECISION**
+
+1. **W-12 fix authorization.** The review was scoped no-edit. Implementing it
+   needs a fresh ACK. The open product question inside it: does an undeliverable
+   completion get a visible surface *now*, or wait for the teacher/admin
+   reporting work W-10 deferred? It cannot stay silent either way.
+2. **C-1 — the mailbox has two addresses.** `P1_PROCESS.md` names
+   `sal0mander-brain-command` Issue #1 as the live mailbox; `AGENT_WORKFLOW.md`
+   and `CURRENT_STATE.md` name `Sal0mander-Jigsaw-Puzzle` Issue #1. All actual
+   traffic is in the latter. `P1_PROCESS.md` should be corrected.
+3. **C-2 — Teacher Studio has two owners.** `P1_PROCESS.md` assigns Claude
+   "Teacher Studio / Activities information architecture"; `CLAUDE.md` assigns
+   "Teacher Studio game flow" to Codex. Probably the web authoring surface vs
+   the Unity surface, but that split is written down nowhere. Web will not
+   wireframe a surface Codex owns on an ambiguity — this blocks the Gate-1 IA
+   artifact and nothing else.
+
+**NEXT**
+
+1. Post the ACK + FAIL to Issue #1 and end the stale-lane state.
+2. On ACK: implement W-12 in the order recorded there — tag the buffer with
+   `clientAttemptId` first, then the undeliverable surface, then clear on reset.
+3. Pre-Gate-1 web artifacts (role flows, responsive breakpoint strategy,
+   editor/preview wireframes) once C-2 is answered.
+
+**BLOCKERS**
+
+None for the review itself. W-12 implementation is gated on a fresh ACK; the
+Gate-1 IA artifact is gated on C-2.
+
+---
+
 ## 2026-08-18 — W-10 corrected; check-in monitor added locally
 
 ```text

@@ -1,5 +1,46 @@
 # Open items register
 
+## W-12 — the W-10 fix loses the data it was written to save 🔴
+
+**Found 2026-08-19 in the assigned adversarial review of Web head `f5f55c9`.
+Full evidence in [`WEB-HEAD-REVIEW-f5f55c9.md`](./WEB-HEAD-REVIEW-f5f55c9.md).
+Both defects are live at `council/2026-08-18` head as well — `usePlaySession.ts`
+is byte-identical between the two.**
+
+W-10 established the rule: a completion arriving before its session must be
+buffered, and any completion that is nonetheless discarded must be *surfaced*,
+never silent. The implementation buffers correctly and then breaks both halves
+of the rule in the failure paths.
+
+| Defect | Consequence |
+| --- | --- |
+| Buffered result is never flushed when `POST /sessions` **rejects** | The completion is dropped on unmount. No submit, no retry, no report — the exact silence W-10 forbade. |
+| `reset()` does not clear the buffer | Attempt 1's result is submitted against attempt 2's session; attempt 2's real result is then discarded. Two wrong records, no signal. |
+
+Both proven with temporary Vitest cases at `f5f55c9` (written, run, deleted —
+never committed). Neither is covered by the five existing tests in
+`resultBuffering.test.ts`, all of which assume the session eventually succeeds.
+That gap is why a 336-test green suite passes over a data-loss path.
+
+**Root cause of the second:** the buffer is a single untagged slot. It carries
+no `clientAttemptId`, so it cannot tell which attempt it belongs to.
+
+**Proposed fix, in order:**
+
+1. Tag the buffered result with the `clientAttemptId` it was produced under and
+   refuse to flush it against a different attempt.
+2. Do not let `error` be terminal while a completion is held — retry the start
+   with the same `clientAttemptId` (already the idempotency key, so the retry is
+   safe by construction), or transition to an explicit `result-undeliverable`
+   state that carries the result, the attempt id and the reason, and render it.
+3. Only then clear the buffer in `reset()` — clearing it first would destroy the
+   same data silently.
+
+**Not yet implemented.** The review was scoped no-edit by the supervisor
+directive. This needs either a fresh ACK to implement, or an owner call on
+whether an undeliverable completion gets a visible surface now rather than
+waiting for the teacher/admin reporting work W-10 deferred.
+
 ## W-11 — `unity-ready` is now load-bearing, and the receiver names are still provisional 🟠
 
 **For Codex. Nothing here is frozen by the web lane; this is the exact question,
@@ -493,9 +534,19 @@ with O-3/O-4/O-6 folded in, then AI authoring in P1.
 
 ## Standing
 
-Web has no authenticated GitHub access — no `gh`, no token, `curl` fails TLS,
-Issue #1 404s. Codex is relaying. Everything above is written for relay rather
-than posted.
+~~Web has no authenticated GitHub access — no `gh`, no token, `curl` fails TLS,
+Issue #1 404s. Codex is relaying.~~
+
+**Corrected 2026-08-19.** This is no longer true and had not been true for some
+time. `gh` is installed and authenticated as `Samco1983` (scopes `gist,
+read:org, repo, workflow`); Issue #1 reads directly, 175 comments; this repo has
+a real `origin` at `github.com/Samco1983/SAL0MANder-Web`. Web posts to the hub
+itself and no longer needs a relay.
+
+The cost of the stale assumption was measured: the supervisor marked the web
+lane INACTIVE for roughly eleven hours across six directives, waiting for an ACK
+the lane could have posted at any point. **Access assumptions expire — re-test
+them before recording a lane as blocked.**
 
 Web state: `npm run verify` green, **161 tests**, 87.8% statements. Nothing
 shared is wired or frozen beyond error-body *tolerance*, which is defensive and
