@@ -26,7 +26,8 @@
     "council:run-agents": "node scripts/sal0-council-supervisor.mjs --run-agents",
     "council:validate-schemas": "node scripts/sal0-council-supervisor.mjs --validate-schemas",
     "mission:preflight": "python3 scripts/sal0-mission-control-core.py",
-    "mission:urls": "python3 scripts/sal0-mission-control-core.py --print-open-urls"
+    "mission:urls": "python3 scripts/sal0-mission-control-core.py --print-open-urls",
+    "council:costs": "node scripts/sal0-council-costs.mjs"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
@@ -52,7 +53,7 @@
     "vite": "^8.2.0",
     "vitest": "^4.1.10"
   },
-  "description": "SAL0MANder cloud companion platform — web application.",
+  "description": "SAL0MANder cloud companion platform \u2014 web application.",
   "engines": {
     "node": ">=20.19"
   }

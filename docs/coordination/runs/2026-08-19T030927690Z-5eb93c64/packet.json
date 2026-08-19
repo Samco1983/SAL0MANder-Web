@@ -1,0 +1,462 @@
+{
+  "createdAt": "2026-08-19T03:09:27.693Z",
+  "hash": "5eb93c642eecf6533e96e0ba6339b451988ba40dd34d8f10391eeb51e7dc9044",
+  "repo": {
+    "branch": "council/2026-08-18",
+    "productHead": "26153222c7f66f67bb789408ebb096276380aaaf",
+    "root": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/",
+    "status": "M scripts/sal0-council-supervisor.mjs\n?? scripts/lib/sal0-cost.mjs"
+  },
+  "sources": {
+    "agentRoles": {
+      "body": {
+        "agents": [
+          {
+            "allowedActions": [
+              "read-approved-project-files",
+              "edit-assigned-repo",
+              "run-tests",
+              "commit-on-topic-changes",
+              "push-approved-branches",
+              "write-coordination-evidence"
+            ],
+            "authority": "technical-point-person",
+            "callWhen": [
+              "unity-game-engineering",
+              "technical-architecture",
+              "test-strategy",
+              "automation-supervisor",
+              "technical-reconciliation"
+            ],
+            "clearRole": "Technical Lead",
+            "codename": "Architect",
+            "displayName": "SAL0-01 Architect — Codex Desktop",
+            "failsafes": [
+              "verify-folder-before-edit",
+              "check-git-status-before-edit",
+              "rerun-tests-after-change",
+              "stop-on-unowned-dirty-files",
+              "write-evidence-or-blocker"
+            ],
+            "forbiddenActions": [
+              "touch-secrets",
+              "destructive-git-without-owner-approval",
+              "merge-human-acceptance-branches-without-owner-approval",
+              "cross-lane-implementation-without-boundary-review"
+            ],
+            "id": "codex",
+            "number": "SAL0-01",
+            "outputSchema": "sal0-council-decision-v0 or implementation evidence",
+            "primaryLane": "Unity/Game",
+            "sessionPolicy": "stateless-by-default; resume only for explicit consultation",
+            "surfaceLabel": "Codex Desktop",
+            "surfaces": [
+              "desktop-chat",
+              "cli"
+            ]
+          },
+          {
+            "allowedActions": [
+              "read-approved-project-files",
+              "run-approved-commands",
+              "run-tests",
+              "summarize-diffs",
+              "write-run-evidence"
+            ],
+            "authority": "local-execution-worker",
+            "callWhen": [
+              "repo-status-check",
+              "test-run",
+              "diff-summary",
+              "bounded-command-line-investigation",
+              "stateless-technical-task"
+            ],
+            "clearRole": "Local Execution",
+            "codename": "Runner",
+            "displayName": "SAL0-02 Runner — Codex CLI",
+            "failsafes": [
+              "stateless-packet-required",
+              "exit-code-required",
+              "stdout-stderr-captured",
+              "timeout-required"
+            ],
+            "forbiddenActions": [
+              "touch-secrets",
+              "destructive-git-without-owner-approval",
+              "persist-hidden-memory",
+              "claim-desktop-chat-context"
+            ],
+            "id": "codex-cli",
+            "number": "SAL0-02",
+            "outputSchema": "command output, implementation evidence, or blocker",
+            "primaryLane": "Coordination",
+            "sessionPolicy": "stateless worker; receives task-specific packets only",
+            "surfaceLabel": "Codex CLI",
+            "surfaces": [
+              "cli"
+            ]
+          },
+          {
+            "allowedActions": [
+              "synthesize-agent-positions",
+              "select-one-falsifiable-next-action",
+              "request-owner-decision-when-required"
+            ],
+            "authority": "program-product-manager",
+            "callWhen": [
+              "priority-decision",
+              "acceptance-criteria",
+              "product-reconciliation",
+              "owner-facing-summary",
+              "one-next-action-decision"
+            ],
+            "clearRole": "Product Decision",
+            "codename": "Director",
+            "displayName": "SAL0-03 Director — OpenAI API",
+            "failsafes": [
+              "exactly-one-next-action",
+              "owner-needed-yes-no",
+              "source-pointer-required"
+            ],
+            "forbiddenActions": [
+              "claim-test-evidence-without-run-data",
+              "override-technical-feasibility-without-evidence",
+              "promote-agent-opinion-to-decision-without-source"
+            ],
+            "id": "chatgpt-openai",
+            "number": "SAL0-03",
+            "outputSchema": "sal0-council-decision-v0",
+            "primaryLane": "Coordination",
+            "sessionPolicy": "product-context packet first; do not rely on hidden memory",
+            "surfaceLabel": "OpenAI API",
+            "surfaces": [
+              "desktop-chat",
+              "api"
+            ]
+          },
+          {
+            "allowedActions": [
+              "read-web-repo",
+              "edit-web-repo-when-assigned",
+              "produce-position",
+              "run-web-tests",
+              "write-web-evidence"
+            ],
+            "authority": "web-code-lead-and-adversarial-reviewer",
+            "callWhen": [
+              "web-ux-review",
+              "accessibility-review",
+              "front-end-code-review",
+              "architecture-overreach-check",
+              "first-position-in-council-run"
+            ],
+            "clearRole": "Web/Code Work",
+            "codename": "Builder",
+            "displayName": "SAL0-04 Builder — Claude CLI",
+            "failsafes": [
+              "if-cli-missing-write-blocker",
+              "if-github-private-access-missing-label-unverified",
+              "schema-validate-position",
+              "no-vague-working-state"
+            ],
+            "forbiddenActions": [
+              "edit-unity-game-repo",
+              "decide-cross-lane-seam-alone",
+              "touch-secrets",
+              "claim-private-github-state-without-access"
+            ],
+            "id": "claude",
+            "number": "SAL0-04",
+            "outputSchema": "sal0-council-position-v0",
+            "primaryLane": "Web",
+            "sessionPolicy": "CLI preferred for evidence; browser chat is consult-only unless output is copied into a run",
+            "surfaceLabel": "Claude CLI",
+            "surfaces": [
+              "cli",
+              "browser-chat"
+            ]
+          },
+          {
+            "allowedActions": [
+              "review-pasted-context",
+              "produce-manual-critique",
+              "raise-ux-or-accessibility-risk"
+            ],
+            "authority": "manual-adversarial-reviewer",
+            "callWhen": [
+              "manual-ux-review",
+              "accessibility-pushback",
+              "architecture-overreach-review",
+              "copy-paste-review"
+            ],
+            "clearRole": "Manual Critique",
+            "codename": "Reviewer",
+            "displayName": "SAL0-05 Reviewer — Claude Chat",
+            "failsafes": [
+              "manual-output-must-be-copied-into-evidence",
+              "label-as-manual-review",
+              "no-vague-approval"
+            ],
+            "forbiddenActions": [
+              "claim-cli-evidence",
+              "edit-repos-directly",
+              "touch-secrets",
+              "be-treated-as-automation-identity"
+            ],
+            "id": "claude-chat",
+            "number": "SAL0-05",
+            "outputSchema": "manual review copied into run evidence",
+            "primaryLane": "Web",
+            "sessionPolicy": "manual consult only unless copied into run evidence",
+            "surfaceLabel": "Claude Chat",
+            "surfaces": [
+              "browser-chat"
+            ]
+          },
+          {
+            "allowedActions": [
+              "critique-specific-claude-claim",
+              "raise-google-cloud-risk",
+              "review-oauth-or-storage-plan",
+              "produce-manual-copy-paste-advice"
+            ],
+            "authority": "google-cloud-browser-security-challenger",
+            "callWhen": [
+              "google-drive-or-google-cloud-design",
+              "browser-behavior-review",
+              "security-privacy-scaling-challenge",
+              "critique-claude-position"
+            ],
+            "clearRole": "Google/Browser Review",
+            "codename": "Scout",
+            "displayName": "SAL0-06 Scout — Gemini Chat",
+            "failsafes": [
+              "must-reference-claude-claim-id",
+              "must-quote-challenged-claim",
+              "manual-chat-output-must-be-copied-into-run-evidence",
+              "unknown-if-no-cli-or-api-proof"
+            ],
+            "forbiddenActions": [
+              "generic-praise",
+              "fourth-independent-answer-without-claim-reference",
+              "claim-private-github-access-unless-proven",
+              "edit-repos-without-explicit-assignment"
+            ],
+            "id": "gemini",
+            "number": "SAL0-06",
+            "outputSchema": "sal0-council-critique-v0",
+            "primaryLane": "Coordination",
+            "sessionPolicy": "browser Gemini is manual/live-observer; CLI/API must be proven before unattended use",
+            "surfaceLabel": "Gemini Chat",
+            "surfaces": [
+              "browser-chat",
+              "cli-or-api-later"
+            ]
+          },
+          {
+            "allowedActions": [
+              "critique-specific-claude-claim",
+              "cite-challenged-claim",
+              "raise-security-or-scaling-risk"
+            ],
+            "authority": "automated-google-cloud-security-challenger",
+            "callWhen": [
+              "automated-critique",
+              "google-cloud-security-risk",
+              "oauth-storage-risk",
+              "critique-claude-position"
+            ],
+            "clearRole": "Automated Critique",
+            "codename": "Challenger",
+            "displayName": "SAL0-07 Challenger — Gemini API/CLI",
+            "failsafes": [
+              "must-reference-claude-claim-id",
+              "must-quote-challenged-claim",
+              "schema-validate-critique",
+              "fail-if-cli-or-api-unproven"
+            ],
+            "forbiddenActions": [
+              "generic-praise",
+              "independent-answer-without-claim-reference",
+              "edit-repos-directly",
+              "claim-private-github-access-unless-proven"
+            ],
+            "id": "gemini-api-cli",
+            "number": "SAL0-07",
+            "outputSchema": "sal0-council-critique-v0",
+            "primaryLane": "Coordination",
+            "sessionPolicy": "future unattended critique worker; must be proven before activation",
+            "surfaceLabel": "Gemini API/CLI",
+            "surfaces": [
+              "api",
+              "cli"
+            ]
+          },
+          {
+            "allowedActions": [
+              "run-play-mode-verification",
+              "capture-editor-evidence",
+              "inspect-scene-state",
+              "report-console-state"
+            ],
+            "authority": "unity-editor-specialist",
+            "callWhen": [
+              "rendered-screenshot-needed",
+              "play-mode-evidence-needed",
+              "scene-or-editor-state-needed",
+              "unity-layout-inspection"
+            ],
+            "clearRole": "Unity Evidence",
+            "codename": "Inspector",
+            "displayName": "SAL0-08 Inspector — Unity MCP",
+            "failsafes": [
+              "stop-on-playmode-failure",
+              "report-console-errors",
+              "label-screenshot-resolution",
+              "do-not-merge"
+            ],
+            "forbiddenActions": [
+              "mutate-gameplay-without-codex-assignment",
+              "change-protected-p0-loop",
+              "touch-web-repo",
+              "claim-visual-acceptance-for-samuel"
+            ],
+            "id": "unity-ai",
+            "number": "SAL0-08",
+            "outputSchema": "rendered/editor evidence or exact blocker",
+            "primaryLane": "Unity/Game",
+            "sessionPolicy": "evidence tool only unless Codex assigns bounded Unity work",
+            "surfaceLabel": "Unity MCP",
+            "surfaces": [
+              "unity-editor",
+              "mcp"
+            ]
+          },
+          {
+            "allowedActions": [
+              "receive-webhook",
+              "send-notification",
+              "write-google-docs-mirror-when-approved",
+              "record-run-id"
+            ],
+            "authority": "outside-edge-automation",
+            "callWhen": [
+              "off-hours-webhook",
+              "notification",
+              "google-docs-mirror",
+              "third-party-saas-edge"
+            ],
+            "clearRole": "Outside Automation",
+            "codename": "Signal",
+            "displayName": "SAL0-09 Signal — Make Cloud",
+            "failsafes": [
+              "dashboard-run-id-required",
+              "idempotency-key-required",
+              "no-secret-proof-required",
+              "manual-confirmation-before-live-scenario-change"
+            ],
+            "forbiddenActions": [
+              "act-as-core-orchestrator",
+              "store-secrets-in-repo",
+              "change-live-scenario-without-confirmation",
+              "claim-agent-wakeup-without-dispatch-claim-result-evidence"
+            ],
+            "id": "make",
+            "number": "SAL0-09",
+            "outputSchema": "run id plus visible effect",
+            "primaryLane": "Make Automation",
+            "sessionPolicy": "no hidden reasoning; every run needs an id and visible effect",
+            "surfaceLabel": "Make Cloud",
+            "surfaces": [
+              "webhooks",
+              "dashboard"
+            ]
+          },
+          {
+            "allowedActions": [
+              "store-commits",
+              "store-issues",
+              "store-pull-requests",
+              "store-review-comments",
+              "preserve-audit-trail"
+            ],
+            "authority": "durable-evidence-hub",
+            "callWhen": [
+              "record-evidence",
+              "verify-commit",
+              "open-or-review-pr",
+              "read-accepted-project-truth"
+            ],
+            "clearRole": "Source Of Truth",
+            "codename": "Ledger",
+            "displayName": "SAL0-10 Ledger — GitHub Cloud",
+            "failsafes": [
+              "source-pointer-required",
+              "private-access-must-be-explicit",
+              "no-secret-comments",
+              "branch-before-merge"
+            ],
+            "forbiddenActions": [
+              "replace-human-acceptance",
+              "act-as-scheduler",
+              "store-secrets-in-comments",
+              "silently-promote-agent-opinions"
+            ],
+            "id": "github",
+            "number": "SAL0-10",
+            "outputSchema": "commit, issue, pull request, or comment reference",
+            "primaryLane": "Coordination",
+            "sessionPolicy": "durable evidence and audit trail, not model memory",
+            "surfaceLabel": "GitHub Cloud",
+            "surfaces": [
+              "cloud",
+              "issues",
+              "pull-requests",
+              "commits"
+            ]
+          }
+        ],
+        "controlLayer": {
+          "displayName": "Mission Control Core — Python Supervisor",
+          "id": "mission-control-core",
+          "isAgent": false,
+          "role": "Local coordinator/orchestrator",
+          "rules": [
+            "Coordinate agents by SAL0 role id, not by vendor or model name.",
+            "Build context packets from durable state before invoking any agent.",
+            "Check hashes and skip repeated successful runs before model calls.",
+            "Enforce timeouts, retries, schemas, logs, and evidence paths.",
+            "Never make product or technical judgments itself.",
+            "Never store secrets, tokens, cookies, or auth files."
+          ]
+        },
+        "defaultStopRules": [
+          "no-material-change",
+          "task-complete-and-verified",
+          "schema-validation-failed",
+          "agent-unauthenticated",
+          "required-state-unverified",
+          "owner-decision-required",
+          "retry-time-or-cost-limit-hit",
+          "unresolved-material-disagreement"
+        ],
+        "schemaVersion": "sal0-agent-roles-v0"
+      },
+      "path": "docs/coordination/AGENT_ROLES.json"
+    },
+    "currentState": {
+      "body": "# SAL0MANder Current State\n\nCurrent focus:\n- Unity/Game P1-A/P1-B is frozen for human-visible acceptance evidence.\n- Web coordination is secondary unless needed for evidence, dashboards, or safe\n  automation plumbing.\n- Our SAL0MANder Mission Control now uses a two-layer model: Mission Control\n  Core coordinates locally, while SAL0-01 through SAL0-10 are the worker,\n  reviewer, inspector, notification, and ledger roles.\n- Make belongs at the outside edge: notifications, Google Docs mirror, and\n  off-hours inbound webhooks. It is not the local process orchestrator.\n\nKnown boundaries:\n- Unity/Game repo: `/Users/samuel_saldivar/SAL0MANDER-Puzzle-Prototype`\n- Web repo: `/Users/samuel_saldivar/Desktop/SAL0MANder-Web`\n- Do not mix gameplay implementation and web-companion implementation in one\n  automatic run.\n- No live Make scenario changes without explicit confirmation.\n\nNext safe automation proof:\n- Run `npm run mission:preflight` to prove local readiness before waking agents\n  or opening browser rooms.\n- Build deterministic local council packets.\n- Skip repeated runs by packet hash before any model calls.\n- Save every run as evidence under `docs/coordination/runs/`.\n- Codex technical ruling lives in `CODEX-TECHNICAL-RULING-COUNCIL.md`.\n- Human-facing Mission Control session pointer lives in\n  `MISSION-CONTROL-SESSION.md`.\n- Next implementation gate is explicit packet review plus explicit external\n  Claude handoff approval.",
+      "path": "docs/coordination/CURRENT_STATE.md"
+    },
+    "probe": {
+      "body": "# SAL0MANder Council Probe\n\nQuestion:\nWhat is the single highest-value next action for SAL0MANder right now, given the\ncurrent repo state and coordination constraints?\n\nRules:\n- Return evidence, not vibes.\n- Prefer one falsifiable next action over a broad plan.\n- Do not propose cross-lane edits unless the packet proves the boundary is clear.\n- Do not touch secrets, auth files, tokens, or unrelated projects.",
+      "path": "docs/coordination/PROBE.md"
+    },
+    "recentCommits": "Mark the architecture review as the current record\nScaffold hash-gated council supervisor\nAdversarial review of the agent-council architecture",
+    "sessionFailsafes": {
+      "body": "# Session And Fail-Safe Plan\n\nOur SAL0MANder Mission Control supervisor must distinguish agent identity,\nsurface, and capability.\n\n## Session Rules\n\n- Mission Control Core — Python Supervisor is the control layer, not an\n  agent. It has no SAL0 number.\n- The supervisor coordinates. Agents judge, execute, review, inspect, notify,\n  or store durable truth.\n- Route work by SAL0 role id, not vendor or model name.\n- A pinned browser chat is for human navigation only. It is not automation\n  identity.\n- A CLI session id is automation identity only for that CLI surface.\n- Browser chats, CLI sessions, GitHub comments, and local run folders are\n  different surfaces. Do not assume they share memory.\n- Every automated run starts from a packet, not from remembered conversation.\n- Session ids may be stored only as non-secret references. Do not store tokens,\n  auth files, cookies, or credentials.\n\n## Recommended Rooms\n\n- SAL0-01 Architect — Codex Desktop — Technical Lead.\n- SAL0-02 Runner — Codex CLI — Local Execution.\n- SAL0-03 Director — OpenAI API — Product Decision.\n- SAL0-04 Builder — Claude CLI — Web/Code Work.\n- SAL0-05 Reviewer — Claude Chat — Manual Critique.\n- SAL0-06 Scout — Gemini Chat — Google/Browser Review.\n- SAL0-07 Challenger — Gemini API/CLI — Automated Critique.\n- SAL0-08 Inspector — Unity MCP — Unity Evidence.\n- SAL0-09 Signal — Make Cloud — Outside Automation.\n- SAL0-10 Ledger — GitHub Cloud — Source Of Truth.\n\n## Fail-Safe States\n\nEvery agent must end in one of:\n\n- `WORKING`\n- `DONE - NEED NEW TASK`\n- `BLOCKED - NEED OWNER`\n- `WRONG LANE - REASSIGN`\n- `UNKNOWN/UNREACHABLE`\n- `REVIEW READY`\n\nNo silent middle state counts as progress.\n\n## Routing Table\n\n| Problem | First call | Second call | Final authority |\n| --- | --- | --- | --- |\n| Unity gameplay or tests | Codex | Unity AI | Codex |\n| Web UX/code | Claude | Codex | Codex for feasibility |\n| Google Drive/Cloud/OAuth | Gemini | Codex | ChatGPT/Samuel for policy |\n| Product priority | ChatGPT | Codex for feasibility | Samuel if major fork |\n| Automation plumbing | Codex | Claude adversarial review | Codex |\n| Off-hours notification/mirror | Make | Codex | Samuel if live scenario changes |\n\n## Hard Stops\n\nStop the run when:\n\n- a required agent is unauthenticated;\n- a packet lacks source commit/timestamp;\n- model output fails schema validation;\n- Gemini critique does not cite a specific Claude claim;\n- the OpenAI decision has more than one next action;\n- a repo has unexpected dirty files in the target lane;\n- a requested action crosses lanes without a boundary review;\n- a destructive or spending action is needed;\n- milestone acceptance is required from Samuel.",
+      "path": "docs/coordination/SESSION-FAILSAFES.md"
+    }
+  },
+  "version": "sal0-council-packet-v0"
+}

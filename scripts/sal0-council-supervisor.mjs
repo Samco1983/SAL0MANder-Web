@@ -20,6 +20,7 @@ import { z } from 'zod'
 import { acquireRunLock, DEFAULT_STALE_MS } from './lib/sal0-run-lock.mjs'
 import { classifyAgentFailure, classifyOutputFailure } from './lib/sal0-agent-failure.mjs'
 import { collectPreflight, readPauseSwitch } from './lib/sal0-preflight.mjs'
+import { parseAgentEnvelope, summariseCost } from './lib/sal0-cost.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const COORDINATION_DIR = join(ROOT, 'docs', 'coordination')
@@ -418,7 +419,9 @@ function runClaudePosition(packet, runDir) {
   // detached: the child leads its own process group, so a timeout can reap the
   // whole tree. Node's timeout only signals the direct child; an agent CLI that
   // spawned its own helpers would otherwise leave them running.
-  const result = spawnSync(CLAUDE_BIN, ['-p', prompt], {
+  // --output-format json wraps the answer in an envelope carrying total_cost_usd,
+  // so spend is read from the CLI rather than estimated.
+  const result = spawnSync(CLAUDE_BIN, ['-p', prompt, '--output-format', 'json'], {
     cwd: ROOT,
     encoding: 'utf8',
     maxBuffer: 1024 * 1024 * 8,
@@ -450,11 +453,16 @@ function runClaudePosition(packet, runDir) {
   const raw = result.stdout
   atomicWrite(join(runDir, '01-claude.raw.txt'), raw ?? '')
 
+  const envelope = parseAgentEnvelope(raw)
+  if (envelope.envelope) {
+    atomicWrite(join(runDir, '01-claude.envelope.json'), `${stableJson(envelope.envelope)}\n`)
+  }
+
   let parsed
   try {
-    parsed = validatePosition(parseJsonObject(raw))
+    parsed = validatePosition(parseJsonObject(envelope.text))
   } catch (error) {
-    const verdict = classifyOutputFailure(raw, {
+    const verdict = classifyOutputFailure(envelope.text, {
       schemaError: error instanceof z.ZodError ? error.message : undefined,
     })
     atomicWrite(join(runDir, '01-claude.failure.json'), `${stableJson(verdict)}\n`)
@@ -462,7 +470,7 @@ function runClaudePosition(packet, runDir) {
   }
 
   atomicWrite(join(runDir, '01-claude.position.json'), `${stableJson(parsed)}\n`)
-  return parsed
+  return { position: parsed, costUsd: envelope.costUsd, sessionId: envelope.sessionId }
 }
 
 function reapProcessGroup(pid) {
@@ -652,12 +660,15 @@ function run() {
   atomicWrite(join(runDir, 'preflight.json'), `${stableJson(preflight)}\n`)
 
   let modelCalls = 0
+  let costUsd = null
 
   try {
     runSchemaValidationProof()
     let claudePosition = null
     if (runAgents) {
-      claudePosition = runClaudePosition(packet, runDir)
+      const outcome = runClaudePosition(packet, runDir)
+      claudePosition = outcome.position
+      costUsd = outcome.costUsd
       modelCalls = 1
     }
 
@@ -668,6 +679,7 @@ Status: ${repairs.length > 0 ? `SUCCESS_WITH_REPAIRS (${baseStatus})` : baseStat
 ${repairs.length > 0 ? `REPAIRS:\n${repairs.map((entry) => `- ${entry}`).join('\n')}\n` : ''}
 Packet: ${hash}
 Model calls: ${modelCalls}
+Reported cost: ${costUsd === null ? 'not reported' : `$${costUsd.toFixed(4)} (vendor estimate)`}
 Schema validation: PASS
 
 This run proved packet assembly, hashing, run-folder creation, and ledger
@@ -688,6 +700,7 @@ Next action: ${runAgents ? 'wire Gemini critique only after Claude output valida
       repairs,
       runDir: relativeToRoot(runDir),
       modelCalls,
+      costUsd,
       runMode,
       claudePosition: claudePosition ? 'pass' : 'not-run',
       schemaValidation: 'pass',
