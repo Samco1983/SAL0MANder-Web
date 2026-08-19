@@ -53,3 +53,29 @@ describe('CompanionLayout', () => {
     expect(screen.getByTestId('stage')).toBeInTheDocument()
   })
 })
+
+describe('companion disclosure semantics', () => {
+  it('points the toggle at the panel it controls', () => {
+    renderLayout()
+
+    const toggle = screen.getByRole('button', { name: /companion/i })
+    const controls = toggle.getAttribute('aria-controls')
+    expect(controls).toBeTruthy()
+
+    // The id must resolve to the panel, not merely be present.
+    const panel = document.getElementById(controls!)
+    expect(panel).not.toBeNull()
+    expect(panel!.tagName).toBe('ASIDE')
+  })
+
+  it('keeps aria-controls resolvable after collapsing', async () => {
+    const user = userEvent.setup()
+    renderLayout()
+
+    const toggle = screen.getByRole('button', { name: /companion/i })
+    await user.click(toggle)
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(document.getElementById(toggle.getAttribute('aria-controls')!)).not.toBeNull()
+  })
+})

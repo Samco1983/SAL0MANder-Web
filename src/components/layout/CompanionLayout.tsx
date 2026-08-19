@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import styles from './CompanionLayout.module.css'
 
 const COLLAPSE_KEY = 'sal0mander.companion.collapsed'
+const COMPANION_ID = 'sal0mander-companion-panel'
 
 function readCollapsed(defaultCollapsed: boolean): boolean {
   try {
@@ -53,6 +54,7 @@ export function CompanionLayout({
   return (
     <div className={styles.layout} data-collapsed={collapsed}>
       <aside
+        id={COMPANION_ID}
         className={styles.companion}
         aria-label={companionLabel}
         // Hidden from AT when collapsed; still mounted so state survives.
@@ -69,7 +71,9 @@ export function CompanionLayout({
             size="sm"
             onClick={toggle}
             aria-expanded={!collapsed}
-            aria-controls={undefined}
+            // Without this the button announces "expanded" with no subject —
+            // a disclosure control that never says what it discloses.
+            aria-controls={COMPANION_ID}
           >
             {collapsed ? 'Show companion' : 'Hide companion'}
           </Button>

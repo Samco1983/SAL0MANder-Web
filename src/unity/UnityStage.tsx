@@ -188,16 +188,30 @@ export function UnityStage({
 
   return (
     <div className={styles.stage}>
+      {/*
+        tabIndex 0, not -1: the canvas IS the game. Unity WebGL takes keyboard
+        input through the focused canvas, so removing it from the tab order
+        means a keyboard-only student — a Chromebook without a working
+        trackpad, a switch user — can reach every button on the page except the
+        one thing they came to do.
+      */}
       <canvas
         ref={canvasRef}
         className={styles.canvas}
-        tabIndex={-1}
+        tabIndex={0}
         aria-label="SAL0MANder game"
       />
       {state.status === 'loading' ? (
         <div className={styles.empty} role="status">
           <h2 className={styles.emptyTitle}>Loading SAL0MANder…</h2>
-          <div className={styles.progressTrack}>
+          <div
+            className={styles.progressTrack}
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(state.progress * 100)}
+            aria-label="Loading SAL0MANder"
+          >
             <div
               className={styles.progressBar}
               style={{ width: `${Math.round(state.progress * 100)}%` }}
