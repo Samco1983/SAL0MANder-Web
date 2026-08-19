@@ -162,6 +162,46 @@ to pick the play, then run it on the clock.
 Plumbing commits are not points. Documents are not points. Passing `npm run
 verify` is not points — it is staying inbounds.
 
+But scoring is not the same as winning. A point only matters if it moves the
+team toward the win condition. Closing the wrong issue, improving the wrong
+lane, or shipping work that makes Samuel's real objective harder is empty
+scoring.
+
+The win condition must be visible:
+
+```text
+WIN CONDITION:
+CURRENT SCORE:
+ARE WE WINNING: yes | no | unclear
+WHY:
+NEXT POINT THAT MATTERS:
+```
+
+For SAL0MANder Mission Control, **winning** means:
+
+1. Samuel can stop supervising without the work stopping.
+2. Agents produce user-visible SAL0MANder improvement, not only coordination
+   infrastructure.
+3. Evidence is durable in GitHub: issue, commit, test result, log, or blocker.
+4. Bad turnovers go down over time because the system learns from them.
+5. The branch is closer to a real deploy or classroom/game milestone than it
+   was at the start of the window.
+
+If those five are not moving, the team is not winning yet, even if it is busy.
+
+**Scoring asks:** did something measurable move?
+
+**Winning asks:** did the right thing move, in the right direction, without
+making the next possession harder?
+
+**Learning to win asks:** did this possession make the team more likely to win
+the next one?
+
+Winning is the goal. Learning to win is more important than protecting a clean
+record. Playing to win means every agent takes a real shot, preserves the
+evidence, studies the rebound, and changes the next play. "We learned" only
+counts if the next possession is sharper.
+
 The night this was written: **253 changes to plumbing, 6 to product. 15 issues
 open, 0 closed.** A team running beautiful plays for six hours and never putting
 the ball in the basket. Every play in this book worked and the score was 0.
@@ -222,6 +262,24 @@ CATCH QUALITY:
 TURNOVERS:
 READINESS:
 NEXT SHOT:
+```
+
+Every report that claims progress should include this BBall metrics card:
+
+```text
+BBALL METRICS
+Window:
+Win condition:
+Score:
+Points/hour:
+Possession efficiency:
+Catch quality:
+Turnovers:
+Bad turnovers:
+Flagrant turnovers:
+Readiness:
+Learning:
+Next shot:
 ```
 
 If time is removed, success is still measurable: did the queue move, did the
