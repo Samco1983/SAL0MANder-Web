@@ -77,17 +77,44 @@ fi
 EXIT=$?
 echo "claude exit code: $EXIT"
 
+# The worker is told NOT to commit, so HEAD never moves on its own. Its output
+# arrives as an uncommitted working tree — that is what has to be looked at.
+# Comparing HEAD before and after can only ever report NOTHING CHANGED.
+DIRTY="$($GIT status --porcelain)"
+
+if [ -z "$DIRTY" ]; then
+  echo "ONE THING THAT CHANGED: NOTHING CHANGED"
+  echo "=== end $STAMP (exit $EXIT) ==="
+  exit 0
+fi
+
+FILES="$(echo "$DIRTY" | wc -l | tr -d ' ')"
+echo "worker changed $FILES file(s):"
+echo "$DIRTY"
+
+# The gate. Exit code, never the text.
+npm run verify >"$LOG_DIR/verify-$STAMP.log" 2>&1
+VERIFY=$?
+echo "npm run verify exit: $VERIFY"
+
+if [ "$VERIFY" -ne 0 ]; then
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — verify exited $VERIFY"
+  echo "Nothing committed. Working tree left as-is on purpose; read the diff."
+  echo "verify log: $LOG_DIR/verify-$STAMP.log"
+  echo "=== end $STAMP (exit $EXIT) ==="
+  exit 1
+fi
+
+$GIT add -A
+$GIT commit -q -m "web: automated work loop $STAMP
+
+Task instructions: $SKILL
+npm run verify exit 0 before commit."
 AFTER="$($GIT rev-parse HEAD)"
 
-# The one field a healthy-looking log cannot fake.
-if [ "$BEFORE" = "$AFTER" ]; then
-  echo "ONE THING THAT CHANGED: NOTHING CHANGED"
-else
-  COMMITS="$($GIT rev-list --count "$BEFORE..$AFTER")"
-  FILES="$($GIT diff --name-only "$BEFORE..$AFTER" | wc -l | tr -d ' ')"
-  echo "ONE THING THAT CHANGED: $COMMITS commit(s), $FILES file(s)"
-  $GIT --no-pager log --oneline "$BEFORE..$AFTER"
-  $GIT push origin "$BRANCH" && echo "pushed" || echo "PUSH FAILED"
-fi
+echo "ONE THING THAT CHANGED: COMMITTED ${AFTER:0:8} — $FILES file(s), verify passed"
+$GIT --no-pager log --oneline -1
+
+$GIT push origin "$BRANCH" && echo "pushed" || echo "PUSH FAILED"
 
 echo "=== end $STAMP (exit $EXIT) ==="
