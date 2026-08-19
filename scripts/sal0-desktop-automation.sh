@@ -8,12 +8,15 @@
 set -uo pipefail
 
 REPO="/Users/samuel_saldivar/Desktop/SAL0MANder-Web"
+RUNTIME_REPO="$HOME/.sal0mander/runtime/SAL0MANder-Web"
 LABEL="com.sal0mander.work-loop"
 PLIST_SOURCE="$REPO/docs/coordination/launchd/$LABEL.plist"
 PLIST_TARGET="$HOME/Library/LaunchAgents/$LABEL.plist"
 PAUSE_DIR="$HOME/.sal0mander"
 PAUSE_FILE="$PAUSE_DIR/PAUSE"
-LOG_DIR="$REPO/docs/coordination/runs/logs"
+LOG_DIR="$HOME/.sal0mander/logs"
+WRAPPER_DIR="$HOME/.sal0mander/bin"
+WRAPPER="$WRAPPER_DIR/sal0-work-loop-launchd.sh"
 
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
 
@@ -53,12 +56,25 @@ print_status() {
   echo "repo: $REPO"
   echo "branch: $(git branch --show-current 2>/dev/null || echo unknown)"
   echo "head: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+  if [ -d "$RUNTIME_REPO/.git" ]; then
+    echo "runtime repo: $RUNTIME_REPO"
+    echo "runtime branch: $(git -C "$RUNTIME_REPO" branch --show-current 2>/dev/null || echo unknown)"
+    echo "runtime head: $(git -C "$RUNTIME_REPO" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+  else
+    echo "runtime repo: not prepared"
+  fi
   echo
 
   if [ -f "$PLIST_TARGET" ]; then
     echo "launchd plist: installed at $PLIST_TARGET"
   else
     echo "launchd plist: not installed"
+  fi
+
+  if [ -x "$WRAPPER" ]; then
+    echo "launchd wrapper: installed at $WRAPPER"
+  else
+    echo "launchd wrapper: missing or not executable"
   fi
 
   if launchctl print "$launchd_service" >/dev/null 2>&1; then
@@ -87,6 +103,12 @@ print_status() {
   done
 
   echo
+  if [ -f "$LOG_DIR/work-loop.err.log" ] &&
+    tail -20 "$LOG_DIR/work-loop.err.log" | grep -q "Operation not permitted"; then
+    echo "latest launchd diagnosis: macOS denied the scheduled job access to the Desktop repo"
+    echo
+  fi
+
   if [ -d "$LOG_DIR" ] && ls "$LOG_DIR"/work-loop-*.log >/dev/null 2>&1; then
     latest="$(ls -t "$LOG_DIR"/work-loop-*.log | head -1)"
     echo "latest work-loop log: $latest"
@@ -97,9 +119,32 @@ print_status() {
   echo
 }
 
+prepare_runtime_repo() {
+  mkdir -p "$(dirname "$RUNTIME_REPO")" "$LOG_DIR"
+  if [ -d "$RUNTIME_REPO/.git" ]; then
+    git -C "$RUNTIME_REPO" fetch origin
+    git -C "$RUNTIME_REPO" checkout council/2026-08-18
+    git -C "$RUNTIME_REPO" pull --ff-only origin council/2026-08-18
+  else
+    git clone "$REPO" "$RUNTIME_REPO"
+    git -C "$RUNTIME_REPO" checkout council/2026-08-18
+  fi
+}
+
 install_job() {
   require_repo
   [ -f "$PLIST_SOURCE" ] || { echo "missing plist: $PLIST_SOURCE"; exit 1; }
+  prepare_runtime_repo
+  mkdir -p "$WRAPPER_DIR"
+  cat > "$WRAPPER" <<EOF
+#!/bin/bash
+cd /tmp || exit 1
+export SAL0_REPO="$RUNTIME_REPO"
+export SAL0_LOG_DIR="$LOG_DIR"
+export SAL0_LOCK="$HOME/.sal0mander/work-loop.lock"
+exec /bin/bash "$RUNTIME_REPO/scripts/sal0-work-loop.sh"
+EOF
+  chmod 755 "$WRAPPER"
   mkdir -p "$HOME/Library/LaunchAgents"
   cp "$PLIST_SOURCE" "$PLIST_TARGET"
   launchctl unload "$PLIST_TARGET" >/dev/null 2>&1 || true
@@ -112,6 +157,9 @@ uninstall_job() {
   launchctl unload "$PLIST_TARGET" >/dev/null 2>&1 || true
   if [ -f "$PLIST_TARGET" ]; then
     rm "$PLIST_TARGET"
+  fi
+  if [ -f "$WRAPPER" ]; then
+    rm "$WRAPPER"
   fi
   echo "uninstalled $LABEL"
   print_status

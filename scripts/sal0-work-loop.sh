@@ -10,11 +10,11 @@
 
 set -uo pipefail
 
-REPO="/Users/samuel_saldivar/Desktop/SAL0MANder-Web"
+REPO="${SAL0_REPO:-/Users/samuel_saldivar/Desktop/SAL0MANder-Web}"
 CLAUDE="/Users/samuel_saldivar/.local/bin/claude"
 GIT="/usr/bin/git"
-LOG_DIR="$REPO/docs/coordination/runs/logs"
-LOCK="$REPO/docs/coordination/.work-loop.lock"
+LOG_DIR="${SAL0_LOG_DIR:-$REPO/docs/coordination/runs/logs}"
+LOCK="${SAL0_LOCK:-$REPO/docs/coordination/.work-loop.lock}"
 PAUSE="$HOME/.sal0mander/PAUSE"
 WORKER_CLOCK_SECONDS="${SAL0_WORKER_CLOCK_SECONDS:-1800}"
 WORKER_HEARTBEAT_SECONDS="${SAL0_WORKER_HEARTBEAT_SECONDS:-30}"
