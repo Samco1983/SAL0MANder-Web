@@ -1,7 +1,7 @@
 # SAL0MANder Mission Control Preflight
 
-Created: 2026-08-19T03:31:54Z
-Hash: `7c404686a45a3df8a11262880f9f9fe9f8b9fd9da24e4323d105af8da31449f5`
+Created: 2026-08-19T03:45:07Z
+Hash: `91a04c782ab8a0417e1c8cfc516e89defc03d2f318de956a4b816a53aaea231a`
 
 ## Control Layer
 
@@ -22,7 +22,7 @@ Hash: `7c404686a45a3df8a11262880f9f9fe9f8b9fd9da24e4323d105af8da31449f5`
 
 ## Repos
 
-- web: `council/2026-08-18` at `ea0d40f` (clean)
+- web: `council/2026-08-18` at `97f1601` (dirty)
 - unity: `codex/git-hygiene-ignore-unity-temp` at `49ac86c` (clean)
 
 ## Run Lock
@@ -45,7 +45,7 @@ Hash: `7c404686a45a3df8a11262880f9f9fe9f8b9fd9da24e4323d105af8da31449f5`
 
 ## Disk
 
-- OK: 676.96 GB free at `/Users/samuel_saldivar/Desktop/SAL0MANder-Web`
+- OK: 677.01 GB free at `/Users/samuel_saldivar/Desktop/SAL0MANder-Web`
 
 ## Agent States
 

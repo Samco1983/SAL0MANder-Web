@@ -16,7 +16,13 @@ GIT="/usr/bin/git"
 LOG_DIR="$REPO/docs/coordination/runs/logs"
 LOCK="$REPO/docs/coordination/.work-loop.lock"
 PAUSE="$HOME/.sal0mander/PAUSE"
-SKILL="$HOME/.claude/scheduled-tasks/sal0mander-claude-review-loop/SKILL.md"
+# Instructions default to the real review loop. Pass a path to run something
+# else through the SAME pipeline — that is the point of the canary: proving a
+# different script works proves nothing about this one.
+#
+#   bash scripts/sal0-work-loop.sh                       # real work
+#   bash scripts/sal0-work-loop.sh docs/coordination/ops/CANARY-TASK.md
+SKILL="${1:-$HOME/.claude/scheduled-tasks/sal0mander-claude-review-loop/SKILL.md}"
 
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
 
