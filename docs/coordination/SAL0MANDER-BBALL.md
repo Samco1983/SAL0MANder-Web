@@ -47,8 +47,28 @@ safety, evidence, or learning, it is not discipline — it is drag.
 **Speed is not a nice-to-have. A team that is not scoring has something wrong,
 and the clock is how you find out which thing.**
 
+BBall exists because agents are slow unless the system makes speed visible.
+Without a clock, "working" and "stuck" look the same. With a clock, slow agents
+have to do one useful thing: shrink the task, pass the ball, publish the
+blocker, or get benched for that possession.
+
 Every action gets a clock. Hit the limit and it is a violation — you give up the
 ball, you do not keep dribbling.
+
+Every play also needs a SMART goal. This keeps agents focused and prevents them
+from questioning the objective while the clock is already running.
+
+```text
+SMART GOAL
+Specific:
+Measurable:
+Achievable:
+Relevant:
+Time-boxed:
+```
+
+If the goal is not SMART, do not start a worker run. Split it until one agent
+can take one shot with one success check inside one clock.
 
 | Action | Clock | On violation |
 | --- | --- | --- |
@@ -173,6 +193,11 @@ without anyone naming a number was just a rest.
 
 **Speed wins possessions. Huddles win games.** Both, in the right order: huddle
 to pick the play, then run it on the clock.
+
+Huddles are not permission to stop constantly. They exist to prevent repeated
+bad play, not to interrupt every possession. If the next shot is already clear,
+take it. If the same agent still owns the same SMART goal and the evidence is
+moving, keep playing.
 
 ### Micro-huddles
 
