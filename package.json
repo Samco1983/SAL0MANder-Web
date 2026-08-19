@@ -21,6 +21,7 @@
     "checkin:monitor:accept": "node scripts/sal0-checkin-monitor.mjs --accept",
     "council:dry-run": "node scripts/sal0-council-supervisor.mjs --dry-run",
     "council:launchd:plist": "node scripts/sal0-council-launchd.mjs",
+    "council:print-packet": "node scripts/sal0-council-supervisor.mjs --print-packet",
     "council:run-agents": "node scripts/sal0-council-supervisor.mjs --run-agents",
     "council:validate-schemas": "node scripts/sal0-council-supervisor.mjs --validate-schemas"
   },

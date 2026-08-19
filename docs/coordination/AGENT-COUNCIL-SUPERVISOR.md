@@ -2,12 +2,18 @@
 
 This is the local proof-of-life for the council architecture.
 
+Codex's technical ruling for this layer lives in
+`CODEX-TECHNICAL-RULING-COUNCIL.md`.
+
 Current status:
 - `npm run council:dry-run` builds a deterministic context packet.
+- `npm run --silent council:print-packet` prints the exact packet for review
+  before any external model handoff.
 - `npm run council:validate-schemas` proves the strict output schemas without
   calling any models.
 - `npm run council:run-agents` runs Claude POSITION only, then saves and
-  validates raw + parsed output. Gemini and OpenAI stay disabled.
+  validates raw + parsed output. It refuses to run unless the caller also passes
+  `--allow-external-claude`. Gemini and OpenAI stay disabled.
 - The packet reads `PROBE.md`, `CURRENT_STATE.md`, and the last 10 non-council
   commit messages.
 - The packet uses the latest non-council commit as `productHead`, so committing
@@ -40,7 +46,10 @@ Why this matters:
   vague dashboard.
 
 Next safe upgrade:
-- Run `npm run council:run-agents` only when Claude CLI is available.
+- Add a `--print-packet` review command.
+- Add explicit external-handoff approval before any real Claude model call.
+- Run `npm run council:run-agents -- --allow-external-claude` only when Claude
+  CLI is available and the packet is approved for external handoff.
 - Before running it for real, confirm the current packet is allowed to be sent
   to Claude.
 - Wire Gemini critique after Claude POSITION validates repeatedly.

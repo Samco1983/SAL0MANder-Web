@@ -39,6 +39,8 @@ const runAgents = args.has('--run-agents')
 const dryRun = args.has('--dry-run') || !runAgents
 const runMode = runAgents ? 'agent-claude-position' : 'dry-run'
 const validateSchemas = args.has('--validate-schemas')
+const printPacket = args.has('--print-packet')
+const allowExternalClaude = args.has('--allow-external-claude')
 const showHelp = args.has('--help') || args.has('-h')
 
 if (showHelp) {
@@ -46,19 +48,24 @@ if (showHelp) {
 
 Usage:
   node scripts/sal0-council-supervisor.mjs --dry-run
+  node scripts/sal0-council-supervisor.mjs --print-packet
   node scripts/sal0-council-supervisor.mjs --run-agents
   node scripts/sal0-council-supervisor.mjs --validate-schemas
 
 Dry-run builds the packet, hashes it, writes runs/<timestamp>-<hash8>/, and
 records skips in docs/coordination/runs/ledger.jsonl.
 
---run-agents currently runs Claude POSITION only, then validates and records
-raw + parsed output. Gemini and OpenAI remain disabled until Claude output is
+--print-packet writes the exact packet to stdout for review.
+
+--run-agents currently runs Claude POSITION only, then validates and records raw
++ parsed output. It requires --allow-external-claude because it sends packet
+content to Claude. Gemini and OpenAI remain disabled until Claude output is
 proven stable.
 
 Warning:
   --run-agents sends the assembled packet to Claude. Use only when that external
-  model handoff is approved for the current packet.
+  model handoff is approved for the current packet, and pass
+  --allow-external-claude explicitly.
 
 Environment:
   SAL0_CLAUDE_BIN                  Claude CLI path, default claude
@@ -463,6 +470,19 @@ function run() {
   const packet = buildPacket()
   const hash = packetHash({ ...packet, createdAt: undefined })
   const hash8 = hash.slice(0, 8)
+
+  if (printPacket) {
+    console.log(stableJson({ ...packet, hash }))
+    return
+  }
+
+  if (runAgents && !allowExternalClaude) {
+    console.error(
+      'Refusing external Claude handoff. Re-run with --allow-external-claude only after approving the current packet.',
+    )
+    process.exitCode = 1
+    return
+  }
   const priorSuccess = readLedger().find(
     (entry) => entry.hash === hash && entry.runMode === runMode && entry.status === 'success',
   )

@@ -18,4 +18,6 @@ Next safe automation proof:
 - Build deterministic local council packets.
 - Skip repeated runs by packet hash before any model calls.
 - Save every run as evidence under `docs/coordination/runs/`.
-
+- Codex technical ruling lives in `CODEX-TECHNICAL-RULING-COUNCIL.md`.
+- Next implementation gate is explicit packet review plus explicit external
+  Claude handoff approval.
