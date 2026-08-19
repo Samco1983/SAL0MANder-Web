@@ -5,6 +5,95 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — Gate-1 web artifacts complete: teacher dashboard wireframe + integration blueprint (issues #13, #15)
+
+```text
+AGENT: Claude Code
+AREA: Website lane / docs — teacher dashboard systems analysis + end-to-end blueprint
+STATUS: SHIPPED — verify green (docs-only, no runtime behavior change)
+```
+
+**CHECKED FIRST**
+
+`node scripts/check-upstream.mjs`: no upstream changes. Hub reachable directly
+(`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle`), 187 comments.
+Latest directive (2026-08-19T10:55:42Z, item 4) accepts the prior IA/Guest-Play
+docs checkpoint and explicitly assigns the two remaining Gate-1 artifacts —
+issue #13 (teacher dashboard wireframe) and #15 (integration blueprint) — under
+the same no-runtime/no-merge/no-deploy constraint. W-10 through W-16 stay
+frozen pending Codex's and Gemini's independent review; nothing in this batch
+touches `src/`.
+
+**WHAT SHIPPED**
+
+- `docs/TEACHER-DASHBOARD-WIREFRAME.md` (issue #13) — systems analysis for a
+  teacher-facing web companion that never duplicates Unity Teacher Studio.
+  Verified-against-code gap table (no `/teacher` route, no activities-list
+  endpoint, no share mint/revoke endpoint — only `ActivitySummarySchema`,
+  `PageSchema`, `ShareCodeSchema`, and the existing `SharePanel` component
+  exist to build on); proposed wireframes for the dashboard overview, the
+  recent-activities list, share actions (reusing `SharePanel` as-is), and a
+  reports summary that carries D-020's "Practice / Unproctored Diagnostics"
+  classification banner as a hard requirement, not decoration; an explicit
+  section naming what it deliberately does NOT propose (no per-student
+  breakdown, no answer-level log, no raw guest token surfaced to a teacher);
+  six open privacy/authorization questions; five independently-reversible
+  implementation slices.
+- `docs/INTEGRATION-BLUEPRINT.md` (issue #15) — the website-side half of the
+  full game↔website blueprint. Trust-boundary table, one identifier
+  correlation map disambiguating all eight opaque strings in play
+  (`ActivityId`/`ActivityVersionId`/`ShareCode`/`SessionId`/`clientAttemptId`/
+  `eventId`/`idempotencyKey`/`guestToken`+`MediaId`+checksum) so they stop
+  being confusable, an end-to-end ASCII sequence diagram spanning all nine
+  flows the issue named, per-flow detail each tagged IMPLEMENTED / PROPOSED /
+  UNRESOLVED / NEEDS UNITY REVIEW / NEEDS CLOUD REVIEW, a 20-row failure
+  matrix, privacy notes cross-referencing D-005/D-016/D-017/D-020/W-1 in
+  context, a phased plan mapping each `ROADMAP.md` batch onto the flows it
+  advances, and five questions each for Codex and Gemini.
+
+**WHAT I FOUND WHILE WRITING**
+
+- No endpoint exists anywhere in this repo to mint or revoke a `ShareCode` —
+  `MOCK_SHARE_CODES` are read-only fixtures for exercising *resolution*
+  (ok/revoked/unpublished), not a working creation flow. The teacher dashboard
+  cannot do anything beyond *display* a share link until this is built.
+- Nothing in this repo verifies `PuzzleAsset.checksum` against downloaded
+  bytes on either side that's visible from here — filed as an UNRESOLVED item
+  and a direct question to Codex, since it's plausible but unconfirmed that
+  Unity owns this validation entirely.
+- Confirmed the flow-8 local-save concern is not `resultHold.ts` in disguise:
+  Unity's own `BLUEPRINT.md` describes mid-game checkpoint autosave
+  (piece released/snapped, mode change, exit), which is a different problem
+  from `resultHold.ts`'s narrow post-completion hold — conflating the two in
+  a future design would be a real error, so the blueprint keeps them
+  explicitly separate and flags Unity's actual save mechanism as unverified
+  from the web side.
+
+**EVIDENCE**
+
+`npm run verify` green: lint, typecheck, **48 files / 540 tests** (unchanged —
+docs-only), build. Every code citation in both docs checked against the exact
+file:line in this checkout rather than written from memory; Unity-side claims
+are explicitly marked "relayed" against the read-only
+`SAL0MANDER-Puzzle-Prototype/docs/` mirror, never asserted as verified.
+
+**NEXT**
+
+All four Gate-1 web artifacts named in the supervisor's directives (#12, #13,
+#14, #15) are now shipped. Runtime code (W-10 through W-16) stays frozen until
+Codex's and Gemini's independent reviews land — do not resume it without a
+fresh ACK per the standing freeze directive (2026-08-19T09:59:07Z item 4).
+Next safe batch absent a fresh runtime ACK: continue pressure-testing/docs
+work, or pick up whichever of the six privacy/authorization questions in
+`TEACHER-DASHBOARD-WIREFRAME.md` §7 or the ten questions in
+`INTEGRATION-BLUEPRINT.md` §8–§9 get answered first.
+
+**BLOCKERS**
+
+None for this batch. W-16 review is blocked on Codex/Gemini, not on web.
+
+---
+
 ## 2026-08-19 — Gate-1 web artifacts: website IA + Guest Play wireframe (issues #12, #14)
 
 ```text
