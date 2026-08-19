@@ -125,6 +125,25 @@ outcome: diff, test, commit, blocker, review verdict, or deploy decision.
 Professional speed is not frantic. It is timing. The pass arrives when the
 teammate is ready to catch it, in the place where the next move is obvious.
 
+**Predict the next pass.** Good Mission Control should not wait for a worker to
+go silent before thinking about the next receiver. The supervisor watches the
+floor: open issues, dirty diffs, stale logs, failed checks, and fresh commits.
+When the next pass is likely, it prepares a catch packet before the handoff:
+role, lane, folder, current branch, exact evidence, success check, and what not
+to touch.
+
+Prediction is not pretending to know. If the next receiver or success check is
+uncertain, say so and pass a smaller job. The standard is:
+
+```text
+PREDICTED NEXT RECEIVER:
+WHY:
+CATCH PACKET READY: yes | no
+UNCERTAINTY:
+```
+
+**Fast enough to score. Clear enough to catch. Honest enough to recover.**
+
 A pass must be catchable:
 
 | Bad pass | Why it hurts | Catchable version |
