@@ -141,3 +141,55 @@ so first and loudly. Never stop and wait — if you are blocked, name the comman
 that unblocks you and go do the next thing. Delete your own garbage. Every run
 answers what changed, and `NOTHING CHANGED` is a legitimate, important answer.
 Do not ask permission to put the nail in.
+
+---
+
+## 11. Blocked in the open — how two agents work one branch
+
+Named after the fact, from a session where Claude and Codex worked the same
+branch for three hours and produced 31 and 32 commits with zero collisions and
+zero messages between them. The mechanism has a real name: **stigmergy** —
+coordination through traces left in a shared environment, not through messages
+sent to anyone. Neither agent ever asked the other for anything.
+
+**The move that makes it work: never ask. State your blocker in the shared
+record and keep going.**
+
+> Claude: "chmod +x was denied to my sandbox" — written in a commit message,
+> addressed to nobody.
+> Codex, unprompted: `97f1601 council: make work-loop executable`.
+
+A request creates a dependency and a wait. A published blocker creates a trace
+any agent can act on, or not, while you get on with something else. Nobody is
+idle and nobody is a message bus.
+
+### The five rules
+
+1. **Same branch, both in terminal.** The branch is the shared environment. An
+   agent in a chat window leaves no trace another agent can read.
+
+2. **Publish blockers, do not send them.** Say what stopped you and name the
+   exact command that clears it. Then go do the next thing. Never wait.
+
+3. **Push immediately, in small commits.** An unpushed commit is invisible, and
+   an invisible trace coordinates nothing. Batch work and the dance stops.
+
+4. **Sign your work.** Claude commits carry `Co-Authored-By: Claude Opus 5`,
+   Codex uses the `council:` prefix, the loop says `web: automated work loop`.
+   Without distinguishable marks the record cannot say who did what — and the
+   Control Room's whole reading depends on it.
+
+5. **Never start on a dirty tree.** The one collision this produced: a loop run
+   began while an uncommitted fix was in the tree, and `git add -A` committed
+   another agent's work under its own name. Once you are running you cannot
+   tell your output from anyone else's, so check before you start.
+
+### Why it beats coordinating
+
+The human was the message bus for a week and it was the slowest part of the
+system. Every fact had to be carried by hand into another window. Stigmergy
+removes the carrier: the work itself is the message, the repo is the mailbox,
+and `git log` is the conversation.
+
+The test of whether you are doing it: **if the human stopped reading, would the
+two agents still make progress?** Tonight the answer became yes.

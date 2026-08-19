@@ -51,8 +51,8 @@ hr
 # ── The queue ───────────────────────────────────────────────────────────────
 echo "  WORK QUEUE  (github issues)"
 if command -v gh >/dev/null 2>&1; then
-  gh issue list --repo "$REPO_SLUG" --state open --json number,title,labels --limit 100 2>/dev/null \
-  | python3 -c '
+  if ISSUE_JSON=$(gh issue list --repo "$REPO_SLUG" --state open --json number,title,labels --limit 100 2>/dev/null); then
+    printf '%s\n' "$ISSUE_JSON" | python3 -c '
 import json, sys
 try:
     issues = json.load(sys.stdin)
@@ -75,7 +75,10 @@ for i in sorted(web, key=lambda x: x["number"])[:6]:
     print("      #%-3d [%s] %s" % (i["number"], state(i), i["title"][:52]))
 print()
 print("    NEXT UP: #%d" % free[0]["number"] if free else "    NEXT UP: nothing unclaimed")
-' || echo "    (could not read issues)"
+'
+  else
+    echo "    (could not read issues)"
+  fi
 else
   echo "    gh not available"
 fi
