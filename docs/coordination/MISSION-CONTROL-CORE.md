@@ -52,6 +52,10 @@ That writes `docs/coordination/ops/EXTERNAL-HANDOFF-LATEST.json`. It keeps
 source pointers, role names, repo state, and commit evidence, but omits full
 document bodies.
 
+See `docs/coordination/COMMUNICATION-LADDER.md` for the rule on when to use
+GitHub, terminal, browser links, desktop notifications, Google Docs mirrors,
+Make, or manual copy/paste packets.
+
 ## Local Barrier Rules
 
 - Prefer absolute or discovered binary paths so launchd and Codex Desktop do

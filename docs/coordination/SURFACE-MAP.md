@@ -6,6 +6,10 @@ change.
 **The thesis:** the terminal is the execution layer, the desktop is the human
 layer, and the recurring mistake is using a desktop surface as infrastructure.
 
+For channel choice, see `COMMUNICATION-LADDER.md`: GitHub is durable truth,
+terminal executes, browser/notifications show humans, Google Docs mirrors
+awareness later, and Make handles outside-edge buttons/webhooks.
+
 ## What is installed here
 
 | Surface | Wakeable by a program? | Evidence |

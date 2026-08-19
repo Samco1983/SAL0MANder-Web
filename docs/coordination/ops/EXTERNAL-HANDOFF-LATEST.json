@@ -1,11 +1,11 @@
 {
   "schemaVersion": "sal0-external-handoff-packet-v0",
-  "createdAt": "2026-08-19T03:56:17.645Z",
+  "createdAt": "2026-08-19T03:59:00.536Z",
   "repo": {
     "root": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/",
     "branch": "council/2026-08-18",
-    "head": "c4ab49c",
-    "status": "M docs/coordination/MISSION-CONTROL-CORE.md\n M package.json\n M scripts/sal0-work-loop.sh\n?? docs/coordination/ops/CURRENT-TASK.md\n?? scripts/sal0-external-packet.mjs\n?? scripts/sal0-next-task.sh"
+    "head": "2870548",
+    "status": "M docs/coordination/MISSION-CONTROL-CORE.md\n M docs/coordination/SURFACE-MAP.md\n?? docs/coordination/COMMUNICATION-LADDER.md"
   },
   "missionControl": {
     "controlLayer": "Mission Control Core — Python Supervisor",
@@ -105,7 +105,7 @@
     {
       "path": "docs/coordination/MISSION-CONTROL-CORE.md",
       "exists": true,
-      "lineCount": 93,
+      "lineCount": 97,
       "headings": [
         "Mission Control Core",
         "Job",
@@ -133,7 +133,7 @@
     {
       "path": "docs/coordination/SURFACE-MAP.md",
       "exists": true,
-      "lineCount": 103,
+      "lineCount": 107,
       "headings": [
         "Surface map — which agent can a program actually wake?",
         "What is installed here",
@@ -176,6 +176,10 @@
   ],
   "recentCommits": [
     {
+      "hash": "2870548",
+      "subject": "council: feed the loop from the GitHub issue queue and report back on it"
+    },
+    {
       "hash": "c4ab49c",
       "subject": "council: fix agent command evidence recording"
     },
@@ -210,10 +214,6 @@
     {
       "hash": "ece2c72",
       "subject": "council: harden execute-stage refusals"
-    },
-    {
-      "hash": "d8d773b",
-      "subject": "council: add the execute stage's decision logic and refusal rules"
     }
   ],
   "rules": [
@@ -222,5 +222,5 @@
     "Ask for a specific file excerpt when more context is required.",
     "Do not touch Unity, secrets, auth files, live Make scenarios, or unrelated repos."
   ],
-  "hash": "381ecc21040da7f4f86fb8b5b25617b804d79ccb8fb2a55acc86ad0cedc08b3e"
+  "hash": "1838821325649687b54f12bf96a5be8c4744aac754094369d60ce43dd9431119"
 }
