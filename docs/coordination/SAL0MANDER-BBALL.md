@@ -342,9 +342,12 @@ the ball in the basket. Every play in this book worked and the score was 0.
 
 ### Time is the denominator
 
-**A score with no clock cannot be judged.** "0 closed" could be a bad hour or a
-catastrophic month, and until you divide by time you cannot tell which. Every
-number below is a rate, because a total is a story and a rate is a measurement.
+**A score with no clock cannot be judged.** In basketball, time is the true
+measurement. Without time, speed does not exist, pace does not exist, a comeback
+does not exist, and the shot clock means nothing. "0 closed" could be a bad hour
+or a catastrophic month, and until you divide by time you cannot tell which.
+Every number below is a rate, because a total is a story and a rate is a
+measurement.
 
 | Rate | What it answers | That night |
 | --- | --- | --- |
@@ -368,6 +371,18 @@ clock.
 0 closed` is incomplete. `queue: 15 open, 0 closed in 6h` is a measurement, and
 it is the one that makes everything else in this book either earn its place or
 get deleted.
+
+Every play must carry time:
+
+```text
+STARTED:
+ENDED:
+DURATION:
+SHOT CLOCK:
+ON TIME: yes | no
+```
+
+No duration, no claim of speed. No clock, no BBall.
 
 ### How to measure success
 
