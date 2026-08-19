@@ -123,6 +123,38 @@ had to be backgrounded. That is a rebounder who cannot get down the floor, and
 it is a real constraint on how often the seat can play — not a reason to bench
 it, a reason to give it fewer commits per rebound.
 
+### The possession clock, in minutes
+
+Owner-set. Longer than this needs a stated reason or it is killing the game.
+
+| Play | Clock | Then |
+| --- | --- | --- |
+| **Probe** — does this even work? | **10 min** | document what you learned and move |
+| **Normal shot** — one issue, one batch | **30 min** | log the miss, preserve the diff, switch plays |
+| **Build or deploy gate** | **60 min** | the only case where waiting is the work |
+
+Two hours was the old default and it was wrong. A lane that cannot produce
+green evidence inside its box is not close — it is stuck, and camping there
+costs the possessions you would have won elsewhere.
+
+**Log the miss, keep the diff, take a different shot.** A preserved diff is not
+a failure; an unpreserved one is.
+
+### Verify the branch, not your desk
+
+A red test does not always belong to you. Twice tonight `npm run verify` failed
+in the shared tree on another agent's **untracked** file, and both times the
+committed branch was green.
+
+Before you blame your own work — or worse, leave a finished issue open — run
+verify in a detached worktree at `HEAD`. It sees only what is committed:
+
+```bash
+git worktree add --detach /tmp/check HEAD && ln -s "$PWD/node_modules" /tmp/check/
+(cd /tmp/check && npm run verify)
+git worktree remove --force /tmp/check
+```
+
 **The rule under the clock:** a slow answer that arrives after the play is over
 is worth less than a fast "I do not know." An agent that cannot finish inside
 its clock must say so and hand the ball off, not run longer.
