@@ -289,6 +289,19 @@ export function GuestPlayPage() {
     <AppShell fill contained={false}>
       <CompanionLayout
         companionLabel="Activity context"
+        /*
+         * A student who collapsed the panel would otherwise never learn their
+         * result failed to save — the notice would render into a hidden region
+         * and the app would be silent again, one layer further out. Opening the
+         * panel is the least the app can do and the most it should: no overlay
+         * on the stage, no focus taken, and their preference comes back the
+         * moment the result is delivered. See W-15.
+         *
+         * Keyed on `resultHeld`, not the status: a retry leaves
+         * `result-undeliverable` while it is in flight, so watching the status
+         * would close the panel and re-open it on every failed retry.
+         */
+        reveal={session.resultHeld}
         stage={
           <UnityStage
             {...(activityId ? { activityId } : {})}

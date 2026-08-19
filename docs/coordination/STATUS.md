@@ -5,6 +5,146 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — panel auto-expand shipped; the chain's last silent-loss path is a reload
+
+```text
+AGENT: Claude Code
+AREA: Website lane / Guest Play result delivery + companion layout
+STATUS: SHIPPED — `fc5fba2`, verify green, mutation-verified
+        PLUS one new HIGH finding (W-16) that needs a ruling
+```
+
+**WHAT CHANGED**
+
+Upstream: no change (`check-upstream.mjs` clean). Hub: 180 comments, three new
+since the last entry. The 2026-08-19T07:16Z supervisor comment accepts the W-13
+evidence and **answers the product question W-13 left open**: an undeliverable
+result must automatically expand the companion panel and reveal the notice —
+no stage overlay, no focus theft, preserve the prior collapsed preference and
+restore it only after delivery, no thrashing on repeated failures. Codex is
+assigned the independent review; C-1 (`P1_PROCESS.md` naming the obsolete
+mailbox) is still open on their side.
+
+**WHAT I SHIPPED** — `fc5fba2`
+
+`CompanionLayout` takes a `reveal` prop, wired in Guest Play to a new
+`resultHeld` from `usePlaySession`.
+
+- **Rising edge, not a continuous force.** Forcing the panel open would make
+  "Hide companion" a button that visibly does nothing — the same silent no-op
+  `canRetry` exists to prevent, one component over. The student keeps the last
+  word; repeated failures cannot re-open a panel they closed on purpose.
+- **The stored preference is never overwritten.** The reveal stashes it and puts
+  it back; an explicit toggle during the reveal discards the stash, so a newer
+  choice is never undone later.
+- **No focus taken**, asserted directly. `role="alert"` announces without
+  moving the caret.
+- **A layout effect, not a passive one**, so the panel is open in the same paint
+  the notice appears in — an alert inserted into an `aria-hidden` + `inert`
+  subtree is announced to nobody.
+
+**WHAT I FOUND — in my own fix, before shipping it**
+
+The obvious wiring, `reveal={session.status === 'result-undeliverable'}`, makes
+the panel **flap shut and open again on every failed retry** — exactly the
+thrashing the ruling named. A retry leaves that status while it is in flight
+(`submitting`; on the start-failure route `starting` and `active` too) before
+landing back on it, and a student on bad wifi presses retry more than once.
+
+Fixed with `resultHeld`: raised from the first held result until one is actually
+delivered, so "is there something the student needs to see" is answerable
+without knowing which leg of a retry the session is on. Third run in a row where
+reviewing the fix found the defect the fix introduced.
+
+**EVIDENCE**
+
+- `npm run verify` green: lint, typecheck, **46 files / 521 tests**, build
+  (197 modules). 507 before this batch.
+- 14 new assertions, **every one mutation-verified** — ten distinct mutations,
+  each killing between 1 and 4 tests. Full table in `OPEN-ITEMS.md` W-15.
+- **One mutation survived first time.** "Toggle does not clear the stash" passed,
+  because the test had the student close the panel during a reveal and the
+  stashed value was also "closed" — nothing observable differed. Rewritten to
+  close-then-reopen, the only sequence where stash and student disagree. Second
+  run running that a first-draft assertion did not bite; both times the cause
+  was a test that exercised the code without putting it under tension.
+- One change is **unverified, not tested**: the layout-effect swap. jsdom models
+  neither paint nor the a11y tree, and under `act()` a passive and a layout
+  effect leave an identical DOM in an identical order. Needs one real
+  screen-reader pass on the acceptance build. Saying so rather than counting it.
+
+**WHAT I FOUND — W-16, HIGH, needs a ruling**
+
+Pressure-testing the wider path found the loss route none of W-10, W-12, W-13 or
+this batch covers, and it is the one a student is most likely to take.
+
+**A reload destroys the held result, and the app looks fine afterwards.**
+
+The idempotency *keys* were made durable on purpose. The **result payload is
+written nowhere** — React state and a ref, both gone on reload.
+`grep -rn "sessionStorage\|localStorage" src/routes/guest-play/` returns
+`idempotency.ts` and nothing else. So: student finishes, submit fails, retry
+fails, student reloads the page that looks stuck. Numbers gone, Unity restarted,
+unreproducible.
+
+Worse than plain loss. Proven with a temporary Vitest case driving the real
+bridge and mock transport, then deleted:
+
+```
+BEFORE RELOAD: notice shown, attempt OVsmrPrtNb8Pu_A1, submits 1
+AFTER RELOAD:  attempt OVsmrPrtNb8Pu_A1 | notice present: false
+               storage: [ sal0mander.session.startKey.demo-version-1,
+                          sal0mander.guest.token ]
+```
+
+The attempt id **survives**, which is what W-13 built it to do — so on reload the
+page re-runs `POST /sessions` under the same key, gets the same session back, and
+shows an ordinary healthy ready-to-play screen. No notice, no error, no marker.
+A completed result was destroyed and the app's own evidence says all is well.
+Invisible to all 521 tests, because every one of them lives inside a single page
+lifetime.
+
+Also: `UndeliveredResult` currently tells the student **"This device is holding
+your result until it can be saved."** It is not. The tab is, until it is
+reloaded. That sentence must not ship as written whatever else is decided.
+
+Fix proposed in `OPEN-ITEMS.md` W-16 — persist the held result to
+`sessionStorage` beside its start key and rehydrate on mount — and deliberately
+**not built**, because it is the first time this app would write a student's
+work product to a shared classroom device. That is a data-at-rest and retention
+question, and retention is on the unresolved list.
+
+**ALSO RECORDED — W-17, low**
+
+Below 60rem the companion is a bottom sheet over the stage, so an auto-expand
+there covers up to 62% of it — which the ruling forbids literally. Harmless
+today only because `reveal`'s single caller is post-play by construction, and
+both acceptance widths (1366, 1024) are above the breakpoint so a pass will not
+see it. The safety is a property of today's caller, not of the component. Two
+concrete fixes proposed; neither built, both are layout decisions.
+
+**NEEDS AN OWNER DECISION**
+
+1. **W-16** — may the web persist a completed result to `sessionStorage` on the
+   student's device? Metrics only, no PII, but it is student work on a shared
+   device, and `sessionStorage` dying with the tab is a TTL decision by
+   implication. Blocking the only remaining silent-loss path.
+2. **W-17** — cap the revealed bottom sheet below 60rem, or make `reveal` state
+   an explicit post-play policy? Recommend the former.
+3. **C-1** still open on Codex's side.
+
+**NEXT**
+
+The Gate-1 web artifacts, unblocked since C-2: role flows, responsive breakpoint
+strategy, editor/preview shell wireframes (web issues #12–#15). W-16 ahead of
+them if a ruling lands.
+
+**BLOCKERS**
+
+None blocking this lane. W-16 is blocked on a ruling, not on work.
+
+---
+
 ## 2026-08-19 — W-12's own fix reviewed; the harder half of the same defect was still live
 
 ```text

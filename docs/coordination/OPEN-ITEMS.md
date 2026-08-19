@@ -1,5 +1,197 @@
 # Open items register
 
+## W-16 — a reload destroys the held result, and the app looks fine afterwards 🔴
+
+**Open. High. The last silent-loss path in the W-10 → W-13 chain, and the one a
+student is most likely to trigger.**
+
+`result-undeliverable` holds the result in React state and `pendingResultRef`
+holds it in a ref. Neither survives a reload. The idempotency *keys* were
+carefully made durable — `startKeyFor` writes to `sessionStorage`, `resultKeyFor`
+is a pure function — but **the result payload itself is written nowhere**.
+`grep -rn "sessionStorage\|localStorage" src/routes/guest-play/` returns
+`idempotency.ts` and nothing else.
+
+So: a student finishes, the submission fails, the notice appears, the retry
+fails too, and the student does the most ordinary thing anyone does with a page
+that looks stuck — reloads it. The numbers are gone, and Unity has restarted, so
+they cannot be produced again.
+
+### Why it is worse than plain loss
+
+Proven with a temporary Vitest case driving the real bridge and the real mock
+transport, then deleted (`git log --all -- src/routes/guest-play/__scratch-w16.test.tsx`
+is empty):
+
+```
+BEFORE RELOAD: notice shown, attempt OVsmrPrtNb8Pu_A1, submits 1
+AFTER RELOAD:  attempt OVsmrPrtNb8Pu_A1 | notice present: false
+               storage: [ sal0mander.session.startKey.demo-version-1,
+                          sal0mander.guest.token ]
+```
+
+The attempt id **survives** — which is what W-13 built it to do. On reload the
+page re-runs `POST /sessions` under that same key, the server returns the same
+session, and the student is shown an ordinary, healthy, ready-to-play screen.
+There is no notice, no error, no marker of any kind. A completed result was
+destroyed and the app's own evidence says everything is fine.
+
+That is the exact silence W-10 ruled against, reached by a route none of W-10,
+W-12 or W-13 covered, and it is *invisible to the whole existing test suite*
+because every test lives inside one page lifetime.
+
+### The copy is currently false
+
+`UndeliveredResult` tells the student **"This device is holding your result until
+it can be saved."** The device is not holding it. The *tab* is, until it is
+reloaded or closed. Whatever is decided below, that sentence must not ship as
+written — it is a durability promise the implementation does not keep.
+
+### Proposed fix — needs a ruling first
+
+Write the held result to `sessionStorage` beside its start key, keyed by
+`clientAttemptId`, and rehydrate into `result-undeliverable` on mount when a
+held result is found for the live attempt. `sessionStorage` and not
+`localStorage` for the same reason `startKeyFor` chose it: a reload should
+resume, a new tab should not inherit a stranger's result. Clear on delivery,
+which is the only place `clearStartKey` already fires.
+
+Three things need an owner/Gemini call before this is built, which is why it is
+recorded rather than shipped:
+
+1. **Data at rest.** A `SessionResult` is metrics only — `durationMs`,
+   `questionsAnswered`, `questionsCorrect`, `piecesPlaced`, `piecesTotal`,
+   `completedAt` — with no name, email or free text, so the privacy exposure is
+   low. It is still the first time this app writes a *student's work product* to
+   a shared device, and shared devices are the norm in a classroom.
+2. **Retention.** `sessionStorage` dies with the tab, so an unrecoverable
+   result is discarded when the tab closes. That is a TTL decision by
+   implication, and it belongs with the unresolved candidate-TTL/retention item.
+3. **Whether the rehydrated notice may claim more than it can.** Restoring the
+   notice on reload is only honest if the retry route still works. It does —
+   the start key survives, so both retry routes remain available — but that must
+   be asserted, not assumed.
+
+`sessionStorage` may be blocked (private mode, embedded frame). `safeSet`
+already degrades silently there, which for a key is right and for a result is
+not: it would restore the current behaviour with no signal. The fallback needs
+to be part of the ruling too.
+
+## W-15 — ✅ RESOLVED — the notice lived in a panel the student could have closed
+
+Resolved 2026-08-19 in `fc5fba2 web: open the panel when a result did not save`,
+against the supervisor ruling of 2026-08-19T07:16Z.
+
+W-13 shipped the undelivered-result notice into the companion panel and recorded
+the gap in writing rather than closing it: the panel is collapsible, so a student
+who had collapsed it would never see the alert. Moving the notice was not an
+option — nothing may overlay the stage — so the panel had to open instead.
+
+### What shipped
+
+`CompanionLayout` takes a `reveal` prop.
+
+- **Rising edge, not a continuous force.** Holding the panel open would make
+  "Hide companion" a button that visibly does nothing — the same silent no-op
+  `canRetry` exists to avoid, one component over. The student keeps the last
+  word, and a run of repeated failures cannot re-open a panel they deliberately
+  closed.
+- **The stored preference is never overwritten.** An auto-expand is the app
+  speaking, not the student changing their mind. The prior value is stashed and
+  put back when the reveal drops; an explicit toggle during the reveal discards
+  the stash, so the student's newer choice is not undone later.
+- **No focus is taken.** `role="alert"` announces without moving the caret.
+  Asserted directly.
+- **A layout effect, not a passive one.** The notice is a `role="alert"`
+  inserted in the same commit into an `aria-hidden` + `inert` subtree; an alert
+  is announced on insertion, not on becoming visible, so a passive effect leaves
+  a frame in which it can be missed entirely. Not provable in jsdom, which
+  models neither paint nor the a11y tree — see "Not proven" below.
+
+### The defect found in the first version of this fix
+
+The obvious wiring — `reveal={session.status === 'result-undeliverable'}` — has
+the panel **flap shut and open again on every failed retry**, which is precisely
+the thrashing the ruling named. A retry leaves `result-undeliverable` while it
+is in flight (`submitting`, and on the start-failure route `starting` and
+`active` too) before landing back on it. On a flaky connection a student may
+press retry several times.
+
+Fixed by adding `resultHeld` to `usePlaySession`: true from the first held
+result until one is actually delivered, so "is there something the student needs
+to see" is answerable without knowing which leg of a retry the session is on.
+Only `finished` lowers it. Caught by pressure-testing the fix rather than by the
+ruling, which is the third run in a row where reviewing the fix found the
+defect the fix introduced or left.
+
+### Evidence
+
+- `npm run verify` green: lint, typecheck, **46 files / 521 tests**, build
+  (197 modules). 507 before this batch.
+- **14 new assertions, every one mutation-verified.** Unwiring the reveal fails
+  4; removing the restore fails 2; persisting the auto-expand fails 2; dropping
+  the edge latch fails 1; keeping the stash across a toggle fails 1; restoring
+  unconditionally fails 1; taking focus fails 2; keying the reveal on the status
+  instead of `resultHeld` fails 1; lowering `resultHeld` on any other status
+  fails 1; never lowering it fails 1.
+- **One mutation survived first time.** "Toggle does not clear the stash"
+  passed, because the test had the student close the panel during a reveal —
+  and the stashed value was *also* "closed", so nothing observable differed.
+  Rewritten to have the student close it and then re-open it, which is the only
+  sequence where the stash and the student's choice disagree. Recorded because
+  it is the second run in a row that a first-draft assertion did not bite, and
+  both times the cause was the same: a test that exercised the code without
+  putting it under tension.
+
+### Not proven
+
+The layout-effect change cannot be verified here. jsdom models neither paint nor
+the accessibility tree, and under `act()` a passive and a layout effect produce
+an identical final DOM in an identical order — no assertion can distinguish
+them. The reasoning is sound and the change is free, but it is **unverified**,
+not tested. It needs one pass with a real screen reader on the acceptance
+build: collapse the panel, force a submit failure, confirm the alert is spoken.
+
+### Deliberately not done
+
+`reveal` is not constrained to post-play use — see W-17.
+
+## W-17 — `reveal` is safe because of what calls it, not because of what it is 🟠
+
+**Low severity today, latent by construction.** Recorded so it is not
+rediscovered as a defect later.
+
+Below `60rem` (960px) `CompanionLayout` makes the companion an absolutely
+positioned bottom sheet at `z-index: var(--z-overlay)`, `max-height: 62%`, over
+the stage. That is deliberate and correct for a manual toggle — a phone should
+not give up playable width — but it means **an auto-expand at that width covers
+up to 62% of the stage**, which the 2026-08-19 ruling forbids in as many words.
+
+Not currently harmful, for a reason that is entirely incidental: `reveal` has
+exactly one caller, keyed on `resultHeld`, which is only reachable after
+`session-finished`. The game is always over by the time the sheet appears, so
+nothing playable is ever covered. Note also that both acceptance widths in use
+— 1366×768 and 1024×768 — are *above* the breakpoint, so an acceptance pass will
+not see this at all.
+
+The risk is that this safety is a property of today's only caller rather than of
+the component. The second caller that reveals something mid-game turns the
+companion into a stage overlay silently, and the JSDoc contract is the only
+thing standing in the way.
+
+**Proposed, not built** — it is a layout change and wants a decision:
+
+1. Cap the revealed sheet below `60rem` so a guaranteed share of the stage stays
+   visible whatever the caller does, making the ruling structural instead of
+   incidental; or
+2. give `reveal` an explicit policy argument the caller must state
+   (`'post-play'`), and refuse to reveal mid-game.
+
+(1) is the smaller change and the stronger guarantee. Both touch
+`CompanionLayout.module.css` sizing rather than palette or type, so neither
+should be gated on the visual-identity approval — confirming rather than
+assuming.
+
 ## W-13 — ✅ RESOLVED — the *other* end of the session was still losing results
 
 Resolved 2026-08-19 in `602395e web: stop losing a result when the submission is
