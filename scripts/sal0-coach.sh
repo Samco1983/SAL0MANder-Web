@@ -32,6 +32,17 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
 cd "$REPO" || exit 1
 mkdir -p "$OUT_DIR"
 
+# Keychain first. The owner's own pattern, and better than the plaintext file
+# this originally used: the secret is encrypted at rest, and storing it via
+# `-w "$(pbpaste)"` keeps it out of shell history entirely.
+#
+#   security add-generic-password -U -a "$USER" -s "SAL0MANder OpenAI API" -w "$(pbpaste)" && pbcopy < /dev/null
+if [ -z "${OPENAI_API_KEY:-}" ] && command -v security >/dev/null 2>&1; then
+  KEYCHAIN_KEY="$(security find-generic-password -a "$USER" -s "SAL0MANder OpenAI API" -w 2>/dev/null || true)"
+  [ -n "$KEYCHAIN_KEY" ] && OPENAI_API_KEY="$KEYCHAIN_KEY"
+fi
+
+# Plaintext file only as a fallback, for machines without a Keychain.
 if [ -z "${OPENAI_API_KEY:-}" ] && [ -f "$ENV_FILE" ]; then
   # shellcheck disable=SC1090
   set -a; . "$ENV_FILE"; set +a
@@ -41,12 +52,11 @@ if [ -z "${OPENAI_API_KEY:-}" ]; then
   cat <<'MSG'
 BLOCKED - NEED OWNER — no OpenAI API key.
 
-The coach seat needs an API key, which is billed separately from a ChatGPT
-subscription. Get one at https://platform.openai.com/api-keys, then:
+The coach seat needs an API key, billed separately from a ChatGPT
+subscription. Get one at https://platform.openai.com/api-keys, copy it, then
+store it in Keychain — encrypted at rest, and never written to shell history:
 
-    mkdir -p ~/.sal0mander
-    echo 'OPENAI_API_KEY=sk-...' > ~/.sal0mander/openai.env
-    chmod 600 ~/.sal0mander/openai.env
+    security add-generic-password -U -a "$USER" -s "SAL0MANder OpenAI API" -w "$(pbpaste)" && pbcopy < /dev/null
 
 Never put it in this repo. Claude will not read, write, or handle the key.
 MSG
