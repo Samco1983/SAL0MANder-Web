@@ -5,6 +5,45 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — Codex independent review of W-16 result rehydration
+
+```text
+AGENT: Codex Desktop
+AREA: Website lane / Guest Play W-16 review
+STATUS: REVIEWED — no stop-ship finding, targeted tests green
+```
+
+**WHAT I REVIEWED**
+
+Reviewed the W-16 implementation shipped in `f6aeac5` / recorded in
+`7756e11`: `resultHold.ts`, `usePlaySession.ts`, `resultHold.test.ts`,
+`resultRehydration.test.tsx`, and the undelivered-result surface tests.
+
+**FINDING**
+
+No stop-ship bug found in the narrow W-16 design. The implementation matches
+the approved shape: `sessionStorage`, not `localStorage`; one activity-version
+key; minimal persisted result data; schema validation; malformed records fail
+closed; mismatched/stale attempts are ignored and cleared; start-failure and
+submit-failure retry paths are both represented.
+
+The only watchpoint is product behavior, not a code defect: abandoning a held
+result through a future "play again" path should be an explicit user-facing
+choice before it is wired. That belongs with W-14/play-again UX, not as a block
+on W-16.
+
+**EVIDENCE**
+
+- `npm test -- src/routes/guest-play/resultHold.test.ts src/routes/guest-play/resultRehydration.test.tsx src/routes/guest-play/undeliveredResultSurface.test.tsx`:
+  **3 files / 27 tests passed**.
+
+**NEXT**
+
+Gemini independent review is still needed if the current hold requires both
+Codex and Gemini. Codex side of the W-16 review is complete.
+
+---
+
 ## 2026-08-19 — check-in only: hold widened to cover docs/design, no action taken
 
 ```text
