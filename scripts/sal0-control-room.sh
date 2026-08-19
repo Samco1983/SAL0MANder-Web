@@ -33,8 +33,17 @@ hr
 CLAUDE_N=$(git log --since="$SINCE" --format='%(trailers:key=Co-Authored-By,valueonly)' | grep -c 'Claude Opus' || true)
 LOOP_N=$(git log --since="$SINCE" --format='%s' | grep -c '^web: automated work loop' || true)
 TOTAL_N=$(git log --since="$SINCE" --oneline | wc -l | tr -d ' ')
-CODEX_N=$(( TOTAL_N - CLAUDE_N - LOOP_N ))
-[ "$CODEX_N" -lt 0 ] && CODEX_N=0
+# Codex signs with the council: prefix. Anything with no mark at all is
+# UNSIGNED — it must not be handed to Codex by subtraction. Doing that
+# attributed 26 of Claude's own commits to Codex and made the headline number
+# wrong in the direction that flattered the collaboration.
+# Count only a POSITIVE mark. Both agents use the council: prefix, so inferring
+# authorship from it is the same guess in a different coat. The referee
+# (scripts/hooks/commit-msg) is what makes the mark reliable going forward.
+CODEX_N=$(git log --since="$SINCE" --format='%(trailers:key=Sal0-From,valueonly)' \
+  | grep -cE 'SAL0-0[12]' || true)
+UNSIGNED_N=$(( TOTAL_N - CLAUDE_N - LOOP_N - CODEX_N ))
+[ "$UNSIGNED_N" -lt 0 ] && UNSIGNED_N=0
 
 FILES_N=$(git log --since="$SINCE" --name-only --format='' | sort -u | grep -c . || true)
 
@@ -42,7 +51,12 @@ echo "  WHO WORKED"
 printf "    %-24s %3d commit(s)\n" "Claude (SAL0-04)" "$CLAUDE_N"
 printf "    %-24s %3d commit(s)\n" "Codex (SAL0-01/02)" "$CODEX_N"
 printf "    %-24s %3d commit(s)\n" "Work loop (unattended)" "$LOOP_N"
+printf "    %-24s %3d commit(s)\n" "UNSIGNED" "$UNSIGNED_N"
 printf "    %-24s %3d file(s) touched\n" "TOTAL" "$FILES_N"
+if [ "$UNSIGNED_N" -gt "$CLAUDE_N" ]; then
+  echo "    ^ more unsigned than signed. Attribution above is unreliable;"
+  echo "      agents are not marking their work (dance rule 4)."
+fi
 echo
 echo "    Most recent:"
 git --no-pager log --since="$SINCE" --format='      %h %ad  %s' --date=format:'%H:%M' | head -6

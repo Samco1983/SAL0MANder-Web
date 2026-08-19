@@ -22,6 +22,12 @@ import { classifyAgentFailure, classifyOutputFailure } from './lib/sal0-agent-fa
 import { collectPreflight, readPauseSwitch } from './lib/sal0-preflight.mjs'
 import { parseAgentEnvelope } from './lib/sal0-cost.mjs'
 import { collectRunEvidence, summariseChange } from './lib/sal0-evidence.mjs'
+import {
+  buildExecutePrompt,
+  describeOutcome,
+  EXECUTE_OUTCOME,
+  screenAction,
+} from './lib/sal0-execute.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const COORDINATION_DIR = join(ROOT, 'docs', 'coordination')
@@ -51,8 +57,9 @@ const repairs = []
 
 const args = new Set(process.argv.slice(2))
 const runAgents = args.has('--run-agents')
+const executeAction = args.has('--execute')
 const dryRun = args.has('--dry-run') || !runAgents
-const runMode = runAgents ? 'agent-claude-position' : 'dry-run'
+const runMode = executeAction ? 'agent-claude-execute' : runAgents ? 'agent-claude-position' : 'dry-run'
 const validateSchemas = args.has('--validate-schemas')
 const printPacket = args.has('--print-packet')
 const allowExternalClaude = args.has('--allow-external-claude')
@@ -65,6 +72,7 @@ Usage:
   node scripts/sal0-council-supervisor.mjs --dry-run
   node scripts/sal0-council-supervisor.mjs --print-packet
   node scripts/sal0-council-supervisor.mjs --run-agents
+  node scripts/sal0-council-supervisor.mjs --run-agents --execute
   node scripts/sal0-council-supervisor.mjs --validate-schemas
 
 Dry-run builds the packet, hashes it, writes runs/<timestamp>-<hash8>/, and
@@ -72,15 +80,18 @@ records skips in docs/coordination/runs/ledger.jsonl.
 
 --print-packet writes the exact packet to stdout for review.
 
---run-agents currently runs Claude POSITION only, then validates and records raw
-+ parsed output. It requires --allow-external-claude because it sends packet
-content to Claude. Gemini and OpenAI remain disabled until Claude output is
-proven stable.
+--run-agents runs Claude POSITION, then validates and records raw + parsed
+output. Add --execute to screen Claude's nextAction and hand the one approved
+action to the existing work loop. Gemini and OpenAI remain disabled until
+Claude output is proven stable.
 
 Warning:
   --run-agents sends the assembled packet to Claude. Use only when that external
   model handoff is approved for the current packet, and pass
   --allow-external-claude explicitly.
+
+  --execute can edit, verify, commit, and push through scripts/sal0-work-loop.sh
+  if and only if the screened action passes the executor gate.
 
 Environment:
   SAL0_CLAUDE_BIN                  Claude CLI path, default claude
