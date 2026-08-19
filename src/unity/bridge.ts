@@ -317,6 +317,43 @@ export type BridgeMismatch =
   /** A Web → Unity message arriving inbound. Never legitimate. */
   | { reason: 'wrong-direction'; type: string; detail: unknown }
 
+/**
+ * Privacy-safe shape for logs and support notes.
+ *
+ * `BridgeMismatch.detail` is intentionally available to in-process debugging,
+ * but it can contain full bridge payloads. Do not paste that into logs or
+ * tickets. This summary names the failure class without carrying share codes,
+ * activity payloads, result metrics, URLs, or user-entered values.
+ */
+export type BridgeMismatchSummary =
+  | { reason: 'malformed'; hasDetail: boolean }
+  | {
+      reason: 'version'
+      type: string
+      received: unknown
+      expected: typeof BRIDGE_VERSION
+    }
+  | { reason: 'unknown-type'; type: string }
+  | { reason: 'wrong-direction'; type: string }
+
+export function summarizeBridgeMismatch(mismatch: BridgeMismatch): BridgeMismatchSummary {
+  switch (mismatch.reason) {
+    case 'malformed':
+      return { reason: 'malformed', hasDetail: mismatch.detail !== undefined }
+    case 'version':
+      return {
+        reason: 'version',
+        type: mismatch.type,
+        received: mismatch.received,
+        expected: mismatch.expected,
+      }
+    case 'unknown-type':
+      return { reason: 'unknown-type', type: mismatch.type }
+    case 'wrong-direction':
+      return { reason: 'wrong-direction', type: mismatch.type }
+  }
+}
+
 export type UnityMessageOptions = {
   /** Injectable so the dedupe window is testable and shareable if ever needed. */
   deduper?: EventDeduper
