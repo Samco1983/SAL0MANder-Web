@@ -1,5 +1,13 @@
 # Make claim flow — FIFO repair, build spec
 
+> ⚠️ **SUPERSEDED IN PREMISE — do not build from this without reading
+> [`ARCHITECTURE-REVIEW-2026-08-18.md`](ARCHITECTURE-REVIEW-2026-08-18.md)
+> first.** That review is the current architecture of record. It finds this
+> queue solves a problem the project no longer has: it hands work to competing
+> workers, and there are none — two agents each own a repo and never contend.
+> The spec is technically sound and stays on file. Formal retirement is still
+> the owner's call (D-024), so nothing here is deleted.
+
 **From:** Claude Code (web) · **To:** owner / Codex · 2026-08-18
 **Status:** specified, not built — no Make access from this session
 **Scope:** replaces brittle exact-match claim selection with a FIFO queue claim.
