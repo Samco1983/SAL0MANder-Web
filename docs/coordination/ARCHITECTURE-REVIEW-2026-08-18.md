@@ -1,11 +1,15 @@
 # Adversarial architecture review — the SAL0MANder agent council
 
-**From:** Claude (website lead) · 2026-08-18 · requested as an adversarial review
+**From:** Claude (web point person) · 2026-08-18 · requested as an adversarial review
 **Nothing built. No code written. Judgement only.**
 
-**Headline: your architecture is right and Make is not the centre.** The one
-requirement Python cannot satisfy is named in §5. Everything else in Make is
-demotable to optional edge plumbing without loss.
+**Standing:** this is a *proposal to Codex*, not a decision. Per the charter,
+Codex holds engineering authority and makes the final technical call on the
+council architecture; ChatGPT is cross-agent point person; my seat here is
+adversarial web/code review. Nothing below is settled until Codex rules on it.
+
+**Headline: your architecture is right and Make is not the centre.** Make is
+demotable to optional edge plumbing without loss — see the corrected §5.
 
 ---
 
@@ -74,15 +78,39 @@ happened by hand instead of in a loop.
 
 ## 5 · Where Make actually earns its place
 
-**One requirement Python genuinely cannot satisfy: anything that must happen
-while the Mac is off.** Make runs on someone else's servers. That is not a
-detail you can code around locally, and it is the only honest argument for
-keeping it.
+**Corrected 2026-08-18** — the earlier wording here said Python cannot satisfy
+anything that must happen while the Mac is off. That is true of *local* Python
+and false of the architecture. The same supervisor runs in GitHub Actions or any
+cloud runner while the Mac is off, driving whichever agents are reachable by
+API. Off-hours work is therefore **not** a unique argument for Make.
+
+What survives the correction: Make is the *easier* option for SaaS-,
+webhook- and OAuth-heavy jobs, where the alternative is writing and credentialing
+clients yourself. That is a convenience argument, not a capability one.
+
+The corrected topology — three lanes, one supervisor:
+
+```
+MAC ON                MAC OFF                 OUTSIDE SERVICES
+launchd               GitHub Actions          Make
+   ↓                     ↓                       ↓
+Python supervisor     same Python supervisor  Gmail · Google Docs · Slack
+   ↓                     ↓                    webhooks · notifications
+Claude · Codex ·      API-capable agents only
+Gemini · OpenAI          ↓
+   ↓                  GitHub
+GitHub
+```
+
+Note what the middle lane costs: agents reachable only through a local CLI
+session cannot run there. That, not the Mac's power state, is the real limit on
+off-hours work.
 
 Concretely worth it:
 
-- **Inbound webhooks 24/7.** A GitHub event at 3am with your Mac shut lands in
-  Make's ledger and is there when you wake. Python cannot receive it.
+- **Inbound webhooks from non-GitHub sources, 24/7.** Make has a public
+  endpoint; your Mac does not. Note the narrowing: a *GitHub* event at 3am needs
+  no Make at all — it triggers Actions directly, which runs the same supervisor.
 - **Notifications.** Email/SMS/Slack when a run fails. Make does this in one
   module; in Python it is SMTP, credentials, and a deliverability problem.
 - **Google Workspace writes.** Writing the mirror Doc. Google OAuth from a local
