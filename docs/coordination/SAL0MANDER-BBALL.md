@@ -222,6 +222,40 @@ honest answer to "is it running?" was *nobody knows*.
    an hour with no commit against its reason is an abandoned game, not a paused
    one.
 
+## Owner preflight before BBall
+
+Owner work should be rare, but a few things still require Samuel's real
+account, Mac session, or approval. Do these before expecting unattended play:
+
+1. **GitHub CLI is logged in.**
+   Run `gh auth status`. It should show the right GitHub account, HTTPS git
+   protocol, and `repo` scope. Do not paste or commit tokens.
+2. **Claude CLI trusts the runtime court.**
+   Run `claude` once from
+   `/Users/samuel_saldivar/.sal0mander/runtime/SAL0MANder-Web`, accept the
+   workspace trust/login prompt, then exit. The scheduled worker uses this
+   exact folder, so trusting only the desktop folder does not count.
+3. **Claude token file is optional, private, and locked down.**
+   If unattended Claude login needs a token file later, it belongs at
+   `/Users/samuel_saldivar/.sal0mander/secrets/claude_oauth_token` with mode
+   `600`. Mission Control may detect it, but must never print, edit, commit, or
+   copy the token.
+4. **Mission Control is installed and unpaused.**
+   From `/Users/samuel_saldivar/Desktop/SAL0MANder-Web`, run
+   `npm run mission:desktop:status`. It should say launchd is loaded, pause is
+   off, runtime repo exists, and the tool paths are visible.
+5. **The repo is clean before the opening tip.**
+   Run `git status --short --branch`. A dirty shared tree means a worker could
+   swallow another player's diff or blame the wrong file.
+6. **One manual canary has passed.**
+   Run `npm run mission:desktop:run-once` after any auth, path, launchd, or
+   trust change. If the canary fails, record the miss and either fix the court
+   or switch players before scheduling overnight work.
+
+If preflight fails, do not keep asking the same player to shoot. Bench that
+surface for the possession, log the owner blocker, and let SAL0-01 or another
+ready role take a smaller shot.
+
 ## The huddle
 
 The shot clock is only half of it. **A team that never slows down runs the same
