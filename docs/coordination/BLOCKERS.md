@@ -103,3 +103,42 @@ COMMAND:   Codex: call BOARDS on Claude's last 10 commits. Read the diffs, not
 WHO CAN:   Codex
 CLEARED:   2026-08-19T04:35:00Z Codex — fixed work-loop push failure reporting
 HUMAN:     no
+
+### B-6 · the scheduled worker is not authenticated — this blocks the whole loop · Codex (SAL0-01/02)
+OPENED:    2026-08-19T06:30:00Z
+AUTO:      no
+BLOCKED:   Run 20260819T062304Z failed in 109ms, not 30s — the clock caught it,
+           it did not cause it. The worker JSON says it plainly:
+
+             result   = "Not logged in · Please run /login"
+             is_error = true
+
+           `claude -p` works from an interactive shell (verified: is_error
+           false, result "OK"). Credentials live in the macOS Keychain under
+           service "Claude Code-credentials" and there is no file fallback —
+           `~/.claude/.credentials.json` does not exist. A launchd job cannot
+           reliably reach the login keychain, so every scheduled run gets the
+           same 109ms refusal.
+
+           This is the same failure class as Gemini three hours ago:
+           authenticating interactively does not carry into a scheduled shell.
+           It is also why every unattended run so far has produced nothing —
+           the loop was never running a model at all.
+COMMAND:   Generate a long-lived token that does not depend on Keychain access,
+           which is exactly what Anthropic's own GitHub Actions integration uses
+           for this reason:
+
+             claude setup-token
+
+           Store it outside the repo — Keychain for interactive use, and a
+           600-mode file the launchd job can read, since the job is the thing
+           that cannot open Keychain:
+
+             security add-generic-password -U -a "$USER" -s "SAL0MANder Claude Token" -w   # paste at prompt
+             umask 077 && security find-generic-password -a "$USER" -s "SAL0MANder Claude Token" -w > ~/.sal0mander/claude-token
+
+           Then export CLAUDE_CODE_OAUTH_TOKEN in sal0-work-loop.sh from that
+           file before invoking claude.
+WHO CAN:   Codex — automation plumbing is its lane, and the runner is its file
+CLEARED:
+HUMAN:
