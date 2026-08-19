@@ -741,6 +741,35 @@ exist.
 `bash scripts/sal0-doctor.sh` now runs this check for every agent, and it is the
 first thing `sal0 check` does.
 
+### Getting the token in took five attempts. Here is why.
+
+Every failure was a different one, and each fix introduced the next:
+
+| # | What failed | Why |
+| --- | --- | --- |
+| 1 | clipboard collision | the token had to be on the clipboard, and so did the command to save it |
+| 2 | `~/.salomander/` not found | the project name has a **zero**, not the letter o |
+| 3 | 79 of 108 characters saved | the token wraps across two lines; a click-drag takes one |
+| 4 | extractor grabbed 131 characters | flattening newlines let the regex run past the token into the prose after it |
+| 5 | capture returned 0 bytes | macOS `script` handles arguments differently from the Linux version |
+
+**Three of those five saved something that looked right.** A truncated token
+still starts `sk-ant-oat`, so a prefix check passes it, and it fails later with
+a 401 that points at authentication rather than at the paste. That is the
+one law again, in a fifth costume: **validating the shape of a thing is not
+validating that all of it arrived.**
+
+The version that worked removes the human from the data path entirely:
+`~/.sal0mander/new-token.sh` runs `setup-token`, captures the output, extracts
+the token by matching the line it starts on and joining only the consecutive
+lines that are pure token characters, and writes it 600. Nothing is displayed,
+selected, or put on a clipboard.
+
+**The lesson is not about tokens.** Any step where a human copies a long
+opaque string between two windows will fail, and it will fail silently, because
+a partial secret looks exactly like a whole one. Automate the transfer or
+expect to do it five times.
+
 ### Three things that are not the same thing
 
 **Installed ≠ authenticated ≠ reachable when scheduled.** Treating those as one
