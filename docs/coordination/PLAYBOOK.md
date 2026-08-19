@@ -1,7 +1,16 @@
-# SAL0MANder playbook
+# SAL0MANder BBall
 
-Jersey numbers and the plays. Call a play by name and every agent knows its
-part without being told the steps.
+The operating system for Mission Control. Jersey numbers and plays are not
+decoration: they are how agents coordinate quickly without turning Samuel into
+the message bus.
+
+Call a play by name and every agent knows its part without being told the
+steps. The goal is simple: protect the ball, move the queue, and be deployable
+when Samuel wakes up.
+
+**Core sentence:** agents do not grade their own homework. Workers do work;
+the supervisor reads git, tests, logs and issue state; the referee blocks bad
+attribution; the rebounder checks the miss.
 
 ---
 
@@ -26,6 +35,58 @@ unsigned commit. Enable it in any clone:
 ```bash
 git config core.hooksPath scripts/hooks
 ```
+
+---
+
+## The court
+
+One branch with two workers was enough to prove the strategy, but it also
+proved the failure class: a dirty shared court lets signals swallow work,
+lets one stuck run jam the lane, and lets a worker report its own outcome.
+
+The next structure is:
+
+| Court | Purpose | Rule |
+| --- | --- | --- |
+| Main court | `council/2026-08-18` coordination truth | no manual product edits while a worker is active |
+| Worker court | one git worktree per active worker | worker changes only its assigned files |
+| Review court | rebound/review branch | reviewer reads diffs and tests, does not claim the work |
+| Deploy court | release candidate | only verified, attributed commits enter |
+
+Worktrees are not a feature wish. They are the fix for tonight's class of
+mistakes. A worker in its own worktree cannot dirty the main tree, cannot have
+its work swallowed by a signal commit, and cannot leave the shared branch
+jammed when it stalls.
+
+**Node modules warning:** a fresh worktree does not get `node_modules`. The
+worktree play must either symlink `node_modules` from the main repo or run an
+install before `npm run verify`. Do not discover this at 3am.
+
+---
+
+## The scoreboard
+
+The only product score that counts is:
+
+```text
+queue: N open, M closed
+deploy: ready | blocked
+verify: pass | fail
+```
+
+Plumbing can be valuable, but it is not a point unless it moves the queue,
+reduces human relay, or protects deployability.
+
+Every meaningful report must include:
+
+```text
+ONE THING THAT CHANGED:
+ONE THING STILL UNVERIFIED:
+DEPLOY READINESS:
+```
+
+`DEPLOY READINESS` means the repo can be built and pushed safely enough for
+the next release candidate. If that is unknown, say unknown.
 
 ---
 
@@ -77,6 +138,10 @@ git log -10 --format='%h %s' <their commits> && git show <hash>
 by the agent that made them.** A self-caught miss is not a rebound — the ones
 nobody catches are exactly the ones the shooter cannot see.
 
+**Gemini's job:** SAL0-07 is the rebounder. Gemini does not need to build the
+feature. It needs to reject one specific claim from the builder, quote the
+claim, and give evidence. Generic praise is a turnover.
+
 ### 4 · TRAIL — going fast on purpose
 
 One agent moves fast and sloppy; the other follows and cleans. Beats two agents
@@ -104,7 +169,25 @@ bash scripts/sal0-control-room.sh
 
 *Call it when:* something is wrong and you do not yet know what.
 
-### 6 · INBOUND — cold start
+### 6 · BASELINE RUN — prove the floor before changing it
+
+Before building a new layer, let the current layer take one clean swing. One
+unattended or foreground baseline run tells the team whether the existing
+guards work before worktrees add a second variable.
+
+```bash
+npm run mission:desktop:status
+npm run mission:desktop:run-once
+tail -120 "$(ls -t docs/coordination/runs/logs/work-loop-*.log | head -1)"
+```
+
+Success is not "the agent said done." Success is: clean start, bounded work,
+`npm run verify` exit 0, signed commit, pushed commit, and a log line whose
+commit hash matches the commit that actually moved.
+
+*Call it when:* a guard was just changed and the next layer depends on it.
+
+### 7 · INBOUND — cold start
 
 A fresh agent with no memory. Read in this order, then take FAST BREAK:
 
@@ -115,6 +198,32 @@ CLAUDE.md → docs/CHARTER-WEB-POINT-PERSON.md → docs/coordination/AGENT-DOCTR
 
 *Proven:* a headless Claude with zero memory read the first three and oriented
 correctly without being told.
+
+### 8 · DEPLOY CHECK — morning readiness
+
+This is the first move when Samuel wakes up or asks whether we can ship.
+
+```bash
+git status --short --branch
+npm run verify
+npm run mission:control-room
+npm run mission:blockers
+```
+
+Report exactly:
+
+```text
+DEPLOY READINESS: ready | blocked
+HEAD:
+VERIFY:
+OPEN BLOCKERS:
+QUEUE:
+NEXT RELEASE RISK:
+```
+
+Do not deploy from a dirty tree. Do not deploy from a branch with unreviewed
+signal commits that carry real code. Do not deploy if the Unity/Web contract
+question is load-bearing and unanswered.
 
 ---
 
@@ -127,3 +236,26 @@ nobody has to repeat them, and so a cold agent can run one without being taught.
 not points. On 2026-08-19 the board read 253 plumbing to 6 product, 15 open, 0
 closed — a team running plays beautifully and never putting the ball in the
 basket.
+
+## Teaching the playbook
+
+When another agent joins, do not explain the whole night. Send this:
+
+```text
+Read docs/coordination/PLAYBOOK.md and follow SAL0MANder BBall.
+
+Your first job is not to agree. Your first job is to take the correct role:
+- SAL0-04 Builder: take one bounded web issue and produce a verified diff.
+- SAL0-07 Rebounder: quote one specific claim from the builder and test it.
+- SAL0-01/02 Architect/Runner: clear automation blockers and enforce evidence.
+
+No self-grading. Report only evidence: diff, test exit code, commit hash,
+blocker, issue state, or log path.
+
+End with:
+ONE THING THAT CHANGED:
+ONE THING STILL UNVERIFIED:
+DEPLOY READINESS:
+```
+
+That is enough. If the agent needs more, it can read the docs.
