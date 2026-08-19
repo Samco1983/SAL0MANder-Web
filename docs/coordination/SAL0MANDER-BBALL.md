@@ -189,6 +189,43 @@ For SAL0MANder Mission Control, **winning** means:
 
 If those five are not moving, the team is not winning yet, even if it is busy.
 
+The plain version: **winning is making positive changes to the system more
+often than setbacks, and recovering faster each time something goes wrong.**
+Setbacks are allowed. The question is whether the next window has a better
+ratio: more useful commits, fewer bad turnovers, clearer passes, faster
+recovery, and a branch closer to deploy.
+
+The learning test is mechanical:
+
+```text
+MISTAKE:
+ROOT CAUSE:
+RULE OR TOOL CHANGED:
+REPEATED NEXT WINDOW: yes | no | unknown
+```
+
+If the same mistake repeats with the same cause, the team did not learn yet.
+If the mistake repeats smaller, faster, or with less damage, learning has
+started. If the mistake disappears because a guard, script, or habit changed,
+that is learning to win.
+
+AI teammates do not automatically play as teammates. They play as teammates only
+when the evidence shows it:
+
+```text
+TEAMMATE CHECK
+Did each agent stay in its lane?
+Did the handoff name receiver, folder, branch, evidence, and success check?
+Did a different agent review the shot?
+Did anyone need Samuel to translate the pass?
+Did the next action get easier because of the last action?
+```
+
+If the answer is no, the team is not playing together yet. It is just multiple
+agents moving near the same project. Real AI teamwork means shared traces,
+clear roles, catchable passes, independent rebounds, and fewer messages that
+require Samuel to connect the dots.
+
 **Scoring asks:** did something measurable move?
 
 **Winning asks:** did the right thing move, in the right direction, without
