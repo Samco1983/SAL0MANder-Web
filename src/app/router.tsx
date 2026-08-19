@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 import { paths } from '@config/routes'
 import { HomePage } from '@routes/home/HomePage'
 import { NotFoundPage } from '@routes/not-found/NotFoundPage'
@@ -39,7 +39,16 @@ function split(element: ReactNode) {
   return <Suspense fallback={<RouteFallback />}>{element}</Suspense>
 }
 
-export const router = createBrowserRouter([
+/**
+ * The route table, separate from the router built out of it.
+ *
+ * `createBrowserRouter` binds to `window.history` at module scope, which makes
+ * the real table unreachable from a test — the routing a student actually
+ * travels could only ever be re-declared by hand, and a re-declaration proves
+ * nothing about the table that ships. Exporting the array lets a test mount
+ * *these* routes in a memory router.
+ */
+export const routes: RouteObject[] = [
   { path: paths.home, element: <HomePage />, errorElement: <RouteError /> },
   {
     path: paths.guestPlayIndex,
@@ -53,4 +62,6 @@ export const router = createBrowserRouter([
   // NotFoundPage renders React Router's default blank screen — the exact
   // outcome RouteError exists to prevent.
   { path: paths.notFound, element: <NotFoundPage />, errorElement: <RouteError /> },
-])
+]
+
+export const router = createBrowserRouter(routes)
