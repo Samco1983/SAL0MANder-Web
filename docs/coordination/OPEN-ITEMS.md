@@ -37,10 +37,90 @@ Do not freeze or rename DTOs to answer these. The next safe shot is either a
 receiver contract note from Unity/Codex, or a browser-visible QA diagnostic that
 uses `BridgeMismatchSummary` only.
 
-## W-16 — a reload destroys the held result, and the app looks fine afterwards 🔴
+## W-16 — ✅ RESOLVED — a reload destroys the held result, and the app looks fine afterwards
 
-**Open. High. The last silent-loss path in the W-10 → W-13 chain, and the one a
-student is most likely to trigger.**
+Resolved 2026-08-19 in `f6aeac5 web: persist a held undelivered result across a
+reload (W-16)`, against the 2026-08-19T08:05Z supervisor authorization (narrow
+design: `sessionStorage` only, scoped to the live attempt, no `localStorage`,
+no PII expansion, schema-validated, fails closed on malformed/stale data).
+
+### What shipped
+
+`src/routes/guest-play/resultHold.ts` — a small, versioned, schema-validated
+`sessionStorage` record for the one held result, keyed by activity version the
+same way `startKeyFor` is:
+
+- `saveHeldResult` / `loadHeldResult` / `clearHeldResult`, all `sessionStorage`
+  only (never `localStorage` — a new tab must not inherit a stranger's result,
+  same reasoning as `startKeyFor`'s choice, D-005-adjacent);
+- `HeldResultRecordSchema` (zod, `SessionResultSchema.omit({sessionId:true})`
+  plus an optional `{ id: SessionId }` session ref) — a missing key, malformed
+  JSON, a schema-version bump, or a shape mismatch all read as "nothing held."
+  Trusting a malformed record would render a notice, or retry a write, built
+  from data this build doesn't understand;
+- data minimal by construction: no identity, no status, no timestamps beyond
+  what the result itself carries. Not the full `PlaySession` — a new
+  `HeldSessionRef = { id, activityVersionId }` type replaces it in
+  `submitting`/`result-undeliverable` state, since that's all `deliver` ever
+  used, and it's honestly all a rehydrated record can supply.
+
+`usePlaySession.ts` rehydrates on the session-start effect's first live run
+only (`attempt === 0`) — before any network call, and *before* `api.sessions
+.start` — checking storage on a later run (always a deliberate `retryDelivery`)
+would find the very record that retry is trying to clear and restore the same
+notice forever instead of ever calling `start`. A record whose `attemptId`
+doesn't match the live one belongs to a superseded attempt (a previous student
+on a shared device, or an abandoned attempt) — ignored, and cleared so it
+doesn't sit stale forever. Persisted on both failure routes (`POST /sessions`
+rejecting, `POST /sessions/{id}/result` rejecting) and cleared on confirmed
+delivery and on `reset()` (play-again, not yet wired to any UI — see W-14).
+
+The already-shipped copy fix (this device → this tab) needed no further
+change: it was already accurate, and is now also *more true* than it claims —
+a reload no longer loses the result at all on the routes tested.
+
+### Evidence
+
+- `npm run verify` green: lint, typecheck, **48 files / 540 tests**, build.
+  517 tests before this batch (17 new: 12 unit tests on `resultHold.ts`, 5
+  integration tests in `resultRehydration.test.tsx`).
+- Integration tests model a reload as `unmount()` + a fresh `render()` of the
+  same route *without* clearing storage in between — the one thing an actual
+  reload does that `beforeEach`'s `sessionStorage.clear()` must not — and redo
+  the Unity `ready`/`mode-selected` handshake after remounting, since a real
+  reload restarts Unity too and `chosenMode` is ordinary React state with no
+  memory of a prior pick.
+- Every mutation checked, not merely asserted-and-trusted:
+  - removing the submit-failure persist call fails 3 tests (restore, retry,
+    new-tab-isolation);
+  - removing the `attempt === 0` guard (checking storage on every effect run,
+    including a deliberate retry) fails 1 — the start-failure retry never
+    calls `start`, the record is restored and cleared before it can, an
+    infinite restore loop with no diagnostic beyond a `waitFor` timeout;
+  - removing the `attemptId` match check (restoring any record regardless of
+    whose attempt it belongs to) fails 1 — the superseded-attempt test;
+  - replacing the schema-validated parse with a bare cast (no fail-closed)
+    fails 3 — malformed JSON, a missing-field shape, and a future schema
+    version all round-trip data this build should have refused.
+- One race in the tests themselves, not the app: `waitFor(() =>
+  queryByRole('alert')).not.toBeInTheDocument())` can pass the instant the
+  transient `submitting` state renders (which is also alert-free), before
+  delivery has actually resolved either way — caught by a stricter follow-on
+  assertion (`sessionStorage` cleared) that the looser one let through
+  prematurely. Fixed by waiting on the definitive signal (storage cleared)
+  before checking the alert, in both retry-success tests.
+
+### Deliberately not covered
+
+`reset()`'s `clearHeldResult` call has no test, same as the rest of `reset()`
+(W-14): it isn't wired to any UI ("play again" doesn't exist yet), so a
+targeted test would be exercising unreachable code rather than the product.
+
+<details>
+<summary>Original finding (kept for the reasoning)</summary>
+
+**Raised 2026-08-19. The last silent-loss path in the W-10 → W-13 chain, and
+the one a student is most likely to trigger.**
 
 `result-undeliverable` holds the result in React state and `pendingResultRef`
 holds it in a ref. Neither survives a reload. The idempotency *keys* were
@@ -121,6 +201,8 @@ recorded rather than shipped:
 already degrades silently there, which for a key is right and for a result is
 not: it would restore the current behaviour with no signal. The fallback needs
 to be part of the ruling too.
+
+</details>
 
 ## W-15 — ✅ RESOLVED — the notice lived in a panel the student could have closed
 

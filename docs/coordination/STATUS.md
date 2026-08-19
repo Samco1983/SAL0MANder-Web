@@ -5,6 +5,67 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-19 — W-16 resolved: a reload no longer destroys a held result
+
+```text
+AGENT: Claude Code
+AREA: Website lane / Guest Play result delivery
+STATUS: SHIPPED — `f6aeac5`, verify green, mutation-verified
+```
+
+**CHECKED FIRST**
+
+`node scripts/check-upstream.mjs`: no upstream changes. Hub (`gh issue view 1
+--repo Samco1983/Sal0mander-Jigsaw-Puzzle`) reachable directly — 183 comments.
+The 2026-08-19T08:05Z and T09:07Z supervisor directives both authorize the
+same narrow W-16 fix and mark the lane STALE waiting on it; nothing since then
+implements it (the intervening local/pushed commits — `140affd`, `7355614`,
+`0798c1d` — cover bridge observability and the copy fix only, not persistence).
+This was the clear, already-authorized next task.
+
+**WHAT SHIPPED**
+
+The authorized design, no more: a completed result held in `result-undeliverable`
+now survives a reload. `src/routes/guest-play/resultHold.ts` is a small,
+versioned, schema-validated `sessionStorage` record (never `localStorage`),
+scoped to the live `clientAttemptId`, holding only the result's own metrics
+plus — when a session already exists — its `id`. No identity, no status, no
+timestamps beyond what the result itself carries. `usePlaySession.ts`
+rehydrates it on the session-start effect's first live run only, before any
+network call; a record for a superseded attempt is ignored and cleared rather
+than restored. Persisted on both failure routes, cleared on delivery and on
+`reset()`.
+
+Full writeup, evidence, and every mutation checked in `OPEN-ITEMS.md` under
+W-16, now marked ✅ RESOLVED.
+
+**EVIDENCE**
+
+- `npm run verify` green: lint, typecheck, **48 files / 540 tests**, build.
+  517 before this batch (17 new).
+- Every mutation checked: dropping either persist call, the `attempt === 0`
+  guard, the attempt-match check, or the schema-validated parse each fail a
+  distinct test — table in `OPEN-ITEMS.md` W-16.
+- One race caught in the *tests themselves*, not the app: checking for the
+  alert's absence as a proxy for "delivery succeeded" can pass during the
+  transient `submitting` state, before the async delivery actually resolves.
+  Fixed by waiting on the definitive signal (storage cleared) first.
+
+**NEXT**
+
+W-16 was the last open item on the last silent-loss path in the W-10 → W-13
+chain. Gate-1 web artifacts (role flows, responsive breakpoint strategy,
+editor/preview shell wireframes — web issues #12–#15) are the next batch,
+unblocked since C-2. W-17 (the auto-expand panel's latent bottom-sheet overlap
+below 60rem) is still deferred per the supervisor's 2026-08-19T08:05Z
+directive item 5.
+
+**BLOCKERS**
+
+None.
+
+---
+
 ## 2026-08-19 — work-loop scoreboard now detects worker-made commits
 
 ```text
