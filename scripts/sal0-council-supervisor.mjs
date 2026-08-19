@@ -12,20 +12,14 @@
  * before wiring Claude, Gemini, or OpenAI model calls.
  */
 import { createHash } from 'node:crypto'
-import {
-  closeSync,
-  existsSync,
-  mkdirSync,
-  openSync,
-  readFileSync,
-  renameSync,
-  unlinkSync,
-  writeFileSync,
-} from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
+import { acquireRunLock, DEFAULT_STALE_MS } from './lib/sal0-run-lock.mjs'
+import { classifyAgentFailure, classifyOutputFailure } from './lib/sal0-agent-failure.mjs'
+import { collectPreflight, readPauseSwitch } from './lib/sal0-preflight.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const COORDINATION_DIR = join(ROOT, 'docs', 'coordination')
@@ -39,6 +33,19 @@ const LOCK_FILE = join(COORDINATION_DIR, '.mission-control.lock')
 const RECENT_COMMIT_COUNT = Number(process.env.SAL0_COUNCIL_COMMITS || '10')
 const CLAUDE_BIN = process.env.SAL0_CLAUDE_BIN || 'claude'
 const AGENT_TIMEOUT_MS = Number(process.env.SAL0_COUNCIL_AGENT_TIMEOUT_MS || '120000')
+const LOCK_STALE_MS = Number(process.env.SAL0_LOCK_STALE_MS || String(DEFAULT_STALE_MS))
+const EXPECTED_BRANCH = process.env.SAL0_COUNCIL_BRANCH || null
+const SKIP_PREFLIGHT = process.env.SAL0_COUNCIL_SKIP_PREFLIGHT === '1'
+
+/**
+ * Standing approval for external model handoff. A run that requires a
+ * human-typed flag can never be scheduled, so the approval has to be settable
+ * once, out of band, rather than at every invocation. Default is still refuse.
+ */
+const STANDING_EXTERNAL_APPROVAL = process.env.SAL0_ALLOW_EXTERNAL_CLAUDE === '1'
+
+/** Repairs performed this run. Never swallowed — surfaced in RESULT.md + ledger. */
+const repairs = []
 
 const args = new Set(process.argv.slice(2))
 const runAgents = args.has('--run-agents')
@@ -180,40 +187,6 @@ function parseJsonObject(rawText) {
   return JSON.parse(rawText.slice(start, end + 1))
 }
 
-function acquireRunLock() {
-  let descriptor
-  try {
-    descriptor = openSync(LOCK_FILE, 'wx')
-  } catch (error) {
-    if (error.code === 'EEXIST') {
-      throw new Error(`Mission Control is already running: ${LOCK_FILE}`)
-    }
-    throw error
-  }
-
-  writeFileSync(
-    descriptor,
-    `${stableJson({
-      pid: process.pid,
-      startedAt: new Date().toISOString(),
-      mode: runMode,
-    })}\n`,
-  )
-  closeSync(descriptor)
-
-  let released = false
-  return () => {
-    if (released) return
-    released = true
-    try {
-      unlinkSync(LOCK_FILE)
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        throw error
-      }
-    }
-  }
-}
 
 function runSchemaValidationProof() {
   const position = validatePosition({
@@ -442,34 +415,82 @@ function runClaudePosition(packet, runDir) {
   const prompt = buildClaudePrompt(packet)
   atomicWrite(join(runDir, '01-claude-prompt.txt'), prompt)
 
-  let raw
-  try {
-    raw = execFileSync(CLAUDE_BIN, ['-p', prompt], {
-      cwd: ROOT,
-      encoding: 'utf8',
-      maxBuffer: 1024 * 1024 * 8,
-      timeout: AGENT_TIMEOUT_MS,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-  } catch (error) {
-    const message =
-      error.code === 'ENOENT'
-        ? `Claude CLI not found. Set SAL0_CLAUDE_BIN or install/login Claude CLI. Tried: ${CLAUDE_BIN}`
-        : `Claude POSITION failed: ${error.message}`
-    throw new Error(message)
+  // detached: the child leads its own process group, so a timeout can reap the
+  // whole tree. Node's timeout only signals the direct child; an agent CLI that
+  // spawned its own helpers would otherwise leave them running.
+  const result = spawnSync(CLAUDE_BIN, ['-p', prompt], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 8,
+    timeout: AGENT_TIMEOUT_MS,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: true,
+    killSignal: 'SIGKILL',
+  })
+
+  const timedOut = result.error?.code === 'ETIMEDOUT'
+  if (result.error && result.pid) {
+    if (reapProcessGroup(result.pid)) {
+      repairs.push(`killed orphaned process group ${result.pid} after ${CLAUDE_BIN} failed`)
+    }
   }
 
-  atomicWrite(join(runDir, '01-claude.raw.txt'), raw)
-  const parsed = validatePosition(parseJsonObject(raw))
+  if (result.error || result.status !== 0) {
+    const verdict = classifyAgentFailure({
+      error: result.error,
+      status: result.status,
+      signal: result.signal,
+      stderr: result.stderr,
+      timedOut,
+    })
+    atomicWrite(join(runDir, '01-claude.failure.json'), `${stableJson(verdict)}\n`)
+    throw agentError(verdict)
+  }
+
+  const raw = result.stdout
+  atomicWrite(join(runDir, '01-claude.raw.txt'), raw ?? '')
+
+  let parsed
+  try {
+    parsed = validatePosition(parseJsonObject(raw))
+  } catch (error) {
+    const verdict = classifyOutputFailure(raw, {
+      schemaError: error instanceof z.ZodError ? error.message : undefined,
+    })
+    atomicWrite(join(runDir, '01-claude.failure.json'), `${stableJson(verdict)}\n`)
+    throw agentError(verdict)
+  }
+
   atomicWrite(join(runDir, '01-claude.position.json'), `${stableJson(parsed)}\n`)
   return parsed
 }
 
+function reapProcessGroup(pid) {
+  try {
+    process.kill(-pid, 'SIGKILL')
+    return true
+  } catch {
+    return false
+  }
+}
+
+function agentError(verdict) {
+  const error = new Error(
+    `[${verdict.failureClass}] ${verdict.summary}${verdict.detail ? ` — ${verdict.detail}` : ''}`,
+  )
+  error.verdict = verdict
+  return error
+}
+
 function writeFailure(runDir, error) {
+  const verdict = error.verdict
   const body = `# SAL0MANder Council Failure
 
 Status: FAILED
+Failure class: ${verdict?.failureClass ?? 'SUPERVISOR_ERROR'}
+Attribution: ${verdict?.attribution ?? 'infrastructure'}
 Reason: ${error.message}
+${repairs.length > 0 ? `\nRepairs attempted:\n${repairs.map((entry) => `- ${entry}`).join('\n')}\n` : ''}
 
 No downstream agent stages should run from this packet.
 `
@@ -525,16 +546,82 @@ function run() {
     return
   }
 
-  if (runAgents && !allowExternalClaude) {
+  if (runAgents && !allowExternalClaude && !STANDING_EXTERNAL_APPROVAL) {
     console.error(
-      'Refusing external Claude handoff. Re-run with --allow-external-claude only after approving the current packet.',
+      'Refusing external Claude handoff. Pass --allow-external-claude, or set ' +
+        'SAL0_ALLOW_EXTERNAL_CLAUDE=1 for a scheduled run with standing approval.',
     )
     process.exitCode = 1
     return
   }
 
-  const releaseLock = acquireRunLock()
+  const pause = readPauseSwitch()
+  if (pause.paused) {
+    appendLedger({
+      hash,
+      hash8,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      status: 'paused',
+      pauseFile: pause.pauseFile,
+      reason: pause.reason,
+      modelCalls: 0,
+      runMode,
+      dryRun,
+    })
+    console.log(`paused by ${pause.pauseFile}: ${pause.reason}`)
+    return
+  }
+
+  const preflight = SKIP_PREFLIGHT
+    ? { ok: true, blocking: [], warnings: ['preflight skipped'], checks: {} }
+    : collectPreflight({
+        root: ROOT,
+        expectedBranch: EXPECTED_BRANCH,
+        requiredBins: runAgents ? [CLAUDE_BIN] : [],
+      })
+
+  for (const warning of preflight.warnings) console.warn(`preflight warning: ${warning}`)
+
+  if (!preflight.ok) {
+    appendLedger({
+      hash,
+      hash8,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      status: 'preflight-failed',
+      blocking: preflight.blocking,
+      modelCalls: 0,
+      runMode,
+      dryRun,
+    })
+    console.error(`preflight failed before any model call:\n  ${preflight.blocking.join('\n  ')}`)
+    process.exitCode = 1
+    return
+  }
+
+  const { release: releaseLock, repairs: lockRepairs } = acquireRunLock({
+    lockFile: LOCK_FILE,
+    mode: runMode,
+    staleMs: LOCK_STALE_MS,
+  })
+  repairs.push(...lockRepairs)
+  for (const repair of lockRepairs) console.warn(`repair: ${repair}`)
+
   process.once('exit', releaseLock)
+  // 'exit' does not fire for signal-terminated processes, and SIGTERM is
+  // launchd's normal stop path — without these the lock leaks on every
+  // scheduled shutdown.
+  for (const [signal, number] of [
+    ['SIGINT', 2],
+    ['SIGTERM', 15],
+    ['SIGHUP', 1],
+  ]) {
+    process.once(signal, () => {
+      releaseLock()
+      process.exit(128 + number)
+    })
+  }
 
   const priorSuccess = readLedger().find(
     (entry) => entry.hash === hash && entry.runMode === runMode && entry.status === 'success',
@@ -548,6 +635,7 @@ function run() {
       finishedAt: new Date().toISOString(),
       status: 'skipped-no-change',
       priorRun: priorSuccess.runDir,
+      repairs,
       modelCalls: 0,
       runMode,
       dryRun,
@@ -561,6 +649,7 @@ function run() {
   const runDir = join(RUNS_DIR, `${timestamp}-${hash8}`)
   mkdirSync(runDir, { recursive: true })
   atomicWrite(join(runDir, 'packet.json'), `${stableJson({ ...packet, hash })}\n`)
+  atomicWrite(join(runDir, 'preflight.json'), `${stableJson(preflight)}\n`)
 
   let modelCalls = 0
 
@@ -572,9 +661,11 @@ function run() {
       modelCalls = 1
     }
 
+    const baseStatus = runAgents ? 'CLAUDE POSITION CAPTURED' : 'DRY RUN'
     const result = `# SAL0MANder Council Result
 
-Status: ${runAgents ? 'CLAUDE POSITION CAPTURED' : 'DRY RUN'}
+Status: ${repairs.length > 0 ? `SUCCESS_WITH_REPAIRS (${baseStatus})` : baseStatus}
+${repairs.length > 0 ? `REPAIRS:\n${repairs.map((entry) => `- ${entry}`).join('\n')}\n` : ''}
 Packet: ${hash}
 Model calls: ${modelCalls}
 Schema validation: PASS
@@ -593,7 +684,8 @@ Next action: ${runAgents ? 'wire Gemini critique only after Claude output valida
       hash8,
       startedAt,
       finishedAt: new Date().toISOString(),
-      status: 'success',
+      status: repairs.length > 0 ? 'success-with-repairs' : 'success',
+      repairs,
       runDir: relativeToRoot(runDir),
       modelCalls,
       runMode,
@@ -613,7 +705,11 @@ Next action: ${runAgents ? 'wire Gemini critique only after Claude output valida
       runDir: relativeToRoot(runDir),
       modelCalls,
       runMode,
+      repairs,
       error: error.message,
+      // An infrastructure failure is never the model's judgment.
+      failureClass: error.verdict?.failureClass ?? 'SUPERVISOR_ERROR',
+      attribution: error.verdict?.attribution ?? 'infrastructure',
       dryRun,
     })
     console.error(error.message)
@@ -623,4 +719,11 @@ Next action: ${runAgents ? 'wire Gemini critique only after Claude output valida
   }
 }
 
-run()
+try {
+  run()
+} catch (error) {
+  // Lock contention and preflight refusals are expected outcomes, not crashes.
+  // A stack trace in a launchd log buries the one line that explains the stop.
+  console.error(error.message)
+  process.exitCode = 1
+}
