@@ -182,10 +182,45 @@ hr
 # ── The coach ───────────────────────────────────────────────────────────────
 # Players inside the game cannot see the shape of it. This section says the
 # uncomfortable thing rather than printing another number.
-echo "  THE COACH SEES"
-
+# ── Rates ───────────────────────────────────────────────────────────────────
+# A total is a story; a rate is a measurement. "0 closed" could be a bad hour or
+# a catastrophic month, and dividing by the clock is the only way to tell.
 PRODUCT=$(git log --since="$SINCE" --name-only --format='' | grep -c '^src/' || true)
 PLUMBING=$(git log --since="$SINCE" --name-only --format='' | grep -cE '^(scripts/|docs/coordination/)' || true)
+
+echo "  RATES  (per hour, over this window)"
+
+WINDOW_START=$(git log --since="$SINCE" --format='%at' | tail -1)
+NOW_TS=$(date +%s)
+if [ -n "$WINDOW_START" ] && [ "$NOW_TS" -gt "$WINDOW_START" ]; then
+  HOURS=$(( (NOW_TS - WINDOW_START) / 3600 ))
+  [ "$HOURS" -lt 1 ] && HOURS=1
+else
+  HOURS=1
+fi
+
+CLOSED_N=0
+if command -v gh >/dev/null 2>&1; then
+  SINCE_ISO=$(date -u -r "$WINDOW_START" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "2000-01-01T00:00:00Z")
+  CLOSED_N=$(gh issue list --repo "$REPO_SLUG" --state closed --limit 100 --json closedAt \
+    --jq "[.[] | select(.closedAt > \"$SINCE_ISO\")] | length" 2>/dev/null || echo 0)
+fi
+
+printf "    %-24s %s\n" "window" "${HOURS}h"
+printf "    %-24s %s / %sh\n" "points (issues closed)" "$CLOSED_N" "$HOURS"
+if [ "$TOTAL_N" -gt 0 ]; then
+  EFF=$(( PRODUCT * 100 / (PRODUCT + PLUMBING + 1) ))
+  printf "    %-24s %s%% (%s product / %s total changes)\n" "possession efficiency" "$EFF" "$PRODUCT" "$(( PRODUCT + PLUMBING ))"
+  [ "$EFF" -lt 20 ] && echo "    ^ under 20%. Most output is not moving the score."
+fi
+printf "    %-24s %s commit(s) / %sh\n" "commit rate" "$TOTAL_N" "$HOURS"
+if [ "$CLOSED_N" -eq 0 ] && [ "$TOTAL_N" -gt 10 ]; then
+  echo "    ^ $TOTAL_N commits, 0 points, ${HOURS}h. Coordination without production."
+fi
+hr
+
+echo "  THE COACH SEES"
+
 
 if [ "$PLUMBING" -gt 0 ] && [ "$PRODUCT" -eq 0 ]; then
   echo "    · $PLUMBING changes to plumbing, ZERO to src/. You built the machine"

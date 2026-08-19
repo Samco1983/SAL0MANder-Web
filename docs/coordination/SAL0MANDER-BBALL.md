@@ -168,6 +168,35 @@ the ball in the basket. Every play in this book worked and the score was 0.
 
 **If the score has not moved, stop revising the playbook and shoot.**
 
+### Time is the denominator
+
+**A score with no clock cannot be judged.** "0 closed" could be a bad hour or a
+catastrophic month, and until you divide by time you cannot tell which. Every
+number below is a rate, because a total is a story and a rate is a measurement.
+
+| Rate | What it answers | That night |
+| --- | --- | --- |
+| **points/hour** | issues closed ÷ hours elapsed | **0.0** over 6h |
+| **possession efficiency** | commits that moved the score ÷ all commits | **6 / 259 = 2%** |
+| **turnovers/hour** | work lost or misattributed ÷ hours | **0.8** — five in six hours |
+| **time-to-clear** | median hours a blocker waits | **0.3h** — the one healthy number |
+| **catch rate** | blockers cleared by another agent ÷ published | **4/5**, one needed a human |
+
+Read them together and the diagnosis is unambiguous: **coordination was
+excellent and production was zero.** Blockers cleared in twenty minutes, agents
+caught each other's passes four times out of five — and 98% of all output moved
+no score at all. A team with a great transition game that never takes a shot.
+
+Neither number alone says that. `time-to-clear: 0.3h` on its own looks like a
+triumph. `0 closed` on its own looks like laziness. **The ratio between them is
+the actual finding**, and it only exists because both are divided by the same
+clock.
+
+**So: never report a total without the window it happened in.** `queue: 15 open,
+0 closed` is incomplete. `queue: 15 open, 0 closed in 6h` is a measurement, and
+it is the one that makes everything else in this book either earn its place or
+get deleted.
+
 ### How to measure success
 
 Time matters because basketball has a shot clock, but time is not the score.
@@ -198,6 +227,32 @@ NEXT SHOT:
 If time is removed, success is still measurable: did the queue move, did the
 handoff get easier, did risk go down, and can the next agent score without a
 human translating the play?
+
+### Miss fast, recover faster
+
+One perfect point every six hours is not winning. SAL0MANder BBall should accept
+more misses if they are small, visible, and reversible. A fast miss with a clean
+diff, clear blocker, or honest failed test gives the next player something to
+rebound. A slow private struggle gives nobody a ball to play.
+
+Good misses:
+
+- a 15-minute spike that proves a route is wrong;
+- a failed test with the failing command and exact error saved;
+- a small reverted diff that teaches the next constraint;
+- a blocker with owner, folder, branch, and one proposed next shot;
+- a `SHAKY` signal attached to the evidence before anyone trusts it.
+
+Bad misses:
+
+- hours of uncommitted local work;
+- a vague "still working" with no diff, log, or failing command;
+- a big mixed commit that cannot be reviewed quickly;
+- retrying a rate-limited agent until the clock dies;
+- hiding a miss by reporting green text without proving the exit code.
+
+The rule is not "make mistakes." The rule is **make catchable mistakes**. If a
+miss cannot be rebounded, it is a turnover.
 
 ---
 
