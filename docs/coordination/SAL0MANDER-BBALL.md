@@ -168,6 +168,37 @@ the ball in the basket. Every play in this book worked and the score was 0.
 
 **If the score has not moved, stop revising the playbook and shoot.**
 
+### How to measure success
+
+Time matters because basketball has a shot clock, but time is not the score.
+Fast failure is useful only if the next possession improves. Slow strategy is
+useful only if it creates a better shot.
+
+Measure each run with five numbers:
+
+| Measure | Counts as success | Does not count |
+| --- | --- | --- |
+| **Points** | an issue closed, a deploy unblocked, or a user-visible product improvement merged | more logs, more ceremony, more unassigned docs |
+| **Pace** | time from assignment to commit, blocker, or timeout | time spent "working" with no evidence |
+| **Catch quality** | the next agent can act from the handoff without asking Samuel | vague summaries, missing folder, missing success check |
+| **Turnovers** | zero wrong-lane edits, false claims, swallowed work, or stale attribution | "we fixed it later" |
+| **Readiness** | clean tree, verify pass, pushed branch, known blocker list | local-only success or unverified green text |
+
+The board should read like this:
+
+```text
+POINTS:
+PACE:
+CATCH QUALITY:
+TURNOVERS:
+READINESS:
+NEXT SHOT:
+```
+
+If time is removed, success is still measurable: did the queue move, did the
+handoff get easier, did risk go down, and can the next agent score without a
+human translating the play?
+
 ---
 
 ## Turnovers
