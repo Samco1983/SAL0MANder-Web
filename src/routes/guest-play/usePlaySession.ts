@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, ApiError } from '@api/index'
-import type { PlayerIdentity, PlaySession, SessionResult } from '@contracts/v1'
+import type { PlayerIdentity, PlaySession, SessionId, SessionResult } from '@contracts/v1'
 import { clearStartKey, resultKeyFor } from './idempotency'
+import { clearHeldResult, loadHeldResult, saveHeldResult } from './resultHold'
+
+/**
+ * The minimum needed to resend a result: where to send it, and how to end its
+ * idempotency key. Not the full `PlaySession` — this is also what a result
+ * rehydrated from `sessionStorage` after a reload (W-16) has, since identity,
+ * status and timestamps were deliberately never persisted alongside it.
+ */
+type HeldSessionRef = { id: SessionId; activityVersionId: string }
 
 export type PlaySessionState =
   | { status: 'idle' }
   | { status: 'starting' }
   | { status: 'active'; session: PlaySession }
-  | { status: 'submitting'; session: PlaySession }
+  | { status: 'submitting'; session: HeldSessionRef }
   | { status: 'finished'; session: PlaySession }
   | {
       status: 'result-undeliverable'
@@ -20,8 +29,10 @@ export type PlaySessionState =
        * Absent when `POST /sessions` itself failed — there is no session to
        * submit against, and {@link PlaySessionApi.retryDelivery} re-opens one
        * instead of resubmitting.
+       *
+       * See {@link HeldSessionRef} for why this is not the full `PlaySession`.
        */
-      session?: PlaySession
+      session?: HeldSessionRef
     }
   | { status: 'error'; error: ApiError }
 
@@ -150,6 +161,41 @@ export function usePlaySession({
     if (!enabled || !activityId || !activityVersionId || !selectedPlayMode) return
     if (!clientAttemptId) return
 
+    /**
+     * Rehydrate a held result before doing anything else — but only on this
+     * hook instance's very first live run (`attempt === 0`). A later run of
+     * this same effect is always a deliberate retry (`retryDelivery` bumping
+     * `attempt`), and re-checking storage there would find the very record
+     * this retry is trying to clear and restore the same notice forever
+     * instead of ever calling `start`.
+     *
+     * A record whose `attemptId` does not match the live one belongs to a
+     * superseded attempt on this activity version — ignored, and cleared so
+     * it does not sit stale forever (W-16: "stale/mismatched attempt ignored").
+     */
+    if (attempt === 0) {
+      const restored = loadHeldResult(activityVersionId)
+      if (restored) {
+        if (restored.attemptId === clientAttemptId) {
+          if (restored.session) startedAttemptRef.current = clientAttemptId
+          setState({
+            status: 'result-undeliverable',
+            attemptId: restored.attemptId,
+            result: restored.result,
+            error: new ApiError({
+              code: 'unknown',
+              message: 'Restored after a reload; retry to save it.',
+            }),
+            ...(restored.session
+              ? { session: { id: restored.session.id, activityVersionId } }
+              : {}),
+          })
+          return
+        }
+        clearHeldResult(activityVersionId)
+      }
+    }
+
     const controller = new AbortController()
     let active = true
     setState({ status: 'starting' })
@@ -184,6 +230,7 @@ export function usePlaySession({
             result: held.result,
             error: toApiError(error),
           })
+          saveHeldResult(activityVersionId, { attemptId: held.attemptId, result: held.result })
           return
         }
         setState({ status: 'error', error: toApiError(error) })
@@ -207,7 +254,7 @@ export function usePlaySession({
    * this call happens at the *end* of a session rather than the start.
    */
   const deliver = useCallback(
-    async (session: PlaySession, result: Omit<SessionResult, 'sessionId'>, attemptId: string) => {
+    async (session: HeldSessionRef, result: Omit<SessionResult, 'sessionId'>, attemptId: string) => {
       setState({ status: 'submitting', session })
       try {
         const updated = await api.sessions.submitResult(
@@ -222,6 +269,7 @@ export function usePlaySession({
         // Only on success — ending the attempt identity while a result is still
         // undelivered would let a reload orphan it.
         clearStartKey(session.activityVersionId)
+        clearHeldResult(session.activityVersionId)
       } catch (error) {
         setState({
           status: 'result-undeliverable',
@@ -229,6 +277,11 @@ export function usePlaySession({
           result,
           error: toApiError(error),
           session,
+        })
+        saveHeldResult(session.activityVersionId, {
+          attemptId,
+          result,
+          session: { id: session.id },
         })
       }
     },
@@ -335,11 +388,21 @@ export function usePlaySession({
 
   }, [state.status])
 
-  /** Start a fresh attempt — "play again", not a reload. */
+  /**
+   * Start a fresh attempt — "play again", not a reload.
+   *
+   * Clears any held result for the attempt being left behind. Whatever it
+   * held either already reached the backend (`finished` already cleared it)
+   * or belongs to an attempt this call is deliberately abandoning — carrying
+   * it forward would let the *next* attempt's reload rehydrate a stranger's
+   * numbers under a new `clientAttemptId` it will never match, dead storage
+   * with no reader rather than a leak, but worth ending explicitly.
+   */
   const reset = useCallback(() => {
+    if (activityVersionId) clearHeldResult(activityVersionId)
     onRenewAttempt?.()
     setAttempt((n) => n + 1)
-  }, [onRenewAttempt])
+  }, [activityVersionId, onRenewAttempt])
 
   return { ...state, submit, retryDelivery, canRetry, resultHeld, reset }
 }
