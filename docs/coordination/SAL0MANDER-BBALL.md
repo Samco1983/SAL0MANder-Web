@@ -228,6 +228,37 @@ If time is removed, success is still measurable: did the queue move, did the
 handoff get easier, did risk go down, and can the next agent score without a
 human translating the play?
 
+### Major checkpoints
+
+Small wins do not matter if the team is losing the objective. A checkpoint is
+where Mission Control stops looking at the last possession and checks the whole
+game.
+
+| Checkpoint | Trigger | Question | Required answer |
+| --- | --- | --- | --- |
+| **Score check** | every run | Did the queue move in this time window? | open/closed count, points/hour, next shot |
+| **Bad-turnover check** | after any bad turnover | Did work get hidden, mislabeled, blocked, or made harder? | preserved evidence, rebound owner, prevention rule |
+| **Flagrant check** | secrets, destructive command, cross-lane edit, swallowed human work | Can unattended play continue safely? | immediate TIMEOUT or explicit owner clearance |
+| **Deploy check** | every morning, before release, after three turnovers | Can this branch ship without surprise? | clean tree, verify pass, pushed HEAD, known blockers |
+| **Objective check** | every 3 hours or 10 commits with no point | Are we still building SAL0MANder, or only the machine around it? | one product objective, one owner, one success check |
+
+The objective check is the one Samuel should not have to call. If the scoreboard
+shows speed without points, Mission Control calls the huddle itself:
+
+```text
+OBJECTIVE:
+CURRENT SCORE:
+LAST POINT SCORED:
+BAD TURNOVERS:
+NEXT SHOT:
+STOP DOING:
+```
+
+Bad turnovers can lose the game. A live-ball miss is part of playing fast. A
+bad turnover steals possessions from the whole team. A flagrant turnover risks
+the project. The system should let agents miss quickly, but it should not let
+bad turnovers stack.
+
 ### Miss fast, recover faster
 
 One perfect point every six hours is not winning. SAL0MANder BBall should accept
