@@ -17,6 +17,8 @@ LOG_DIR="$REPO/docs/coordination/runs/logs"
 
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
 
+launchd_service="gui/$(id -u)/$LABEL"
+
 usage() {
   cat <<'EOF'
 SAL0MANder desktop automation
@@ -59,9 +61,11 @@ print_status() {
     echo "launchd plist: not installed"
   fi
 
-  if launchctl list "$LABEL" >/dev/null 2>&1; then
+  if launchctl print "$launchd_service" >/dev/null 2>&1; then
     echo "launchd job: loaded"
-    launchctl list "$LABEL" 2>/dev/null | sed 's/^/  /'
+    launchctl print "$launchd_service" 2>/dev/null |
+      grep -E 'state =|runs =|last exit code =|path =|active count =' |
+      sed 's/^/  /'
   else
     echo "launchd job: not loaded"
   fi

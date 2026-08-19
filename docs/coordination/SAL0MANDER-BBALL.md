@@ -76,6 +76,10 @@ Without a clock, "working" and "stuck" look the same. With a clock, slow agents
 have to do one useful thing: shrink the task, pass the ball, publish the
 blocker, or get benched for that possession.
 
+Losing is letting time run out with no shot attempt. A missed shot with evidence
+can be rebounded. A clock that expires while everyone is still discussing what
+to do gives the team nothing.
+
 Every action gets a clock. Hit the limit and it is a violation — you give up the
 ball, you do not keep dribbling.
 
@@ -643,6 +647,26 @@ because the key lived in the session.
 
 **No jersey, no minutes.** A commit without `Sal0-From` or `Co-Authored-By` is
 rejected by the referee.
+
+Roles are assignments, not cages. An agent can switch roles when the team needs
+it, but it must say so before touching the ball:
+
+```text
+ROLE SWITCH:
+FROM:
+TO:
+WHY:
+SHOT CLOCK:
+SUCCESS CHECK:
+```
+
+Switching roles is good when it creates a shot. Switching roles to avoid a
+clear shot is a turnover.
+
+Chemistry comes from reps. The team learns timing by seeing who catches what,
+who rebounds well, who burns clock, who needs smaller passes, and who can switch
+roles without dropping the ball. Mission Control should remember those patterns
+from evidence, not personality guesses.
 
 ---
 
