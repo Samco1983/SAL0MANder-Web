@@ -131,7 +131,14 @@ AFTER="$($GIT rev-parse HEAD)"
 echo "ONE THING THAT CHANGED: COMMITTED ${AFTER:0:8} — $FILES file(s), verify passed"
 $GIT --no-pager log --oneline -1
 
-$GIT push origin "$BRANCH" && echo "pushed" || echo "PUSH FAILED"
+if $GIT push origin "$BRANCH"; then
+  echo "pushed"
+else
+  echo "ONE THING STILL UNVERIFIED: PUSH FAILED — commit ${AFTER:0:8} is local only"
+  echo "BLOCKED - NEED OWNER — GitHub did not receive the commit. Other agents cannot see it."
+  echo "=== end $STAMP (exit 1) ==="
+  exit 1
+fi
 
 # Report back on the issue that generated the work. GitHub Issues are the one
 # channel every agent reads without a human relaying it, and a queue nobody

@@ -34,12 +34,13 @@ if [ "${1:-}" = "--read" ]; then
   echo
   echo "  SIGNALS  (last $COUNT)"
   echo "  $(printf '%.0s-' {1..62})"
-  git log -"$COUNT" --format='%h|%ad|%(trailers:key=Sal0-Signal,valueonly)|%(trailers:key=Sal0-From,valueonly)|%s' \
-      --date=format:'%m-%d %H:%M' \
-    | awk -F'|' '$3 != "" {
-        gsub(/\n/, "", $3); gsub(/\n/, "", $4)
-        printf "  %-6s %-13s %-9s %-9s %s\n", $1, $2, $3, $4, substr($5,1,28)
-      }'
+  # separator= is required: git appends a newline after each trailer value,
+  # which splits the record and silently blanks every column after the first
+  # trailer. The reader looked like it worked and showed nothing.
+  git log -"$COUNT" \
+    --format='%h|%ad|%(trailers:key=Sal0-Signal,valueonly,separator=%x20)|%(trailers:key=Sal0-From,valueonly,separator=%x20)|%(trailers:key=Sal0-Target,valueonly,separator=%x20)' \
+    --date=format:'%m-%d %H:%M' \
+    | awk -F'|' '$3 != "" { printf "  %-8s %-13s %-7s %-9s %s\n", $1, $2, $3, $4, substr($5,1,34) }'
   echo
   echo "  SHAKY = look at it · CLEAN = confident · BOARDS = I am checking yours"
   echo "  MINE/YOURS = file claim · TRAIL = follow me · STUCK = see BLOCKERS.md"
@@ -68,5 +69,9 @@ Sal0-Signal: $SIGNAL
 Sal0-From: $AGENT
 Sal0-Target: ${TARGET:-none}" || { echo "signal failed"; exit 1; }
 
-git push -q origin HEAD 2>/dev/null && PUSHED="pushed" || PUSHED="NOT PUSHED — an unpushed signal is invisible"
-echo "$SIGNAL${TARGET:+ → $TARGET}  ($PUSHED)"
+if git push -q origin HEAD 2>/dev/null; then
+  echo "$SIGNAL${TARGET:+ → $TARGET}  (pushed)"
+else
+  echo "$SIGNAL${TARGET:+ → $TARGET}  (NOT PUSHED — an unpushed signal is invisible)"
+  exit 1
+fi

@@ -164,4 +164,40 @@ fi
 command -v gemini >/dev/null 2>&1 || { echo "    · gemini CLI not installed — SAL0-07 seat empty"; ANY=1; }
 [ "$ANY" -eq 0 ] && echo "    nothing"
 hr
+
+# ── The coach ───────────────────────────────────────────────────────────────
+# Players inside the game cannot see the shape of it. This section says the
+# uncomfortable thing rather than printing another number.
+echo "  THE COACH SEES"
+
+PRODUCT=$(git log --since="$SINCE" --name-only --format='' | grep -c '^src/' || true)
+PLUMBING=$(git log --since="$SINCE" --name-only --format='' | grep -cE '^(scripts/|docs/coordination/)' || true)
+
+if [ "$PLUMBING" -gt 0 ] && [ "$PRODUCT" -eq 0 ]; then
+  echo "    · $PLUMBING changes to plumbing, ZERO to src/. You built the machine"
+  echo "      and shipped no product. The queue did not move."
+elif [ "$PLUMBING" -gt $(( PRODUCT * 3 )) ] && [ "$PRODUCT" -gt 0 ]; then
+  echo "    · plumbing $PLUMBING vs product $PRODUCT — better than three to one"
+  echo "      spent on the machine rather than the thing it is meant to build."
+fi
+
+if command -v gh >/dev/null 2>&1; then
+  QUEUE=$(gh issue list --repo "$REPO_SLUG" --state open --limit 100 --json number --jq 'length' 2>/dev/null || echo "?")
+  CLOSED=$(gh issue list --repo "$REPO_SLUG" --state closed --limit 100 --json closedAt --jq "[.[] | select(.closedAt > \"$(date -u -v-1d +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo 2000-01-01T00:00:00Z)\")] | length" 2>/dev/null || echo 0)
+  echo "    · queue: $QUEUE open, $CLOSED closed in this window."
+  [ "$CLOSED" = "0" ] && echo "      Nothing was finished. Motion is not progress."
+fi
+
+if [ -f "$REPO/docs/coordination/BLOCKERS.md" ]; then
+  SELF=$(git log --since="$SINCE" --format='%s' | grep -ciE '^council: fix|^council: stop|^council: correct' || true)
+  echo "    · $SELF commit(s) were fixing our own mistakes."
+  echo "      Rebounds by the other agent: check the blocker report. Self-caught"
+  echo "      does not count — the misses nobody sees are the shooter's blind spot."
+fi
+
+[ "$INSTALLED" -eq 0 ] && {
+  echo "    · nothing is scheduled. Everything above happened because a human"
+  echo "      was awake and typing. That is the whole problem, unchanged."
+}
+hr
 echo

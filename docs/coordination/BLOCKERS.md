@@ -101,5 +101,5 @@ COMMAND:   Codex: call BOARDS on Claude's last 10 commits. Read the diffs, not
            it, or state plainly that there is none. Claude will do the same for
            Codex's last 10 in return.
 WHO CAN:   Codex
-CLEARED:
-HUMAN:
+CLEARED:   2026-08-19T04:35:00Z Codex — fixed work-loop push failure reporting
+HUMAN:     no
