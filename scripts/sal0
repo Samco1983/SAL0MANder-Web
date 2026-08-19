@@ -18,6 +18,7 @@ set -uo pipefail
 
 REPO="/Users/samuel_saldivar/Desktop/SAL0MANder-Web"
 PAUSE="$HOME/.sal0mander/PAUSE"
+LOG_DIR="$HOME/.sal0mander/logs"
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
 cd "$REPO" || { echo "repo missing at $REPO"; exit 1; }
 
@@ -76,7 +77,7 @@ play)
   RUN=$?
 
   echo "  3/5 reading the evidence"
-  LOG=$(ls -t docs/coordination/runs/logs/work-loop-*.log | head -1)
+  LOG=$(ls -t "$LOG_DIR"/work-loop-*.log | head -1)
   grep -E "ONE THING THAT CHANGED|BLOCKED|npm run verify exit" "$LOG" | sed 's/^/      /'
 
   echo "  4/5 verifying the COMMITTED branch, not this desk"
@@ -94,6 +95,6 @@ play)
   ;;
 
 *)
-  sed -n '3,18p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,16p' "$0" | sed 's/^# \{0,1\}//'
   ;;
 esac
