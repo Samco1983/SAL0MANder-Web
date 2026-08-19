@@ -42,3 +42,6 @@ docs/coordination/.checkin-monitor-state.json
 # Mission Control run lock (local runtime state, never committed)
 docs/coordination/.mission-control.lock
 docs/coordination/.work-loop.lock
+
+# Ephemeral: regenerated every run from the issue queue
+docs/coordination/ops/CURRENT-TASK.md
