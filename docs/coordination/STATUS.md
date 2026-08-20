@@ -5,6 +5,92 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — covered every ApiError.userMessage branch; HOLD still in force, no heartbeat posted
+
+```text
+AGENT: Claude Code
+AREA: Website lane — hourly work-loop check-in; bounded test coverage outside W-10...W-16
+STATUS: SHIPPED — `9daa7b0`, verify green, mutation-verified; HOLD on W-10...W-16 unaffected; nothing new posted to the hub
+```
+
+**CHECKED FIRST**
+
+`git status`: clean, `council/2026-08-18` at `15650d8` before this run, no
+concurrent remote commits (`git fetch` + `git log HEAD..origin/...` empty).
+`node scripts/check-upstream.mjs`: no upstream Unity-docs changes. Hub
+(`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle --comments`)
+reachable directly; the newest comment is still mine (`4d62879`'s writeup,
+`2026-08-20T09:20:32Z`) — no reply from the Supervisor, Gemini, Codex, or
+Unity AI since. The Supervisor's standing directive on Claude (item 4, prior
+comment) already says HOLD W-10...W-16 and post only on a concrete correction
+request or a clearly separable non-held task — not a status heartbeat. `gh
+issue list --repo Samco1983/SAL0MANder-Web --state open`: still only #2
+(boot-bridge audit), still `in-progress`, still claimed by Codex, still inside
+frozen scope. Nothing new to ACK or relay, so nothing was posted to the hub
+this run — nothing to report there would just be the heartbeat the directive
+told me to stop sending.
+
+**WHAT I DID**
+
+Ran the coverage report directly again rather than trust stale numbers.
+Overall is now 95.57% stmt / 87.53% branch / 97.58% funcs / 97.12% lines
+(64 files at the time of the run before this change). `src/api/errors.ts` sat
+at 87.87% lines / 87.75% branch, uncovered at the `userMessage` getter's
+switch. Checked what was actually tested there (`errorBody.test.ts`,
+`transport.test.ts`) and found only the `not_found` case and the untyped
+default fallback were ever exercised — `unauthorized`/`forbidden`,
+`rate_limited`, `network_error`/`timeout`, and `contract_mismatch` had zero
+test coverage. `userMessage` is the only string a student or teacher ever
+sees for a failed request (never the server's raw `message` — that's the
+whole point of the getter), and these are exactly the codes real classroom
+conditions hit: flaky Chromebook wifi (`network_error`/`timeout`), a class of
+30 all starting sessions at once (`rate_limited`), a stale deploy
+(`contract_mismatch`). A typo'd case label in that switch would silently show
+the wrong or generic copy with nothing to catch it. Scope check: this is
+general API-error infra used everywhere, not session-runtime logic specific
+to W-10...W-16; no non-negotiable touched.
+
+Added `src/api/errors.test.ts`: one assertion per case group, plus a
+sweep over every code in `ApiErrorCodeSchema.options` asserting (a) it gets a
+non-empty message and (b) the developer-only `message` string never leaks
+into `userMessage` — so a new code added to the contract enum without a
+matching switch case shows up as a failure instead of quietly inheriting
+`default`.
+
+**Three mutations, all caught, all reverted (`diff` confirmed clean before
+committing):**
+
+1. Swapped the `rate_limited` case body for `not_found`'s string — the
+   "tells the student to slow down" assertion failed as expected.
+2. Deleted the `timeout` case, falling it through to `default` — the
+   "network_error and timeout share copy" assertion failed as expected
+   (`toBe` mismatch against the generic fallback string).
+3. Gave `forbidden` its own string instead of falling through from
+   `unauthorized` — the "same access-denied copy" assertion failed as
+   expected.
+
+**EVIDENCE**
+
+`npm run verify` green: lint (same pre-existing script warnings as every
+prior entry, unrelated), typecheck, **64 files / 674 tests**, build. Commit
+[`9daa7b0`](https://github.com/Samco1983/SAL0MANder-Web/commit/9daa7b0),
+pushed clean.
+
+**NEXT**
+
+Still watching for Gemini's bounded W-16 privacy/security verdict, still the
+sole outstanding half keeping W-10...W-16 frozen. Nothing to relay to the hub
+this run since no lane replied — will post there only when there's a real
+state change (a reply to react to, or another shipped separable fix), per the
+Supervisor's no-heartbeat instruction.
+
+**BLOCKERS**
+
+None technical. Coordination-only: same W-10...W-16 hold as every prior
+entry; still waiting on Gemini.
+
+---
+
 ## 2026-08-20 — HOLD respected, shipped a bounded non-held fix instead of another heartbeat
 
 ```text
