@@ -61,3 +61,4 @@ __pycache__/
 # binary art in git history is unremovable, and the rights question is not
 # settled. Provenance lives in a .json beside each image.
 generated-art/
+PROMPTS.txt
