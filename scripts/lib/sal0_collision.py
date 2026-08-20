@@ -146,15 +146,17 @@ def d_dirty_overlap(commits, dirty, w):
     # Newest commit per file, split by who made it. Both halves are needed:
     # a collision is only live while THEIR commit is newer than MY last word on
     # the file.
-    theirs, mine_ts = {}, {}
-    for c in commits:  # newest first
+    theirs, mine_position = {}, {}
+    their_position = {}
+    for position, c in enumerate(commits):  # newest first; lower is newer
         for f in c["files"]:
             if MINE and c["agent"] == MINE:
                 # Your own recent commit is iteration, not collision. Without
                 # this the gate blocks every second commit an agent makes.
-                mine_ts.setdefault(f, c["ts"])
+                mine_position.setdefault(f, position)
             else:
                 theirs.setdefault(f, c)
+                their_position.setdefault(f, position)
 
     committed = {}
     for f, c in theirs.items():
@@ -162,7 +164,7 @@ def d_dirty_overlap(commits, dirty, w):
         # demonstrably seen their work — the merge is behind me. Continuing to
         # warn for the rest of the window is how a guard becomes noise, and a
         # noisy guard gets bypassed on the commit that actually mattered.
-        if f in mine_ts and mine_ts[f] >= c["ts"]:
+        if f in mine_position and mine_position[f] < their_position[f]:
             continue
         committed[f] = c
 
