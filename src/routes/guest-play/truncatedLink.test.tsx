@@ -99,4 +99,25 @@ describe('a way forward, not only a way back', () => {
     expect(screen.queryByLabelText(/name|email|password/i)).toBeNull()
     expect(screen.queryByText(/sign in|sign up|your email|password/i)).toBeNull()
   })
+
+  it('the class-code field is the only form and the only input on the page', () => {
+    // A blunter, stronger guard than the label check above: even a field with an
+    // innocuous label cannot smuggle in an identity prompt if it is the sole
+    // form and the sole input, full stop. Restores the strength the previous
+    // "no <input>/<form> at all" guardrail had, without blocking the legitimate
+    // shareCode field it was loosened to allow.
+    renderIndex()
+    expect(document.querySelectorAll('form')).toHaveLength(1)
+    expect(document.querySelectorAll('input')).toHaveLength(1)
+    expect(screen.getAllByRole('textbox')).toHaveLength(1)
+    expect(screen.getByRole('textbox')).toBe(screen.getByLabelText(/class code/i))
+  })
+
+  it('the class-code input cannot double as an identity field', () => {
+    renderIndex()
+    const input = screen.getByLabelText(/class code/i) as HTMLInputElement
+    expect(input.type).toBe('text')
+    expect(input).toHaveAttribute('autocomplete', 'off')
+    expect(input.getAttribute('name') ?? '').not.toMatch(/name|email|password|username/i)
+  })
 })
