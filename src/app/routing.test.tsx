@@ -128,7 +128,7 @@ describe('routes that download before they render', () => {
   it('serves home eagerly, with no loading state at all', () => {
     // Home is the most common cold entry after a share link, so it is not split.
     renderAt(paths.home)
-    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.queryByText(/loading/i)).toBeNull()
     expect(screen.getByRole('link', { name: /try guest play/i })).toBeVisible()
   })
 })

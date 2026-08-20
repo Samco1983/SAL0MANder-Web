@@ -6,6 +6,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { HomePage } from './HomePage'
 import { paths } from '@config/routes'
+import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
 
 /**
  * The entry surface.
@@ -63,7 +64,7 @@ describe('the primary action', () => {
     // Non-negotiable #3: no account, email, password, or name prompt between a
     // share link and playable content. Home is on that path.
     renderHome()
-    expect(screen.queryByRole('textbox')).toBeNull()
+    expect(screen.queryByLabelText(/name|email|password/i)).toBeNull()
     expect(screen.queryByText(/sign in|log in|create an account|enter your (name|email)/i)).toBeNull()
   })
 })
@@ -91,6 +92,24 @@ describe('no dead links', () => {
       const text = el.textContent ?? ''
       expect(text).not.toMatch(/credits|badges|classes|reports|collaboration/i)
     }
+  })
+})
+
+describe('the demo share panel', () => {
+  it('lets a teacher copy the same demo activity that the primary action opens', () => {
+    renderHome()
+    const playHref = screen.getByRole('link', { name: /guest play/i }).getAttribute('href')
+    const shareInput = screen.getByLabelText(/share link/i) as HTMLInputElement
+
+    expect(playHref).toBe(`/play/${MOCK_DEMO_ACTIVITY_ID}`)
+    expect(new URL(shareInput.value).pathname).toBe(playHref)
+  })
+
+  it('keeps the QR work hidden until a teacher asks for it', () => {
+    renderHome()
+
+    expect(screen.getByRole('button', { name: /show qr code/i })).toBeVisible()
+    expect(screen.queryByText(/point a phone camera/i)).toBeNull()
   })
 })
 

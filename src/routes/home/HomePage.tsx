@@ -2,6 +2,7 @@ import { env } from '@config/env'
 import { paths, buildPath } from '@config/routes'
 import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
 import { AppShell } from '@components/layout/AppShell'
+import { SharePanel } from '@components/share/SharePanel'
 import { LinkButton } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
@@ -55,6 +56,26 @@ export function HomePage() {
             </div>
           ))}
         </dl>
+      </section>
+
+      <section className={styles.section} aria-labelledby="demo-share-title">
+        <div className={styles.demoShare}>
+          <div className={styles.demoShareCopy}>
+            <p className={styles.eyebrow}>Teacher handoff</p>
+            <h2 className={styles.sectionTitle} id="demo-share-title">
+              Share the demo activity
+            </h2>
+            <p className={styles.demoShareText}>
+              Use the same demo link as Guest Play to try the teacher side of distribution: copy it,
+              post it, or open the QR when you need a printable handoff.
+            </p>
+          </div>
+          <SharePanel
+            activityId={MOCK_DEMO_ACTIVITY_ID}
+            baseUrl={env.publicBaseUrl}
+            title="Sample SAL0MANder Activity"
+          />
+        </div>
       </section>
 
       <section className={styles.section}>
