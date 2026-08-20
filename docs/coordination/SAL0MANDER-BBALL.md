@@ -2,6 +2,11 @@
 
 How multiple AI agents work as a team instead of taking turns.
 
+## The Championship Data pledge
+
+> **Clean evidence. Fast shots. Honest score. Evolving coach. Keep scoring.**
+
+
 Discovered, not designed — every rule came from a failure on 2026-08-18/19. The
 ones without a scar are the ones most likely to be wrong.
 
