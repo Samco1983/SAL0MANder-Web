@@ -47,3 +47,5 @@ docs/coordination/.work-loop.lock
 docs/coordination/ops/CURRENT-TASK.md
 
 docs/coordination/ops/SEASON.jsonl
+.nudge.lock
+NUDGES.jsonl

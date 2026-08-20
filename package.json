@@ -47,6 +47,8 @@
     "mission:next": "python3 scripts/lib/sal0_force_shot.py",
     "mission:next-task": "bash scripts/sal0-next-task.sh",
     "mission:next:json": "python3 scripts/lib/sal0_force_shot.py --json",
+    "mission:nudge": "python3 scripts/sal0_nudge.py",
+    "mission:nudge:dry": "python3 scripts/sal0_nudge.py --dry-run --max-cycles 1",
     "mission:packet": "python3 scripts/lib/sal0_court_packet.py",
     "mission:packet:json": "python3 scripts/lib/sal0_court_packet.py --json",
     "mission:points": "python3 scripts/lib/sal0_verify_points.py",
