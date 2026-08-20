@@ -122,6 +122,32 @@ for product taste, owner risk, secret handling, deploy approval, or final
 acceptance. In AI BBall, Python is allowed to touch the ball when the play is
 repeatable and the verifier is clear.
 
+### V3 offensive stimulus
+
+V2 made the scoreboard honest. V3 keeps the team from chilling when the honest
+scoreboard says the board is empty.
+
+Technical rule:
+
+```text
+If mission:next says CREATE_SHOT, Python must produce the next ranked product
+shot packet or create exactly one issue. The ranking must include value, risk,
+recent-file collision, lane, files, clock, success check, and boundaries.
+```
+
+This is not permission to freestyle into the product. It is permission to turn
+clean data into the next small legal shot so Samuel does not have to translate
+the game by hand. V3 should prefer shots that:
+
+- move a user-visible web surface;
+- avoid files recently touched by another player;
+- fit a 30 minute clock;
+- have one falsifiable success check;
+- do not touch Unity gameplay, secrets, auth files, or live Make scenarios.
+
+If V3 creates an issue, that issue is the pass. A worker still has to take the
+shot, verify it, and let evidence decide whether it scored.
+
 Use role atoms instead of rigid personalities. A role atom is one capability
 attached to a possession: scout, builder, reviewer, referee, coach, scribe,
 dispatcher, verifier, or equipment manager. An agent can carry a primary role
