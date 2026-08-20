@@ -5,6 +5,104 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — caught up six unlogged commits: W-14 actually shipped, OPEN-ITEMS.md corrected, no hub report existed
+
+```text
+AGENT: Claude Code
+AREA: Website lane — hourly work-loop check-in + documentation-drift correction
+STATUS: DOCS SHIPPED — OPEN-ITEMS.md corrected to match code; no src/ change this run
+```
+
+**CHECKED FIRST**
+
+`git status`: clean at `2adfcc3`. `node scripts/check-upstream.mjs`: no
+upstream Unity-docs changes. `gh api rate_limit --jq .resources.core`:
+4998/5000 — a rate-limit warning banner appeared on an earlier `gh issue view`
+call in this same run; re-checked directly rather than backing off on the
+banner alone, same pattern as a prior entry in this file, and it was again a
+stale/shared-pool artifact, not real exhaustion.
+
+**WHAT I FOUND**
+
+The most recent entry in this file (`dd44d44`, "stopped coverage-expansion
+padding") was six commits behind `HEAD`. The six were never logged here and
+never reported to hub Issue #1:
+
+| Commit | What | Agent |
+| --- | --- | --- |
+| `3676967` | bball V3 offensive stimulus (council/game system, not web product) | — |
+| `8cdc42c` | `sal0_backlog_sync.py` — promotes `OPEN-ITEMS.md` findings to GitHub issues instead of the picker inventing vague shots on an empty board | SAL0-04 |
+| `1ffc2dc` | bridge-diagnostics drawer on `UnityStage`, gated `audience !== 'student'` | SAL0-01 (Codex) |
+| `7711d58` | **W-14 fixed** — `nextPendingResult` replaces the `??=` buffer slot so a newer attempt's result can no longer lose to a stale one; closes issue #43 | SAL0-04 |
+| `4acb349` | `sal0_force_shot.py` — empty-board picker promotes tracked findings before it may report `CREATE_SHOT` | SAL0-04 |
+| `2adfcc3` | test coverage for the force-shot fallback | SAL0-01 |
+
+Two things worth naming plainly:
+
+1. **W-14 is inside the literal "W-10…W-16" list the hub's HOLD directive
+   names**, and it shipped anyway, from this same lane (`SAL0-04`), with no ACK
+   requested and none given. Reading the trail: `B-9`/`B-11` in
+   `BLOCKERS.md` record that the stale docs/design hold was superseded
+   2026-08-20 by an owner directive to "keep playing," and a separate `STATUS.md`
+   entry earlier the same day found ten unlogged product commits shipped under
+   that same directive. W-14's fix is consistent with that directive and with
+   the pattern already reviewed and found sound in that entry — not re-litigating
+   it, only confirming this is the same authorization, not a new one I am
+   asserting for myself.
+2. **The fix was never reported anywhere except the issue-#43 close comment.**
+   No hub post, no `STATUS.md` entry. Exactly the gap [[write-findings-to-notes]]
+   exists to catch — a real, mutation-verified fix that would have been
+   invisible to anyone reading only this file or the hub thread.
+
+Also found `OPEN-ITEMS.md` itself had drifted from the code it's supposed to
+describe: W-14's section still read "Latent, not live," and W-18's section
+didn't mention the diagnostics drawer `1ffc2dc` added, which directly answers
+one of W-18's own five open questions (a browser-visible QA diagnostic vs.
+console-only).
+
+**WHAT I DID**
+
+- `OPEN-ITEMS.md`: moved W-14 to ✅ RESOLVED with the `7711d58` evidence,
+  original reasoning kept collapsed (same convention as W-12/W-13/W-15/W-16).
+  Updated W-18 to record the diagnostics-drawer increment and confirmed by
+  reading the diff that it's gated off the student path
+  (`GuestPlayPage.tsx:315` passes `audience="student"`; the drawer only
+  renders `audience !== 'student'`) before writing that down as a fact rather
+  than assuming it from the commit message. Added the GitHub issue numbers
+  (#41/#42/#44/#45) to the W-18/W-17/W-11/W-9 headers now that the
+  backlog-sync tooling makes those issues the queue pointer, alongside the
+  existing detailed write-up here.
+- Ran `npm run verify` on current `HEAD` (no source touched by this run, but
+  confirming the six unlogged commits actually left the tree green rather than
+  trusting their own commit messages): lint, typecheck, **65 files / 691
+  tests**, Python mission-tooling suite (37 tests), build. All green.
+- Posted this catch-up to hub Issue #1.
+
+**EVIDENCE**
+
+Docs-only commit this run (`OPEN-ITEMS.md`, this entry). `npm run verify`
+green as above — 691 JS/TS tests (up from 681 six commits ago; +6 from W-14's
+`pendingResultBuffer.test.ts`, +4 from `UnityStage.test.tsx`'s diagnostics
+coverage) plus 37 Python tests, 65 files.
+
+**NEXT**
+
+Now that the backlog-sync/force-shot tooling promotes `OPEN-ITEMS.md` findings
+onto the real GitHub queue, treat those issues as the source of "what's next"
+alongside this file rather than only the static work-loop instructions. Open
+and web-relevant: #42 (W-17, still wants a design decision between two named
+options — no ruling has landed, checked issue #42's comments directly, empty),
+#44 (W-11, needs Codex/Unity answers), #41 (W-18, same), #45 (W-9, Make
+automation, not `src/`). #2 (boot-bridge audit) stays claimed by Codex.
+Watching for a W-17 ruling or another separable, non-held, code-level gap.
+
+**BLOCKERS**
+
+None technical. W-17 stays a design question, not an engineering one, per its
+own text — still not building either option unilaterally.
+
+---
+
 ## 2026-08-20 — corrected: stopped coverage-expansion padding, held with no ready defect to ship
 
 ```text

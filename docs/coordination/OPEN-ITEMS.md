@@ -1,9 +1,21 @@
 # Open items register
 
-## W-18 — bridge observability audit still needs one real Unity receiver pass 🟠
+**2026-08-20 — W-9, W-11, W-14, W-17, and W-18 are now tracked as GitHub
+issues #45, #44, #43, #42, and #41 respectively** (promoted by the
+backlog-sync picker, `8cdc42c`/`4acb349`, so real analysed findings reach the
+work queue instead of the picker inventing vague shots on an empty board).
+W-14 is closed; the rest stay open here as the detailed record, with the
+issue as the queue pointer.
 
-**Partially shipped in `140affd`; issue #5 remains open for the cross-system
-questions.**
+## W-18 — bridge observability audit still needs one real Unity receiver pass 🟠 (issue #41)
+
+**Partially shipped in `140affd`; further shipped in `1ffc2dc` (Codex,
+2026-08-20): a bridge-diagnostics drawer on `UnityStage`, gated
+`audience !== 'student'` (Guest Play always passes `audience="student"`,
+confirmed at `GuestPlayPage.tsx:315`) — so this answers question 4 below
+(a visible debug drawer now exists) without ever reaching a student. Issue #5
+/ #41 remains open for the cross-system questions, which still need Codex/Unity,
+not more web-side surfacing.**
 
 Web now distinguishes and can safely summarize these bridge failure classes:
 
@@ -283,7 +295,24 @@ build: collapse the panel, force a submit failure, confirm the alert is spoken.
 
 `reveal` is not constrained to post-play use — see W-17.
 
-## W-17 — `reveal` is safe because of what calls it, not because of what it is 🟠
+## W-17 — ✅ RESOLVED — `reveal` is safe because of what calls it, not because of what it is
+
+Resolved 2026-08-20 in this W-17 shot: auto-revealed companion sheets now
+carry `data-revealed="true"` only while the app-triggered reveal is active and
+open. Below `60rem`, that state caps the sheet at `42%`, leaving the majority
+of the stage visible even if a future caller reveals mid-play. Manual companion
+opening keeps the existing `62%` bottom-sheet behavior.
+
+### Evidence
+
+`npm run verify` green: lint, typecheck, **65 test files / 691 tests**, **37
+mission tests**, build. New tests assert both parts of the contract:
+
+- active auto-reveal is marked for CSS while manual/student-closed state is not;
+- the narrow-viewport stylesheet contains the structural `42%` cap.
+
+<details>
+<summary>Original finding (kept for the reasoning)</summary>
 
 **Low severity today, latent by construction.** Recorded so it is not
 rediscovered as a defect later.
@@ -318,6 +347,8 @@ thing standing in the way.
 `CompanionLayout.module.css` sizing rather than palette or type, so neither
 should be gated on the visual-identity approval — confirming rather than
 assuming.
+
+</details>
 
 ## W-13 — ✅ RESOLVED — the *other* end of the session was still losing results
 
@@ -374,7 +405,32 @@ spirit — nothing may overlay the stage — so this is a **product question for
 owner**, not something the web lane should decide: does an undelivered result
 warrant expanding a collapsed panel?
 
-## W-14 — a stale buffer can swallow the newer attempt's result 🟠
+## W-14 — ✅ RESOLVED — a stale buffer can swallow the newer attempt's result
+
+Resolved 2026-08-20 in `7711d58 web: a newer attempt result no longer loses to
+a stale one (W-14)`, promoted to and closed as issue #43 by the backlog-sync
+picker (`8cdc42c`/`4acb349`).
+
+### What shipped
+
+The one-slot buffer used `pendingResultRef.current ??= {...}`, which keeps
+whichever result arrives first — correct for a duplicate of the same attempt,
+wrong for a buffer left behind by an abandoned attempt. Replaced with a pure
+`nextPendingResult(current, attemptId, result)` function extracted so the rule
+is testable without driving the hook through a startup race:
+
+- a newer attempt's result always replaces a stale occupant;
+- a repeat of the attempt already held is ignored as the duplicate it is.
+
+### Evidence
+
+`npm run verify` green. `src/routes/guest-play/pendingResultBuffer.test.ts`,
+6/6. Three mutations, each verified applied before being reverted: restoring
+the `??=` defect fails 2 assertions, always-replacing (losing duplicate
+suppression) fails 1, labelling the result with the stale attempt id fails 2.
+
+<details>
+<summary>Original finding (kept for the reasoning)</summary>
 
 **Latent, not live. Found while fixing W-13; recorded rather than fixed because
 fixing it now would be fixing a path nothing can reach.**
@@ -400,6 +456,8 @@ again → the effect tears down without resolving → the slot still holds attem
 to `result-undeliverable` rather than dropped. Single slot, explicit eviction
 rule, no silence. Do not simply clear the buffer in `reset()` — that is the
 silent destruction W-10 forbade, wearing the shape of a fix.
+
+</details>
 
 ## W-12 — ✅ RESOLVED — W-10 failure paths surface completed results
 
@@ -461,7 +519,7 @@ no `clientAttemptId`, so it cannot tell which attempt it belongs to.
 The remaining UI/reporting surface is separate future teacher/admin product
 work. The data-loss and wrong-attempt paths are fixed.
 
-## W-11 — `unity-ready` is now load-bearing, and the receiver names are still provisional 🟠
+## W-11 — `unity-ready` is now load-bearing, and the receiver names are still provisional 🟠 (issue #44)
 
 **For Codex. Nothing here is frozen by the web lane; this is the exact question,
 not a proposal.**
@@ -582,7 +640,7 @@ wait until the website has an accepted teacher/admin purpose for those records.
 
 ---
 
-## W-9 — Make cannot reach a laptop, and queueing is not invoking 🟠
+## W-9 — Make cannot reach a laptop, and queueing is not invoking 🟠 (issue #45)
 
 **Raised 2026-08-15 against "the only custom component is the small bridge."
 Keeping Make is right; two assumptions underneath that sentence are not.**
