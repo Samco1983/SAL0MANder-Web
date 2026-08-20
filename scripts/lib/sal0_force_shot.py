@@ -104,6 +104,24 @@ def read_board() -> dict:
         return {"board": [], "ready_count": 0}
 
 
+def blocked_for_web_text(text: str) -> bool:
+    return bool(
+        re.search(
+            r"still needs codex\s*/\s*unity confirmation|needs one real unity receiver pass|"
+            r"what web cannot verify|for codex|live make scenarios|owner action|"
+            r"owner/gemini call|needs a ruling first|make cannot reach a laptop|"
+            r"make is cloud-hosted|adapter polls make",
+            text,
+            re.I,
+        )
+    )
+
+
+def blocked_for_web_shot(shot: dict) -> bool:
+    text = "\n".join(str(shot.get(key, "")) for key in ("title", "success_check", "size", "body"))
+    return blocked_for_web_text(text)
+
+
 def local_tracked_finding() -> dict | None:
     """Return one local OPEN-ITEMS finding when GitHub cannot be read."""
     try:
@@ -117,16 +135,7 @@ def local_tracked_finding() -> dict | None:
 
     def blocked_for_web(item: dict) -> bool:
         text = f"{item.get('title', '')}\n{item.get('body', '')}"
-        return bool(
-            re.search(
-                r"still needs codex\s*/\s*unity confirmation|needs one real unity receiver pass|"
-                r"what web cannot verify|for codex|live make scenarios|owner action|"
-                r"owner/gemini call|needs a ruling first|make cannot reach a laptop|"
-                r"make is cloud-hosted|adapter polls make",
-                text,
-                re.I,
-            )
-        )
+        return blocked_for_web_text(text)
 
     def productish(item: dict) -> bool:
         text = f"{item.get('title', '')}\n{item.get('body', '')}"
@@ -253,8 +262,22 @@ def choose() -> dict:
             "action": "FIX_QUEUE_ACCESS",
         }
     shots = board.get("board", [])
+    blocked_web_shots = [shot for shot in shots if blocked_for_web_shot(shot)]
+    shots = [shot for shot in shots if not blocked_for_web_shot(shot)]
 
     if not shots:
+        generated = local_generated_product_shot()
+        if blocked_web_shots:
+            return {
+                "shot": generated,
+                "reason": (
+                    f"{len(blocked_web_shots)} ready board shot(s) require another lane. "
+                    "Passing those instead of idling, then forcing a concrete local product shot."
+                ),
+                "mix": mix,
+                "forced": True,
+                "action": "TAKE_SHOT",
+            }
         # An empty board is almost never an empty backlog.
         #
         # Five investigated defects sat in OPEN-ITEMS.md while Mission Control

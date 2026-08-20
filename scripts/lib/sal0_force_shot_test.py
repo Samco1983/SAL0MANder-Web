@@ -85,6 +85,33 @@ class ForceShotTest(unittest.TestCase):
         self.assertIsNotNone(shot)
         self.assertEqual(shot["key"], "W-17")
 
+    def test_ready_board_cross_lane_shot_does_not_idle_web_lane(self):
+        blocked = {
+            "number": 41,
+            "title": "[WEB] W-18 - bridge observability audit still needs one real Unity receiver pass",
+            "category": "PRODUCT",
+            "success_check": "requires Codex / Unity confirmation",
+            "size": "fits a possession",
+        }
+        generated = {
+            "number": None,
+            "title": "[LOCAL][PRODUCT] next visible web shot",
+            "category": "PRODUCT",
+            "success_check": "npm run verify exits 0",
+            "size": "local generated product shot",
+        }
+
+        with (
+            patch.object(sal0_force_shot, "measure_mix", return_value=MIX),
+            patch.object(sal0_force_shot, "read_board", return_value={"board": [blocked]}),
+            patch.object(sal0_force_shot, "local_generated_product_shot", return_value=generated),
+        ):
+            result = sal0_force_shot.choose()
+
+        self.assertEqual(result["action"], "TAKE_SHOT")
+        self.assertEqual(result["shot"], generated)
+        self.assertIn("require another lane", result["reason"])
+
     def test_queue_unreadable_generates_concrete_product_shot_when_backlog_is_blocked(self):
         with (
             patch.object(sal0_force_shot, "measure_mix", return_value=MIX),
