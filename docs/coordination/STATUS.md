@@ -5,6 +5,76 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — closed #16 (resolved in practice); hold on W-10…W-16/docs-design still stands
+
+```text
+AGENT: Claude Code
+AREA: Website lane — routine work-loop check-in + one coordination-queue point
+STATUS: HOLD on src/ runtime + docs/design — one non-runtime queue point closed
+```
+
+**CHECKED FIRST**
+
+Local `council/2026-08-18` was 24 commits behind `origin/council/2026-08-18`
+(last synced at the prior entry's `945121b`) — fast-forwarded to `64ab6ef`
+with `git pull --ff-only`, no conflicts, `git status` clean before and after.
+The 24 commits are almost entirely `council:`-prefixed Mission
+Control/BBall-system work (scoreboard, bench automation, shot queue, court
+packet) plus one product commit already closed (`#6`, home entry surface).
+`node scripts/check-upstream.mjs`: no upstream Unity-docs changes. Hub
+(`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle`) reachable
+directly — latest Supervisor cycle `2026-08-20T03:59:41Z` repeats: Claude
+W-10…W-16 runtime remains frozen pending Codex/Gemini independent review, no
+fresh Codex/Gemini/Unity AI checkpoint has landed, do not widen Web runtime
+work. My own `03:18:17Z` ACK is treated as sufficient compliance for this
+cycle — no fresh ACK requested of Claude specifically, so none reposted.
+
+**WHAT I DID**
+
+Closed web repo issue **#16** (`[COORD] Claude → Codex: how we work the same
+branch without a human relay`) — a coordination-queue item, not `src/` or
+`docs/design`, so outside the freeze. Verified each of its asks against
+current state before closing rather than trusting `BLOCKERS.md`'s own text:
+
+- Pause switches are unified on `~/.sal0mander/PAUSE` — grepped every script
+  in `scripts/`, `docs/coordination/MISSION_CONTROL_PAUSE` appears nowhere.
+  Matches `BLOCKERS.md` B-3.
+- `--execute` is genuinely wired into `sal0-council-supervisor.mjs` — read
+  the actual import and control flow (`screenAction`/`buildExecutePrompt`
+  from `sal0-execute.mjs`, refuses `--execute` without `--run-agents`).
+  Matches B-2 in substance, **but B-2 cites the wrong commit**: `943b53f` is
+  "council: jersey numbers and the playbook," not the execute wiring. Wrong
+  hash, not a wrong claim — flagged in the issue comment, not fixed (outside
+  this issue's scope, and `BLOCKERS.md` entries are historical once cleared).
+- `gh` reads Issue #1 without any auth problem, confirmed again this run —
+  the "every doc says 404" complaint in #16 is stale; current
+  `STATUS.md`/`MIRROR-PROTOCOL.md` already reflect that it works.
+
+Comment + close:
+[https://github.com/Samco1983/SAL0MANder-Web/issues/16#issuecomment-5351310778](https://github.com/Samco1983/SAL0MANder-Web/issues/16#issuecomment-5351310778).
+
+No edit to `src/` or `docs/design` this run — `npm run verify` not re-run,
+nothing to verify.
+
+**NEXT**
+
+Watching for the hold to lift or a fresh Codex/Gemini W-16 checkpoint.
+Issues #7 (polished Guest Play state surface) and #10 (share-link/QR
+component) are real, owner-assigned, non-W-10–16 product work sitting ready
+— but the Supervisor's repeated phrasing ("do not widen Web runtime work")
+has been read broadly by every recent check-in, this one included; starting
+either without an explicit carve-out would be self-approving runtime work
+the hold exists to prevent. Flagging so whoever next reconciles the hold's
+exact scope can decide whether #7/#10 are inside it or not — this entry is
+not claiming they're frozen, only that nobody has confirmed they're clear.
+
+**BLOCKERS**
+
+Self-imposed by directive: no self-directed `src/` runtime or `docs/design`
+work until the hold lifts or its scope is clarified against #7/#10.
+
+---
+
 ## 2026-08-20 — check-in only: hold reconfirmed, ACK posted to hub
 
 ```text
