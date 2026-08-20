@@ -109,27 +109,32 @@ automated.
 
 ### The vocabulary
 
-| Term | Means |
-| --- | --- |
-| **Shot** | one bounded task with a success check |
-| **Made shot** | verified commit, closed issue, working artifact |
-| **Miss** | attempted, evidence preserved, no score |
-| **Bad turnover** | repeated miss, hidden failure, lost work, wrong lane, fake green |
-| **Flagrant turnover** | secret leaked, destructive command, cross-lane damage |
-| **Rebound** | another agent reviews and saves a miss |
-| **Assist** | one agent prepares a handoff another can finish |
-| **Court vision** | the data-plus-anticipation layer — `npm run mission:bball` |
-| **Coach layer** | deciding bench, shrink, switch, continue |
-| **Shot clock** | 10 min probe · 30 min shot · 60 min build gate |
-| **Box score** | run logs, commits, issue movement, tests |
-| **Season log** | performance over time, so a trend exists at all |
-| **Bench call** | stop repeating a task that keeps missing |
-| **Practice facility** | tooling that makes future work cheaper |
-| **Playing blind** | working without current repo, log, or context |
-| **Fake green** | success claimed without evidence — the one law, violated |
-| **Live-ball miss** | a failure with the diff preserved. Useful |
-| **Dead-ball miss** | a failure with no diff, no log, nothing learned |
-| **Championship** | product ships, system improves, owner babysitting drops |
+Every metaphor needs a technical definition. If Python cannot measure it, the
+term is coaching language only and must not drive automation.
+
+| Term | Metaphor | Technical definition |
+| --- | --- | --- |
+| **Shot** | one bounded task with a success check | one issue/task id, one lane, one owner, one time box, one falsifiable success check |
+| **Made shot** | verified point | successful verifier exit code plus durable artifact: commit, closed issue, passing build, screenshot, or log |
+| **Miss** | attempted, no score | worker ran and produced preserved evidence, but success check failed or no point was earned |
+| **Bad turnover** | harmful mistake | repeated miss, hidden failure, lost work, wrong lane, fake green, or unreviewed cross-role commit |
+| **Flagrant turnover** | game-losing risk | secret exposure, destructive command, unauthorized deploy, live Make change, or Unity gameplay edit outside lane |
+| **Rebound** | save a miss | second agent/tool reviews failure evidence and either fixes it or converts it into a smaller next shot |
+| **Assist** | catchable pass | handoff packet containing repo, branch, issue, diff/log pointer, success check, and next command |
+| **Court vision** | data plus anticipation | Python-generated state from git, issues, logs, tests, clocks, agent health, and repeated patterns |
+| **Coach layer** | decide the next play | policy that chooses bench, shrink, switch, continue, escalate, or take shot based on evidence |
+| **Shot clock** | time pressure | hard timeout by play type: 10 min probe, 30 min shot, 60 min gate, 5 min agent call |
+| **Box score** | what happened now | current run ledger: elapsed time, files changed, commits, issue movement, tests, status, blocker |
+| **Season log** | long-term learning | append-only history of plays, outcomes, causes, roles, clocks, and follow-up effects |
+| **Bench call** | stop repeating failure | skip this player-task fit until a named condition changes |
+| **Practice facility** | improve future play | reversible tooling/docs/tests that reduce future latency or bad turnovers |
+| **Playing blind** | stale context | acting without fresh git status, latest commit, current issue state, logs, or verifier command |
+| **Fake green** | false success | reported success not proven by exit code, git state, issue state, or artifact |
+| **Live-ball miss** | useful failed attempt | failed run with diff/log/test output preserved for rebound |
+| **Dead-ball miss** | wasted possession | failed run with no diff, no log, no blocker, no task shrink, and no learning |
+| **Hot hand** | feed the scorer | agent-task-environment fit with recent verified points under clock and no rising turnover rate |
+| **Fatigue** | overload risk | context bloat, slower possessions, vague reports, skipped checks, quota/auth strain, or parallel-task drift |
+| **Championship** | winning the season | product ships, system improves, owner babysitting drops, and the team learns from misses faster than it creates them |
 
 The two that carry the most weight are **fake green** and **dead-ball miss**.
 Every expensive hour on 2026-08-19 was one or the other: eight hours of runs
