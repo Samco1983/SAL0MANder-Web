@@ -42,6 +42,8 @@
     "mission:inbox": "sed -n '1,180p' docs/coordination/INBOX.md",
     "mission:packet": "python3 scripts/lib/sal0_court_packet.py",
     "mission:packet:json": "python3 scripts/lib/sal0_court_packet.py --json",
+    "mission:rotation": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_rotation_coach.py",
+    "mission:rotation:json": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_rotation_coach.py --json",
     "mission:next": "python3 scripts/lib/sal0_force_shot.py",
     "mission:next-task": "bash scripts/sal0-next-task.sh",
     "mission:next:json": "python3 scripts/lib/sal0_force_shot.py --json",
