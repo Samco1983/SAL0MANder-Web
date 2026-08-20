@@ -5,6 +5,8 @@ import {
   BRIDGE_VERSION,
   onUnityMessage,
   sendToUnity,
+  summarizeBridgeMismatch,
+  type BridgeMismatchSummary,
   type UnityMessageTarget,
   type WebToUnityMessage,
 } from './bridge'
@@ -94,6 +96,7 @@ export function UnityStage({
   const [retryToken, setRetryToken] = useState(0)
   const instanceRef = useRef<UnityMessageTarget | null>(null)
   const bootedRef = useRef(false)
+  const [bridgeDiagnostics, setBridgeDiagnostics] = useState<BridgeMismatchSummary[]>([])
 
   /**
    * How many times Unity has announced, from inside the build, that its bridge
@@ -114,10 +117,18 @@ export function UnityStage({
    */
   const [handshakes, setHandshakes] = useState(0)
   useEffect(() => {
-    return onUnityMessage((message) => {
-      if (message.type !== 'ready') return
-      setHandshakes((n) => n + 1)
-    })
+    return onUnityMessage(
+      (message) => {
+        if (message.type !== 'ready') return
+        setHandshakes((n) => n + 1)
+      },
+      {
+        onMismatch: (mismatch) => {
+          const summary = summarizeBridgeMismatch(mismatch)
+          setBridgeDiagnostics((current) => [...current, summary].slice(-3))
+        },
+      },
+    )
   }, [])
 
   /**
@@ -347,6 +358,18 @@ export function UnityStage({
           <p className={styles.hint}>{state.message}</p>
           <Button onClick={() => setRetryToken((n) => n + 1)}>Try again</Button>
         </div>
+      ) : null}
+      {audience !== 'student' && bridgeDiagnostics.length ? (
+        <aside className={styles.diagnostics} role="status" aria-label="Unity bridge diagnostics">
+          <h2 className={styles.diagnosticsTitle}>Bridge diagnostics</h2>
+          <ol className={styles.diagnosticsList}>
+            {bridgeDiagnostics.map((summary, index) => (
+              <li key={`${summary.reason}-${index}`}>
+                <code>{JSON.stringify(summary)}</code>
+              </li>
+            ))}
+          </ol>
+        </aside>
       ) : null}
     </div>
   )
