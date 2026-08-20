@@ -5,6 +5,102 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — bounded W-17 accessibility/regression review, as directed; ACK'd the HOLD chronology correction
+
+```text
+AGENT: Claude Code
+AREA: Website lane — hourly work-loop check-in; bounded review per Supervisor directive
+STATUS: REVIEWED — no stop-ship finding; one minor non-blocking UX edge case noted; W-10...W-16 HOLD confirmed
+```
+
+**CHECKED FIRST**
+
+`git status`: clean at `4e6cbc1`. `node scripts/check-upstream.mjs`: no
+upstream Unity-docs changes. `gh auth status`: authenticated, healthy. Hub
+(`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle --comments`)
+reachable; newest comment is the Supervisor's `11:55:51Z` reconciliation,
+addressed to Claude by name (item 2): "ACK the chronology correction. Keep
+W-10…W-16 HOLD. Do not touch the in-progress W-17 working-tree edit while
+another agent owns it. After a clean W-17 commit lands, perform bounded
+accessibility/regression review only; no self-acceptance or deploy." That
+directive postdates my last hub post (the `11:47:11Z` docs catch-up), so this
+run answers it directly rather than re-raising anything already settled.
+
+**ACK**
+
+The Supervisor's chronology correction is right: an earlier "keep playing"
+note cannot supersede the later, more specific `10:59:05Z` hold directive,
+which I had already ACKed once before finding the six unlogged commits. W-10…W-16
+runtime/merge/deploy stays frozen pending Gemini's privacy/security verdict —
+not relitigating it.
+
+**WHAT I DID**
+
+W-17 had already landed cleanly by the time this run started — two commits,
+both already on `HEAD`, neither mine: `5755236` (Codex/SAL0-01) added the
+structural `42%` cap to `CompanionLayout.module.css`, and `5c4c514`
+(SAL0-04) hardened the test to assert the invariant ("majority of stage
+survives a reveal") instead of the literal number, closing issue #42. No
+working-tree collision to avoid — the edit I'd seen mid-flight last run had
+already been committed and pushed before this one began.
+
+Did the bounded accessibility/regression review the directive asked for,
+against code and tests rather than trusting the commit messages:
+
+- `npm run verify` green at `HEAD`: 65 files / **700 tests**, 52 mission
+  tests, build.
+- Read `CompanionLayout.tsx` and its CSS end to end. The `42%` cap only
+  applies via `data-revealed='true'`, which is `reveal && !collapsed` — the
+  manual-open path keeps its existing `62%`, matching the ruling's scope
+  (structural cap on auto-reveal, not a redesign of manual behavior).
+- Accessibility wiring holds up: the revealed `role="alert"` content
+  (`GuestPlayPage.tsx:33`/`74`) is inserted in the same `useLayoutEffect` that
+  opens the panel — not a passive effect — so there's no frame where
+  AT-hidden content carries an alert role. Focus never moves
+  (`does not take focus from the student` test, confirmed by reading it, not
+  just its name). `aria-expanded`/`aria-controls` stay wired to the toggle.
+  The stage node identity survives every reveal/collapse cycle — non-negotiable
+  #4, confirmed by both the existing test and by reading the CSS-only nature
+  of the collapse (no conditional render of `stage`).
+- Confirmed issue #42 is closed with a write-up matching current code, and
+  `OPEN-ITEMS.md`'s W-17 section already reads ✅ RESOLVED with accurate
+  evidence — no docs drift to correct here, unlike the six-commit gap two
+  runs ago.
+
+**ONE FINDING — minor, not fixed**
+
+`data-revealed` is evaluated continuously (`reveal && !collapsed`), not just
+on the auto-open edge. If a student manually opens the companion (62% cap)
+and `resultHeld` happens to flip true while it's still open, the sheet
+visibly shrinks to 42% with no action from the student. Correct per the
+ruling's letter — the guarantee is supposed to hold "regardless of who calls
+reveal" — but a UX surprise if a student ever hits it, since today's only
+caller is keyed on `session-finished`, meaning the coincidence needs the
+companion already open for some other reason exactly as the round ends. Not
+exercised by any current test. Recorded in `OPEN-ITEMS.md` under the W-17
+entry rather than fixed or reopened as a new numbered item — this is a polish
+question on an already owner-ruled, closed item, and building a fix here
+would repeat the same invent-scope pattern this loop was corrected on twice
+already. Left for whoever next touches `reveal`'s callers.
+
+**EVIDENCE**
+
+Docs-only commit this run (`OPEN-ITEMS.md` review addendum, this entry).
+`npm run verify` green as above, no source touched.
+
+**NEXT**
+
+Watching for Gemini's bounded W-16 privacy/security verdict, still the sole
+outstanding half keeping W-10…W-16 frozen. No other separable, non-held,
+web-actionable item currently on the board — will re-check each run rather
+than default to coverage padding.
+
+**BLOCKERS**
+
+None technical. Same W-10…W-16 coordination hold as every prior entry.
+
+---
+
 ## 2026-08-20 — caught up six unlogged commits: W-14 actually shipped, OPEN-ITEMS.md corrected, no hub report existed
 
 ```text

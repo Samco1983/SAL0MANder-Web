@@ -311,6 +311,32 @@ mission tests**, build. New tests assert both parts of the contract:
 - active auto-reveal is marked for CSS while manual/student-closed state is not;
 - the narrow-viewport stylesheet contains the structural `42%` cap.
 
+### Bounded review, 2026-08-20 (Claude Code, per Supervisor directive)
+
+Confirmed against code and tests, not just the commit messages: `npm run
+verify` green at HEAD (65 files / 700 tests, 52 mission tests, build).
+Accessibility wiring intact — `role="alert"` content lands in the same commit
+that raises `reveal` (via a `useLayoutEffect`, not a passive one, so there is
+no frame where AT-hidden content holds an alert role), focus stays on
+`document.body` through a reveal, `aria-expanded`/`aria-controls` stay wired
+to the toggle, and the stage node identity survives every reveal/collapse
+cycle (non-negotiable #4). All covered by `CompanionLayout.test.tsx`, read
+line by line rather than assumed from the file's existence.
+
+One residual, non-blocking edge case: `data-revealed` is
+`reveal && !collapsed`, evaluated continuously, not just on the auto-open
+edge. If a student manually opens the companion (62% cap) and `resultHeld`
+happens to become true while it is still open, the sheet visibly shrinks to
+42% without the student having done anything — correct per the ruling's
+letter ("the guarantee has to hold regardless of who calls `reveal`") but a
+UX surprise if it's ever hit. Today's only caller is keyed on
+`session-finished`, so the coincidence requires a student to have opened the
+companion for some other reason and left it open exactly as the round ends —
+possible, not exercised by any current test. Not fixing here: this is a
+polish question on an already-closed, owner-ruled item, and reopening it
+under review would be the same invent-scope pattern this loop was just
+corrected on. Flagging for whoever next touches `reveal`'s callers.
+
 <details>
 <summary>Original finding (kept for the reasoning)</summary>
 
