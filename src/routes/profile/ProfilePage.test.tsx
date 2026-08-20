@@ -1,0 +1,162 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+
+import { ThemeProvider } from '@app/providers/ThemeProvider'
+import { ProfilePage } from './ProfilePage'
+import { GUEST_TOKEN_KEY } from '@auth/guestIdentity'
+import { paths } from '@config/routes'
+
+/**
+ * Profile is the surface where an account requirement creeps in.
+ *
+ * Every other route has an obvious reason not to ask for a login. This one has
+ * an obvious reason to: it is *called* Profile, it is where avatars and XP will
+ * live, and it is the only route that renders identity material. A future
+ * change that puts a sign-in form here would look like the page finally being
+ * finished. These tests are what makes it look like a regression instead.
+ *
+ * The token assertion is deliberately a RATIO, not a character count. A test
+ * pinned to `slice(0, 12)` passes forever while the token shrinks underneath
+ * it; the property that matters is that what is on screen cannot reconstruct
+ * what is in storage.
+ */
+
+/** A known token, so "the full token is not on screen" is checkable at all. */
+const TOKEN = 'AbCdEf01GhIjKl23'
+
+const renderProfile = () =>
+  render(
+    <ThemeProvider>
+      <MemoryRouter>
+        <ProfilePage />
+      </MemoryRouter>
+    </ThemeProvider>,
+  )
+
+beforeEach(() => {
+  localStorage.clear()
+  localStorage.setItem(GUEST_TOKEN_KEY, TOKEN)
+})
+afterEach(() => {
+  vi.restoreAllMocks()
+  localStorage.clear()
+})
+
+describe('accounts are off, and the page acts like it', () => {
+  it('renders', () => {
+    renderProfile()
+    expect(screen.getByRole('heading', { name: /profile/i, level: 1 })).toBeVisible()
+  })
+
+  it('never prompts for an account, email, password, or name', () => {
+    renderProfile()
+    expect(screen.queryByRole('textbox')).toBeNull()
+    expect(document.querySelector('input')).toBeNull()
+    expect(document.querySelector('form')).toBeNull()
+    expect(screen.queryByRole('button', { name: /sign in|sign up|log in|create account/i })).toBeNull()
+  })
+
+  it('does not present an account as something the student is missing', () => {
+    // "Sign up to save your progress" is a prompt wearing a placeholder's
+    // clothes. The page may say accounts do not exist yet; it may not imply
+    // the student should go get one.
+    renderProfile()
+    const text = document.body.textContent ?? ''
+    expect(text).not.toMatch(/sign (in|up)|log in|create an account|enter your/i)
+  })
+
+  it('says out loud that a profile never gates play', () => {
+    renderProfile()
+    expect(screen.getByText(/never gate/i)).toBeVisible()
+  })
+})
+
+describe('the guest token on screen', () => {
+  const shown = () => {
+    const code = document.querySelector('code')
+    expect(code, 'the page should render the token in a <code> element').not.toBeNull()
+    return (code?.textContent ?? '').replace(/[….]+$/, '')
+  }
+
+  it('is never rendered in full', () => {
+    renderProfile()
+    expect(document.body.textContent ?? '').not.toContain(TOKEN)
+  })
+
+  it('shows at most half of it, so the rest cannot be guessed from the screen', () => {
+    // At 12 of 16 characters — the original — four unknowns remain over a
+    // 64-symbol alphabet: about 16 million, which is not a search space, it is
+    // an afternoon. Half keeps the remainder astronomically large.
+    renderProfile()
+    expect(shown().length).toBeLessThanOrEqual(TOKEN.length / 2)
+  })
+
+  it('shows enough to be recognisable when a teacher reads it aloud', () => {
+    // Truncation can also fail by being useless. This is the other wall.
+    renderProfile()
+    expect(shown().length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('marks it as shortened, so nobody copies it as the whole value', () => {
+    renderProfile()
+    expect(document.querySelector('code')?.textContent ?? '').toMatch(/[…]|\.\.\./)
+  })
+
+  it('says the token is not an account and not authentication', () => {
+    renderProfile()
+    const text = document.body.textContent ?? ''
+    expect(text).toMatch(/not an account/i)
+    expect(text).toMatch(/not used as authentication|is not authentication/i)
+  })
+})
+
+describe('links', () => {
+  const ROUTE_PATTERNS = Object.values(paths)
+    .filter((p) => p !== '*')
+    .map((p) => new RegExp('^' + p.replace(/:[^/]+/g, '[^/]+') + '$'))
+
+  it('never points at a route the router does not serve', () => {
+    renderProfile()
+    const internal = Array.from(document.querySelectorAll('a[href]'))
+      .map((a) => a.getAttribute('href') ?? '')
+      .filter((h) => h.startsWith('/'))
+
+    for (const href of internal) {
+      const path = href.split(/[?#]/)[0] ?? ''
+      expect(
+        ROUTE_PATTERNS.some((r) => r.test(path)),
+        `"${href}" is not a route in config/routes.ts — this link 404s a real visitor`,
+      ).toBe(true)
+    }
+  })
+})
+
+describe('storage the browser refuses to give us', () => {
+  /** A private window, an embedded frame, or a locked-down school profile. */
+  const denyStorage = () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('The operation is insecure.', 'SecurityError')
+    })
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('The operation is insecure.', 'SecurityError')
+    })
+  }
+
+  it('still renders the page', () => {
+    // A thrown localStorage is the single most common way this page could go
+    // blank in a classroom, and the least likely to be caught by hand.
+    denyStorage()
+    expect(() => renderProfile()).not.toThrow()
+    expect(screen.getByRole('heading', { name: /profile/i, level: 1 })).toBeVisible()
+  })
+
+  it('still refuses to ask for an account', () => {
+    // The failure mode worth naming: storage is unavailable, so the page
+    // decides the student "has no identity" and offers a sign-in.
+    denyStorage()
+    renderProfile()
+    expect(document.querySelector('input')).toBeNull()
+    expect(document.body.textContent ?? '').not.toMatch(/sign (in|up)|log in/i)
+  })
+})

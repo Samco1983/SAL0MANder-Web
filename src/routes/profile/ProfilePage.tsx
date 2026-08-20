@@ -13,6 +13,10 @@ import { getGuestIdentity } from '@auth/guestIdentity'
  */
 export function ProfilePage() {
   const identity = getGuestIdentity()
+  const visibleToken = identity.guestToken.slice(
+    0,
+    Math.max(4, Math.floor(identity.guestToken.length / 2)),
+  )
 
   return (
     <AppShell>
@@ -20,10 +24,10 @@ export function ProfilePage() {
 
       <Card title="Playing as a guest">
         <p>
-          This device has a local guest token (<code>{identity.guestToken.slice(0, 12)}…</code>). It
-          carries no personal information, is not an account, and is not used as authentication. It
-          exists so a session can resume on this device — and so progress can later be claimed by a
-          real profile if the student chooses to sign up.
+          This device has a local guest token (<code>{visibleToken}…</code>). It carries no personal
+          information, is not an account, and is not used as authentication. It exists so a session
+          can resume on this device — and so progress can later be attached to a real profile if
+          profile accounts are added.
         </p>
       </Card>
 
