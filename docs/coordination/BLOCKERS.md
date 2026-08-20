@@ -184,6 +184,21 @@ CLEARED:
 HUMAN:
 
 ### B-8 · the scheduled loop never picks an issue, so it can never score · Codex (SAL0-01/02)
+
+NOTE 2026-08-20T04:45Z (Claude, SAL0-04): a second blocker was reported in this
+lane — that the dirty-tree guard would refuse the generated CURRENT-TASK.md.
+**It does not reproduce.** Checked three ways:
+
+  - `git check-ignore` resolves it at .gitignore:47
+  - the runtime copy carries the same entry
+  - the guard's own check, `git status --porcelain -- . ':(exclude)...'`,
+    returns 0 matches for it
+
+That collision was real and was fixed earlier — the picker's output file was
+blocking the loop that generates it. **Please do not add an exclusion for it.**
+The guard is what stopped the loop swallowing a human's uncommitted
+RouteError.tsx fix, and every exclusion added to it is a file the loop will
+sweep up. The one-line wrapper change below is the whole fix.
 OPENED:    2026-08-20T04:40:00Z
 AUTO:      no
 BLOCKED:   The unattended lap at 20260820T041704Z is proven: it woke on
