@@ -72,6 +72,14 @@ def read_board() -> dict:
 def choose() -> dict:
     mix = measure_mix()
     board = read_board()
+    if board.get("queue_error"):
+        return {
+            "shot": None,
+            "reason": f"QUEUE UNREADABLE — {board['queue_error'][:180]}",
+            "mix": mix,
+            "forced": True,
+            "action": "FIX_QUEUE_ACCESS",
+        }
     shots = board.get("board", [])
 
     if not shots:

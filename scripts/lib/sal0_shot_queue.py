@@ -26,6 +26,7 @@ import sys
 
 REPO = "Samco1983/SAL0MANder-Web"
 UNAVAILABLE = {"blocked", "in-progress"}
+QUEUE_ERROR = ""
 
 # Ordered: first match wins. PRODUCT is checked first on purpose — a shot that
 # could be read as either is counted as product, because product is the one the
@@ -49,15 +50,24 @@ BIG = re.compile(r"end-to-end|blueprint|systems analysis|architecture|comprehens
 
 
 def gh_issues() -> list[dict]:
+    global QUEUE_ERROR
+    QUEUE_ERROR = ""
     try:
         r = subprocess.run(
             ["gh", "issue", "list", "--repo", REPO, "--state", "open", "--limit", "100",
              "--json", "number,title,labels"],
             capture_output=True, text=True, timeout=40,
         )
-        return json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else []
+        if r.returncode != 0:
+            QUEUE_ERROR = (r.stderr or r.stdout or "gh issue list failed").strip()
+            return []
+        if not r.stdout.strip():
+            QUEUE_ERROR = "gh issue list returned no JSON"
+            return []
+        return json.loads(r.stdout)
     except Exception as e:
-        print(f"could not read the queue: {e}", file=sys.stderr)
+        QUEUE_ERROR = f"could not read the queue: {e}"
+        print(QUEUE_ERROR, file=sys.stderr)
         return []
 
 
@@ -106,6 +116,7 @@ def build_board() -> dict:
         "board": board,
         "empty_categories": empty,
         "unavailable": unavailable,
+        "queue_error": QUEUE_ERROR,
         "warning": (
             f"no {', '.join(empty)} shot on the board — the mix will drift"
             if empty else ""
@@ -126,6 +137,10 @@ def main() -> int:
     print()
     print("  SHOT QUEUE")
     print(f"  {'-' * 62}")
+    if b.get("queue_error"):
+        print(f"    queue unreadable — {b['queue_error'][:140]}")
+        print()
+        return 1
     if not b["board"]:
         print("    board is EMPTY — nothing unclaimed. Add issues before the next run.")
     for shot in b["board"]:
