@@ -20,6 +20,41 @@
 # hook should not be in your way. Being wrong here costs a conversation; being
 # blocked with no way through costs the automation.
 
+# ---------------------------------------------------------------------------
+# A question addressed to you stops your next commit.
+#
+# Every coordination mechanism here that worked was a gate; every one that was
+# a document got skipped, including by whoever wrote it. INBOX.md is a
+# document. Tonight a direct question sat unanswered while both agents committed
+# eleven times — not refused, just never required to be seen.
+#
+# Warn-only without SAL0_AGENT, same as the collision gate: blocking an
+# unconfigured teammate is worse than the message going unread.
+# ---------------------------------------------------------------------------
+if [ -n "${SAL0_AGENT:-}" ]; then
+  INBOX_OUT=$(python3 "$(git rev-parse --show-toplevel)/scripts/lib/sal0_inbox_gate.py" --mine "$SAL0_AGENT" 2>/dev/null)
+  if [ -n "$INBOX_OUT" ]; then
+    cat >&2 <<MSG
+
+  ── WHISTLE ──────────────────────────────────────────────────
+
+  Someone asked you something and is still waiting.
+
+$(printf '%s' "$INBOX_OUT" | sed 's/^/  /')
+
+  A teammate who has to guess what you need will guess wrong, and
+  that is how two agents end up writing the same three tests in the
+  same hour. Answering costs one paragraph.
+
+  Knowingly deferring it:  git commit --no-verify
+
+  ─────────────────────────────────────────────────────────────
+
+MSG
+    exit 1
+  fi
+fi
+
 STAGED=$(git diff --cached --name-only --diff-filter=ACM)
 [ -z "$STAGED" ] && exit 0
 
