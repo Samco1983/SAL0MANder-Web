@@ -30,7 +30,22 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 # Below this share of product work, the next shot is forced to PRODUCT
 # regardless of what else is available. 20% is not a target — it is the floor
 # at which the team is still building a product rather than a workshop.
-PRODUCT_FLOOR = 0.20
+# Raised from 0.20 on 2026-08-19, after measuring 232 commits instead of
+# guessing. Conversion to a verified point, by category:
+#
+#     PRODUCT (src/, non-test)   21 commits   2 points   9.5%
+#     AUTOMATION                 78 commits   1 point    1.3%
+#     DOCS                      103 commits   1 point    1.0%
+#     TEST                       12 commits   0 points   0.0%
+#
+# Product converts 7-9x better than anything else, and 82% of commits on this
+# branch never touched src/ at all. 0.20 was set below what the evidence
+# supports; it let a week of plumbing pass as a balanced mix.
+#
+# Deliberately not 1.0. Reliability work is what took unsigned commits from 56%
+# to 7%, and a floor that forbids it would remove the one intervention with a
+# measured order-of-magnitude result. See docs/coordination/WHAT-ACTUALLY-SCORES.md
+PRODUCT_FLOOR = 0.40
 
 # How far back to judge the mix. Long enough to survive one odd possession,
 # short enough to react within a session.

@@ -32,6 +32,12 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 BURST_RUN = 5
 # Files this many agents touch inside the window are a duplicated shot.
 DUPLICATE_AT = 2
+# Re-editing your own file this fast, this often, is a shot that is not landing.
+REWORK_SECONDS = 2 * 3600
+REWORK_AT = 3
+# Commits that touch only doctrine. Measured conversion of docs: 1.0%.
+DOCTRINE_AT = 3
+DOCTRINE = re.compile(r'^docs/', re.I)
 
 
 def sh(cmd: list[str], timeout: int = 40) -> tuple[int, str]:
@@ -107,11 +113,11 @@ def d_duplicate_file(commits, _dirty, w):
 
 
 def d_dirty_overlap(commits, dirty, w):
-    """You are editing a file another agent just committed.
+    """You are editing a file that was just committed.
 
-    This is the one that fires BEFORE the damage. Either the other agent
-    already did your shot, or your uncommitted work is about to be swept into
-    their commit.
+    This is the one that fires BEFORE the damage. Either another agent already
+    did your shot, or you are revisiting recently-landed code and should know
+    that before committing.
     """
     if not dirty:
         return []
@@ -126,9 +132,9 @@ def d_dirty_overlap(commits, dirty, w):
     return [{
         "detector": "DIRTY_OVERLAP",
         "severity": "critical",
-        "what": f"{len(hits)} file(s) you have uncommitted were committed by someone else in {w}m",
+        "what": f"{len(hits)} uncommitted file(s) were also committed in the last {w}m",
         "detail": [f"{f} — already in {c['sha']} by {c['agent']}" for f, c in hits[:6]],
-        "do": "STOP. Read their commit before you commit yours — one of you is redoing the other",
+        "do": "read the recent commit before committing yours; confirm this is a refinement, not a duplicate shot",
     }]
 
 
@@ -184,7 +190,58 @@ def d_duplicate_issue(commits, _dirty, w):
     }]
 
 
-DETECTORS = [d_dirty_overlap, d_duplicate_file, d_sweep, d_duplicate_issue, d_unsigned]
+def d_self_rework(commits, _dirty, w):
+    """One agent re-editing its own file, fast, repeatedly.
+
+    Not a collision between agents — a collision with yourself. Measured over
+    232 commits, 61% re-touched a file the same agent had edited under two
+    hours earlier. That is not iteration, it is a shot taken over and over
+    from the same spot, and it is invisible from inside the run that is doing
+    it: each individual edit looks like an improvement.
+    """
+    last, hits = {}, collections.Counter()
+    for c in reversed(commits):  # oldest first
+        for f in c["files"]:
+            k = (c["agent"], f)
+            if k in last and c["ts"] - last[k] <= REWORK_SECONDS:
+                hits[f] += 1
+            last[k] = c["ts"]
+
+    heavy = [(f, n) for f, n in hits.most_common() if n >= REWORK_AT]
+    if not heavy:
+        return []
+    return [{
+        "detector": "SELF_REWORK",
+        "severity": "medium",
+        "what": f"{len(heavy)} file(s) re-edited by their own author {REWORK_AT}+ times inside {w}m",
+        "detail": [f"{n}x  {f}" for f, n in heavy[:6]],
+        "do": "the shot is not landing — change the play, or leave the file and go score",
+    }]
+
+
+def d_doctrine_churn(commits, _dirty, w):
+    """Editing the rulebook instead of playing.
+
+    The most-edited file on this branch is the playbook: 37 commits, against
+    one verified point for the whole docs category. Rewriting how to score is
+    the most convincing way to spend a possession without scoring, because it
+    produces a diff, a commit, and a feeling of progress every time.
+    """
+    doc_commits = [c for c in commits
+                   if c["files"] and all(DOCTRINE.search(f) for f in c["files"])]
+    if len(doc_commits) < DOCTRINE_AT:
+        return []
+    return [{
+        "detector": "DOCTRINE_CHURN",
+        "severity": "medium",
+        "what": f"{len(doc_commits)} of {len(commits)} commits in {w}m changed only doctrine",
+        "detail": [f"{c['sha']} {c['subject'][:56]}" for c in doc_commits[:5]],
+        "do": "docs convert at 1.0%; product at 9.5%. Take a src/ shot before the next edit here",
+    }]
+
+
+DETECTORS = [d_dirty_overlap, d_duplicate_file, d_sweep, d_self_rework,
+             d_doctrine_churn, d_duplicate_issue, d_unsigned]
 SEV_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 
 
