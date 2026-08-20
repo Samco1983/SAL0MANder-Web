@@ -124,6 +124,15 @@ describe('the demo share panel', () => {
     )
   })
 
+  it('offers a teacher preview path to the WebGL host', () => {
+    renderHome()
+
+    expect(screen.getByRole('link', { name: /preview webgl host/i })).toHaveAttribute(
+      'href',
+      paths.unity,
+    )
+  })
+
   it('keeps the QR work hidden until a teacher asks for it', () => {
     renderHome()
 
