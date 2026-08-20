@@ -54,6 +54,10 @@ jobs:
           # means changing this ONE value; the router and share links both read
           # it, and src/config/deployBasePath.test.ts pins that behaviour.
           VITE_BASE_PATH: /SAL0MANder-Web/
+          # Emergency Pages-hosted WebGL build. Longer-term this can move back
+          # to a CDN once Unity licensing is healthy enough for repeat builds.
+          VITE_UNITY_BUILD_BASE_URL: /unity
+          VITE_UNITY_BUILD_NAME: sal0-unity-webgl
         run: npm run build
 
       # Pages has no server-side rewrite, so a deep link like /play/SUN-42 —
