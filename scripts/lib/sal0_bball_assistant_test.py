@@ -71,6 +71,53 @@ class ParseRunTest(unittest.TestCase):
 
         self.assertEqual(bball.classify([scored, aborted]), "BAD TURNOVER")
 
+    def test_shot_clock_treats_no_attempts_as_failure(self):
+        clock = bball.shot_clock([])
+
+        self.assertTrue(clock["failing"])
+        self.assertEqual(clock["status"], "NO_SHOTS")
+        self.assertEqual(clock["attempts"], 0)
+        self.assertEqual(clock["points"], 0)
+
+    def test_shot_clock_treats_no_points_as_failure(self):
+        idle = bball.Run(
+            stamp="20260820T041704Z",
+            path="idle.log",
+            verdict="NOTHING CHANGED",
+        )
+        blocked = bball.Run(
+            stamp="20260820T051704Z",
+            path="blocked.log",
+            verdict="BLOCKED - NEED OWNER",
+            cause="AUTH",
+        )
+
+        clock = bball.shot_clock([idle, blocked])
+
+        self.assertTrue(clock["failing"])
+        self.assertEqual(clock["status"], "NO_POINTS")
+        self.assertEqual(clock["attempts"], 2)
+        self.assertEqual(clock["points"], 0)
+
+    def test_shot_clock_clears_when_recent_possession_scores(self):
+        missed = bball.Run(
+            stamp="20260820T041704Z",
+            path="missed.log",
+            verdict="NOTHING CHANGED",
+        )
+        scored = bball.Run(
+            stamp="20260820T051704Z",
+            path="scored.log",
+            verdict="COMMITTED abc12345",
+        )
+
+        clock = bball.shot_clock([missed, scored])
+
+        self.assertFalse(clock["failing"])
+        self.assertEqual(clock["status"], "MOVING")
+        self.assertEqual(clock["attempts"], 2)
+        self.assertEqual(clock["points"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -83,6 +83,7 @@ class Report:
     missed: int
     blocked: int
     idle: int
+    shot_clock: dict = field(default_factory=dict)
     assists: dict = field(default_factory=dict)
     points: dict = field(default_factory=dict)
     learning: dict = field(default_factory=dict)
@@ -213,8 +214,65 @@ def repeated_failures(runs: list[Run]) -> list[dict]:
     return out
 
 
+def shot_clock(runs: list[Run], window: int = 5) -> dict:
+    """Measure whether the team is moving the ball in the recent window.
+
+    This is deliberately harsher than the court label. A blocked or failed run
+    may be a useful miss, but a window with no attempts or no points is still a
+    failing possession because time is the real scoreboard.
+    """
+    recent = runs[-window:] if runs else []
+    attempts = len(recent)
+    points = sum(1 for r in recent if r.verdict.startswith(("COMMITTED", "MERGED")))
+    blockers = sum(1 for r in recent if r.cause in {"AUTH", "TRUST", "QUOTA"})
+    turnovers = sum(
+        1
+        for r in recent
+        if r.cause in {"DIRTY_TREE", "WORKER_ABORTED", "STALLED_RUN"}
+    )
+    idle_runs = sum(1 for r in recent if r.verdict.startswith("NOTHING"))
+
+    if attempts == 0:
+        status = "NO_SHOTS"
+        failing = True
+        message = "No run logs exist in the window; the ball did not move."
+    elif points == 0:
+        status = "NO_POINTS"
+        failing = True
+        message = "Shots were attempted, but none scored in the window."
+    else:
+        status = "MOVING"
+        failing = False
+        message = "At least one recent possession scored."
+
+    return {
+        "window_runs": window,
+        "attempts": attempts,
+        "points": points,
+        "misses": max(attempts - points, 0),
+        "idle_runs": idle_runs,
+        "blockers": blockers,
+        "turnovers": turnovers,
+        "failing": failing,
+        "status": status,
+        "message": message,
+    }
+
+
 def recommend(court: str, repeats: list[dict], runs: list[Run]) -> list[str]:
     recs: list[str] = []
+    clock = shot_clock(runs)
+
+    if clock["status"] == "NO_SHOTS":
+        recs.append(
+            "SHOT CLOCK — zero attempts in the recent window. This is failing, "
+            "not neutral: force the next bounded shot or take it as SAL0-01."
+        )
+    elif clock["status"] == "NO_POINTS":
+        recs.append(
+            "SHOT CLOCK — attempts happened but zero points landed. This is failing: "
+            "shrink the shot, bench repeated misses, or switch players now."
+        )
 
     for r in repeats:
         recs.append(
@@ -435,6 +493,7 @@ def learn_from(points: dict, assists: dict, runs: list[Run], repeats: list[dict]
 def build(runs: list[Run]) -> Report:
     court = classify(runs)
     repeats = repeated_failures(runs)
+    clock = shot_clock(runs)
     scored = sum(1 for r in runs if r.verdict.startswith(("COMMITTED", "MERGED")))
     blocked = sum(1 for r in runs if r.verdict.startswith("BLOCKED"))
     idle = sum(1 for r in runs if r.verdict.startswith("NOTHING"))
@@ -451,6 +510,7 @@ def build(runs: list[Run]) -> Report:
         missed=missed,
         blocked=blocked,
         idle=idle,
+        shot_clock=clock,
         assists=assists,
         points=points,
         learning=learn_from(points, assists, runs, repeats, turnovers),
@@ -459,6 +519,10 @@ def build(runs: list[Run]) -> Report:
         recommendations=recommend(court, repeats, runs),
         huddle={
             "what_happened": f"{len(runs)} runs read: {scored} scored, {blocked} blocked, {idle} idle.",
+            "shot_clock": (
+                f"{clock['status']}: {clock['attempts']} attempt(s), "
+                f"{clock['points']} point(s) in last {clock['window_runs']} run slot(s)"
+            ),
             "the_miss": (
                 f"{worst['shot'][:60]} failed {worst['times']}x with {worst['cause']}"
                 if worst
@@ -491,6 +555,10 @@ def record_season(report: Report, issues_open: int | None) -> dict:
         "scored": report.scored,
         "blocked": report.blocked,
         "idle": report.idle,
+        "shot_clock_status": report.shot_clock.get("status"),
+        "shot_clock_failing": report.shot_clock.get("failing"),
+        "shot_clock_attempts": report.shot_clock.get("attempts"),
+        "shot_clock_points": report.shot_clock.get("points"),
         "repeated_failures": len(report.repeated_failures),
         "issues_open": issues_open,
         "verified_points": report.points.get("verified"),
@@ -664,6 +732,12 @@ def main() -> int:
     print()
     print(f"  COURT: {report.court}")
     print(f"  {report.runs_read} runs — {report.scored} scored · {report.blocked} blocked · {report.idle} idle")
+    clock = report.shot_clock
+    print(
+        f"  shot clock: {clock.get('status')} — "
+        f"{clock.get('attempts', 0)} attempt(s), {clock.get('points', 0)} point(s), "
+        f"failing={str(clock.get('failing')).lower()}"
+    )
     if report.points.get("error"):
         print(f"  points: unavailable — {report.points['error']}")
     else:
