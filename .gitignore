@@ -49,3 +49,10 @@ docs/coordination/ops/CURRENT-TASK.md
 docs/coordination/ops/SEASON.jsonl
 .nudge.lock
 NUDGES.jsonl
+
+# Generated Python bytecode. Untracked build output that made the work loop
+# refuse to start — it checks for a dirty tree, and a .pyc directory reads the
+# same as an unfinished shot. Deleted by hand twice in one night before anyone
+# noticed it was blocking every scheduled possession.
+__pycache__/
+*.py[cod]
