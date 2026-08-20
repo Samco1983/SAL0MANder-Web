@@ -341,6 +341,15 @@ If preflight fails, do not keep asking the same player to shoot. Bench that
 surface for the possession, log the owner blocker, and let SAL0-01 or another
 ready role take a smaller shot.
 
+Bench is rotation, not exile. A benched player can return when the conditions
+change: smaller shot, cleaner prompt, fixed auth, fresh quota, different tool,
+or another agent rebounding first.
+
+Repeated benching is a coaching signal. If the same player, issue, or play
+gets benched twice for the same reason, do not run it back unchanged. Change
+the play design before redemption: shrink the task, switch the player, change
+the environment, add missing data, or choose another angle.
+
 ## The huddle
 
 The shot clock is only half of it. **A team that never slows down runs the same
