@@ -43,6 +43,25 @@ class PackSeed:
 
 
 PACKS: dict[str, PackSeed] = {
+    # The owner named eight crossover ideas. Two are already carried by the
+    # themed packs (cat astronaut in cosmic-critters, basketball dragon in
+    # dragon-court); the remaining six live here rather than being scattered,
+    # because a crossover is not a stage — it is the keepsake a student earns,
+    # so the whole set shares one composition brief: centered subject, clean
+    # background, readable at poster size and at thumbnail size in a collection.
+    "crossover-collection": PackSeed(
+        pack="crossover-collection",
+        use="bonus crossover unlocks — earned completion images",
+        runtime_group="crossover-collection",
+        assets=(
+            AssetSeed("poster", "dog-superhero-city", "completion reward image", "portrait poster concept", "a cheerful dog in a flowing cape flying above a friendly cartoon city skyline at golden hour, paws forward, expression proud rather than fierce"),
+            AssetSeed("poster", "underwater-castle-explorers", "completion reward image", "portrait poster concept", "a group of small animals in round diving helmets exploring the gates of a coral-covered castle, shafts of light from above, calm and wondrous rather than eerie"),
+            AssetSeed("poster", "robot-teacher-class", "completion reward image", "portrait poster concept", "a friendly rounded robot at a chalkboard teaching a small class of attentive animals seated at desks, warm classroom light, no text or writing on the board"),
+            AssetSeed("poster", "dinosaur-race-car", "completion reward image", "portrait poster concept", "a grinning dinosaur wearing goggles driving a chunky race car around a sunny bend, dust curling behind, motion conveyed by pose and line rather than speed blur"),
+            AssetSeed("poster", "space-sports-stadium", "completion reward image", "portrait poster concept", "a domed sports stadium on a small moon with planets in the sky above, cheerful crowd silhouettes in the stands, a bright open field at the center"),
+            AssetSeed("poster", "creature-science-lab", "completion reward image", "portrait poster concept", "friendly fantasy creatures running a science experiment with colourful bubbling flasks on a wooden bench, curious and delighted, nothing hazardous or alarming"),
+        ),
+    ),
     # --- packs added to close the gap against the production mix -------------
     # The six original packs cover fantasy, space and nature well and leave the
     # three largest business priorities empty: cute animals is 30% of the target

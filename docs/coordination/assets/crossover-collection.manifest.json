@@ -1,0 +1,69 @@
+{
+  "pack": "crossover-collection",
+  "lane": "Unity/Game asset scout",
+  "status": "proposal",
+  "style": "warm readable kid-friendly puzzle art",
+  "runtimeGroup": "crossover-collection",
+  "use": "bonus crossover unlocks \u2014 earned completion images",
+  "notes": [
+    "Prompts only. No generated files are committed here.",
+    "Unity import path, dimensions, compression, and Addressables labels need Unity-lane approval.",
+    "No copyrighted characters, logos, real children, or classroom PII."
+  ],
+  "assets": [
+    {
+      "id": "crossover-collection.poster.dog-superhero-city-01",
+      "type": "poster",
+      "targetUse": "completion reward image",
+      "deliverable": "portrait poster concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a portrait poster concept for a kid-friendly educational puzzle game. Theme: crossover-collection. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: a cheerful dog in a flowing cape flying above a friendly cartoon city skyline at golden hour, paws forward, expression proud rather than fierce. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: portrait poster concept."
+    },
+    {
+      "id": "crossover-collection.poster.underwater-castle-explorers-01",
+      "type": "poster",
+      "targetUse": "completion reward image",
+      "deliverable": "portrait poster concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a portrait poster concept for a kid-friendly educational puzzle game. Theme: crossover-collection. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: a group of small animals in round diving helmets exploring the gates of a coral-covered castle, shafts of light from above, calm and wondrous rather than eerie. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: portrait poster concept."
+    },
+    {
+      "id": "crossover-collection.poster.robot-teacher-class-01",
+      "type": "poster",
+      "targetUse": "completion reward image",
+      "deliverable": "portrait poster concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a portrait poster concept for a kid-friendly educational puzzle game. Theme: crossover-collection. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: a friendly rounded robot at a chalkboard teaching a small class of attentive animals seated at desks, warm classroom light, no text or writing on the board. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: portrait poster concept."
+    },
+    {
+      "id": "crossover-collection.poster.dinosaur-race-car-01",
+      "type": "poster",
+      "targetUse": "completion reward image",
+      "deliverable": "portrait poster concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a portrait poster concept for a kid-friendly educational puzzle game. Theme: crossover-collection. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: a grinning dinosaur wearing goggles driving a chunky race car around a sunny bend, dust curling behind, motion conveyed by pose and line rather than speed blur. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: portrait poster concept."
+    },
+    {
+      "id": "crossover-collection.poster.space-sports-stadium-01",
+      "type": "poster",
+      "targetUse": "completion reward image",
+      "deliverable": "portrait poster concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a portrait poster concept for a kid-friendly educational puzzle game. Theme: crossover-collection. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: a domed sports stadium on a small moon with planets in the sky above, cheerful crowd silhouettes in the stands, a bright open field at the center. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: portrait poster concept."
+    },
+    {
+      "id": "crossover-collection.poster.creature-science-lab-01",
+      "type": "poster",
+      "targetUse": "completion reward image",
+      "deliverable": "portrait poster concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a portrait poster concept for a kid-friendly educational puzzle game. Theme: crossover-collection. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: friendly fantasy creatures running a science experiment with colourful bubbling flasks on a wooden bench, curious and delighted, nothing hazardous or alarming. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: portrait poster concept."
+    }
+  ]
+}

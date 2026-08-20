@@ -56,3 +56,8 @@ NUDGES.jsonl
 # noticed it was blocking every scheduled possession.
 __pycache__/
 *.py[cod]
+
+# Generated art. Never committed: the manifests are prompts-only by rule,
+# binary art in git history is unremovable, and the rights question is not
+# settled. Provenance lives in a .json beside each image.
+generated-art/
