@@ -894,6 +894,7 @@ turnovers. Some stop the game.
 
 | Severity | Meaning | Response |
 | --- | --- | --- |
+| **Mistake** | local bug, bad assumption, or wrong first read that is caught before another player acts on it | fix it, name the cause, keep playing |
 | **Live-ball miss** | failed test, wrong approach, small bad diff, clear evidence | rebound it and keep playing |
 | **Bad turnover** | vague handoff, stale claim, wrong attribution, unpushed work, dirty tree collision | stop that possession, preserve evidence, assign the rebound |
 | **Flagrant turnover** | secret exposure, destructive command, cross-lane edit, force push, swallowed human work | immediate TIMEOUT, pause automation, owner review before resume |
@@ -902,6 +903,13 @@ The system should tolerate more live-ball misses because they create learning.
 It should aggressively reduce bad turnovers because they waste team time. It
 should refuse flagrant turnovers because they can damage the project while
 Samuel is asleep.
+
+A mistake becomes a bad turnover when another player or script trusts the false
+state. The queue bug proved it: Python could not reach GitHub, returned an
+empty board, and almost told the team to create work that already existed. The
+fix was not "be more careful." The fix was technical: carry `queue_error`
+separately and make `sal0_force_shot.py` return `FIX_QUEUE_ACCESS`, not
+`CREATE_SHOT`, when the data source is unreadable.
 
 **More mistakes can be better than one slow perfect point, but only if the
 mistakes stay reboundable.** Once a mistake hides work, crosses lanes, touches

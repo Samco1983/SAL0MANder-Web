@@ -59,6 +59,9 @@ def gh_issues() -> list[dict]:
             capture_output=True, text=True, timeout=40,
         )
         if r.returncode != 0:
+            # Unreadable data is not empty data. Treating a GitHub/network
+            # failure as an empty queue almost made Mission Control create
+            # duplicate work while real issues were waiting.
             QUEUE_ERROR = (r.stderr or r.stdout or "gh issue list failed").strip()
             return []
         if not r.stdout.strip():
