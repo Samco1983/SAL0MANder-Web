@@ -169,7 +169,7 @@ echo "branch: $BRANCH  head: $BEFORE"
 # swept it into a commit labelled as the loop's own work. The loop cannot tell
 # its output from anyone else's once it starts, so the only honest moment to
 # check is before.
-PRE_DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs' ':(exclude)docs/coordination/ops/CURRENT-TASK.md')"
+PRE_DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
 if [ -n "$PRE_DIRTY" ]; then
   echo "BLOCKED - NEED OWNER — working tree was already dirty before this run:"
   echo "$PRE_DIRTY"
@@ -263,7 +263,7 @@ fi
 
 WORKER_HEAD="$($GIT rev-parse HEAD)"
 if [ "$WORKER_HEAD" != "$BEFORE" ]; then
-  COMMITTED_FILES="$($GIT diff --name-only "$BEFORE..$WORKER_HEAD" -- . ':(exclude)docs/coordination/runs' ':(exclude)docs/coordination/ops/CURRENT-TASK.md')"
+  COMMITTED_FILES="$($GIT diff --name-only "$BEFORE..$WORKER_HEAD" -- . ':(exclude)docs/coordination/runs')"
   FILES="$(printf '%s\n' "$COMMITTED_FILES" | sed '/^$/d' | wc -l | tr -d ' ')"
   echo "worker moved HEAD to ${WORKER_HEAD:0:8}; committed $FILES file(s):"
   printf '%s\n' "$COMMITTED_FILES"
@@ -351,7 +351,7 @@ fi
 
 # The normal worker path arrives as an uncommitted working tree. If the worker
 # commits anyway, the HEAD-movement path above owns that evidence.
-DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs' ':(exclude)docs/coordination/ops/CURRENT-TASK.md')"
+DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
 
 if [ -z "$DIRTY" ]; then
   if [ "$EXIT" -ne 0 ]; then
@@ -424,7 +424,7 @@ if [ "$VERIFY" -ne 0 ]; then
   exit 1
 fi
 
-$GIT add -A -- . ':(exclude)docs/coordination/runs' ':(exclude)docs/coordination/ops/CURRENT-TASK.md'
+$GIT add -A -- . ':(exclude)docs/coordination/runs'
 # Signed, or the referee rejects it — which is what happened on the first real
 # run: the commit was blocked, the loop read HEAD, found the PREVIOUS commit,
 # and reported COMMITTED for work that was never saved.
