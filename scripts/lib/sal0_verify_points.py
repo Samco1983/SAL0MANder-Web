@@ -30,7 +30,16 @@ import sys
 
 REPO_SLUG = "Samco1983/SAL0MANder-Web"
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CLOSED_BY = re.compile(r"[Cc]losed by [`']?([0-9a-f]{7,40})")
+COMMIT_REF = re.compile(
+    r"\b(?:[Cc]losed by|[Cc]ompleted in|[Ff]ixed in|[Rr]esolved in)\s+[`']?([0-9a-f]{7,40})\b"
+)
+
+
+def commit_named_in(text: str) -> str | None:
+    """Return the commit a close/evidence comment names, if it names one."""
+    if m := COMMIT_REF.search(text):
+        return m.group(1)
+    return None
 
 
 def sh(cmd: list[str], timeout: int = 40) -> tuple[int, str]:
@@ -48,8 +57,8 @@ def check_one(issue: dict) -> dict:
 
     sha = None
     for c in issue.get("comments", []):
-        if m := CLOSED_BY.search(c.get("body", "")):
-            sha = m.group(1)
+        if found := commit_named_in(c.get("body", "")):
+            sha = found
             break
 
     if not sha:
