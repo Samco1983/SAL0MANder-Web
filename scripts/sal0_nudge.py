@@ -43,6 +43,7 @@ import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOME = os.path.expanduser("~")
+LOG_DIR = os.path.join(REPO, "docs", "coordination", "runs", "logs")
 
 WORK_LOOP = os.path.join(REPO, "scripts", "sal0-work-loop.sh")
 LOOP_LOCK = os.path.join(REPO, "docs", "coordination", ".work-loop.lock")
@@ -145,6 +146,34 @@ def blocked() -> str | None:
     return None
 
 
+def refusal_reason() -> str | None:
+    """Why the last run refused, if it did.
+
+    A refusal is not a miss. The loop refusing a dirty court is the guard
+    working — but sixteen identical refusals overnight is not sixteen data
+    points, it is one blocker nobody was told about. Reading it lets the nudger
+    say the same thing once, loudly, instead of quietly failing all night.
+    """
+    try:
+        logs = sorted(
+            (f for f in os.listdir(LOG_DIR) if f.startswith("work-loop-")),
+            reverse=True,
+        )
+        if not logs:
+            return None
+        text = open(os.path.join(LOG_DIR, logs[0]), encoding="utf-8", errors="replace").read()
+        if "BLOCKED - NEED OWNER" not in text:
+            return None
+        for line in text.split("\n"):
+            if "working tree was already dirty" in line:
+                files = [l.strip() for l in text.split("\n")
+                         if l.strip().startswith("??") or l.strip().startswith("M ")]
+                return "dirty tree: " + ", ".join(files[:4]) if files else "dirty tree"
+        return "blocked, owner needed"
+    except Exception:
+        return None
+
+
 def nudge_claude(dry: bool) -> tuple[str, int]:
     if dry:
         say("DRY RUN — would run the work loop")
@@ -190,6 +219,7 @@ def main() -> int:
     record("start", interval=args.interval, awake=awake, dry_run=args.dry_run, pid=os.getpid())
 
     cycle = 0
+    repeats: dict[str, int] = {}
     try:
         while True:
             cycle += 1
@@ -200,8 +230,24 @@ def main() -> int:
             else:
                 say(f"cycle {cycle}: handing the work loop a possession")
                 outcome, code = nudge_claude(args.dry_run)
-                say(f"cycle {cycle}: {outcome} (exit {code})")
-                record("possession", cycle=cycle, outcome=outcome, exit_code=code)
+                reason = refusal_reason() if outcome == "missed" else None
+                say(f"cycle {cycle}: {outcome} (exit {code})" + (f" — {reason}" if reason else ""))
+                record("possession", cycle=cycle, outcome=outcome, exit_code=code,
+                       **({"refusal": reason} if reason else {}))
+
+                # Same cause twice is a blocker, not a trend. Say it once,
+                # loudly, rather than logging the same miss until morning.
+                if reason:
+                    repeats[reason] = repeats.get(reason, 0) + 1
+                    if repeats[reason] == 2:
+                        say("")
+                        say("  ** SAME REFUSAL TWICE — this will not clear on its own **")
+                        say(f"  ** {reason}")
+                        say("  ** every remaining cycle tonight will refuse for this reason")
+                        say("")
+                        record("blocker", cycle=cycle, reason=reason, repeats=2)
+                else:
+                    repeats.clear()
                 note_for_codex(cycle)
 
             if args.max_cycles and cycle >= args.max_cycles:
