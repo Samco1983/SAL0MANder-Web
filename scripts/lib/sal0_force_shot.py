@@ -19,6 +19,7 @@ Read-only. Chooses; changes nothing.
 from __future__ import annotations
 
 import argparse
+import re
 import json
 import os
 import subprocess
@@ -60,6 +61,25 @@ def _git(args: list[str]) -> str:
         return ""
 
 
+def _promote_tracked_findings() -> int:
+    """Move unresolved OPEN-ITEMS findings onto the board. Returns how many.
+
+    Failure here is never fatal: a picker that cannot promote should still be
+    able to report the board it can see. It stays silent on failure too, so a
+    promotion that did not happen never looks like one that did.
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    try:
+        r = subprocess.run(
+            [sys.executable, os.path.join(here, "sal0_backlog_sync.py"), "--apply"],
+            capture_output=True, text=True, timeout=180, cwd=REPO,
+        )
+    except Exception:
+        return 0
+    m = re.search(r"promoted (\d+) of", r.stdout or "")
+    return int(m.group(1)) if m else 0
+
+
 def measure_mix() -> dict:
     files = _git(["log", f"--since={WINDOW}", "--name-only", "--format="]).split("\n")
     product = sum(1 for f in files if f.startswith("src/"))
@@ -84,10 +104,55 @@ def read_board() -> dict:
         return {"board": [], "ready_count": 0}
 
 
+def local_tracked_finding() -> dict | None:
+    """Return one local OPEN-ITEMS finding when GitHub cannot be read."""
+    try:
+        from sal0_backlog_sync import parse_items, strip_emoji
+    except Exception:
+        return None
+
+    items = parse_items()
+    if not items:
+        return None
+
+    def productish(item: dict) -> bool:
+        text = f"{item.get('title', '')}\n{item.get('body', '')}"
+        return bool(re.search(r"\bsrc/|student|teacher|guest|play|unity|web|user-visible", text, re.I))
+
+    item = next((candidate for candidate in items if productish(candidate)), items[0])
+    title = strip_emoji(str(item.get("title", "")))
+    key = item.get("key")
+    return {
+        "number": None,
+        "title": f"[LOCAL] {key} — {title}",
+        "category": "PRODUCT" if productish(item) else "TEST",
+        "success_check": (
+            "the tracked finding is fixed with npm run verify passing, or it is split into "
+            "a smaller issue once GitHub queue access returns"
+        ),
+        "size": "local tracked finding — sync board after GitHub recovers",
+        "source": "docs/coordination/OPEN-ITEMS.md",
+        "key": key,
+    }
+
+
 def choose() -> dict:
     mix = measure_mix()
     board = read_board()
     if board.get("queue_error"):
+        local = local_tracked_finding()
+        if local:
+            return {
+                "shot": local,
+                "reason": (
+                    f"QUEUE UNREADABLE — {board['queue_error'][:180]}. "
+                    "Falling back to a local tracked finding so the team does not idle. "
+                    "Do not create duplicate issues; sync the board when GitHub returns."
+                ),
+                "mix": mix,
+                "forced": True,
+                "action": "TAKE_SHOT",
+            }
         return {
             "shot": None,
             "reason": f"QUEUE UNREADABLE — {board['queue_error'][:180]}",
@@ -98,6 +163,42 @@ def choose() -> dict:
     shots = board.get("board", [])
 
     if not shots:
+        # An empty board is almost never an empty backlog.
+        #
+        # Five investigated defects sat in OPEN-ITEMS.md while Mission Control
+        # truthfully reported an empty queue and agents stood idle on top of
+        # them. Findings are written in markdown; the queue is read from
+        # GitHub; nothing joined the two. Reporting CREATE_SHOT in that state
+        # asks a human to invent work that already existed.
+        #
+        # So promote first, then look again. Only if that finds nothing is the
+        # board honestly empty. Deliberately NOT shot generation: this moves
+        # real, already-analysed findings and invents nothing.
+        promoted = _promote_tracked_findings()
+        if promoted:
+            board = read_board()
+            shots = board.get("board", [])
+            if shots:
+                by_cat = {s["category"]: s for s in shots}
+                if mix["below_floor"] and "PRODUCT" in by_cat:
+                    return {
+                        "shot": by_cat["PRODUCT"],
+                        "reason": (
+                            f"PROMOTED BACKLOG — promoted {promoted} tracked finding(s), then forced "
+                            f"PRODUCT because product share is {mix['product_share']:.0%}."
+                        ),
+                        "mix": mix,
+                        "forced": True,
+                        "action": "TAKE_SHOT",
+                    }
+                return {
+                    "shot": shots[0],
+                    "reason": f"PROMOTED BACKLOG — promoted {promoted} tracked finding(s), then took the first ready shot.",
+                    "mix": mix,
+                    "forced": True,
+                    "action": "TAKE_SHOT",
+                }
+
         category = "PRODUCT" if mix["below_floor"] else "PRODUCT"
         return {
             "shot": {
