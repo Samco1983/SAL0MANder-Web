@@ -5,6 +5,65 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — closed #35 (already satisfied); hold on W-10…W-16/docs-design still stands
+
+```text
+AGENT: Claude Code
+AREA: Website lane — routine work-loop check-in + one coordination-queue point
+STATUS: HOLD on src/ runtime + docs/design — one non-runtime queue point closed
+```
+
+**CHECKED FIRST**
+
+`git status`: clean, `council/2026-08-18` up to date with `origin/council/2026-08-18`
+at `1a504a5`, no pull needed. `node scripts/check-upstream.mjs`: no upstream
+Unity-docs changes. Hub (`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle`)
+reachable directly. Latest Supervisor cycle `2026-08-20T05:54:21Z` repeats: W-10…W-16
+runtime/merge/deploy stays frozen for Claude until Gemini's independent review lands;
+no fresh correction request has been raised to Claude specifically, so nothing to
+answer. Also of note from that cycle: the Supervisor reconciled that Codex's
+technical half of the W-16 review is actually complete (`10e2bfc` in this repo) —
+it had simply never been mirrored to the hub thread; the remaining gap is Gemini's
+independent review, not Codex's.
+
+**WHAT I DID**
+
+Closed web repo issue **#35** (`[ASSET-SCOUT] Expand AI picture fixture manifests`)
+— a content/coordination-queue item, not `src/` or `docs/design`, so outside the
+freeze. Verified against current repo state instead of trusting the issue text:
+the brief's "first-pack table" names exactly 6 packs and all 6 already existed as
+manifests (nothing left "from the table" to add); 6 more packs were added earlier
+this session (`527756e`) to close a production-mix gap, for 12 manifests total.
+Parsed all 12 as JSON (`python3 -c "json.load(...)"`), counted 72 prompts total
+against the issue's ≥18 / the brief's ≥24 asks, and grepped every manifest for the
+required rights-disclosure and Unity-handoff notes — all present. No manifest
+content changed; closed because the ask was already met by prior work, not because
+new work was added.
+
+Comment + close:
+[https://github.com/Samco1983/SAL0MANder-Web/issues/35#issuecomment-5352481000](https://github.com/Samco1983/SAL0MANder-Web/issues/35#issuecomment-5352481000).
+
+Posted the matching ACK + checkpoint to hub Issue #1:
+[https://github.com/Samco1983/Sal0mander-Jigsaw-Puzzle/issues/1#issuecomment-5352483770](https://github.com/Samco1983/Sal0mander-Jigsaw-Puzzle/issues/1#issuecomment-5352483770).
+
+No edit to `src/` or `docs/design` this run — `npm run verify` not re-run, nothing
+to verify (no code changed).
+
+**NEXT**
+
+Watching for the hold to lift or a fresh Codex/Gemini W-16 checkpoint (Gemini's
+independent review is now the sole outstanding half per the Supervisor's latest
+reconciliation). Remaining open web issues (#13/#14/#15/#19/#20/#21) are
+`[OVERNIGHT]` analysis/blueprint tasks and #2 is already in-progress — none
+confirmed clear of the runtime/docs-design freeze, so none started this pass.
+
+**BLOCKERS**
+
+Self-imposed by directive: no self-directed `src/` runtime or `docs/design`
+work until the hold lifts.
+
+---
+
 ## 2026-08-20 — closed #16 (resolved in practice); hold on W-10…W-16/docs-design still stands
 
 ```text
