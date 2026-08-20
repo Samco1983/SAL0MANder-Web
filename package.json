@@ -52,6 +52,8 @@
     "mission:points": "python3 scripts/lib/sal0_verify_points.py",
     "mission:points:json": "python3 scripts/lib/sal0_verify_points.py --json",
     "mission:preflight": "python3 scripts/sal0-mission-control-core.py",
+    "mission:rebounder": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_data_rebounder.py",
+    "mission:rebounder:json": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_data_rebounder.py --json",
     "mission:rotation": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_rotation_coach.py",
     "mission:rotation:apply": "python3 scripts/lib/sal0_rotation_apply.py --apply",
     "mission:rotation:dry": "python3 scripts/lib/sal0_rotation_apply.py",

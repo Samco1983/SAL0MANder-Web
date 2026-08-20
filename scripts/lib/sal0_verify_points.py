@@ -90,38 +90,43 @@ def check_one(issue: dict) -> dict:
     return result
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(description="Verify claimed points against the definition.")
-    ap.add_argument("--json", action="store_true")
-    args = ap.parse_args()
-
+def audit_points() -> tuple[int, dict]:
     code, raw = sh(["gh", "issue", "list", "--repo", REPO_SLUG, "--state", "closed",
                     "--limit", "100", "--json", "number,title,comments"], timeout=90)
     if code != 0 or not raw:
-        print("could not read closed issues — cannot audit the score", file=sys.stderr)
-        return 1
+        return 1, {"error": "could not read closed issues — cannot audit the score"}
 
     try:
         issues = [i for i in json.loads(raw)
                   if "[WEB]" in i.get("title", "").upper() or "[COORD]" in i.get("title", "").upper()]
     except ValueError:
-        print("unreadable issue list", file=sys.stderr)
-        return 1
+        return 1, {"error": "unreadable issue list"}
 
     checked = [check_one(i) for i in issues]
     real = [c for c in checked if c["point"]]
     fake = [c for c in checked if not c["point"]]
 
-    report = {
+    return (0 if not fake else 1), {
         "claimed": len(checked),
         "verified": len(real),
         "unverified": len(fake),
         "failures": fake,
     }
 
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="Verify claimed points against the definition.")
+    ap.add_argument("--json", action="store_true")
+    args = ap.parse_args()
+
+    code, report = audit_points()
+    if "error" in report:
+        print(report["error"], file=sys.stderr)
+        return 1
+
     if args.json:
         print(json.dumps(report, indent=2))
-        return 0 if not fake else 1
+        return code
 
     print()
     print("  POINT AUDIT — every close re-checked against git")
@@ -131,9 +136,9 @@ def main() -> int:
     print(f"    NOT verified: {report['unverified']}")
     print()
 
-    if fake:
+    if report["failures"]:
         print("  THESE ARE NOT POINTS")
-        for f in fake:
+        for f in report["failures"]:
             print(f"    #{f['issue']}  {f['title']}")
             for reason in f["failures"]:
                 print(f"          {reason}")
@@ -144,7 +149,7 @@ def main() -> int:
         print("  Every closed issue names a real commit, on this branch, with files in it.")
         print("  The score is what it says it is.")
     print()
-    return 0 if not fake else 1
+    return code
 
 
 if __name__ == "__main__":
