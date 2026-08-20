@@ -17,6 +17,8 @@
 set -uo pipefail
 
 REPO="/Users/samuel_saldivar/Desktop/SAL0MANder-Web"
+RUNTIME_REPO="$HOME/.sal0mander/runtime/SAL0MANder-Web"
+LAUNCHD_SERVICE="gui/$(id -u)/com.sal0mander.work-loop"
 PAUSE="$HOME/.sal0mander/PAUSE"
 LOG_DIR="$HOME/.sal0mander/logs"
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
@@ -71,6 +73,40 @@ start-game)
   DIRTY=$(git status --porcelain | wc -l | tr -d ' ')
   [ "$DIRTY" -gt 0 ] && { READY=no; REASONS="$REASONS\n    · $DIRTY uncommitted file(s) — a scheduled run will refuse to start"; }
 
+  # Installed is not ready. The runtime must match the court the agents see,
+  # and launchd must have actually completed at least one invocation.
+  if [ ! -d "$RUNTIME_REPO/.git" ]; then
+    READY=no
+    REASONS="$REASONS\n    · runtime repo missing — reinstall desktop automation"
+  else
+    DESKTOP_HEAD=$(git rev-parse HEAD 2>/dev/null || true)
+    RUNTIME_HEAD=$(git -C "$RUNTIME_REPO" rev-parse HEAD 2>/dev/null || true)
+    if [ -z "$RUNTIME_HEAD" ] || [ "$RUNTIME_HEAD" != "$DESKTOP_HEAD" ]; then
+      READY=no
+      REASONS="$REASONS\n    · runtime stale (${RUNTIME_HEAD:0:8} != ${DESKTOP_HEAD:0:8}) — reinstall or sync before play"
+    fi
+  fi
+
+  LAUNCHD_INFO=$(launchctl print "$LAUNCHD_SERVICE" 2>/dev/null || true)
+  if [ -z "$LAUNCHD_INFO" ]; then
+    READY=no
+    REASONS="$REASONS\n    · launchd job is not loaded"
+  else
+    LAUNCHD_RUNS=$(printf '%s\n' "$LAUNCHD_INFO" | awk '/runs =/{print $3; exit}')
+    case "${LAUNCHD_RUNS:-}" in
+      ''|*[!0-9]*|0)
+        READY=no
+        REASONS="$REASONS\n    · launchd is loaded but has no proven run"
+        ;;
+    esac
+  fi
+
+  LATEST_LOG=$(ls -t "$LOG_DIR"/work-loop-*.log 2>/dev/null | head -1)
+  if [ -n "$LATEST_LOG" ] && ! grep -qE '^=== end [^ ]+ \([^)]+\) ===$' "$LATEST_LOG"; then
+    READY=no
+    REASONS="$REASONS\n    · latest possession has no end marker — treat it as stopped, not working"
+  fi
+
   # Only the worker taking the shot decides readiness. A benched seat blocking
   # the court is the failure the bench rule exists to prevent.
   if [ "$DOC_TIMEOUT" = yes ]; then
@@ -84,9 +120,6 @@ start-game)
   BENCHED=$(grep -cE '^\s*(gemini|codex).*FAIL' "$TMP/doc" 2>/dev/null || true)
   [ -n "$BENCHED" ] || BENCHED=0
   [ "${BENCHED:-0}" -gt 0 ] && REASONS="$REASONS\n    · $BENCHED seat(s) benched — noted, not blocking"
-
-  ls ~/Library/LaunchAgents/ 2>/dev/null | grep -q sal0mander || \
-    REASONS="$REASONS\n    · no launchd job installed — nothing wakes up on its own"
 
   echo "  Court ready:  $READY"
   [ -n "$REASONS" ] && printf "%b\n" "$REASONS"

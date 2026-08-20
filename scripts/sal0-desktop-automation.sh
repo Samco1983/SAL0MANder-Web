@@ -156,6 +156,18 @@ export SAL0_REPO="$RUNTIME_REPO"
 export SAL0_LOG_DIR="$LOG_DIR"
 export SAL0_LOCK="$HOME/.sal0mander/work-loop.lock"
 export SAL0_CLAUDE_TOKEN_FILE="$HOME/.sal0mander/secrets/claude_oauth_token"
+
+# A runtime prepared only at install time drifts behind the team. Synchronize
+# before choosing a shot so the scheduled worker reads current rules, tests,
+# and queue logic. Refuse a dirty runtime rather than swallowing old work.
+if [ -n "\$(/usr/bin/git -C "$RUNTIME_REPO" status --porcelain)" ]; then
+  echo "RUNTIME DIRTY — refusing to synchronize or start a possession" >&2
+  exit 1
+fi
+/usr/bin/git -C "$RUNTIME_REPO" fetch origin || exit \$?
+/usr/bin/git -C "$RUNTIME_REPO" checkout council/2026-08-18 || exit \$?
+/usr/bin/git -C "$RUNTIME_REPO" pull --ff-only origin council/2026-08-18 || exit \$?
+
 /bin/bash "$RUNTIME_REPO/scripts/sal0-next-task.sh" || exit \$?
 exec /bin/bash "$RUNTIME_REPO/scripts/sal0-work-loop.sh" "$RUNTIME_REPO/docs/coordination/ops/CURRENT-TASK.md"
 EOF
