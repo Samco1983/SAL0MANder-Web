@@ -12,6 +12,33 @@ ones without a scar are the ones most likely to be wrong.
 
 ---
 
+## Agent entry card
+
+Cold agents start here. The rest of the playbook explains why.
+
+```text
+1. Read current git status, latest commit, issue/queue state, and verifier command.
+2. Convert any metaphor into its technical definition before deciding.
+3. Pick one lane, one issue/task, one clock, and one falsifiable success check.
+4. If the tree is dirty and the work is not yours, use a worktree or pass.
+5. Take the shot. Do not keep planning past the clock.
+6. If blocked, preserve evidence and publish a catchable blocker.
+7. If the same cause repeats twice, change the play before retrying.
+8. If you score, let a different agent/tool verify when possible.
+9. Report the box score: window, artifact, verifier exit code, blocker, next shot.
+10. If no product point moved this window, the next shot must be product unless unsafe.
+```
+
+Decision priority:
+
+```text
+safety > owner hard stops > technical definitions > evidence > speed > metaphor
+```
+
+This card exists to prevent the playbook from becoming the next slowdown. A
+cold agent should be able to start from these ten lines and use the full
+document only when a decision is ambiguous.
+
 ## Evolved BBall
 
 > **An AI teamwork system where agents score product points while continuously
@@ -572,10 +599,23 @@ turnover by another name.
 
 ## The scoreboard
 
-> **`queue: N open, M closed`. Nothing else is points.**
+> **Primary score: `queue: N open, M closed`. Nothing else is a primary point.**
 
 Plumbing commits are not points. Documents are not points. Passing `npm run
 verify` is not points — it is staying inbounds.
+
+There are supporting points, and they must be labeled so they do not fake a
+win:
+
+| Point type | Counts when | Example |
+| --- | --- | --- |
+| **Product point** | a user-visible issue closes or a deploy/classroom/game milestone moves | navigation works, Guest Play recovers, teacher flow ships |
+| **Reliability point** | a repeated bad turnover becomes mechanically harder to repeat | hook, guard, doctor, timeout, worktree fix |
+| **Evidence point** | a blocker or unknown becomes a durable, actionable fact | failing command saved, owner blocker named, screenshot/log attached |
+
+Reliability and evidence points help the team win, but they cannot substitute
+for product points for a full window. If the board shows only supporting
+points, the next safe shot should move product.
 
 But scoring is not the same as winning. A point only matters if it moves the
 team toward the win condition. Closing the wrong issue, improving the wrong
