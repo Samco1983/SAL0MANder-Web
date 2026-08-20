@@ -41,10 +41,19 @@ start-game)
   DIRTY=$(git status --porcelain | wc -l | tr -d ' ')
   [ "$DIRTY" -gt 0 ] && { READY=no; REASONS="$REASONS\n    · $DIRTY uncommitted file(s) — a scheduled run will refuse to start"; }
 
-  if ! bash scripts/sal0-doctor.sh >/dev/null 2>&1; then
+  # The doctor exits non-zero if ANY agent is unreachable, including one that
+  # was deliberately benched. A benched seat blocking the whole court is the
+  # exact failure the bench rule exists to prevent — Gemini being out of quota
+  # is a budget, not a broken court.
+  #
+  # Only the worker actually taking the shot decides readiness.
+  DOC="$(bash scripts/sal0-doctor.sh 2>&1)"
+  if ! printf '%s' "$DOC" | grep -qE '^\s*claude\s+ok\s+ok'; then
     READY=no; OWNER=yes
-    REASONS="$REASONS\n    · an agent cannot work from a scheduled shell — see: bash scripts/sal0-doctor.sh"
+    REASONS="$REASONS\n    · the worker cannot reach a model from a scheduled shell — bash scripts/sal0-doctor.sh"
   fi
+  BENCHED="$(printf '%s' "$DOC" | grep -cE '^\s*(gemini|codex).*FAIL' || true)"
+  [ "${BENCHED:-0}" -gt 0 ] && REASONS="$REASONS\n    · $BENCHED seat(s) benched — noted, not blocking"
 
   ls ~/Library/LaunchAgents/ 2>/dev/null | grep -q sal0mander || {
     REASONS="$REASONS\n    · no launchd job installed — nothing wakes up on its own"; }
