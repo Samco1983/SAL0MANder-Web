@@ -5,7 +5,7 @@ A definition written in prose is one an agent can read and still get wrong. The
 same definition as a script that fails is one nobody can skip. This is the
 operational form of "what counts as a point":
 
-    A point is a closed issue whose close comment names a commit,
+    A point is a closed issue whose close/evidence comments name a commit,
     where that commit exists on the branch and actually changed files.
 
 Each clause is a test. A close that fails any of them is not a point — it is a
@@ -31,12 +31,19 @@ import sys
 REPO_SLUG = "Samco1983/SAL0MANder-Web"
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 COMMIT_REF = re.compile(
-    r"\b(?:[Cc]losed by|[Cc]ompleted in|[Ff]ixed in|[Rr]esolved in)\s+[`']?([0-9a-f]{7,40})\b"
+    r"\b(?:"
+    r"[Cc]losed by|"
+    r"[Cc]ompleted in|"
+    r"[Ff]ixed in|"
+    r"[Rr]esolved in|"
+    r"[Pp]oint landed in|"
+    r"[Ff]ull completed commit is"
+    r")\s+[`']?([0-9a-f]{7,40})\b"
 )
 
 
 def commit_named_in(text: str) -> str | None:
-    """Return the commit a close/evidence comment names, if it names one."""
+    """Return the commit an evidence comment names, if it names one."""
     if m := COMMIT_REF.search(text):
         return m.group(1)
     return None
@@ -62,7 +69,7 @@ def check_one(issue: dict) -> dict:
             break
 
     if not sha:
-        result["failures"].append("close comment names no commit")
+        result["failures"].append("close/evidence comments name no commit")
         result["point"] = False
         return result
     result["commit"] = sha
@@ -152,8 +159,8 @@ def main() -> int:
             for reason in f["failures"]:
                 print(f"          {reason}")
         print()
-        print("  A closed issue is not a point on its own. Reopen, or fix the")
-        print("  close comment to name the commit that actually carries the work.")
+        print("  A closed issue is not a point on its own. Reopen, or add an")
+        print("  evidence comment naming the commit that actually carries the work.")
     else:
         print("  Every closed issue names a real commit, on this branch, with files in it.")
         print("  The score is what it says it is.")
