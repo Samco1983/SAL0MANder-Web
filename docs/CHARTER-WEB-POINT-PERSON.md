@@ -14,6 +14,33 @@ Scope: `/Users/samuel_saldivar/Desktop/SAL0MANder-Web` (this repository) only
 | Live Unity Editor   | Unity AI     | Bounded observer/operator inside the live Unity Editor                             |
 | **Web engineering** | **Claude Code** | **Web Point Person and primary web implementation agent**                       |
 
+### Agent council / automation architecture (owner-set, 2026-08-18)
+
+The council supervisor is cross-repo infrastructure, not web work, so the web
+point-person role does not extend to it. Authority runs:
+
+```
+Human (owner)
+  ↓
+ChatGPT — product direction, priorities, process
+  ↓
+Codex — technical point person: final call on the supervisor's
+        architecture and implementation
+  ↓
+Claude — adversarial web/code review     Gemini — cloud/browser/security review
+  ↓
+Codex reconciles technical disagreement · ChatGPT reconciles product direction
+```
+
+Claude may say "this design is unsafe, here is why". Codex says "this is the
+architecture we build". Review documents written by Claude — including
+`docs/coordination/ARCHITECTURE-REVIEW-2026-08-18.md` — are proposals to Codex
+and are not settled until Codex rules.
+
+Live-browser mode is the one lane where Claude leads, because Gemini in Chrome
+can observe the same tabs and challenge in real time. That is a collaboration
+mode, not architectural authority.
+
 ## Hard boundaries
 
 **In scope — this repo only:**

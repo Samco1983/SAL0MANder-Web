@@ -1,0 +1,22 @@
+{
+  "createdAt": "2026-08-18T21:43:31.023Z",
+  "hash": "ba9e3f43db70ff93710bed12d4cb35c245b2d55ed138b0631a3c9c24265cab2d",
+  "repo": {
+    "branch": "council/2026-08-18",
+    "head": "310b5ad792133e2ff9b41bbcb17c708233faed6f",
+    "root": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/",
+    "status": "M docs/coordination/AGENT-COUNCIL-SUPERVISOR.md\n M docs/coordination/CHECKIN-MONITOR.md\n M scripts/sal0-council-supervisor.mjs"
+  },
+  "sources": {
+    "currentState": {
+      "body": "# SAL0MANder Current State\n\nCurrent focus:\n- Unity/Game P1-A/P1-B is frozen for human-visible acceptance evidence.\n- Web coordination is secondary unless needed for evidence, dashboards, or safe\n  automation plumbing.\n- Make belongs at the outside edge: notifications, Google Docs mirror, and\n  off-hours inbound webhooks. It is not the local process orchestrator.\n\nKnown boundaries:\n- Unity/Game repo: `/Users/samuel_saldivar/SAL0MANDER-Puzzle-Prototype`\n- Web repo: `/Users/samuel_saldivar/Desktop/SAL0MANder-Web`\n- Do not mix gameplay implementation and web-companion implementation in one\n  automatic run.\n- No live Make scenario changes without explicit confirmation.\n\nNext safe automation proof:\n- Build deterministic local council packets.\n- Skip repeated runs by packet hash before any model calls.\n- Save every run as evidence under `docs/coordination/runs/`.",
+      "path": "docs/coordination/CURRENT_STATE.md"
+    },
+    "probe": {
+      "body": "# SAL0MANder Council Probe\n\nQuestion:\nWhat is the single highest-value next action for SAL0MANder right now, given the\ncurrent repo state and coordination constraints?\n\nRules:\n- Return evidence, not vibes.\n- Prefer one falsifiable next action over a broad plan.\n- Do not propose cross-lane edits unless the packet proves the boundary is clear.\n- Do not touch secrets, auth files, tokens, or unrelated projects.",
+      "path": "docs/coordination/PROBE.md"
+    },
+    "recentCommits": "Scaffold hash-gated council supervisor\nAdversarial review of the agent-council architecture\nSpecify Make nudge button flow\nAdd manual override check-in packet\nHarden check-in monitor request scanning\nRecognize action-required hub check-ins\nBuffer startup completions until session opens\nAdd safe SAL0MANder check-in monitor\nW-10 answered: Codex did not rule the drop\nA direct note to Codex"
+  },
+  "version": "sal0-council-packet-v0"
+}

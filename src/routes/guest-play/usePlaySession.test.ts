@@ -48,6 +48,8 @@ const setup = (overrides: Partial<Parameters<typeof usePlaySession>[0]> = {}) =>
       activityId: 'act_1',
       activityVersionId: 'av_1',
       identity,
+      selectedPlayMode: 'classic-puzzle',
+      clientAttemptId: 'attempt-1',
       enabled: true,
       ...overrides,
     }),
@@ -78,14 +80,44 @@ describe('starting', () => {
     expect(start).toHaveBeenCalledTimes(1)
   })
 
-  it('sends the pinned version and the guest identity', async () => {
+  it('sends the pinned version, mode, identity and attempt id', async () => {
     const { result } = setup()
     await waitFor(() => expect(result.current.status).toBe('active'))
-    expect(start.mock.calls[0]?.[0]).toEqual({
+    const [body, key] = start.mock.calls[0] as [Record<string, unknown>, string]
+
+    expect(body).toEqual({
       activityId: 'act_1',
       activityVersionId: 'av_1',
       identity,
+      selectedPlayMode: 'classic-puzzle',
+      clientAttemptId: key,
     })
+    // One concept, one value: minting clientAttemptId separately from the
+    // idempotency key would guarantee they eventually disagree.
+    expect(body.clientAttemptId).toBe(key)
+  })
+
+  it('opens no session until the mode is known', async () => {
+    // Student Choice: Unity owns the picker. Pinning a guess is unfixable —
+    // the value is immutable once set, so a teacher's mode breakdown would be
+    // quietly wrong with nothing to reveal it.
+    const { rerender } = renderHook(
+      ({ mode }: { mode: string | undefined }) =>
+        usePlaySession({
+          activityId: 'act_1',
+          activityVersionId: 'av_1',
+          identity,
+          selectedPlayMode: mode,
+          clientAttemptId: 'attempt-1',
+          enabled: true,
+        }),
+      { initialProps: { mode: undefined as string | undefined } },
+    )
+    expect(start).not.toHaveBeenCalled()
+
+    rerender({ mode: 'learning-puzzle' })
+    await waitFor(() => expect(start).toHaveBeenCalledTimes(1))
+    expect(start.mock.calls[0]?.[0]).toMatchObject({ selectedPlayMode: 'learning-puzzle' })
   })
 
   it('reuses the stored key so a reload resumes rather than duplicating', async () => {
@@ -110,6 +142,8 @@ describe('starting', () => {
           activityId: 'act_1',
           activityVersionId: 'av_1',
           identity: { kind: 'guest', guestToken: token },
+          selectedPlayMode: 'classic-puzzle',
+          clientAttemptId: 'attempt-1',
           enabled: true,
         }),
       { initialProps: { token: 'guest-token-1' } },
@@ -166,35 +200,57 @@ describe('submitting a result', () => {
   })
 
   it('clears the start key once the attempt is over', async () => {
+    // The id itself is owned by useClientAttemptId now; this hook still ends
+    // the stored attempt so the next start is a genuinely new session.
+    sessionStorage.setItem('sal0mander.session.startKey.av_1', 'attempt-1')
     const { result } = setup()
     await waitFor(() => expect(result.current.status).toBe('active'))
-    expect(sessionStorage.getItem('sal0mander.session.startKey.av_1')).not.toBeNull()
 
     await act(async () => result.current.submit(outcome))
 
     expect(sessionStorage.getItem('sal0mander.session.startKey.av_1')).toBeNull()
   })
 
-  it('surfaces a submit failure without losing the session', async () => {
+  it('surfaces a submit failure without losing the session or the result', async () => {
+    // Was asserted as `error` until W-13. That state carries an ApiError and
+    // nothing else, so it discarded the student's completed work at the exact
+    // moment the work existed and the backend did not have it. Full coverage of
+    // the corrected behaviour is in `resultDelivery.test.ts`.
     submitResult.mockRejectedValue(new ApiError({ code: 'timeout', message: 'slow' }))
     const { result } = setup()
     await waitFor(() => expect(result.current.status).toBe('active'))
 
     await act(async () => result.current.submit(outcome))
 
-    expect(result.current.status).toBe('error')
+    expect(result.current).toMatchObject({
+      status: 'result-undeliverable',
+      attemptId: 'attempt-1',
+      result: outcome,
+      session: { id: 'ses_1' },
+    })
   })
 })
 
 describe('play again', () => {
-  it('opens a genuinely new session with a new key', async () => {
-    const { result } = setup()
+  it('asks its owner for a fresh attempt identity', async () => {
+    // Reusing the finished attempt's id would have the server deduplicate the
+    // new session away, so reset must renew the identity, not just re-run.
+    const onRenewAttempt = vi.fn()
+    const { result } = renderHook(() =>
+      usePlaySession({
+        activityId: 'act_1',
+        activityVersionId: 'av_1',
+        identity,
+        selectedPlayMode: 'classic-puzzle',
+        clientAttemptId: 'attempt-1',
+        onRenewAttempt,
+        enabled: true,
+      }),
+    )
     await waitFor(() => expect(result.current.status).toBe('active'))
-    const firstKey = start.mock.calls[0]?.[1]
 
     act(() => result.current.reset())
-    await waitFor(() => expect(start).toHaveBeenCalledTimes(2))
 
-    expect(start.mock.calls[1]?.[1]).not.toBe(firstKey)
+    expect(onRenewAttempt).toHaveBeenCalledTimes(1)
   })
 })

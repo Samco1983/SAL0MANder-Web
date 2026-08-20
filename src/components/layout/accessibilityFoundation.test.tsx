@@ -1,0 +1,145 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+import { describe, expect, it } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
+
+import { AppShell } from './AppShell'
+import { ThemeProvider } from '@app/providers/ThemeProvider'
+import { Button } from '@components/ui/Button'
+
+/**
+ * Regression cover for the accessibility foundation.
+ *
+ * Every invariant asserted here already worked when this file was written. That
+ * is the point: they were also entirely unprotected, so a single careless edit
+ * would remove any of them with no test turning red and no visible symptom in
+ * development. A student on a Chromebook with a dead trackpad finds out first.
+ *
+ * The CSS assertions read the stylesheet as text because jsdom does not apply
+ * media queries. Reading the source is weaker than a browser check, but it does
+ * catch the failure that actually happens: someone deletes the rule.
+ */
+
+const designDir = resolve(__dirname, '../../design')
+const readCss = (file: string) => readFileSync(resolve(designDir, file), 'utf8')
+
+function renderShell(children = <h1>Page</h1>) {
+  return render(
+    <ThemeProvider>
+      <MemoryRouter>
+        <AppShell>{children}</AppShell>
+      </MemoryRouter>
+    </ThemeProvider>,
+  )
+}
+
+describe('landmarks', () => {
+  it('exposes the standard landmarks so a screen reader can jump between regions', () => {
+    renderShell()
+    expect(screen.getByRole('banner')).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: /main/i })).toBeInTheDocument()
+    expect(screen.getByRole('main')).toBeInTheDocument()
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument()
+  })
+
+  it('gives main an id, because the skip link is useless without a target', () => {
+    renderShell()
+    expect(screen.getByRole('main')).toHaveAttribute('id', 'main')
+  })
+
+  it('keeps deployment diagnostics available during local development', () => {
+    renderShell()
+    expect(screen.getByText(/env: local/i)).toHaveTextContent(
+      'env: local · contract: v1 · api: mock',
+    )
+  })
+})
+
+describe('the skip link', () => {
+  it('is the first thing a keyboard user reaches', async () => {
+    const user = userEvent.setup()
+    renderShell()
+
+    await user.tab()
+    const focused = document.activeElement as HTMLElement
+    expect(focused.tagName).toBe('A')
+    expect(focused.getAttribute('href')).toBe('#main')
+  })
+
+  it('points at a target that exists in the document', () => {
+    renderShell()
+    const skip = screen.getByRole('link', { name: /skip/i })
+    const target = skip.getAttribute('href')?.replace('#', '')
+    expect(target).toBeTruthy()
+    expect(document.getElementById(target!)).not.toBeNull()
+  })
+})
+
+describe('reduced motion', () => {
+  const base = readCss('base.css')
+
+  it('honours prefers-reduced-motion globally, not per component', () => {
+    // A per-component approach means every new stylesheet is a new chance to
+    // forget. The global rule is why UnityStage, CompanionLayout and tokens.css
+    // are safe without each carrying its own guard.
+    expect(base).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/)
+  })
+
+  it('neutralises animation, transition and smooth scrolling together', () => {
+    const block = base.slice(base.indexOf('prefers-reduced-motion'))
+    expect(block).toMatch(/animation-duration:\s*0\.01ms\s*!important/)
+    expect(block).toMatch(/transition-duration:\s*0\.01ms\s*!important/)
+    expect(block).toMatch(/scroll-behavior:\s*auto\s*!important/)
+  })
+
+  it('applies to pseudo-elements, which are easy to miss and do animate', () => {
+    const block = base.slice(base.indexOf('prefers-reduced-motion'))
+    expect(block).toMatch(/\*::before/)
+    expect(block).toMatch(/\*::after/)
+  })
+})
+
+describe('focus visibility', () => {
+  it('keeps a visible focus indicator rather than removing the outline', () => {
+    const base = readCss('base.css')
+    expect(base).toMatch(/:focus-visible/)
+    // `outline: none` with no replacement is the single most common way a
+    // keyboard user is stranded with no idea where they are on the page.
+    const strippedOutline = /:focus(?!-visible)[^{]*\{[^}]*outline:\s*(none|0)/
+    expect(base).not.toMatch(strippedOutline)
+  })
+})
+
+describe('touch targets', () => {
+  const buttonCss = readFileSync(
+    resolve(__dirname, '../ui/Button.module.css'),
+    'utf8',
+  )
+
+  it('gives every button size a minimum height, including the small one', () => {
+    const minHeights = [...buttonCss.matchAll(/min-height:\s*([\d.]+)rem/g)].map((m) =>
+      Number(m[1]),
+    )
+    expect(minHeights.length).toBeGreaterThanOrEqual(3)
+    // 2.25rem = 36px at default root size. Below that, a finger on a shared
+    // classroom tablet misses more often than it hits.
+    for (const height of minHeights) {
+      expect(height).toBeGreaterThanOrEqual(2.25)
+    }
+  })
+
+  it('renders a real button element so it is reachable and activatable', async () => {
+    const user = userEvent.setup()
+    render(
+      <ThemeProvider>
+        <Button>Press me</Button>
+      </ThemeProvider>,
+    )
+    const button = screen.getByRole('button', { name: /press me/i })
+    await user.tab()
+    expect(button).toHaveFocus()
+  })
+})

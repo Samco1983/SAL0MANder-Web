@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, render, screen } from '@testing-library/react'
 import { UnityStage } from './UnityStage'
+import { BRIDGE_VERSION, UNITY_EVENT_NAME } from './bridge'
 import { resolveUnityBuildConfig } from './buildConfig'
 
 vi.mock('./buildConfig', () => ({ resolveUnityBuildConfig: vi.fn() }))
@@ -57,6 +58,8 @@ function loaderScript(): HTMLScriptElement | null {
 
 const fireLoad = () => act(() => void loaderScript()?.onload?.(new Event('load')))
 const fireError = () => act(() => void loaderScript()?.onerror?.(new Event('error')))
+const emitUnityBridge = (detail: unknown) =>
+  act(() => window.dispatchEvent(new CustomEvent(UNITY_EVENT_NAME, { detail })))
 
 const canvas = () => document.querySelector('canvas')
 
@@ -210,6 +213,40 @@ describe('failure paths', () => {
     await unity.fail(new Error('boom'))
 
     expect(canvas()).toBe(before)
+  })
+})
+
+describe('bridge diagnostics', () => {
+  it('shows privacy-safe mismatch summaries to developer and QA surfaces', () => {
+    render(<UnityStage activityId="demo" />)
+
+    emitUnityBridge({
+      type: 'ready',
+      version: BRIDGE_VERSION + 1,
+      shareCode: 'SUN-42',
+      url: 'https://example.test/play/SUN-42',
+    })
+
+    const diagnostics = screen.getByRole('status', { name: /unity bridge diagnostics/i })
+    expect(diagnostics).toHaveTextContent('"reason":"version"')
+    expect(diagnostics).toHaveTextContent('"type":"ready"')
+    expect(diagnostics).not.toHaveTextContent('SUN-42')
+    expect(diagnostics).not.toHaveTextContent('https://')
+  })
+
+  it('keeps bridge diagnostics off the student surface', () => {
+    render(<UnityStage activityId="demo" audience="student" />)
+
+    emitUnityBridge({
+      type: 'future-message',
+      version: BRIDGE_VERSION,
+      studentName: 'Ana',
+      shareCode: 'SUN-42',
+    })
+
+    expect(screen.queryByRole('status', { name: /unity bridge diagnostics/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/future-message/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/SUN-42/i)).not.toBeInTheDocument()
   })
 })
 

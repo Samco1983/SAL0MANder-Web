@@ -1,10 +1,19 @@
 import { lazy, Suspense, useState } from 'react'
+import { buildShareLink } from '@config/routes'
 import { Button } from '@components/ui/Button'
 import { useCopyToClipboard } from './useCopyToClipboard'
 import styles from './SharePanel.module.css'
 
 // Split so neither the QR encoder nor its chunk is in the initial download.
 const ShareQr = lazy(() => import('./ShareQr').then((m) => ({ default: m.ShareQr })))
+
+type SharePanelProps =
+  | { url: string; title?: string }
+  | { activityId: string; baseUrl: string; title?: string }
+
+function resolveShareUrl(props: SharePanelProps): string {
+  return 'url' in props ? props.url : buildShareLink(props.activityId, props.baseUrl)
+}
 
 /**
  * The teacher-facing share surface.
@@ -14,7 +23,9 @@ const ShareQr = lazy(() => import('./ShareQr').then((m) => ({ default: m.ShareQr
  * routes are supported here, and the raw link stays visible and selectable so
  * there is always a manual path when the clipboard is unavailable.
  */
-export function SharePanel({ url, title }: { url: string; title?: string }) {
+export function SharePanel(props: SharePanelProps) {
+  const url = resolveShareUrl(props)
+  const { title } = props
   const { state, copy } = useCopyToClipboard()
   const [showQr, setShowQr] = useState(false)
 

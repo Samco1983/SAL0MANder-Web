@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.sal0mander.work-loop</string>
+
+  <key>WorkingDirectory</key>
+  <string>/tmp</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/samuel_saldivar/.sal0mander/bin/sal0-work-loop-launchd.sh</string>
+  </array>
+
+  <!-- Hourly. Off the :00 mark so it does not collide with everything else. -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Minute</key>
+    <integer>17</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/Users/samuel_saldivar/.sal0mander/logs/work-loop.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/samuel_saldivar/.sal0mander/logs/work-loop.err.log</string>
+
+  <!-- Do not fire the instant it is loaded; the first run should be one you watch. -->
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

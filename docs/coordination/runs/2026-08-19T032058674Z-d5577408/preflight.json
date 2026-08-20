@@ -1,0 +1,18 @@
+{
+  "blocking": [],
+  "checks": {
+    "bins": {},
+    "branch": "council/2026-08-18",
+    "freeDiskBytes": 726939537408,
+    "versions": {
+      "node": "v24.15.0",
+      "supervisor": "sal0-council-packet-v0"
+    },
+    "workspace": {
+      "actual": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web",
+      "expected": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web"
+    }
+  },
+  "ok": true,
+  "warnings": []
+}

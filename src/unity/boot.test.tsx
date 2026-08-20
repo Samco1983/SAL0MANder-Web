@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, render } from '@testing-library/react'
 import { UnityStage, type BootPayload } from './UnityStage'
 import { resolveUnityBuildConfig } from './buildConfig'
-import { sendToUnity, UNITY_BRIDGE_TARGET } from './bridge'
+import { BRIDGE_VERSION, sendToUnity, UNITY_BRIDGE_TARGET, UNITY_EVENT_NAME } from './bridge'
 
 vi.mock('./buildConfig', () => ({ resolveUnityBuildConfig: vi.fn() }))
 const resolveConfig = vi.mocked(resolveUnityBuildConfig)
@@ -40,12 +40,42 @@ function stubFactory() {
   return { ready: () => act(async () => void resolveInstance()) }
 }
 
-const script = () => document.querySelector<HTMLScriptElement>(`script[src="${CONFIG.loaderUrl}"]`)
-const fireLoad = () => act(() => void script()?.onload?.(new Event('load')))
+const script = (url = CONFIG.loaderUrl) =>
+  document.querySelector<HTMLScriptElement>(`script[src="${url}"]`)
+const fireLoad = (url?: string) => act(() => void script(url)?.onload?.(new Event('load')))
 
-/** What actually went across, parsed back out of the SendMessage payload. */
+/**
+ * Unity announcing, from inside the build, that its bridge receiver exists.
+ *
+ * `unity-ready` is the `API_CONTRACT.md` §WebGL bridge name; the bridge aliases
+ * it onto the internal `ready`. Emitted here exactly as the real event arrives,
+ * so this drives the same listener the live game would.
+ */
+let announceSeq = 0
+const announceReady = () =>
+  act(() => {
+    window.dispatchEvent(
+      new CustomEvent(UNITY_EVENT_NAME, {
+        detail: {
+          type: 'unity-ready',
+          contractVersion: BRIDGE_VERSION,
+          eventId: `unity-ready-${++announceSeq}`,
+        },
+      }),
+    )
+  })
+
+/**
+ * What actually went across, parsed back out of the SendMessage payload.
+ *
+ * Calls that threw are excluded: Unity's `SendMessage` throwing is precisely
+ * what an absent receiver looks like, and counting the attempt as a delivery
+ * would make the failure invisible to every assertion below.
+ */
 function sentMessages() {
-  return SendMessage.mock.calls.map(([, , json]) => JSON.parse(json as string))
+  return SendMessage.mock.calls
+    .filter((_call, i) => SendMessage.mock.results[i]?.type === 'return')
+    .map(([, , json]) => JSON.parse(json as string))
 }
 
 beforeEach(() => resolveConfig.mockReturnValue(CONFIG))
@@ -59,10 +89,12 @@ describe('sendToUnity', () => {
     const target = { SendMessage }
     sendToUnity(target, { type: 'set-paused', version: 1, paused: true })
 
+    // Canonical contractVersion rides alongside the legacy version field, so
+    // a v1 receiver and a stub receiver both understand the same payload.
     expect(SendMessage).toHaveBeenCalledWith(
       UNITY_BRIDGE_TARGET.gameObject,
       UNITY_BRIDGE_TARGET.method,
-      JSON.stringify({ type: 'set-paused', version: 1, paused: true }),
+      JSON.stringify({ type: 'set-paused', version: 1, paused: true, contractVersion: 1 }),
     )
   })
 
@@ -157,5 +189,102 @@ describe('booting Unity with the resolved bundle', () => {
     fireLoad()
     await unity.ready()
     expect(sentMessages()[0]).not.toHaveProperty('selectedPlayMode')
+  })
+})
+
+/**
+ * The loader promise resolving is not the same fact as "Unity can receive a
+ * message". `createUnityInstance` settles when the WebGL runtime is up; the C#
+ * object the bridge targets is created by the build's own startup, which has
+ * not necessarily run. Unity's `SendMessage` throws when the target GameObject
+ * does not exist yet, and that is indistinguishable from a name mismatch.
+ *
+ * Without a second trigger a failed first boot is permanent: nothing the boot
+ * effect depends on changes again, so the student sits on an empty board with
+ * no error anywhere. `unity-ready` is the build saying its receiver exists.
+ */
+describe('boot when Unity is not yet listening', () => {
+  const throwOnce = () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    SendMessage.mockImplementationOnce(() => {
+      throw new Error('SendMessage: object SAL0MANderBridge not found')
+    })
+  }
+
+  it('retries boot when Unity announces its receiver', async () => {
+    const unity = stubFactory()
+    throwOnce()
+    render(<UnityStage boot={BOOT} />)
+    fireLoad()
+    await unity.ready()
+
+    // The first attempt threw, so nothing arrived.
+    expect(sentMessages()).toHaveLength(0)
+
+    announceReady()
+
+    expect(sentMessages()[0]).toMatchObject({ type: 'boot', ...BOOT })
+  })
+
+  it('still boots exactly once when Unity re-announces', async () => {
+    const unity = stubFactory()
+    render(<UnityStage boot={BOOT} />)
+    fireLoad()
+    await unity.ready()
+
+    announceReady()
+    announceReady()
+
+    // The retry trigger must not become a way to reload a running game.
+    expect(SendMessage).toHaveBeenCalledTimes(1)
+  })
+
+  it('holds session-started back until boot has actually landed', async () => {
+    // Ordering was previously guaranteed "by construction" — true only while
+    // boot cannot fail. A session id reaching a build that never received its
+    // activity names a session for a game that was never started.
+    const unity = stubFactory()
+    throwOnce()
+    render(<UnityStage boot={BOOT} sessionStarted={{ sessionId: 'ses_1', activityVersionId: 'av_1' }} />)
+    fireLoad()
+    await unity.ready()
+
+    expect(sentMessages()).toHaveLength(0)
+
+    announceReady()
+
+    expect(sentMessages().map((m) => m.type)).toEqual(['boot', 'session-started'])
+  })
+})
+
+describe('a replaced Unity instance is an unbooted one', () => {
+  it('re-sends both boot and session-started to the new instance', async () => {
+    // Retargeting the build — a config change, by design, so the receiver can
+    // move without a code change. `bootedRef` is reset on teardown; the session
+    // marker has to be too, or the fresh instance is booted into an activity
+    // and never told which session it is playing.
+    const unity = stubFactory()
+    const props = {
+      boot: BOOT,
+      sessionStarted: { sessionId: 'ses_1', activityVersionId: 'av_1' },
+    }
+    const { rerender } = render(<UnityStage {...props} />)
+    fireLoad()
+    await unity.ready()
+    expect(sentMessages().map((m) => m.type)).toEqual(['boot', 'session-started'])
+
+    const NEXT = { ...CONFIG, loaderUrl: 'https://cdn.example.com/u2/Build/S.loader.js' }
+    resolveConfig.mockReturnValue(NEXT)
+    const next = stubFactory()
+    rerender(<UnityStage {...props} />)
+    fireLoad(NEXT.loaderUrl)
+    await next.ready()
+
+    expect(sentMessages().map((m) => m.type)).toEqual([
+      'boot',
+      'session-started',
+      'boot',
+      'session-started',
+    ])
   })
 })

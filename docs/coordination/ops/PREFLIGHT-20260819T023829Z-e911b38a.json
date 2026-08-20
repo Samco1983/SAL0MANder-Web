@@ -1,0 +1,227 @@
+{
+  "agents": [
+    {
+      "displayName": "SAL0-01 Architect \u2014 Codex Desktop",
+      "id": "codex",
+      "lane": "Unity/Game",
+      "number": "SAL0-01",
+      "role": "Technical Lead",
+      "state": "WORKING"
+    },
+    {
+      "displayName": "SAL0-02 Runner \u2014 Codex CLI",
+      "id": "codex-cli",
+      "lane": "Coordination",
+      "number": "SAL0-02",
+      "role": "Local Execution",
+      "state": "WORKING"
+    },
+    {
+      "displayName": "SAL0-03 Director \u2014 OpenAI API",
+      "id": "chatgpt-openai",
+      "lane": "Coordination",
+      "number": "SAL0-03",
+      "role": "Product Decision",
+      "state": "UNKNOWN/UNREACHABLE"
+    },
+    {
+      "displayName": "SAL0-04 Builder \u2014 Claude CLI",
+      "id": "claude",
+      "lane": "Web",
+      "number": "SAL0-04",
+      "role": "Web/Code Work",
+      "state": "WORKING"
+    },
+    {
+      "displayName": "SAL0-05 Reviewer \u2014 Claude Chat",
+      "id": "claude-chat",
+      "lane": "Web",
+      "number": "SAL0-05",
+      "role": "Manual Critique",
+      "state": "DONE - NEED NEW TASK"
+    },
+    {
+      "displayName": "SAL0-06 Scout \u2014 Gemini Chat",
+      "id": "gemini",
+      "lane": "Coordination",
+      "number": "SAL0-06",
+      "role": "Google/Browser Review",
+      "state": "DONE - NEED NEW TASK"
+    },
+    {
+      "displayName": "SAL0-07 Challenger \u2014 Gemini API/CLI",
+      "id": "gemini-api-cli",
+      "lane": "Coordination",
+      "number": "SAL0-07",
+      "role": "Automated Critique",
+      "state": "UNKNOWN/UNREACHABLE"
+    },
+    {
+      "displayName": "SAL0-08 Inspector \u2014 Unity MCP",
+      "id": "unity-ai",
+      "lane": "Unity/Game",
+      "number": "SAL0-08",
+      "role": "Unity Evidence",
+      "state": "UNKNOWN/UNREACHABLE"
+    },
+    {
+      "displayName": "SAL0-09 Signal \u2014 Make Cloud",
+      "id": "make",
+      "lane": "Make Automation",
+      "number": "SAL0-09",
+      "role": "Outside Automation",
+      "state": "BLOCKED - NEED OWNER"
+    },
+    {
+      "displayName": "SAL0-10 Ledger \u2014 GitHub Cloud",
+      "id": "github",
+      "lane": "Coordination",
+      "number": "SAL0-10",
+      "role": "Source Of Truth",
+      "state": "WORKING"
+    }
+  ],
+  "controlLayer": {
+    "displayName": "Mission Control Core \u2014 Python Supervisor",
+    "id": "mission-control-core",
+    "isAgent": false,
+    "role": "Local coordinator/orchestrator",
+    "rules": [
+      "Coordinate agents by SAL0 role id, not by vendor or model name.",
+      "Build context packets from durable state before invoking any agent.",
+      "Check hashes and skip repeated successful runs before model calls.",
+      "Enforce timeouts, retries, schemas, logs, and evidence paths.",
+      "Never make product or technical judgments itself.",
+      "Never store secrets, tokens, cookies, or auth files."
+    ]
+  },
+  "createdAt": "2026-08-19T02:38:29Z",
+  "disk": {
+    "freeGb": 676.05,
+    "ok": true,
+    "path": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web"
+  },
+  "hash": "e911b38ac62de167ce171eb241dd9618e7fe0f2a86387c1f1ca838a24737ec22",
+  "lock": {
+    "locked": false,
+    "path": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/docs/coordination/.mission-control.lock",
+    "stale": false
+  },
+  "network": {
+    "github": "reachable",
+    "google": "reachable"
+  },
+  "nextAction": "Use this preflight before waking agents, opening browser rooms, or changing Make scenarios.",
+  "openUrls": {
+    "unityIssueHub": "https://github.com/Samco1983/Sal0mander-Jigsaw-Puzzle/issues/1",
+    "webBranch": "https://github.com/Samco1983/SAL0MANder-Web/tree/council/2026-08-18",
+    "webPullRequest": "https://github.com/Samco1983/SAL0MANder-Web/pull/new/council/2026-08-18"
+  },
+  "pause": {
+    "path": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/docs/coordination/MISSION_CONTROL_PAUSE",
+    "paused": false
+  },
+  "repos": {
+    "unity": {
+      "branch": "codex/git-hygiene-ignore-unity-temp",
+      "dirty": false,
+      "exists": true,
+      "hasOrigin": true,
+      "head": "49ac86c",
+      "statusShort": ""
+    },
+    "web": {
+      "branch": "council/2026-08-18",
+      "dirty": true,
+      "exists": true,
+      "hasOrigin": true,
+      "head": "57e0a35",
+      "statusShort": "M docs/coordination/runs/ledger.jsonl\n?? docs/coordination/runs/2026-08-19T023828714Z-70fc3790/"
+    }
+  },
+  "schemaVersion": "sal0-mission-control-preflight-v0",
+  "services": {
+    "vite-dev": {
+      "name": "vite-dev",
+      "open": false,
+      "port": 5173
+    },
+    "vite-preview": {
+      "name": "vite-preview",
+      "open": false,
+      "port": 4173
+    }
+  },
+  "tools": {
+    "claude": {
+      "available": true,
+      "name": "claude",
+      "path": "/Users/samuel_saldivar/.local/bin/claude",
+      "version": [
+        "2.1.234 (Claude Code)"
+      ],
+      "versionOk": true
+    },
+    "codex": {
+      "available": true,
+      "name": "codex",
+      "path": "/Applications/ChatGPT.app/Contents/Resources/codex",
+      "version": [
+        "codex-cli 0.148.0-alpha.9"
+      ],
+      "versionOk": true
+    },
+    "gemini": {
+      "available": false,
+      "name": "gemini",
+      "path": ""
+    },
+    "gh": {
+      "authOk": true,
+      "authStatus": "github.com\n  \u2713 Logged in to github.com account Samco1983 (keyring)\n  - Active account: true\n  - Git operations protocol: https\n  - Token scopes: 'gist', 'read:org', 'repo', 'workflow'",
+      "available": true,
+      "name": "gh",
+      "path": "/Users/samuel_saldivar/.local/bin/gh",
+      "version": [
+        "gh version 2.97.0 (2026-07-31)"
+      ],
+      "versionOk": true
+    },
+    "git": {
+      "available": true,
+      "name": "git",
+      "path": "/usr/bin/git",
+      "version": [
+        "git version 2.39.5 (Apple Git-154)"
+      ],
+      "versionOk": true
+    },
+    "node": {
+      "available": true,
+      "name": "node",
+      "path": "/usr/local/bin/node",
+      "version": [
+        "v24.15.0"
+      ],
+      "versionOk": true
+    },
+    "npm": {
+      "available": true,
+      "name": "npm",
+      "path": "/usr/local/bin/npm",
+      "version": [
+        "11.12.1"
+      ],
+      "versionOk": true
+    },
+    "python3": {
+      "available": true,
+      "name": "python3",
+      "path": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+      "version": [
+        "Python 3.14.4"
+      ],
+      "versionOk": true
+    }
+  }
+}

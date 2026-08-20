@@ -1,6 +1,9 @@
 import { AppShell } from '@components/layout/AppShell'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
+import { LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
+import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
+import { buildPath, paths } from '@config/routes'
 import { UnityStage } from '@unity/UnityStage'
 import { env } from '@config/env'
 
@@ -37,6 +40,14 @@ export function UnityHostPage() {
               <br />
               build name: {env.unity.buildName}
             </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)}>
+                Open sample activity
+              </LinkButton>
+              <LinkButton to={paths.home} variant="secondary">
+                Back to home
+              </LinkButton>
+            </div>
           </>
         }
       />

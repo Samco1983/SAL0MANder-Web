@@ -1,0 +1,69 @@
+{
+  "pack": "desert-ruins",
+  "lane": "Unity/Game asset scout",
+  "status": "proposal",
+  "style": "warm readable kid-friendly puzzle art",
+  "runtimeGroup": "desert-ruins",
+  "use": "challenge / mastery stage",
+  "notes": [
+    "Prompts only. No generated files are committed here.",
+    "Unity import path, dimensions, compression, and Addressables labels need Unity-lane approval.",
+    "No copyrighted characters, logos, real children, or classroom PII."
+  ],
+  "assets": [
+    {
+      "id": "desert-ruins.background.sunlit-ruins-01",
+      "type": "background",
+      "targetUse": "stage background",
+      "deliverable": "16:9 background concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a 16:9 background concept for a kid-friendly educational puzzle game. Theme: desert-ruins. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: sunlit desert ruins with warm sand, soft shadows, and clear puzzle play area. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: 16:9 background concept."
+    },
+    {
+      "id": "desert-ruins.tile-set.sandstone-tiles-01",
+      "type": "tile-set",
+      "targetUse": "decorative puzzle tile variants",
+      "deliverable": "sprite sheet concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a sprite sheet concept for a kid-friendly educational puzzle game. Theme: desert-ruins. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: six sandstone tiles with simple map and glyph-like geometric motifs, no readable text. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: sprite sheet concept."
+    },
+    {
+      "id": "desert-ruins.reward.map-fragment-01",
+      "type": "reward",
+      "targetUse": "progress reward",
+      "deliverable": "square icon concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a square icon concept for a kid-friendly educational puzzle game. Theme: desert-ruins. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: map-fragment badge with bright edge highlight and clear silhouette. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: square icon concept."
+    },
+    {
+      "id": "desert-ruins.reward.compass-token-01",
+      "type": "reward",
+      "targetUse": "positive feedback token",
+      "deliverable": "square icon concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a square icon concept for a kid-friendly educational puzzle game. Theme: desert-ruins. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: friendly compass reward token with warm gold and teal accents. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: square icon concept."
+    },
+    {
+      "id": "desert-ruins.ui-frame.archway-frame-01",
+      "type": "ui-frame",
+      "targetUse": "stage frame or companion panel decoration",
+      "deliverable": "transparent PNG UI frame concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG UI frame concept for a kid-friendly educational puzzle game. Theme: desert-ruins. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: rounded ancient archway frame with empty center and playful soft edges. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG UI frame concept."
+    },
+    {
+      "id": "desert-ruins.character.desert-guide-01",
+      "type": "character",
+      "targetUse": "helper/coach character",
+      "deliverable": "transparent PNG sprite concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG sprite concept for a kid-friendly educational puzzle game. Theme: desert-ruins. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: friendly explorer lizard guide with tiny scarf and upbeat pose. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG sprite concept."
+    }
+  ]
+}

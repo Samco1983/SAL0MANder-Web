@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "sal0-asset-scout-nudge-v1",
+  "createdAt": "2026-08-20T06:35:29+00:00",
+  "target": "SAL0-06/SAL0-07 Gemini asset scout",
+  "lane": "Unity/Game asset scout",
+  "wake": {
+    "status": "AWAKE",
+    "reason": "Gemini returned the exact probe response.",
+    "exitCode": 0,
+    "stdoutPreview": "ALIVE",
+    "stderrPreview": "Warning: Basic terminal detected (TERM=dumb). Visual rendering will be limited. For the best experience, use a terminal emulator with truecolor support.\nWarning: 256-color support not detected. Using a terminal with at least 256-color support is recommended for a better visual experience.\nRipgrep is not available. Falling back to GrepTool.",
+    "timedOut": false
+  },
+  "ifAwake": "Return prompt-manifest JSON only. Do not edit Unity gameplay and do not commit image files.",
+  "ifNotAwake": "Record SCOUT_UNREACHABLE and let SAL0-01 or SAL0-04 create the next manifest from the seed data.",
+  "timeoutSeconds": 20,
+  "packs": [
+    "pet-classroom"
+  ],
+  "productionMix": [
+    {
+      "category": "cute animals/pets",
+      "weight": 30,
+      "why": "broadest appeal across ages and subjects",
+      "examples": [
+        "cats",
+        "dogs",
+        "baby animals",
+        "friendly classroom pets"
+      ]
+    },
+    {
+      "category": "fantasy/adventure",
+      "weight": 15,
+      "why": "strong imagination hook and marketing screenshots",
+      "examples": [
+        "dragons",
+        "castles",
+        "magical worlds",
+        "quest maps"
+      ]
+    },
+    {
+      "category": "space/science",
+      "weight": 15,
+      "why": "high wow-factor and clear STEM alignment",
+      "examples": [
+        "planets",
+        "astronauts",
+        "rockets",
+        "space labs"
+      ]
+    },
+    {
+      "category": "nature/scenery",
+      "weight": 10,
+      "why": "calm focus stages and subject flexibility",
+      "examples": [
+        "oceans",
+        "forests",
+        "waterfalls",
+        "reef scenes"
+      ]
+    },
+    {
+      "category": "sports/vehicles/action",
+      "weight": 10,
+      "why": "motion, challenge, and reward energy",
+      "examples": [
+        "basketball",
+        "race cars",
+        "skateboards",
+        "stadiums"
+      ]
+    },
+    {
+      "category": "bonus crossover pictures",
+      "weight": 15,
+      "why": "collectible unlocks that feel original",
+      "examples": [
+        "cat astronaut in space",
+        "dog superhero flying over a city",
+        "dragon playing basketball",
+        "animals exploring an underwater castle",
+        "robot teacher with animal students",
+        "dinosaur driving a race car",
+        "space-themed sports stadium",
+        "fantasy creatures doing science experiments"
+      ]
+    },
+    {
+      "category": "seasonal/holiday packs",
+      "weight": 5,
+      "why": "timely but not evergreen enough to dominate production",
+      "examples": [
+        "winter lights",
+        "fall leaves",
+        "spring garden",
+        "class celebration"
+      ]
+    }
+  ],
+  "handoff": "SAL0MANder asset scout task.\n\nRole: Gemini text scout. Do not edit Unity gameplay. Do not generate or commit image files. Return JSON manifests/prompts only.\n\nGoal: improve the SAL0MANder puzzle picture-content library with clean, reusable, kid-friendly prompts and rights notes.\n\nRules:\n- prompts only; no final art files;\n- no copyrighted characters, logos, real children, classroom PII, or photoreal school children;\n- group by runtime pack/theme, not only by file type;\n- follow the production mix: cute animals first, then fantasy/space, with crossover bonus unlocks;\n- every asset needs Unity approval before import;\n- if blocked for 10 minutes, record SCOUT_UNREACHABLE and move on.\n\nProduction mix:\n[\n  {\n    \"category\": \"cute animals/pets\",\n    \"weight\": 30,\n    \"why\": \"broadest appeal across ages and subjects\",\n    \"examples\": [\n      \"cats\",\n      \"dogs\",\n      \"baby animals\",\n      \"friendly classroom pets\"\n    ]\n  },\n  {\n    \"category\": \"fantasy/adventure\",\n    \"weight\": 15,\n    \"why\": \"strong imagination hook and marketing screenshots\",\n    \"examples\": [\n      \"dragons\",\n      \"castles\",\n      \"magical worlds\",\n      \"quest maps\"\n    ]\n  },\n  {\n    \"category\": \"space/science\",\n    \"weight\": 15,\n    \"why\": \"high wow-factor and clear STEM alignment\",\n    \"examples\": [\n      \"planets\",\n      \"astronauts\",\n      \"rockets\",\n      \"space labs\"\n    ]\n  },\n  {\n    \"category\": \"nature/scenery\",\n    \"weight\": 10,\n    \"why\": \"calm focus stages and subject flexibility\",\n    \"examples\": [\n      \"oceans\",\n      \"forests\",\n      \"waterfalls\",\n      \"reef scenes\"\n    ]\n  },\n  {\n    \"category\": \"sports/vehicles/action\",\n    \"weight\": 10,\n    \"why\": \"motion, challenge, and reward energy\",\n    \"examples\": [\n      \"basketball\",\n      \"race cars\",\n      \"skateboards\",\n      \"stadiums\"\n    ]\n  },\n  {\n    \"category\": \"bonus crossover pictures\",\n    \"weight\": 15,\n    \"why\": \"collectible unlocks that feel original\",\n    \"examples\": [\n      \"cat astronaut in space\",\n      \"dog superhero flying over a city\",\n      \"dragon playing basketball\",\n      \"animals exploring an underwater castle\",\n      \"robot teacher with animal students\",\n      \"dinosaur driving a race car\",\n      \"space-themed sports stadium\",\n      \"fantasy creatures doing science experiments\"\n    ]\n  },\n  {\n    \"category\": \"seasonal/holiday packs\",\n    \"weight\": 5,\n    \"why\": \"timely but not evergreen enough to dominate production\",\n    \"examples\": [\n      \"winter lights\",\n      \"fall leaves\",\n      \"spring garden\",\n      \"class celebration\"\n    ]\n  }\n]\n\nSeed manifests:\n[\n  {\n    \"pack\": \"pet-classroom\",\n    \"lane\": \"Unity/Game asset scout\",\n    \"status\": \"proposal\",\n    \"style\": \"warm readable kid-friendly puzzle art\",\n    \"runtimeGroup\": \"pet-classroom\",\n    \"use\": \"friendly default / younger students\",\n    \"notes\": [\n      \"Prompts only. No generated files are committed here.\",\n      \"Unity import path, dimensions, compression, and Addressables labels need Unity-lane approval.\",\n      \"No copyrighted characters, logos, real children, or classroom PII.\"\n    ],\n    \"assets\": [\n      {\n        \"id\": \"pet-classroom.background.reading-rug-classroom-01\",\n        \"type\": \"background\",\n        \"targetUse\": \"stage background\",\n        \"deliverable\": \"16:9 background concept\",\n        \"rights\": \"generated-clean\",\n        \"needsUnityApproval\": true,\n        \"prompt\": \"Create a 16:9 background concept for a kid-friendly educational puzzle game. Theme: pet-classroom. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: cozy classroom corner with a reading rug, shelves, soft daylight, and a clear center play area. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: 16:9 background concept.\"\n      },\n      {\n        \"id\": \"pet-classroom.character.cat-coach-01\",\n        \"type\": \"character\",\n        \"targetUse\": \"helper/coach character\",\n        \"deliverable\": \"transparent PNG sprite concept\",\n        \"rights\": \"generated-clean\",\n        \"needsUnityApproval\": true,\n        \"prompt\": \"Create a transparent PNG sprite concept for a kid-friendly educational puzzle game. Theme: pet-classroom. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: friendly classroom cat holding a small pointer and smiling toward the player. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG sprite concept.\"\n      },\n      {\n        \"id\": \"pet-classroom.character.dog-coach-01\",\n        \"type\": \"character\",\n        \"targetUse\": \"helper/coach character\",\n        \"deliverable\": \"transparent PNG sprite concept\",\n        \"rights\": \"generated-clean\",\n        \"needsUnityApproval\": true,\n        \"prompt\": \"Create a transparent PNG sprite concept for a kid-friendly educational puzzle game. Theme: pet-classroom. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: friendly classroom dog wearing a tiny backpack and offering a reward sticker. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG sprite concept.\"\n      },\n      {\n        \"id\": \"pet-classroom.reward.paw-badge-01\",\n        \"type\": \"reward\",\n        \"targetUse\": \"positive feedback token\",\n        \"deliverable\": \"square icon concept\",\n        \"rights\": \"generated-clean\",\n        \"needsUnityApproval\": true,\n        \"prompt\": \"Create a square icon concept for a kid-friendly educational puzzle game. Theme: pet-classroom. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: bright paw-shaped badge with simple shine and strong silhouette. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: square icon concept.\"\n      },\n      {\n        \"id\": \"pet-classroom.sticker-sheet.learning-stickers-01\",\n        \"type\": \"sticker-sheet\",\n        \"targetUse\": \"reward collection\",\n        \"deliverable\": \"sprite sheet concept\",\n        \"rights\": \"generated-clean\",\n        \"needsUnityApproval\": true,\n        \"prompt\": \"Create a sprite sheet concept for a kid-friendly educational puzzle game. Theme: pet-classroom. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: six classroom reward stickers: star, book, paw, pencil, light bulb, and trophy. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: sprite sheet concept.\"\n      },\n      {\n        \"id\": \"pet-classroom.ui-frame.notebook-frame-01\",\n        \"type\": \"ui-frame\",\n        \"targetUse\": \"companion panel decoration\",\n        \"deliverable\": \"transparent PNG UI frame concept\",\n        \"rights\": \"generated-clean\",\n        \"needsUnityApproval\": true,\n        \"prompt\": \"Create a transparent PNG UI frame concept for a kid-friendly educational puzzle game. Theme: pet-classroom. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: rounded notebook-paper frame with playful tabs and empty readable content area. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG UI frame concept.\"\n      }\n    ]\n  }\n]\n"
+}

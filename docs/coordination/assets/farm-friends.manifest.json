@@ -1,0 +1,69 @@
+{
+  "pack": "farm-friends",
+  "lane": "Unity/Game asset scout",
+  "status": "proposal",
+  "style": "warm readable kid-friendly puzzle art",
+  "runtimeGroup": "farm-friends",
+  "use": "younger students / early sessions",
+  "notes": [
+    "Prompts only. No generated files are committed here.",
+    "Unity import path, dimensions, compression, and Addressables labels need Unity-lane approval.",
+    "No copyrighted characters, logos, real children, or classroom PII."
+  ],
+  "assets": [
+    {
+      "id": "farm-friends.background.red-barn-morning-01",
+      "type": "background",
+      "targetUse": "stage background",
+      "deliverable": "16:9 background concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a 16:9 background concept for a kid-friendly educational puzzle game. Theme: farm-friends. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: gentle farmyard at morning light with a red barn to one side, rolling green field behind, and a clear flat center area. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: 16:9 background concept."
+    },
+    {
+      "id": "farm-friends.character.calf-helper-01",
+      "type": "character",
+      "targetUse": "helper/coach character",
+      "deliverable": "transparent PNG sprite concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG sprite concept for a kid-friendly educational puzzle game. Theme: farm-friends. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: small friendly calf with large soft eyes standing square, one hoof lifted in a welcoming pose. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG sprite concept."
+    },
+    {
+      "id": "farm-friends.character.duckling-helper-01",
+      "type": "character",
+      "targetUse": "helper/coach character",
+      "deliverable": "transparent PNG sprite concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG sprite concept for a kid-friendly educational puzzle game. Theme: farm-friends. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: cheerful duckling mid-step with a tiny satchel, bright enough to read against a green field. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG sprite concept."
+    },
+    {
+      "id": "farm-friends.reward.sunflower-badge-01",
+      "type": "reward",
+      "targetUse": "positive feedback token",
+      "deliverable": "square icon concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a square icon concept for a kid-friendly educational puzzle game. Theme: farm-friends. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: bright sunflower badge with bold petals and a strong outline for small sizes. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: square icon concept."
+    },
+    {
+      "id": "farm-friends.sticker-sheet.barn-stickers-01",
+      "type": "sticker-sheet",
+      "targetUse": "reward collection",
+      "deliverable": "sprite sheet concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a sprite sheet concept for a kid-friendly educational puzzle game. Theme: farm-friends. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: six farm reward stickers \u2014 egg, hay bale, apple, watering can, boot, rainbow \u2014 flat and high contrast. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: sprite sheet concept."
+    },
+    {
+      "id": "farm-friends.ui-frame.hay-frame-01",
+      "type": "ui-frame",
+      "targetUse": "companion panel decoration",
+      "deliverable": "transparent PNG UI frame concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG UI frame concept for a kid-friendly educational puzzle game. Theme: farm-friends. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: rounded frame of stylised hay and rope with an empty readable content area. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG UI frame concept."
+    }
+  ]
+}

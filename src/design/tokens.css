@@ -33,6 +33,32 @@
   --accent-500: #f2793d;
   --accent-600: #d95f27;
   --accent-700: #b04a1c;
+  /* Hover step for the darkened accent; keeps the pressed state distinguishable. */
+  --accent-800: #8d3a14;
+
+  /* --- Primitives: SAL0MANder Studios brand -------------------------------
+   * Violet and green, from the wordmark. Two tiers on purpose, because the
+   * logo hues are graphics and the same hues as *text* are not:
+   *
+   *   #22c55e measures 2.28:1 on white — right for the mark, unreadable as type
+   *   #15803d measures 5.02:1 — the same green, usable for words
+   *
+   * Using the vivid pair for text is the most common way a brand palette ends
+   * up failing AA, so they are separated here rather than left to judgement.
+   */
+  /* The mark's vertical gradient: violet at the top, lime at the bottom. */
+  --brand-violet-bright: #a78bfa;
+  --brand-violet: #7c3aed; /* 5.70:1 */
+  --brand-lime: #84cc16; /* 1.98:1 — mark only, never type */
+  --brand-lime-bright: #a3e635;
+
+  /* Readable tier. The brand's lime is 1.98:1 on white, so words use a deeper
+     step of the same hue rather than the mark colour. */
+  --brand-green: #84cc16; /* alias: mark and glow */
+  --brand-green-text: #4d7c0f; /* 4.99:1 */
+  --brand-green-deep: #3f6212; /* 7.08:1 — fills behind white text */
+  --brand-violet-text: #6d28d9; /* 7.10:1 */
+  --brand-ink: #14121c;
 
   /* Placeholder secondary, used for informational/teacher surfaces. */
   --support-100: #d9f2ee;
@@ -122,12 +148,26 @@
 
   --color-text: var(--neutral-900);
   --color-text-muted: var(--neutral-600);
-  --color-text-subtle: var(--neutral-500);
+  /*
+   * Was --neutral-500, which measured 3.75:1 on white — below the 4.5:1 floor
+   * for body text, and it is used for exactly the small 12px labels that need
+   * it most. "Subtle" describes hierarchy, not permission to be unreadable.
+   */
+  --color-text-subtle: var(--neutral-600);
   --color-text-inverse: var(--neutral-0);
 
-  --color-accent: var(--accent-600);
-  --color-accent-hover: var(--accent-700);
-  --color-accent-soft: var(--accent-100);
+  /*
+   * Accent is the brand green, not the placeholder orange. `--brand-green-deep`
+   * rather than the vivid mark green: white on the vivid one measures 2.28:1,
+   * so the primary button — the most important control on the page — would
+   * fail AA outright. The deep step clears 7.13:1 and still reads as the same
+   * green beside the wordmark.
+   */
+  --color-accent: var(--brand-green-deep);
+  /* One step deeper, still green. Flipping to ink on hover read as a different
+     button rather than the same one lit — the glow does the signalling. */
+  --color-accent-hover: #14532d;
+  --color-accent-soft: color-mix(in srgb, var(--brand-green) 14%, white);
   --color-on-accent: var(--neutral-0);
 
   --color-support: var(--support-700);
@@ -140,7 +180,28 @@
   --color-success: var(--success-500);
   --color-success-soft: var(--success-100);
 
-  --color-focus-ring: var(--accent-600);
+  /* Brand, semantic. The wordmark uses the vivid pair; everything else the
+     readable pair. */
+  --color-brand-violet: var(--brand-violet-text);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-text: var(--brand-green-text);
+  --color-brand-ink: var(--brand-ink);
+
+  /* --- Interaction: the hover glow ---------------------------------------
+   * Borrowed in spirit from the studio shell, rebuilt for a light surface.
+   * There it was a green bloom against near-black; at these luminances the
+   * same values would be invisible, so this is a tight ring plus a short,
+   * low-spread drop — enough to feel lit, not enough to smear.
+   */
+  --shadow-glow:
+    0 0 0 1px color-mix(in srgb, var(--brand-green) 55%, transparent),
+    0 8px 24px -8px color-mix(in srgb, var(--brand-green) 45%, transparent);
+  --shadow-glow-violet:
+    0 0 0 1px color-mix(in srgb, var(--brand-violet) 50%, transparent),
+    0 8px 24px -8px color-mix(in srgb, var(--brand-violet) 40%, transparent);
+  --transition-smooth: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  --color-focus-ring: var(--brand-green-deep);
   --color-overlay: rgb(13 17 23 / 0.45);
 
   /* The Unity WebGL stage sits on a deliberately dark ground in both themes so

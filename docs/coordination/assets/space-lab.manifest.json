@@ -1,0 +1,69 @@
+{
+  "pack": "space-lab",
+  "lane": "Unity/Game asset scout",
+  "status": "proposal",
+  "style": "warm readable kid-friendly puzzle art",
+  "runtimeGroup": "space-lab",
+  "use": "early high-energy stage",
+  "notes": [
+    "Prompts only. No generated files are committed here.",
+    "Unity import path, dimensions, compression, and Addressables labels need Unity-lane approval.",
+    "No copyrighted characters, logos, real children, or classroom PII."
+  ],
+  "assets": [
+    {
+      "id": "space-lab.background.starfield-01",
+      "type": "background",
+      "targetUse": "stage background",
+      "deliverable": "16:9 background concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a 16:9 background concept for a kid-friendly educational puzzle game. Theme: space-lab. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: deep blue space with soft stars, gentle nebula shapes, and a clear center area where puzzle pieces can sit. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: 16:9 background concept."
+    },
+    {
+      "id": "space-lab.character.astronaut-cat-01",
+      "type": "character",
+      "targetUse": "helper/coach character",
+      "deliverable": "transparent PNG sprite concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG sprite concept for a kid-friendly educational puzzle game. Theme: space-lab. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: friendly cat in a rounded space helmet, simple suit, one paw raised as if encouraging the player. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG sprite concept."
+    },
+    {
+      "id": "space-lab.character.astronaut-dog-01",
+      "type": "character",
+      "targetUse": "helper/coach character",
+      "deliverable": "transparent PNG sprite concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG sprite concept for a kid-friendly educational puzzle game. Theme: space-lab. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: friendly dog in a rounded space helmet, simple suit, holding a small star token. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG sprite concept."
+    },
+    {
+      "id": "space-lab.reward.comet-token-01",
+      "type": "reward",
+      "targetUse": "positive feedback token",
+      "deliverable": "square icon concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a square icon concept for a kid-friendly educational puzzle game. Theme: space-lab. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: a smiling comet-like badge with soft glow and clear silhouette, suitable for a reward animation. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: square icon concept."
+    },
+    {
+      "id": "space-lab.ui-frame.spaceship-frame-01",
+      "type": "ui-frame",
+      "targetUse": "stage frame or companion panel decoration",
+      "deliverable": "transparent PNG UI frame concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG UI frame concept for a kid-friendly educational puzzle game. Theme: space-lab. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: rounded spaceship-console frame with soft blue and lime accents, leaving the center empty for game content. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG UI frame concept."
+    },
+    {
+      "id": "space-lab.tile-set.planet-set-01",
+      "type": "tile-set",
+      "targetUse": "decorative puzzle tile variants",
+      "deliverable": "sprite sheet concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a sprite sheet concept for a kid-friendly educational puzzle game. Theme: space-lab. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: six simple planet tiles with different colors and clear silhouettes, designed to remain readable at small sizes. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: sprite sheet concept."
+    }
+  ]
+}

@@ -226,7 +226,7 @@ an edge case. Public immutable CDN URLs solve expiry only for AI assets.
 
 **What this decision does NOT settle** — see D-017.
 
-## D-017 — OPEN: "private storage" is not "private from students"
+## D-017 — RESOLVED: "private storage" is not "private from students"
 
 **Raised** · 2026-08-15 · **needs an owner answer before uploads ship**
 
@@ -405,6 +405,194 @@ Agreed topology:
 
 Recorded in `infra/firestore.rules` and `infra/firestore.indexes.json`, both
 still marked DRAFT / NOT DEPLOYED.
+
+---
+
+## D-022 — Google Docs is a read-only mirror; GitHub stays authoritative
+
+**Decided** · 2026-08-17 · owner ruling
+
+A Google Doc control panel is approved as a **visibility layer only**. Make
+writes it from GitHub. No agent — Claude, Codex, Gemini, Unity AI — edits it.
+
+The panel shows, per agent: what it is doing, last check-in time, current status
+and blocker, latest completed result, next assignment, decisions waiting on the
+owner, direct links back to the GitHub evidence, and a "last synchronized"
+timestamp.
+
+**Why one-way.** An editable mirror is a second command centre. Two writable
+ledgers drift, and the moment they disagree there is no way to tell which is
+correct without re-deriving the answer from the work itself. Read-only means a
+contradiction is always a mirror bug, never an authority question.
+
+Consistent with the existing rule that Make/GitHub is the routing and
+accountability layer and repo polling is only a convenience
+(`docs/coordination/README.md`). This extends the same principle to Docs.
+
+**Gate on turning it on:** the mirror stays off until one genuinely automatic
+Make cycle completes end to end. Owner has held it off correctly so far; as of
+2026-08-17 the routing proof has landed (claim → lifecycle → `RESOLVED` →
+writeback, with a duplicate claim rejected and temporary credentials cleared),
+but that proves the *pipeline*, not that a real AI provider can be woken and do
+real work. Owner's stated order: hosted worker → one real assignment through an
+actual provider → then the mirror.
+
+**Cost:** the owner cannot correct the panel in place; a wrong line there is
+fixed by fixing GitHub. Accepted — that is the property being bought.
+
+---
+
+## D-023 — Check-in is derived from evidence; waking agents is a separate, disabled action
+
+**Decided** · 2026-08-18 · owner ruling
+
+The control surface reserves **two distinct actions**, never one button:
+
+| Action | Tier | State | What it does |
+| --- | --- | --- | --- |
+| **`CHECK STATUS`** | 1 | buildable now | Derives every lane's state from committed evidence. Invokes no agent. |
+| **`WAKE AGENTS`** | 2 | **disabled** | Starts hosted provider sessions. Stays off until real provider invocation is proven end to end. |
+
+**Tier 1 accepts no self-reported status.** Every field is read from committed
+evidence — `STATUS.md` and the coordination docs, git history, and comments on
+`Samco1983/Sal0mander-Jigsaw-Puzzle` Issue #1. No AI agent is called, so no
+field can be authored by a model at read time.
+
+**Why the separation is the decision, not an implementation detail.** A freshly
+started headless session has no memory of what it was doing. Asked "current
+assignment, progress, blocker, next action", it can only produce a fluent,
+confident, ungrounded answer — and a dashboard renders that identically to a
+real one. Committed evidence cannot confabulate: it is either there, or it is
+absent and labelled. So the reliable half of the button is precisely the half
+that calls nobody, and it is worth shipping alone.
+
+**Missing evidence is labelled, never inferred.** `STALE` and `UNKNOWN` are
+first-class outputs. A lane with no readable evidence reads `UNKNOWN`, and no
+field is ever carried forward from a previous run to fill a gap — a stale value
+that looks current is the specific failure this decision exists to prevent.
+
+**W-9 stays explicit.** Routing and queueing are verified; **agent invocation is
+not.** Tier 1 does not close W-9, does not weaken it, and must not be presented
+as autonomy. It reports what the system has committed, not what any agent is
+doing right now.
+
+**One editable dashboard comment** on Issue #1, updated in place per
+`MAKE-VALIDATION-SPEC.md §5` — not a comment per run.
+
+**Cost, and it is real:** Tier 1's accuracy is bounded by what has been
+**pushed**. Unpushed local work is invisible and its lane reads `STALE`. That is
+the correct failure — visible, attributable, fixed by pushing — as against a
+confident wrong answer, which is what self-report produces. Accepted knowingly.
+
+Deliberately not built under this decision: Tier 2, GitHub workflow dispatch,
+Gemini API function calling, any publicly reachable webhook button, any provider
+invocation.
+
+### `WAKE AGENTS` — reserved semantics, still disabled
+
+Owner, 2026-08-18, recorded so the target is fixed before it is buildable. On
+press: start each available agent → have it orient on the latest briefing →
+check the linked GitHub evidence → continue its assignment or report a blocker →
+update Issue #1. The Google Doc is the easy briefing surface; GitHub stays the
+official proof.
+
+**Amendment — read from the Doc, act from GitHub.** My first position was that
+agents should not read the Doc at all, on the grounds that it is generated from
+GitHub and so can never be fresher. Owner corrected this twice, and both
+corrections hold:
+
+1. **Reach is not the same as freshness.** Gemini opens a Google Doc natively;
+   reading GitHub needs a token and API calls. For some agents the Doc is
+   genuinely the cheaper door, and "always slightly staler" does not outweigh
+   "actually reachable".
+2. **GitHub has outages.** During one, a Doc copied 40 minutes ago is the only
+   readable picture of where things stand. A mirror has real availability value
+   precisely when the source is down.
+
+So the split is by *verb*, not by surface:
+
+- **Reading the Doc: permitted**, for any agent that reaches it more easily.
+- **Acting on the Doc: never.** Anything an agent will actually do resolves to a
+  GitHub artifact. The Doc points at it.
+- **Every Doc line carries the commit sha it was derived from and the UTC time
+  it was written.** That stamp is what makes the first rule safe — a reader can
+  see exactly how old the line is and go to the source when it matters.
+- **If GitHub is unreachable, nothing acts.** The agent reports "cannot verify"
+  and stops. An outage is when unverifiable action does the most damage: no
+  agent can see another's work, and none can write back to Issue #1, so drift
+  is silent and simultaneous.
+
+The hazard this preserves against is unchanged. A Doc is editable, someone will
+eventually type a correction into it, and that correction is either overwritten
+on the next mirror write or acted on with no versioned record of what was read —
+the second-command-centre failure D-022 exists to prevent, arriving through the
+read path instead of the write path. Stamping every line and forbidding action
+on unlinked Doc text is what closes it without banning the read.
+
+Unchanged: `WAKE AGENTS` stays disabled until hosted provider invocation is
+proven (**W-9**).
+
+---
+
+## D-024 — Two evidence lanes. The dashboard measures commits, not people.
+
+**Decided** · 2026-08-18 · owner ruling
+
+**Two lanes produce checkable evidence:**
+
+| Lane | Owner | Repo |
+| --- | --- | --- |
+| Website / Guest Play | Claude | `Samco1983/SAL0MANder-Web` |
+| Game / Teacher Studio | Codex | `Samco1983/Sal0mander-Jigsaw-Puzzle` |
+
+**A lane is not a rank, and the dashboard is not an org chart.** It tracks one
+narrow thing — work that produced a commit someone can open and verify. Nobody
+is demoted by being absent from it, because it does not measure contribution. It
+measures what can be checked.
+
+- **ChatGPT** — advisory, unchanged, no row. It has been reading the situation
+  across every lane and that stays valuable. There is simply no commit to point
+  at, and a dashboard of verifiable evidence cannot carry a claim it cannot
+  verify.
+- **Gemini** — reader and interface (see D-023). No repo, so no row. Its job is
+  to let the owner ask "where is everything?" and get a plain answer.
+- **"Unity AI" visual QA** — a **task**, not a lane. The 1366×768 / 1024×768
+  check is assigned to Codex or done by the owner. Nothing should stay blocked
+  waiting on an agent that has never acknowledged anything.
+
+**Each lane has a lead** (owner, 2026-08-18). Claude **leads** the website;
+Codex **leads** the game. Leading means making the calls inside your own scope
+and bringing the owner the ones that need them — not waiting to be told each
+move. **Unity chat sits inside Codex's lane**, and Codex checks in with it. It
+is not a separate name floating outside, and nothing outside the game lane
+should sit blocked waiting on it.
+
+**Point is still the owner.** Two leads are not two decision-makers. Both leads
+prove what they did; neither decides what the project does next.
+
+### Combination questions go to everyone
+
+Where the two lanes touch — anything crossing the game↔website seam — nobody
+decides alone. **All input, owner decides.** That means Claude, Codex, Unity
+chat via Codex, and any advisory voice the owner wants in it.
+
+The seam is where every hard open question already lives: the bridge message
+set (**X-009**), who mints activity IDs (**X-010**), the contract transport
+(**X-011**), and the dropped-completion ruling (**W-10**). All four were already
+marked as needing joint agreement. This makes the rule general rather than
+per-item: a lane lead who decides a seam question alone has exceeded their lane,
+however reasonable the decision.
+
+**Why this is worth writing down:** the previous framing put four names on a
+chart, two of which could only ever render `UNKNOWN`. A dashboard with
+permanently broken rows teaches its reader to ignore rows — which is the exact
+opposite of a failsafe.
+
+**Left open, deliberately:** whether the FIFO claim queue
+(`MAKE-CLAIM-FLOW.md`) is still needed. It was specified to hand work to many
+competing workers; two agents who each own a repo and never touch the other's do
+not compete for anything. Not retired here — that is an owner call, and the spec
+stays on file until it is made.
 
 ---
 

@@ -1,7 +1,15 @@
 # SAL0MANder Web — working notes
 
-Read [`docs/CHARTER-WEB-POINT-PERSON.md`](docs/CHARTER-WEB-POINT-PERSON.md)
-first. It defines roles, scope, and what requires approval.
+> **Before starting work, read
+> [`docs/coordination/STATUS.md`](docs/coordination/STATUS.md) and
+> [`docs/coordination/MIRROR-PROTOCOL.md`](docs/coordination/MIRROR-PROTOCOL.md),
+> verify the mirror's source commit against GitHub, and follow GitHub whenever
+> they disagree.**
+>
+> **The Doc shows. GitHub decides.**
+
+Then read [`docs/CHARTER-WEB-POINT-PERSON.md`](docs/CHARTER-WEB-POINT-PERSON.md).
+It defines roles, scope, and what requires approval.
 
 ## Repo split (owner-set, 2026-08-15)
 

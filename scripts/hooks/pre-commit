@@ -1,0 +1,137 @@
+#!/bin/sh
+# The referee for double-backs.
+#
+# The commit-msg hook took unsigned commits from 56% to 7% — the only
+# intervention on this branch with an order-of-magnitude result, and it works
+# because it is mechanical, not because anyone agreed with it. This is the same
+# mechanism aimed at the other measured loss: 13% of commits touched a file
+# another agent had committed within two hours. Two agents, one shot.
+#
+# It blocks ONE condition: a file you are staging was just committed by someone
+# else. That is not a merge conflict — git will merge it cleanly — it is two
+# agents having done the same work, and it is invisible from inside either one.
+#
+# Cost: about 0.3s, local git only, no network and no model. A double-back
+# costs an entire possession, so this gate is roughly three orders of magnitude
+# cheaper than the thing it prevents.
+#
+# Deliberate escape hatch: `git commit --no-verify`. If you have READ their
+# commit and are knowingly continuing on top of it, that is a real case and the
+# hook should not be in your way. Being wrong here costs a conversation; being
+# blocked with no way through costs the automation.
+
+# ---------------------------------------------------------------------------
+# A question addressed to you stops your next commit.
+#
+# Every coordination mechanism here that worked was a gate; every one that was
+# a document got skipped, including by whoever wrote it. INBOX.md is a
+# document. Tonight a direct question sat unanswered while both agents committed
+# eleven times — not refused, just never required to be seen.
+#
+# Warn-only without SAL0_AGENT, same as the collision gate: blocking an
+# unconfigured teammate is worse than the message going unread.
+# ---------------------------------------------------------------------------
+if [ -n "${SAL0_AGENT:-}" ]; then
+  INBOX_OUT=$(python3 "$(git rev-parse --show-toplevel)/scripts/lib/sal0_inbox_gate.py" --mine "$SAL0_AGENT" 2>/dev/null)
+  if [ -n "$INBOX_OUT" ]; then
+    cat >&2 <<MSG
+
+  ── WHISTLE ──────────────────────────────────────────────────
+
+  Someone asked you something and is still waiting.
+
+$(printf '%s' "$INBOX_OUT" | sed 's/^/  /')
+
+  A teammate who has to guess what you need will guess wrong, and
+  that is how two agents end up writing the same three tests in the
+  same hour. Answering costs one paragraph.
+
+  Knowingly deferring it:  git commit --no-verify
+
+  ─────────────────────────────────────────────────────────────
+
+MSG
+    exit 1
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# Warn if you are committing a path a teammate claimed.
+#
+# WARNING, not a block, on purpose. A claim is information — "I am already on
+# this" — not a lock, and there are legitimate reasons to touch a claimed path.
+# Blocking here would wedge us the way the first inbox gate did.
+#
+# It fires BEFORE the push, which is the difference that matters: DIRTY_OVERLAP
+# tells you about a collision after both of you have committed.
+# ---------------------------------------------------------------------------
+if [ -n "${SAL0_AGENT:-}" ]; then
+  for f in $(git diff --cached --name-only --diff-filter=ACM); do
+    OUT=$(python3 "$(git rev-parse --show-toplevel)/scripts/lib/sal0_claim.py" --mine "$SAL0_AGENT" --check "$f" 2>/dev/null)
+    if [ -n "$OUT" ]; then
+      printf '\n  ⚠ %s is claimed:\n%s\n' "$f" "$(printf '%s' "$OUT" | sed 's/^/    /')" >&2
+    fi
+  done
+fi
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$STAGED" ] && exit 0
+
+# Without a signature the scanner cannot tell your own iteration from another
+# agent's work, and would block you for re-editing a file you committed ten
+# minutes ago. An unsigned agent gets the warning, never the block: a gate that
+# wedges an unconfigured teammate is worse than the collision it prevents.
+BLOCKING=1
+[ -z "${SAL0_AGENT:-}" ] && BLOCKING=0
+
+SCAN=$(python3 "$(git rev-parse --show-toplevel)/scripts/lib/sal0_collision.py" --window 120 --mine "${SAL0_AGENT:-}" --json 2>/dev/null)
+[ -z "$SCAN" ] && exit 0   # scanner unavailable: never block a commit on a broken instrument
+
+CLASH=$(printf '%s' "$SCAN" | python3 -c '
+import json,sys,subprocess
+try:    d=json.load(sys.stdin)
+except Exception: sys.exit(0)
+staged=set(subprocess.run(["git","diff","--cached","--name-only","--diff-filter=ACM"],
+           capture_output=True,text=True).stdout.split())
+for f in d.get("findings",[]):
+    if f.get("detector")!="DIRTY_OVERLAP": continue
+    for line in f.get("detail",[]):
+        path=line.split(" — ")[0].strip()
+        if path in staged: print(line)
+' 2>/dev/null)
+
+[ -z "$CLASH" ] && exit 0
+
+if [ "$BLOCKING" = "0" ]; then
+  printf '\n  ⚠ possible double-back (set SAL0_AGENT to enable the block):\n%s\n\n' \
+    "$(printf '%s' "$CLASH" | sed 's/^/      /')" >&2
+  exit 0
+fi
+
+cat >&2 <<MSG
+
+  ── WHISTLE ──────────────────────────────────────────────────
+
+  Double-back. You are committing a file another agent just committed.
+
+$(printf '%s' "$CLASH" | sed 's/^/    /')
+
+  This will merge cleanly, which is the problem — nothing downstream
+  will ever tell you two possessions were spent on one shot. Measured
+  on this branch: 13% of commits, and not one of them a product file.
+  Every contended file was a coordination file.
+
+  Do this first:
+
+    git show <their-sha>          read what they already did
+    npm run mission:collision     see the whole picture
+
+  Then keep whichever version is better and commit that one. If you
+  have read their commit and are knowingly building on it:
+
+    git commit --no-verify
+
+  ─────────────────────────────────────────────────────────────
+
+MSG
+exit 1

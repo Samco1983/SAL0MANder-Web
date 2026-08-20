@@ -1,6 +1,75 @@
+/*
+ * One extra surface level, borrowed from the older shell: page → hero → stat
+ * tiles. Depth is most of what separates "sketch" from "product", and it costs
+ * a background and a border rather than a redesign.
+ */
 .hero {
-  padding: var(--space-7) 0 var(--space-6);
-  max-width: 62ch;
+  display: grid;
+  gap: var(--space-5);
+  align-items: end;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  padding: var(--space-6);
+  margin-top: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.heroCopy {
+  max-width: 54ch;
+}
+
+/* The stat strip stacks under the copy before it gets cramped. */
+@media (max-width: 60rem) {
+  .hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
+
+/* Orientation at a glance — what exists, and how much of it. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+/*
+ * Value shown above its label, but written label-first in the DOM so it
+ * announces as "Demo activity: 1". Visual order is presentation; reading order
+ * is meaning, and they are allowed to differ.
+ */
+.stat {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.statValue {
+  order: -1;
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  /* The one place accent earns its keep on this page. */
+  color: var(--color-accent);
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  /* Muted rather than subtle: subtle sits near the 4.5:1 floor at this size. */
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.statNote {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
 }
 
 .eyebrow {
@@ -33,6 +102,32 @@
   grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
   gap: var(--space-4);
   margin-top: var(--space-6);
+}
+
+.demoShare {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(18rem, 1.2fr);
+  gap: var(--space-5);
+  align-items: start;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.demoShareCopy {
+  max-width: 44ch;
+}
+
+.demoShareText {
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+@media (max-width: 60rem) {
+  .demoShare {
+    grid-template-columns: 1fr;
+  }
 }
 
 .section {

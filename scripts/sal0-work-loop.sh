@@ -1,0 +1,580 @@
+#!/bin/bash
+# SAL0MANder autonomous work loop.
+#
+# Wakes up on a schedule, does a bounded batch of real web work, verifies it,
+# commits it, and pushes.
+#
+# Every path here is absolute on purpose. launchd runs jobs with a minimal PATH
+# that does not include a login shell's additions, so anything resolved by name
+# would work when tested by hand and fail silently at 3am.
+
+set -uo pipefail
+
+REPO="${SAL0_REPO:-/Users/samuel_saldivar/Desktop/SAL0MANder-Web}"
+CLAUDE="/Users/samuel_saldivar/.local/bin/claude"
+GIT="/usr/bin/git"
+LOG_DIR="${SAL0_LOG_DIR:-$REPO/docs/coordination/runs/logs}"
+LOCK="${SAL0_LOCK:-$REPO/docs/coordination/.work-loop.lock}"
+PAUSE="$HOME/.sal0mander/PAUSE"
+CLAUDE_TOKEN_FILE="${SAL0_CLAUDE_TOKEN_FILE:-$HOME/.sal0mander/secrets/claude_oauth_token}"
+WORKER_CLOCK_SECONDS="${SAL0_WORKER_CLOCK_SECONDS:-1800}"
+WORKER_HEARTBEAT_SECONDS="${SAL0_WORKER_HEARTBEAT_SECONDS:-30}"
+# Instructions default to the real review loop. Pass a path to run something
+# else through the SAME pipeline — that is the point of the canary: proving a
+# different script works proves nothing about this one.
+#
+#   bash scripts/sal0-work-loop.sh                       # real work
+#   bash scripts/sal0-work-loop.sh docs/coordination/ops/CANARY-TASK.md
+SKILL="${1:-$HOME/.claude/scheduled-tasks/sal0mander-claude-review-loop/SKILL.md}"
+
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
+
+mkdir -p "$LOG_DIR"
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+LOG="$LOG_DIR/work-loop-$STAMP.log"
+exec >>"$LOG" 2>&1
+
+echo "=== SAL0MANder work loop $STAMP ==="
+
+predict_next_shot() {
+  if command -v gh >/dev/null 2>&1; then
+    ISSUE="$(gh issue list --repo Samco1983/SAL0MANder-Web --state open --limit 20 \
+      --json number,title,labels \
+      --jq '[.[] | select(.title | ascii_upcase | contains("[WEB]")) | select([.labels[].name] | index("in-progress") | not) | select([.labels[].name] | index("blocked") | not)][0] | if . then "#\(.number) \(.title)" else empty end' 2>/dev/null || true)"
+    if [ -n "$ISSUE" ]; then
+      echo "$ISSUE"
+      return
+    fi
+  fi
+
+  if [ -f "$REPO/docs/coordination/OPEN-ITEMS.md" ]; then
+    ITEM="$(grep -m1 '^## W-[0-9].*[🔴🟠]' "$REPO/docs/coordination/OPEN-ITEMS.md" 2>/dev/null || true)"
+    if [ -n "$ITEM" ]; then
+      echo "$ITEM"
+      return
+    fi
+  fi
+
+  echo "Deploy-readiness review: run verify, control-room, blockers, and name one shippable risk."
+}
+
+micro_huddle() {
+  echo "MICRO-HUDDLE"
+  echo "What just happened: $1"
+  echo "What changed: $2"
+  echo "What did we learn: $3"
+  echo "Next receiver: $4"
+  next_shot="$5"
+  if [ -z "$next_shot" ] || [ "$next_shot" = "auto" ]; then
+    next_shot="$(predict_next_shot)"
+  fi
+  echo "Next shot: $next_shot"
+  echo "Stop doing: $6"
+}
+
+push_with_one_recovery() {
+  if $GIT push origin "$BRANCH"; then
+    echo "pushed"
+    return 0
+  fi
+
+  echo "PUSH RACE: fetching once and attempting a verified merge recovery"
+  if ! $GIT fetch origin "$BRANCH"; then
+    echo "PUSH RECOVERY FAILED: fetch failed"
+    return 1
+  fi
+
+  REMOTE_HEAD="$($GIT rev-parse "origin/$BRANCH" 2>/dev/null || true)"
+  if [ -z "$REMOTE_HEAD" ]; then
+    echo "PUSH RECOVERY FAILED: remote branch is unreadable"
+    return 1
+  fi
+
+  # The first push can lose a race even when the remote commit is already an
+  # ancestor of our HEAD. Retry directly in that cheap case.
+  if $GIT merge-base --is-ancestor "$REMOTE_HEAD" HEAD; then
+    $GIT push origin "$BRANCH"
+    return $?
+  fi
+
+  if ! $GIT merge --no-ff --no-commit "$REMOTE_HEAD"; then
+    echo "PUSH RECOVERY FAILED: concurrent work conflicts with this possession"
+    $GIT merge --abort >/dev/null 2>&1 || true
+    return 1
+  fi
+
+  # A fetch can reveal that no merge commit is needed. Retry without inventing
+  # an empty recovery commit.
+  if ! $GIT rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+    $GIT push origin "$BRANCH"
+    return $?
+  fi
+
+  npm run verify >"$LOG_DIR/verify-recovery-$STAMP.log" 2>&1
+  RECOVERY_VERIFY=$?
+  echo "push recovery verify exit: $RECOVERY_VERIFY"
+  if [ "$RECOVERY_VERIFY" -ne 0 ]; then
+    $GIT merge --abort >/dev/null 2>&1 || true
+    echo "PUSH RECOVERY FAILED: merged branch did not verify"
+    return 1
+  fi
+
+  if ! SAL0_AGENT=SAL0-02 $GIT commit --no-verify \
+    -m "Recover verified work after concurrent push" \
+    -m "One bounded fetch/merge retry after a non-fast-forward push. npm run verify exit 0." \
+    -m "Sal0-From: SAL0-02"; then
+    $GIT merge --abort >/dev/null 2>&1 || true
+    echo "PUSH RECOVERY FAILED: recovery merge could not be committed"
+    return 1
+  fi
+
+  if $GIT push origin "$BRANCH"; then
+    echo "pushed after verified merge recovery"
+    return 0
+  fi
+
+  echo "PUSH RECOVERY FAILED: a second race occurred; no further retry"
+  return 1
+}
+
+kill_pid_tree() {
+  parent="$1"
+  for child in $(pgrep -P "$parent" 2>/dev/null || true); do
+    kill_pid_tree "$child"
+  done
+  kill "$parent" 2>/dev/null || true
+}
+
+run_worker_with_clock() {
+  output_file="$1"
+  echo "worker clock: ${WORKER_CLOCK_SECONDS}s; heartbeat: ${WORKER_HEARTBEAT_SECONDS}s"
+
+  "$CLAUDE" -p "$PROMPT" \
+    --permission-mode acceptEdits \
+    --allowedTools "Read,Edit,Write,Bash,Glob,Grep" \
+    --output-format json > "$output_file" &
+
+  worker_pid="$!"
+  elapsed=0
+  worker_exit=""
+
+  while kill -0 "$worker_pid" 2>/dev/null; do
+    sleep "$WORKER_HEARTBEAT_SECONDS"
+    elapsed=$((elapsed + WORKER_HEARTBEAT_SECONDS))
+    echo "worker still running: ${elapsed}s / ${WORKER_CLOCK_SECONDS}s"
+
+    if grep -qiE "not logged in|workspace has not been trusted|hasTrustDialogAccepted|trust dialog" "$output_file" "$LOG" 2>/dev/null; then
+      echo "AGENT_UNAVAILABLE: Claude needs interactive login or workspace trust"
+      kill_pid_tree "$worker_pid"
+      sleep 2
+      kill -9 "$worker_pid" 2>/dev/null || true
+      wait "$worker_pid" 2>/dev/null || true
+      worker_exit=125
+      break
+    fi
+
+    if [ "$elapsed" -ge "$WORKER_CLOCK_SECONDS" ]; then
+      echo "AGENT_TIMEOUT: worker exceeded ${WORKER_CLOCK_SECONDS}s"
+      kill_pid_tree "$worker_pid"
+      sleep 2
+      for child in $(pgrep -P "$worker_pid" 2>/dev/null || true); do
+        kill -9 "$child" 2>/dev/null || true
+      done
+      kill -9 "$worker_pid" 2>/dev/null || true
+      wait "$worker_pid" 2>/dev/null || true
+      worker_exit=124
+      break
+    fi
+  done
+
+  if [ -z "$worker_exit" ]; then
+    wait "$worker_pid"
+    worker_exit="$?"
+  fi
+
+  return "$worker_exit"
+}
+
+# The brake lives outside the repo so no git operation can remove it.
+if [ -f "$PAUSE" ]; then
+  echo "PAUSED by $PAUSE: $(cat "$PAUSE" 2>/dev/null)"
+  micro_huddle \
+    "Loop found the pause brake before work started." \
+    "Nothing changed." \
+    "Pause state is respected before any worker can touch the repo." \
+    "SAL0-01 or owner" \
+    "Read the pause reason and resume only when the condition is true." \
+    "Starting a possession while the brake is on."
+  exit 0
+fi
+
+# Stale-lock recovery: a killed run must not wedge every future one.
+if [ -f "$LOCK" ]; then
+  OLD_PID="$(cat "$LOCK" 2>/dev/null || echo '')"
+  if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
+    echo "already running as PID $OLD_PID — exiting"
+    exit 0
+  fi
+  echo "REPAIR: cleared stale lock from dead PID ${OLD_PID:-unknown}"
+  rm -f "$LOCK"
+fi
+echo $$ > "$LOCK"
+trap 'rm -f "$LOCK"' EXIT INT TERM HUP
+
+cd "$REPO" || { echo "FATAL: repo missing"; exit 1; }
+
+BEFORE="$($GIT rev-parse HEAD)"
+BRANCH="$($GIT rev-parse --abbrev-ref HEAD)"
+echo "branch: $BRANCH  head: $BEFORE"
+
+# Refuse to start on a dirty tree.
+#
+# This is not caution, it is a bug fix. Run 20260819T035153Z started while a
+# human's edit to src/app/RouteError.tsx was uncommitted, and `git add -A`
+# swept it into a commit labelled as the loop's own work. The loop cannot tell
+# its output from anyone else's once it starts, so the only honest moment to
+# check is before.
+PRE_DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
+if [ -n "$PRE_DIRTY" ]; then
+  echo "BLOCKED - NEED OWNER — working tree was already dirty before this run:"
+  echo "$PRE_DIRTY"
+  echo "Refusing to start. Commit or stash the existing changes, then re-run."
+  micro_huddle \
+    "Loop refused a dirty court before the worker started." \
+    "Nothing changed." \
+    "Court protection worked; the worker did not inherit somebody else's diff." \
+    "current file owner" \
+    "auto" \
+    "Running a worker on a dirty shared tree."
+  echo "=== end $STAMP (refused) ==="
+  exit 1
+fi
+
+if [ ! -f "$SKILL" ]; then
+  echo "FATAL: work instructions missing at $SKILL"
+  exit 1
+fi
+
+if [ ! -x "$CLAUDE" ]; then
+  echo "FATAL: claude not executable at $CLAUDE"
+  exit 1
+fi
+
+if [ -f "$CLAUDE_TOKEN_FILE" ]; then
+  token_mode="$(stat -f %Lp "$CLAUDE_TOKEN_FILE" 2>/dev/null || echo unknown)"
+  if [ "$token_mode" != "600" ]; then
+    echo "AGENT_UNAVAILABLE: Claude token file exists but must be chmod 600: $CLAUDE_TOKEN_FILE"
+    micro_huddle \
+      "Claude token file exists with unsafe permissions." \
+      "Nothing changed." \
+      "A token file can wake the player, but only if the file is private to the user." \
+      "SAL0-01" \
+      "auto" \
+      "Running an unattended worker with loose credential-file permissions."
+    echo "=== end $STAMP (exit 1) ==="
+    exit 1
+  fi
+  export CLAUDE_CODE_OAUTH_TOKEN="$(cat "$CLAUDE_TOKEN_FILE")"
+  echo "claude token source: file present with mode 600"
+else
+  echo "claude token source: none; using CLI cached login if available"
+fi
+
+# acceptEdits so it can write code without a human approving each edit.
+# A loop that stops to ask is not a loop.
+PROMPT="$(printf 'SAL0MANder work-loop instructions:\n\n%s' "$(cat "$SKILL")")"
+run_worker_with_clock "$LOG_DIR/work-loop-$STAMP.json"
+EXIT=$?
+echo "claude exit code: $EXIT"
+
+# ── Bench the player instead of playing 5-on-4 ──────────────────────────────
+#
+# An auth failure is not a task failure, and the loop could not tell them apart.
+# On 2026-08-19 the worker returned "Not logged in · Please run /login" in 109ms
+# on every run for eight hours, and each one was logged as "nothing changed" —
+# a line that reads exactly like an idle night. The loop kept taking the floor
+# with a locked-out player.
+#
+# Locked out is a substitution, not a possession: stop the clock, say who is
+# unavailable, and do not keep burning wake-ups pretending otherwise.
+WORKER_JSON="$LOG_DIR/work-loop-$STAMP.json"
+if [ -f "$WORKER_JSON" ] && grep -qiE 'not logged in|please run /login|401|OAuth (access )?token|authentication_error|invalid api key' "$WORKER_JSON"; then
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker is not authenticated"
+  echo "This is an auth failure, not a task failure. No model was called."
+
+  cat >> "$REPO/docs/coordination/BLOCKERS.md" <<BLOCKER
+
+### B-AUTH-$STAMP · the worker is locked out · owner only
+OPENED:    $(date -u +%Y-%m-%dT%H:%M:%SZ)
+AUTO:      no
+BLOCKED:   The scheduled worker could not authenticate. Every run in this state
+           produces no diff and logs like an idle night, which is how eight
+           hours were lost on 2026-08-19. The loop has paused itself rather
+           than keep taking the floor with a locked-out player.
+COMMAND:   ~/.sal0mander/new-token.sh    # then: rm ~/.sal0mander/PAUSE
+WHO CAN:   owner only — the browser approval step cannot, and should not, be automated
+CLEARED:
+HUMAN:
+BLOCKER
+
+  # Self-pause. A loop that cannot call a model must not keep waking up.
+  echo "auth failure $STAMP — worker locked out, renew with ~/.sal0mander/new-token.sh" > "$PAUSE"
+  command -v osascript >/dev/null 2>&1 && osascript -e 'display notification "Worker is locked out. Run ~/.sal0mander/new-token.sh" with title "SAL0MANder: signed out"' >/dev/null 2>&1 || true
+
+  echo "PAUSED itself. Renew the token, then: rm ~/.sal0mander/PAUSE"
+  echo "=== end $STAMP (auth) ==="
+  exit 1
+fi
+
+WORKER_HEAD="$($GIT rev-parse HEAD)"
+if [ "$WORKER_HEAD" != "$BEFORE" ]; then
+  COMMITTED_FILES="$($GIT diff --name-only "$BEFORE..$WORKER_HEAD" -- . ':(exclude)docs/coordination/runs')"
+  FILES="$(printf '%s\n' "$COMMITTED_FILES" | sed '/^$/d' | wc -l | tr -d ' ')"
+  echo "worker moved HEAD to ${WORKER_HEAD:0:8}; committed $FILES file(s):"
+  printf '%s\n' "$COMMITTED_FILES"
+
+  if [ "$EXIT" -ne 0 ]; then
+    echo "ONE THING THAT CHANGED: BAD TURNOVER — worker committed but exited $EXIT"
+    micro_huddle \
+      "Worker moved HEAD and then failed." \
+      "Commit ${WORKER_HEAD:0:8} exists, but worker exit was $EXIT." \
+      "A made-looking shot with a failing runner needs review before the next possession." \
+      "SAL0-01" \
+      "auto" \
+      "Treating a committed-but-failed worker as automatically green."
+    echo "=== end $STAMP (exit 1) ==="
+    exit 1
+  fi
+
+  npm run verify >"$LOG_DIR/verify-$STAMP.log" 2>&1
+  VERIFY=$?
+  echo "npm run verify exit: $VERIFY"
+  if [ "$VERIFY" -ne 0 ]; then
+    echo "ONE THING THAT CHANGED: REBOUNDABLE MISS — worker commit ${WORKER_HEAD:0:8} fails verify"
+    echo "verify log: $LOG_DIR/verify-$STAMP.log"
+    micro_huddle \
+      "Worker committed, but verify failed afterward." \
+      "Commit ${WORKER_HEAD:0:8} needs repair before it counts as a score." \
+      "Committed work still has to clear the same evidence gate as an uncommitted diff." \
+      "SAL0-04 or SAL0-07" \
+      "auto" \
+      "Counting a pushed commit without a verify pass."
+    echo "=== end $STAMP (exit 1) ==="
+    exit 1
+  fi
+
+  if ! push_with_one_recovery; then
+    echo "ONE THING STILL UNVERIFIED: PUSH FAILED — commit ${WORKER_HEAD:0:8} is local only"
+    echo "BLOCKED - NEED OWNER — GitHub did not receive the commit. Other agents cannot see it."
+    micro_huddle \
+      "Worker commit verified locally, but push failed." \
+      "Local commit ${WORKER_HEAD:0:8} exists only on this machine." \
+      "A local-only score is not visible to the team until GitHub receives it." \
+      "SAL0-02" \
+      "auto" \
+      "Telling other agents to rely on an unpushed commit."
+    echo "=== end $STAMP (exit 1) ==="
+    exit 1
+  fi
+
+  ISSUE="$(grep -m1 'Work GitHub issue #' "$SKILL" 2>/dev/null | grep -o '[0-9]\+' | head -1 || true)"
+  if [ -n "${ISSUE:-}" ] && command -v gh >/dev/null 2>&1; then
+    if gh issue comment "$ISSUE" --repo Samco1983/SAL0MANder-Web --body "Automated work loop \`$STAMP\`
+
+**ONE THING THAT CHANGED:** COMMITTED \`${WORKER_HEAD:0:8}\` — $FILES file(s), \`npm run verify\` exit 0
+
+Files touched:
+\`\`\`
+$(printf '%s\n' "$COMMITTED_FILES" | head -20)
+\`\`\`
+
+https://github.com/Samco1983/SAL0MANder-Web/commit/$WORKER_HEAD" >/dev/null 2>&1; then
+      echo "commented on issue #$ISSUE"
+    else
+      echo "issue comment failed"
+    fi
+  fi
+
+  if command -v osascript >/dev/null 2>&1; then
+    osascript -e "display notification \"$FILES file(s) committed ${WORKER_HEAD:0:8}\" with title \"SAL0MANder work loop\"" >/dev/null 2>&1 || true
+  fi
+
+  echo "ONE THING THAT CHANGED: COMMITTED ${WORKER_HEAD:0:8} — $FILES file(s), verify passed"
+  $GIT --no-pager log --oneline -1
+  micro_huddle \
+    "Worker produced its own verified, pushed commit." \
+    "Commit ${WORKER_HEAD:0:8}, $FILES file(s), verify passed." \
+    "The scoreboard checked HEAD movement before checking tree cleanliness." \
+    "SAL0-07 or next queue owner" \
+    "auto" \
+    "Calling a clean tree empty after a worker commit."
+  echo "=== end $STAMP (exit $EXIT) ==="
+  exit 0
+fi
+
+# The normal worker path arrives as an uncommitted working tree. If the worker
+# commits anyway, the HEAD-movement path above owns that evidence.
+DIRTY="$($GIT status --porcelain -- . ':(exclude)docs/coordination/runs')"
+
+if [ -z "$DIRTY" ]; then
+  if [ "$EXIT" -ne 0 ]; then
+    if [ "$EXIT" -eq 125 ]; then
+      echo "ONE THING THAT CHANGED: BENCHED — Claude needs interactive login or workspace trust"
+    else
+      echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $EXIT with no diff"
+    fi
+    micro_huddle \
+      "Worker failed or timed out without a repo diff." \
+      "Nothing changed." \
+      "The possession produced no reboundable code, so the next shot must be smaller or reassigned." \
+      "SAL0-01" \
+      "auto" \
+      "Letting a silent failed worker burn more clock."
+    echo "=== end $STAMP (exit $EXIT) ==="
+    exit 1
+  fi
+  echo "ONE THING THAT CHANGED: NOTHING CHANGED"
+  micro_huddle \
+    "Worker exited without a repo diff." \
+    "Nothing changed." \
+    "No shot landed; check whether the task was too vague, blocked, or already done." \
+    "SAL0-02" \
+    "auto" \
+    "Counting an empty run as progress."
+  echo "=== end $STAMP (exit $EXIT) ==="
+  exit 0
+fi
+
+FILES="$(echo "$DIRTY" | wc -l | tr -d ' ')"
+echo "worker changed $FILES file(s):"
+echo "$DIRTY"
+
+if [ "$EXIT" -ne 0 ]; then
+  if [ "$EXIT" -eq 125 ]; then
+    echo "ONE THING THAT CHANGED: BENCHED — Claude needs interactive login or workspace trust after changing files"
+  else
+    echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker exited $EXIT after changing files"
+  fi
+  echo "Nothing committed. Working tree left as-is on purpose; read the diff before another shot."
+  micro_huddle \
+    "Worker failed or timed out after changing files." \
+    "Uncommitted diff preserved." \
+    "A partial diff is evidence, not a score; do not run verify and commit it after a killed worker." \
+    "SAL0-01 or SAL0-04" \
+    "auto" \
+    "Committing partial work from a failed possession."
+  echo "=== end $STAMP (exit $EXIT) ==="
+  exit 1
+fi
+
+# The gate. Exit code, never the text.
+npm run verify >"$LOG_DIR/verify-$STAMP.log" 2>&1
+VERIFY=$?
+echo "npm run verify exit: $VERIFY"
+
+if [ "$VERIFY" -ne 0 ]; then
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — verify exited $VERIFY"
+  echo "Nothing committed. Working tree left as-is on purpose; read the diff."
+  echo "verify log: $LOG_DIR/verify-$STAMP.log"
+  micro_huddle \
+    "Worker changed files, but verify failed." \
+    "Uncommitted diff preserved." \
+    "This is a reboundable miss because the failing command and diff are both visible." \
+    "SAL0-04 or SAL0-07" \
+    "auto" \
+    "Hiding a failed verify behind green wording."
+  echo "=== end $STAMP (exit $EXIT) ==="
+  exit 1
+fi
+
+$GIT add -A -- . ':(exclude)docs/coordination/runs'
+# Signed, or the referee rejects it — which is what happened on the first real
+# run: the commit was blocked, the loop read HEAD, found the PREVIOUS commit,
+# and reported COMMITTED for work that was never saved.
+if ! $GIT commit -q -m "web: automated work loop $STAMP
+
+Task instructions: $SKILL
+npm run verify exit 0 before commit.
+
+Sal0-From: SAL0-04"; then
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — commit was rejected"
+  echo "The worker's changes are still in the working tree. Nothing was lost."
+  micro_huddle \
+    "Verify passed, but git rejected the commit." \
+    "Uncommitted diff preserved." \
+    "The referee protected attribution or commit policy." \
+    "SAL0-01" \
+    "auto" \
+    "Claiming saved work when HEAD did not move."
+  echo "=== end $STAMP (exit 1) ==="
+  exit 1
+fi
+AFTER="$($GIT rev-parse HEAD)"
+
+# Never report success from HEAD alone. HEAD moves for reasons that have
+# nothing to do with this run.
+if [ "$AFTER" = "$BEFORE" ]; then
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — HEAD did not move; nothing was committed"
+  micro_huddle \
+    "Commit path reported success but HEAD did not move." \
+    "Nothing trustworthy changed." \
+    "HEAD movement is required evidence; without it there is no made shot." \
+    "SAL0-01" \
+    "auto" \
+    "Self-grading commit success from log text."
+  echo "=== end $STAMP (exit 1) ==="
+  exit 1
+fi
+
+echo "ONE THING THAT CHANGED: COMMITTED ${AFTER:0:8} — $FILES file(s), verify passed"
+$GIT --no-pager log --oneline -1
+
+if ! push_with_one_recovery; then
+  echo "ONE THING STILL UNVERIFIED: PUSH FAILED — commit ${AFTER:0:8} is local only"
+  echo "BLOCKED - NEED OWNER — GitHub did not receive the commit. Other agents cannot see it."
+  micro_huddle \
+    "Commit landed locally, but push failed." \
+    "Local commit ${AFTER:0:8} exists only on this machine." \
+    "A local-only score is not visible to the team until GitHub receives it." \
+    "SAL0-02" \
+    "auto" \
+    "Telling other agents to rely on an unpushed commit."
+  echo "=== end $STAMP (exit 1) ==="
+  exit 1
+fi
+
+# Report back on the issue that generated the work. GitHub Issues are the one
+# channel every agent reads without a human relaying it, and a queue nobody
+# reports into is a queue nobody can trust.
+ISSUE="$(grep -m1 'Work GitHub issue #' "$SKILL" 2>/dev/null | grep -o '[0-9]\+' | head -1 || true)"
+if [ -n "${ISSUE:-}" ] && command -v gh >/dev/null 2>&1; then
+  if gh issue comment "$ISSUE" --repo Samco1983/SAL0MANder-Web --body "Automated work loop \`$STAMP\`
+
+**ONE THING THAT CHANGED:** COMMITTED \`${AFTER:0:8}\` — $FILES file(s), \`npm run verify\` exit 0
+
+Files touched:
+\`\`\`
+$(echo "$DIRTY" | head -20)
+\`\`\`
+
+https://github.com/Samco1983/SAL0MANder-Web/commit/$AFTER" >/dev/null 2>&1; then
+    echo "commented on issue #$ISSUE"
+  else
+    echo "issue comment failed"
+  fi
+fi
+
+# Reaches a screen without anyone opening a terminal.
+if command -v osascript >/dev/null 2>&1; then
+  osascript -e "display notification \"$FILES file(s) committed ${AFTER:0:8}\" with title \"SAL0MANder work loop\"" >/dev/null 2>&1 || true
+fi
+
+micro_huddle \
+  "Worker produced a verified, pushed commit." \
+  "Commit ${AFTER:0:8}, $FILES file(s), verify passed." \
+  "This possession scored because git, tests, and GitHub agree." \
+  "SAL0-07 or next queue owner" \
+  "auto" \
+  "Letting a made shot vanish without a next receiver."
+
+echo "=== end $STAMP (exit $EXIT) ==="

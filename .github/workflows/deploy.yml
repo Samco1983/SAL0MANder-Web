@@ -1,0 +1,101 @@
+# Deploy the site to GitHub Pages.
+#
+# Chosen over Vercel/Netlify/Cloudflare for one reason: agents can SEE it.
+# A failed deploy here is readable with `gh run view --log-failed`, in the same
+# place the issues, commits, and evidence already live. Every other host puts
+# build logs behind a separate dashboard and a separate account, which means a
+# broken deploy has to be relayed by a human from a screenshot — the exact
+# hand-off this project exists to remove.
+#
+# Watch a run:   gh run list --workflow=deploy.yml
+# Read a failure: gh run view --log-failed
+
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege. `pages`/`id-token` are what deploy-pages needs; nothing here
+# may write to the repository.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One live site, so one deploy at a time. Queued rather than cancelled: a
+# cancelled deploy can leave the published site older than the queue implies.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # The full gate, not just a build. A site that compiles but fails lint,
+      # types, or tests is exactly the "green" this project keeps catching.
+      - name: verify
+        run: npm run verify
+
+      - name: build for the deploy path
+        env:
+          # Project Pages serves at /<repo>/. Moving to a custom domain later
+          # means changing this ONE value; the router and share links both read
+          # it, and src/config/deployBasePath.test.ts pins that behaviour.
+          VITE_BASE_PATH: /SAL0MANder-Web/
+        run: npm run build
+
+      # Pages has no server-side rewrite, so a deep link like /play/SUN-42 —
+      # which is every teacher's share link — would 404 on a hard load. Serving
+      # index.html as the 404 page hands the URL to the client router instead.
+      # Without this, share links work in-app and break when pasted, which is
+      # the one way they are actually used.
+      - name: SPA fallback for share links
+        run: cp dist/index.html dist/404.html
+
+      # Pages does not serve files under directories beginning with an
+      # underscore unless this exists. Vite emits assets to /assets, but Unity
+      # WebGL builds and any future _-prefixed path would vanish silently.
+      - name: disable Jekyll processing
+        run: touch dist/.nojekyll
+
+      # Fail the deploy, never warn. Every problem this catches is invisible
+      # in the unit suite and in the build's exit code — the site is simply
+      # blank, or the share links 404 — so shipping past a warning here means
+      # shipping the failure.
+      - name: verify the artifact is servable from the deploy path
+        env:
+          VITE_BASE_PATH: /SAL0MANder-Web/
+        run: node scripts/verify-deploy-artifact.mjs dist "$VITE_BASE_PATH"
+
+      # Walk the built site the way a visitor does, before it can be published.
+      # The shape check above proves the files are right; this proves the shape
+      # works — Pages has no rewrite, so every share link on a hard load is
+      # answered with 404.html and the router has to recover the path itself.
+      - name: walk every visitor path against the deploy shape
+        run: node scripts/verify-deployed-site.mjs dist
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

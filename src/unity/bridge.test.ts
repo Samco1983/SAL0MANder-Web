@@ -4,6 +4,7 @@ import {
   UNITY_EVENT_NAME,
   correlateSession,
   onUnityMessage,
+  summarizeBridgeMismatch,
   type BridgeMismatch,
   type UnityToWebMessage,
 } from './bridge'
@@ -115,6 +116,42 @@ describe('mismatch reporting', () => {
       throw new Error('diagnostics bug')
     })
     expect(() => emit({ type: 'ready', version: 99 })).not.toThrow()
+  })
+
+  it('can summarize a mismatch without exposing payload detail', () => {
+    const mismatch: BridgeMismatch = {
+      reason: 'unknown-type',
+      type: 'session-finished-with-extra-debug',
+      detail: {
+        type: 'session-finished-with-extra-debug',
+        version: BRIDGE_VERSION,
+        shareCode: 'CLASSROOM-CODE',
+        url: 'https://example.test/play?token=secret',
+        result: { questionsCorrect: 4 },
+      },
+    }
+
+    expect(summarizeBridgeMismatch(mismatch)).toEqual({
+      reason: 'unknown-type',
+      type: 'session-finished-with-extra-debug',
+    })
+  })
+
+  it('keeps version-skew diagnostics while dropping the raw event detail', () => {
+    expect(
+      summarizeBridgeMismatch({
+        reason: 'version',
+        type: 'ready',
+        received: 2,
+        expected: BRIDGE_VERSION,
+        detail: { shareCode: 'CLASSROOM-CODE', activity: { title: 'Unit test' } },
+      }),
+    ).toEqual({
+      reason: 'version',
+      type: 'ready',
+      received: 2,
+      expected: BRIDGE_VERSION,
+    })
   })
 })
 

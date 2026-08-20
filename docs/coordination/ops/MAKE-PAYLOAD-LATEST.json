@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "source": "make-button",
+  "requestedBy": "Samuel",
+  "requestedAtUtc": "2026-08-19T04:13:01.457Z",
+  "button": "open-control-room",
+  "reason": "manual-button",
+  "repo": "Samco1983/SAL0MANder-Web",
+  "branch": "council/2026-08-18",
+  "idempotencyKey": "make-open-control-room-202608190413",
+  "safety": {
+    "noSecrets": true,
+    "noLiveMakeMutationFromLocalScript": true,
+    "noCrossLaneMutation": true,
+    "githubIsLedger": true
+  },
+  "target": {
+    "kind": "local-command-report",
+    "command": "npm run mission:control-room"
+  },
+  "expectedAction": "Show the current Mission Control status surface."
+}

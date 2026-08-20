@@ -35,3 +35,30 @@ coverage
 
 # Unity WebGL builds are large binary artifacts — served from CDN, not git
 public/unity/
+
+# Local coordination monitor state
+docs/coordination/.checkin-monitor-state.json
+
+# Mission Control run lock (local runtime state, never committed)
+docs/coordination/.mission-control.lock
+docs/coordination/.work-loop.lock
+
+# Ephemeral: regenerated every run from the issue queue
+docs/coordination/ops/CURRENT-TASK.md
+
+docs/coordination/ops/SEASON.jsonl
+.nudge.lock
+NUDGES.jsonl
+
+# Generated Python bytecode. Untracked build output that made the work loop
+# refuse to start — it checks for a dirty tree, and a .pyc directory reads the
+# same as an unfinished shot. Deleted by hand twice in one night before anyone
+# noticed it was blocking every scheduled possession.
+__pycache__/
+*.py[cod]
+
+# Generated art. Never committed: the manifests are prompts-only by rule,
+# binary art in git history is unremovable, and the rights question is not
+# settled. Provenance lives in a .json beside each image.
+generated-art/
+PROMPTS.txt

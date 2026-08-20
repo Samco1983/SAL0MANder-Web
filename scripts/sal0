@@ -1,0 +1,214 @@
+#!/bin/bash
+# sal0 — one button.
+#
+# Everything this project can do, behind verbs a tired human can remember at
+# 2am. Each verb is the checklist that used to live in someone's head, and a
+# checklist in someone's head is the one that gets skipped.
+#
+#   sal0 check     is the machine healthy, and can agents work unattended?
+#   sal0 board     who worked, what is queued, what is broken, the score
+#   sal0 play      take the next issue and work it end to end
+#   sal0 stop      pull the brake, right now
+#   sal0 go        release the brake
+#   sal0 blockers  what is stuck and who can clear it
+#
+# Install once:  ln -s "$PWD/scripts/sal0" /usr/local/bin/sal0
+
+set -uo pipefail
+
+REPO="/Users/samuel_saldivar/Desktop/SAL0MANder-Web"
+RUNTIME_REPO="$HOME/.sal0mander/runtime/SAL0MANder-Web"
+LAUNCHD_SERVICE="gui/$(id -u)/com.sal0mander.work-loop"
+PAUSE="$HOME/.sal0mander/PAUSE"
+LOG_DIR="$HOME/.sal0mander/logs"
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
+cd "$REPO" || { echo "repo missing at $REPO"; exit 1; }
+
+die() { echo "  ✗ $*"; exit 1; }
+ok()  { echo "  ✓ $*"; }
+
+case "${1:-help}" in
+
+start-game)
+  # One button before play. Answers the five questions an owner has, in the
+  # order that lets them stop reading early.
+  #
+  # SPEED IS THE FEATURE. The first version took 23s because it invoked the
+  # assistant twice and the doctor once, each shelling out to a model. A
+  # tip-off report nobody waits for is a report nobody reads. Every expensive
+  # thing now runs ONCE, in parallel, with a hard timeout.
+  echo
+  echo "  ══ SAL0MANDER BBALL — TIP OFF ══"
+  echo
+
+  TMP="$(mktemp -d)"
+  trap 'rm -rf "$TMP"' EXIT
+
+  # Fire both slow readers at once rather than one after the other.
+  ( bash scripts/sal0-doctor.sh >"$TMP/doc" 2>&1 ) &
+  DOC_PID=$!
+  ( python3 scripts/lib/sal0_bball_assistant.py >"$TMP/court" 2>&1 ) &
+  COURT_PID=$!
+  ( python3 scripts/lib/sal0_force_shot.py >"$TMP/shots" 2>&1 ) &
+  SHOTS_PID=$!
+  DOC_TIMEOUT=no
+
+  # Hard cap. A tip-off that hangs is worse than one that says "unknown".
+  DEADLINE=$(( $(date +%s) + 25 ))
+  for pid in $DOC_PID $COURT_PID $SHOTS_PID; do
+    while kill -0 "$pid" 2>/dev/null; do
+      [ "$(date +%s)" -ge "$DEADLINE" ] && {
+        [ "$pid" = "$DOC_PID" ] && DOC_TIMEOUT=yes
+        kill "$pid" 2>/dev/null
+        wait "$pid" 2>/dev/null || true
+        break
+      }
+      sleep 1
+    done
+  done
+
+  READY=yes; OWNER=no; REASONS=""
+
+  [ -f "$PAUSE" ] && { READY=no; REASONS="$REASONS\n    · paused: $(cat "$PAUSE")"; }
+  DIRTY=$(git status --porcelain | wc -l | tr -d ' ')
+  [ "$DIRTY" -gt 0 ] && { READY=no; REASONS="$REASONS\n    · $DIRTY uncommitted file(s) — a scheduled run will refuse to start"; }
+
+  # Installed is not ready. The runtime must match the court the agents see,
+  # and launchd must have actually completed at least one invocation.
+  if [ ! -d "$RUNTIME_REPO/.git" ]; then
+    READY=no
+    REASONS="$REASONS\n    · runtime repo missing — reinstall desktop automation"
+  else
+    DESKTOP_HEAD=$(git rev-parse HEAD 2>/dev/null || true)
+    RUNTIME_HEAD=$(git -C "$RUNTIME_REPO" rev-parse HEAD 2>/dev/null || true)
+    if [ -z "$RUNTIME_HEAD" ] || [ "$RUNTIME_HEAD" != "$DESKTOP_HEAD" ]; then
+      READY=no
+      REASONS="$REASONS\n    · runtime stale (${RUNTIME_HEAD:0:8} != ${DESKTOP_HEAD:0:8}) — reinstall or sync before play"
+    fi
+  fi
+
+  LAUNCHD_INFO=$(launchctl print "$LAUNCHD_SERVICE" 2>/dev/null || true)
+  if [ -z "$LAUNCHD_INFO" ]; then
+    READY=no
+    REASONS="$REASONS\n    · launchd job is not loaded"
+  else
+    LAUNCHD_RUNS=$(printf '%s\n' "$LAUNCHD_INFO" | awk '/runs =/{print $3; exit}')
+    case "${LAUNCHD_RUNS:-}" in
+      ''|*[!0-9]*|0)
+        READY=no
+        REASONS="$REASONS\n    · launchd is loaded but has no proven run"
+        ;;
+    esac
+  fi
+
+  LATEST_LOG=$(ls -t "$LOG_DIR"/work-loop-*.log 2>/dev/null | head -1)
+  if [ -n "$LATEST_LOG" ] && ! grep -qE '^=== end [^ ]+ \([^)]+\) ===$' "$LATEST_LOG"; then
+    READY=no
+    REASONS="$REASONS\n    · latest possession has no end marker — treat it as stopped, not working"
+  fi
+
+  # Only the worker taking the shot decides readiness. A benched seat blocking
+  # the court is the failure the bench rule exists to prevent.
+  if [ "$DOC_TIMEOUT" = yes ]; then
+    REASONS="$REASONS\n    · doctor timed out — readiness UNKNOWN, run it directly"
+  elif [ -s "$TMP/doc" ] && ! grep -qE '^\s*claude\s+ok\s+ok' "$TMP/doc"; then
+    READY=no; OWNER=yes
+    REASONS="$REASONS\n    · the worker cannot reach a model from a scheduled shell — bash scripts/sal0-doctor.sh"
+  elif [ ! -s "$TMP/doc" ]; then
+    REASONS="$REASONS\n    · doctor timed out — readiness UNKNOWN, run it directly"
+  fi
+  BENCHED=$(grep -cE '^\s*(gemini|codex).*FAIL' "$TMP/doc" 2>/dev/null || true)
+  [ -n "$BENCHED" ] || BENCHED=0
+  [ "${BENCHED:-0}" -gt 0 ] && REASONS="$REASONS\n    · $BENCHED seat(s) benched — noted, not blocking"
+
+  echo "  Court ready:  $READY"
+  [ -n "$REASONS" ] && printf "%b\n" "$REASONS"
+  echo "  Owner needed: $OWNER"
+  echo
+
+  echo "  ── COURT ──"
+  sed -n '/COURT:/,/^$/p' "$TMP/court" 2>/dev/null | sed 's/^/  /' || echo "    (unavailable)"
+
+  echo "  ── NEXT SHOT ──"
+  sed 's/^/  /' "$TMP/shots" 2>/dev/null || echo "    (unavailable)"
+
+  echo "  ── RISK ──"
+  sed -n '/ANTICIPATION/,/^$/p' "$TMP/court" 2>/dev/null | tail -n +2 | sed 's/^/  /' || echo "    (unavailable)"
+
+  echo "  ── VERIFY ──"
+  echo "    npm run verify        must exit 0 before any commit"
+  echo "    npm run mission:bball after the shot, to record the point"
+  echo
+  ;;
+
+check)
+  # The order matters: the cheapest check that can invalidate the rest runs first.
+  echo
+  echo "  PREFLIGHT"
+  [ -f "$PAUSE" ] && echo "  ⏸ PAUSED — $(cat "$PAUSE")" || ok "not paused"
+  DIRTY=$(git status --porcelain | wc -l | tr -d ' ')
+  [ "$DIRTY" -eq 0 ] && ok "tree clean" || echo "  ⚠ $DIRTY uncommitted file(s) — another player may be mid-possession"
+  AHEAD=$(git rev-list --count '@{u}..HEAD' 2>/dev/null || echo 0)
+  [ "$AHEAD" -eq 0 ] && ok "in sync with origin" || echo "  ⚠ $AHEAD unpushed — invisible to other agents"
+  git config --get core.hooksPath >/dev/null 2>&1 && ok "referee on" || echo "  ⚠ referee off: git config core.hooksPath scripts/hooks"
+  ls ~/Library/LaunchAgents/ 2>/dev/null | grep -q sal0mander && ok "schedule installed" || echo "  ⚠ no launchd job installed"
+  echo
+  bash scripts/sal0-doctor.sh
+  ;;
+
+board)
+  bash scripts/sal0-control-room.sh
+  ;;
+
+blockers)
+  bash scripts/sal0-blocker-report.sh
+  ;;
+
+stop)
+  mkdir -p "$(dirname "$PAUSE")"
+  echo "${2:-stopped by hand $(date -u +%Y-%m-%dT%H:%M:%SZ)}" > "$PAUSE"
+  ok "brake on — $(cat "$PAUSE")"
+  echo "  release with: sal0 go"
+  ;;
+
+go)
+  rm -f "$PAUSE" && ok "brake off"
+  ;;
+
+play)
+  # The full possession, gated at every step. This is the checklist that was
+  # skipped twice: a commit landed on a failing verify, and an issue was closed
+  # while its merge had failed.
+  [ -f "$PAUSE" ] && die "paused: $(cat "$PAUSE") — sal0 go to release"
+  [ -n "$(git status --porcelain)" ] && die "tree is dirty; another player may be working. Commit or wait."
+
+  echo "  1/5 picking a shot"
+  TASK=$(bash scripts/sal0-next-task.sh 2>&1) || die "nothing to take: $TASK"
+  ok "$TASK"
+
+  echo "  2/5 working it"
+  bash scripts/sal0-work-loop.sh docs/coordination/ops/CURRENT-TASK.md
+  RUN=$?
+
+  echo "  3/5 reading the evidence"
+  LOG=$(ls -t "$LOG_DIR"/work-loop-*.log | head -1)
+  grep -E "ONE THING THAT CHANGED|BLOCKED|npm run verify exit" "$LOG" | sed 's/^/      /'
+
+  echo "  4/5 verifying the COMMITTED branch, not this desk"
+  CHK=$(mktemp -d)/wt
+  git worktree add -q --detach "$CHK" HEAD 2>/dev/null \
+    && ln -s "$REPO/node_modules" "$CHK/node_modules" 2>/dev/null
+  (cd "$CHK" && npm run verify >/dev/null 2>&1); V=$?
+  git worktree remove --force "$CHK" 2>/dev/null
+  [ "$V" -eq 0 ] && ok "branch green" || echo "  ✗ branch RED — do not close anything"
+
+  echo "  5/5 score"
+  echo "      open: $(gh issue list --repo Samco1983/SAL0MANder-Web --state open --limit 100 --json number --jq 'length' 2>/dev/null)"
+  echo "      closed: $(gh issue list --repo Samco1983/SAL0MANder-Web --state closed --limit 100 --json number --jq 'length' 2>/dev/null)"
+  exit $(( RUN != 0 || V != 0 ))
+  ;;
+
+*)
+  sed -n '3,16p' "$0" | sed 's/^# \{0,1\}//'
+  ;;
+esac

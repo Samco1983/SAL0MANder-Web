@@ -1,0 +1,69 @@
+{
+  "pack": "dragon-court",
+  "lane": "Unity/Game asset scout",
+  "status": "proposal",
+  "style": "warm readable kid-friendly puzzle art",
+  "runtimeGroup": "dragon-court",
+  "use": "bonus crossover unlock \u2014 fantasy x sports",
+  "notes": [
+    "Prompts only. No generated files are committed here.",
+    "Unity import path, dimensions, compression, and Addressables labels need Unity-lane approval.",
+    "No copyrighted characters, logos, real children, or classroom PII."
+  ],
+  "assets": [
+    {
+      "id": "dragon-court.background.castle-court-01",
+      "type": "background",
+      "targetUse": "stage background",
+      "deliverable": "16:9 background concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a 16:9 background concept for a kid-friendly educational puzzle game. Theme: dragon-court. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: outdoor basketball court in a castle courtyard, banners on the walls, hoop to one side, clear playable center. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: 16:9 background concept."
+    },
+    {
+      "id": "dragon-court.character.basketball-dragon-01",
+      "type": "character",
+      "targetUse": "unlockable reward character",
+      "deliverable": "transparent PNG sprite concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG sprite concept for a kid-friendly educational puzzle game. Theme: dragon-court. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: friendly round-snouted dragon mid-dribble with a basketball, wings tucked, expression focused and playful. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG sprite concept."
+    },
+    {
+      "id": "dragon-court.character.knight-referee-01",
+      "type": "character",
+      "targetUse": "unlockable reward character",
+      "deliverable": "transparent PNG sprite concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a transparent PNG sprite concept for a kid-friendly educational puzzle game. Theme: dragon-court. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: small cheerful knight in light armour holding a whistle, visor up so the face reads friendly. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: transparent PNG sprite concept."
+    },
+    {
+      "id": "dragon-court.reward.flame-trophy-01",
+      "type": "reward",
+      "targetUse": "unlock celebration token",
+      "deliverable": "square icon concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a square icon concept for a kid-friendly educational puzzle game. Theme: dragon-court. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: trophy with a soft flame motif, distinct in silhouette from the standard star and paw badges. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: square icon concept."
+    },
+    {
+      "id": "dragon-court.poster.dragon-dunk-poster-01",
+      "type": "poster",
+      "targetUse": "completion reward image",
+      "deliverable": "portrait poster concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a portrait poster concept for a kid-friendly educational puzzle game. Theme: dragon-court. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: a dragon completing a gentle dunk with banners flying \u2014 a keepsake image a student earns, energetic but never aggressive. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: portrait poster concept."
+    },
+    {
+      "id": "dragon-court.tile-set.banner-set-01",
+      "type": "tile-set",
+      "targetUse": "decorative puzzle tile variants",
+      "deliverable": "sprite sheet concept",
+      "rights": "generated-clean",
+      "needsUnityApproval": true,
+      "prompt": "Create a sprite sheet concept for a kid-friendly educational puzzle game. Theme: dragon-court. Audience: elementary and middle-school learners. Style: warm, readable, high-contrast, playful but not babyish. Composition: six castle banner tiles in different colours and simple heraldic shapes, readable at small sizes. Constraints: no text in image, no copyrighted characters, no logos, no realistic child faces, no scary violence, no photoreal school children. Deliverable: sprite sheet concept."
+    }
+  ]
+}

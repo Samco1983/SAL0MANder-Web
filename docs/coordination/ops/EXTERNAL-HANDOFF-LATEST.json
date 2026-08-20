@@ -1,0 +1,226 @@
+{
+  "schemaVersion": "sal0-external-handoff-packet-v0",
+  "createdAt": "2026-08-19T04:01:14.692Z",
+  "repo": {
+    "root": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/",
+    "branch": "council/2026-08-18",
+    "head": "527697b",
+    "status": "M docs/coordination/COMMUNICATION-LADDER.md\n M docs/coordination/MISSION-CONTROL-CORE.md\n M package.json"
+  },
+  "missionControl": {
+    "controlLayer": "Mission Control Core — Python Supervisor",
+    "agents": [
+      {
+        "id": "codex",
+        "number": "SAL0-01",
+        "displayName": "SAL0-01 Architect — Codex Desktop",
+        "role": "Technical Lead",
+        "lane": "Unity/Game",
+        "surfaceLabel": "Codex Desktop"
+      },
+      {
+        "id": "codex-cli",
+        "number": "SAL0-02",
+        "displayName": "SAL0-02 Runner — Codex CLI",
+        "role": "Local Execution",
+        "lane": "Coordination",
+        "surfaceLabel": "Codex CLI"
+      },
+      {
+        "id": "chatgpt-openai",
+        "number": "SAL0-03",
+        "displayName": "SAL0-03 Director — OpenAI API",
+        "role": "Product Decision",
+        "lane": "Coordination",
+        "surfaceLabel": "OpenAI API"
+      },
+      {
+        "id": "claude",
+        "number": "SAL0-04",
+        "displayName": "SAL0-04 Builder — Claude CLI",
+        "role": "Web/Code Work",
+        "lane": "Web",
+        "surfaceLabel": "Claude CLI"
+      },
+      {
+        "id": "claude-chat",
+        "number": "SAL0-05",
+        "displayName": "SAL0-05 Reviewer — Claude Chat",
+        "role": "Manual Critique",
+        "lane": "Web",
+        "surfaceLabel": "Claude Chat"
+      },
+      {
+        "id": "gemini",
+        "number": "SAL0-06",
+        "displayName": "SAL0-06 Scout — Gemini Chat",
+        "role": "Google/Browser Review",
+        "lane": "Coordination",
+        "surfaceLabel": "Gemini Chat"
+      },
+      {
+        "id": "gemini-api-cli",
+        "number": "SAL0-07",
+        "displayName": "SAL0-07 Challenger — Gemini API/CLI",
+        "role": "Automated Critique",
+        "lane": "Coordination",
+        "surfaceLabel": "Gemini API/CLI"
+      },
+      {
+        "id": "unity-ai",
+        "number": "SAL0-08",
+        "displayName": "SAL0-08 Inspector — Unity MCP",
+        "role": "Unity Evidence",
+        "lane": "Unity/Game",
+        "surfaceLabel": "Unity MCP"
+      },
+      {
+        "id": "make",
+        "number": "SAL0-09",
+        "displayName": "SAL0-09 Signal — Make Cloud",
+        "role": "Outside Automation",
+        "lane": "Make Automation",
+        "surfaceLabel": "Make Cloud"
+      },
+      {
+        "id": "github",
+        "number": "SAL0-10",
+        "displayName": "SAL0-10 Ledger — GitHub Cloud",
+        "role": "Source Of Truth",
+        "lane": "Coordination",
+        "surfaceLabel": "GitHub Cloud"
+      }
+    ]
+  },
+  "sourcePointers": [
+    {
+      "path": "docs/coordination/CURRENT_STATE.md",
+      "exists": true,
+      "lineCount": 31,
+      "headings": [
+        "SAL0MANder Current State"
+      ],
+      "redaction": "body omitted; secret-shaped lines excluded from derived headings"
+    },
+    {
+      "path": "docs/coordination/MISSION-CONTROL-CORE.md",
+      "exists": true,
+      "lineCount": 106,
+      "headings": [
+        "Mission Control Core",
+        "Job",
+        "Not Its Job",
+        "First Command",
+        "Local Barrier Rules",
+        "Routine Recovery Catalog"
+      ],
+      "redaction": "body omitted; secret-shaped lines excluded from derived headings"
+    },
+    {
+      "path": "docs/coordination/SESSION-FAILSAFES.md",
+      "exists": true,
+      "lineCount": 72,
+      "headings": [
+        "Session And Fail-Safe Plan",
+        "Session Rules",
+        "Recommended Rooms",
+        "Fail-Safe States",
+        "Routing Table",
+        "Hard Stops"
+      ],
+      "redaction": "body omitted; secret-shaped lines excluded from derived headings"
+    },
+    {
+      "path": "docs/coordination/SURFACE-MAP.md",
+      "exists": true,
+      "lineCount": 107,
+      "headings": [
+        "Surface map — which agent can a program actually wake?",
+        "What is installed here",
+        "Correction, and the finding underneath it",
+        "Why the terminal is the right execution layer",
+        "Where the terminal is the wrong tool",
+        "One practical trade-off",
+        "Wake-up mechanisms that exist right now",
+        "Divergence to resolve"
+      ],
+      "redaction": "body omitted; secret-shaped lines excluded from derived headings"
+    },
+    {
+      "path": "docs/coordination/EVIDENCE-PROMPTS.md",
+      "exists": true,
+      "lineCount": 97,
+      "headings": [
+        "Prompts that force an agent to show its data",
+        "The evidence rules — paste this block first",
+        "For Codex — the automations and the money",
+        "For Claude — the claims from this session",
+        "The five questions that pay for themselves"
+      ],
+      "redaction": "body omitted; secret-shaped lines excluded from derived headings"
+    },
+    {
+      "path": "docs/coordination/PROPOSAL-EXECUTE-STAGE.md",
+      "exists": true,
+      "lineCount": 73,
+      "headings": [
+        "Proposal — give the council's decision a consumer",
+        "The finding",
+        "Why the existing roles do not close it",
+        "What not to add",
+        "The change",
+        "Why this is the honest version of \"remove barriers\""
+      ],
+      "redaction": "body omitted; secret-shaped lines excluded from derived headings"
+    }
+  ],
+  "recentCommits": [
+    {
+      "hash": "527697b",
+      "subject": "council: add the SAL0MANder Control Room"
+    },
+    {
+      "hash": "2870548",
+      "subject": "council: feed the loop from the GitHub issue queue and report back on it"
+    },
+    {
+      "hash": "c4ab49c",
+      "subject": "council: fix agent command evidence recording"
+    },
+    {
+      "hash": "c3bb5d1",
+      "subject": "council: stop the loop committing work that is not its own"
+    },
+    {
+      "hash": "de143d5",
+      "subject": "web: automated work loop 20260819T035153Z"
+    },
+    {
+      "hash": "9f3d246",
+      "subject": "council: stop the work loop committing its own lock file"
+    },
+    {
+      "hash": "094010d",
+      "subject": "web: automated work loop 20260819T034901Z"
+    },
+    {
+      "hash": "1267330",
+      "subject": "council: fix the loop never committing its worker's output"
+    },
+    {
+      "hash": "9a78761",
+      "subject": "council: add a canary task and collect real environment data"
+    },
+    {
+      "hash": "97f1601",
+      "subject": "council: make work-loop executable"
+    }
+  ],
+  "rules": [
+    "Use this as a redacted orientation packet only.",
+    "Do not infer hidden document contents from omitted bodies.",
+    "Ask for a specific file excerpt when more context is required.",
+    "Do not touch Unity, secrets, auth files, live Make scenarios, or unrelated repos."
+  ],
+  "hash": "15b371a67df53625d3522271a2f2008865f758164c22d8d8434943185f3a67ee"
+}

@@ -1,0 +1,74 @@
+/*
+ * One font-size controls the whole lockup.
+ *
+ * Everything inside is em-based, so the mark, the letters and the suffix all
+ * scale together — set `font-size` on this element and the proportions hold.
+ * They previously did not: `.letters` was pinned to a token while `.studios`
+ * was em-based, so enlarging the wordmark grew the suffix and left the name
+ * behind.
+ */
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  font-size: var(--text-lg);
+  /* Tight tracking is what makes the wordmark read as one object. */
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.letters {
+  display: inline-flex;
+  align-items: center;
+  font-weight: var(--weight-bold);
+  font-size: 1em;
+  line-height: 1;
+}
+
+.sal {
+  color: var(--color-brand-violet);
+}
+
+.man {
+  /*
+   * The readable green, not the mark green. These are letters, and the vivid
+   * #22c55e measures 2.28:1 on white — the wordmark carries an aria-label so it
+   * is technically exempt, but a logo nobody can read is not much of a logo.
+   * The ring below keeps the vivid hue, which is where it belongs.
+   */
+  color: var(--color-brand-green-text);
+}
+
+.der {
+  color: var(--color-text);
+  /* Lowercase and slightly lighter, as in the mark. */
+  text-transform: none;
+}
+
+.mark {
+  width: 1em;
+  height: 1em;
+  /* Sits on the cap line rather than the baseline, like the O it replaces. */
+  margin: 0 0.02em;
+  vertical-align: middle;
+}
+
+.markRing {
+  fill: var(--color-brand-green);
+}
+
+.markCore {
+  fill: var(--color-brand-ink);
+}
+
+.markCentre {
+  fill: var(--color-brand-violet);
+}
+
+.studios {
+  font-size: 0.62em;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
