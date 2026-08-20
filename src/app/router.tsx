@@ -64,4 +64,9 @@ export const routes: RouteObject[] = [
   { path: paths.notFound, element: <NotFoundPage />, errorElement: <RouteError /> },
 ]
 
-export const router = createBrowserRouter(routes)
+// `basename` strips the deploy prefix before matching, so every `path` above
+// stays written as if the app were at the root. Without it, project Pages
+// serves the app at /SAL0MANder-Web/ and every route falls through to 404.
+export const router = createBrowserRouter(routes, {
+  basename: (import.meta.env?.BASE_URL as string | undefined) ?? '/',
+})

@@ -24,6 +24,10 @@ export default defineConfig({
       '@lib': r('./src/lib'),
     },
   },
+  // Where the site is served from. '/' for a custom domain, '/SAL0MANder-Web/'
+  // for GitHub project Pages. Set by CI, never hard-coded — a printed QR code
+  // must survive the site moving, so the path lives in one place.
+  base: process.env.VITE_BASE_PATH ?? '/',
   build: {
     // Unity WebGL builds are large; keep the warning meaningful for *our* JS only.
     chunkSizeWarningLimit: 900,
