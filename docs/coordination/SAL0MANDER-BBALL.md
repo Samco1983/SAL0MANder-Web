@@ -350,6 +350,14 @@ gets benched twice for the same reason, do not run it back unchanged. Change
 the play design before redemption: shrink the task, switch the player, change
 the environment, add missing data, or choose another angle.
 
+The opposite is also true: feed the hot hand. If an agent is scoring verified
+points quickly, give that player more touches in the lane where the evidence is
+strong. More touches does not mean unlimited load. Watch for fatigue signals:
+slower possessions, repeated small mistakes, vague reports, skipped checks, or
+too many parallel assignments. A hot player who gets overloaded becomes a
+turnover risk, so the coach increases usage gradually and keeps a rebounder
+nearby.
+
 ## The huddle
 
 The shot clock is only half of it. **A team that never slows down runs the same
