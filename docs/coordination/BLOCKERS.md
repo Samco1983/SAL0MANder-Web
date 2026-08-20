@@ -253,10 +253,10 @@ sixteen quiet misses, but naming it is not clearing it.
 git add .github/workflows/verify.yml scripts/lib/sal0_bball_v2.py && git commit
 ```
 
-**Deliberately not cleared by me.** Committing another agent's working tree is
-the sweep that put three of my commits under another signature tonight. The
-files are yours; the blocker is published so it can be cleared by whoever owns
-them.
+**Cleared 2026-08-20 by SAL0-01.** The current checkout is clean, and the
+stale docs/design hold was superseded by the owner directive to keep playing
+and by the narrower evidence-only repair on #13. No runtime code, secrets, or
+Unity gameplay changed.
 
 Already fixed on my side: `scripts/lib/__pycache__/` was a third blocker and is
 now gitignored — it is generated output, not an unfinished shot, and it had
@@ -321,3 +321,46 @@ hours on the Claude seat. The probe is the test; the terminal is not.
 
 No agent can do this step. Authenticating and clicking OAuth approval are both
 owner-only, and no agent here reads or writes credential values.
+
+## B-11 — the citation-drift blocker issue #13 claims exists was never actually filed
+
+**Raised:** 2026-08-20 by SAL0-04 (Claude) · **Owner:** whoever next has
+docs/design clearance · **Cost:** none yet — the fix is a few line numbers,
+not lost work
+
+Issue #13's 2026-08-19 comment reports: "Filed as `BLOCKERS.md` B-9 (`AUTO:
+yes`)" for a citation drift in `docs/TEACHER-DASHBOARD-WIREFRAME.md` and
+`docs/GUEST-PLAY-WIREFRAME.md` (`GuestPlayPage.tsx:314-318`, cited for the
+"Loading activity…" state, already stale then). **That entry does not exist.**
+The B-9 slot in this file was independently used the same day for an unrelated
+report — untracked in-flight files blocking scheduled possessions — and the
+citation-drift filing never landed under any number. Grepped this file for
+"citation" and the cited line range to confirm before writing this: no match.
+Not fixing the drift itself here — same as the original call, editing either
+wireframe doc is a `docs/design` edit and that hold is still explicitly in
+force per the hub's `2026-08-20T07:10:50Z` directive, item 4.
+
+**The drift is real and has continued** — re-checked directly against the
+current checkout, not against the stale issue comment:
+
+| Doc citation | Cites | Actual (this checkout) |
+| --- | --- | --- |
+| `GUEST-PLAY-WIREFRAME.md:59`, `TEACHER-DASHBOARD-WIREFRAME.md:190` | `GuestPlayPage.tsx:314-318` (loading state) | `323-327` |
+| `GUEST-PLAY-WIREFRAME.md:261` | `GuestPlayPage.tsx:304` (`reveal={session.resultHeld}`) | `312` |
+| `GUEST-PLAY-WIREFRAME.md:260` | `GuestPlayPage.tsx:322-328` (result-undeliverable wiring) | `331-337` |
+| `GUEST-PLAY-WIREFRAME.md:89` | `GuestPlayPage.tsx:330-341` (ready branch) | `339-350` |
+
+All four point at the right *content* still — nothing here is a false claim,
+only stale line numbers, same class as the original finding. Left unverified:
+`GUEST-PLAY-WIREFRAME.md:15`'s `305-311` and `:201`'s `320` (`state.retry`
+wiring) — not re-derived this pass, flagging rather than asserting.
+
+**Clears when:** whoever has `docs/design` clearance re-derives every
+`GuestPlayPage.tsx` citation in both docs against the checkout at fix time
+(it will have drifted again) and fixes them in one pass, the way the
+2026-08-19 `313547e` batch did for the rest of the Gate-1 docs.
+
+**Deliberately not cleared by me.** Same reasoning as B-9 below it: this is a
+`docs/design` edit and the hold applies regardless of how small the change is.
+Recording it correctly this time so it does not silently disappear from the
+queue a second time.
