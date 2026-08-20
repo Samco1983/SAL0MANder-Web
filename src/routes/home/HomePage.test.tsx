@@ -93,6 +93,16 @@ describe('no dead links', () => {
       expect(text).not.toMatch(/credits|badges|classes|reports|collaboration/i)
     }
   })
+
+  it('links progress copy to the guest-safe Profile surface', () => {
+    renderHome()
+
+    expect(screen.getByRole('link', { name: /view guest progress/i })).toHaveAttribute(
+      'href',
+      paths.profile,
+    )
+    expect(document.body.textContent ?? '').not.toMatch(/\b(sign (in|up)|log in|create an account) to\b/i)
+  })
 })
 
 describe('the demo share panel', () => {

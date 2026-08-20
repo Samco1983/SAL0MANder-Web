@@ -242,6 +242,17 @@ def local_generated_product_shot() -> dict:
                 r"to=\{paths\.profile\}|to=\{paths\['profile'\]\}",
             ),
         },
+        {
+            "title": "[LOCAL][PRODUCT] Add a sample activity path from Profile",
+            "success_check": (
+                "Profile gives a guest a direct sample-activity path without making accounts feel required"
+            ),
+            "files": [
+                "src/routes/profile/ProfilePage.tsx",
+                "src/routes/profile/ProfilePage.test.tsx",
+            ],
+            "complete": lambda: file_has("src/routes/profile/ProfilePage.tsx", r"MOCK_DEMO_ACTIVITY_ID"),
+        },
     ]
     shot = next((candidate for candidate in shots if not candidate["complete"]()), shots[0])
     return {

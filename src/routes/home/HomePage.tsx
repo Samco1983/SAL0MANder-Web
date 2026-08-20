@@ -98,6 +98,11 @@ export function HomePage() {
           <Card title="I want to keep my progress">
             Optional accounts add saved progress, XP, credits, badges, and history — never a
             requirement to play.
+            <div style={{ marginTop: 'var(--space-4)' }}>
+              <LinkButton to={paths.profile} variant="secondary">
+                View guest progress
+              </LinkButton>
+            </div>
           </Card>
           <Card title="I want my images to load fast">
             Activities, versions, and images live in cloud storage and are served from a CDN.

@@ -170,6 +170,25 @@ class ForceShotTest(unittest.TestCase):
         self.assertEqual(shot["title"], "[LOCAL][PRODUCT] Link Home progress copy to Profile")
         self.assertIn("src/routes/home/HomePage.tsx", shot["files"])
 
+    def test_generated_product_shots_keep_moving_after_home_profile_link_completes(self):
+        def completed(path, pattern):
+            if path == "src/routes/home/HomePage.tsx":
+                return "Preview" in pattern or "profile" in pattern
+            if path == "src/routes/profile/ProfilePage.tsx":
+                return "Next step" in pattern
+            return path in {
+                "src/routes/unity/UnityHostPage.tsx",
+                "src/routes/guest-play/GuestPlayPage.tsx",
+            }
+
+        with patch.object(sal0_force_shot, "file_has") as file_has:
+            file_has.side_effect = completed
+
+            shot = sal0_force_shot.local_generated_product_shot()
+
+        self.assertEqual(shot["title"], "[LOCAL][PRODUCT] Add a sample activity path from Profile")
+        self.assertIn("src/routes/profile/ProfilePage.tsx", shot["files"])
+
 
 if __name__ == "__main__":
     unittest.main()
