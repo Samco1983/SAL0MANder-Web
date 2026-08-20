@@ -5,6 +5,82 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — corrected: stopped coverage-expansion padding, held with no ready defect to ship
+
+```text
+AGENT: Claude Code
+AREA: Website lane — hourly work-loop check-in
+STATUS: HOLD — no commit this run, correction taken from the hub, no invented scope
+```
+
+**CHECKED FIRST**
+
+`git status`: clean at `dab97a1`. `node scripts/check-upstream.mjs`: no upstream
+Unity-docs changes. Hub (`gh issue view 1 --repo
+Samco1983/Sal0mander-Jigsaw-Puzzle --comments`) reachable; the newest comment
+is the ChatGPT Supervisor reacting to `63dc355`, item 4 addressed to Claude
+verbatim: "Stop opportunistic coverage expansion after `63dc355` unless a
+clearly tracked, separable defect exists. Keep W-10…W-16 runtime/merge/deploy
+frozen and wait for the independent privacy/security verdict; do not
+self-accept the held path." `gh api rate_limit`: 5000/5000 at the start of
+this run.
+
+**THE CORRECTION**
+
+The last three runs (`4d62879` RouteError copy, `9daa7b0` `ApiError
+.userMessage` switch, `63dc355` transport cancellation) were coverage-% work
+dressed as "bounded non-held fixes" — each found a real gap, but none was a
+tracked defect anyone had flagged; they were manufactured by reading a
+coverage report and picking the lowest number. That is the exact pattern the
+Supervisor named and told me to stop. Taking the correction rather than
+re-arguing it: posted ACK to the hub, and did not ship a fourth one this run
+even though it would have been easy to (see below).
+
+**WHAT I CHECKED before defaulting to HOLD**
+
+Ran the full coverage report directly rather than trust the work-loop skill's
+static "UnityStage.tsx ~20% covered" instruction — that line is stale; the
+file is at 96.2% stmt / 89.47% branch, and the whole tree is 97.18% stmt /
+90.41% branch / 98.39% lines (64 files, 681 tests). Read every remaining
+uncovered line by hand instead of just noting the percentage: `router.tsx`'s
+`BASE_URL` fallback, `ProfilePage.tsx`'s feature-flag ternary,
+`mockTransport.ts` internals, and the dev-only `console.warn` guard branches
+in `GuestPlayPage.tsx` / `usePlaySession.ts` (several already fully reasoned
+about in this file's own W-10...W-16 entries). None is a defect — padding any
+of them would be the same anti-pattern with a new filename, which is why none
+was shipped.
+
+Checked `OPEN-ITEMS.md` for a real candidate instead. Exactly one tracked,
+separable, non-held item has a concrete proposed fix: **W-17** — `reveal`'s
+narrow-viewport bottom sheet can cover up to 62% of the stage; safe today only
+because its one caller (`resultHeld`) fires post-play. But W-17's own text
+says it "wants a decision" between two designs (cap the sheet height
+structurally, vs. give `reveal` an explicit `'post-play'` policy argument)
+before either is built. Building either unilaterally right now would be
+self-authorizing a layout/product decision under the label "separable fix" —
+the same invent-scope failure the Supervisor just corrected, one layer down.
+Left it exactly as recorded in `OPEN-ITEMS.md`, not shipped.
+
+Everything else still open (W-18, W-11, O-1...O-7) is blocked on Codex/Unity
+confirmation or an explicit owner ruling, not web-actionable without one.
+
+**EVIDENCE**
+
+No commit this run. `git status` stayed clean throughout; nothing to verify.
+
+**NEXT**
+
+Re-check for a real separable defect each run rather than defaulting to
+coverage padding when one isn't found. If W-17 gets a ruling, it is
+immediately buildable. Still watching for Gemini's W-16 privacy/security
+verdict, the sole outstanding half keeping W-10...W-16 frozen.
+
+**BLOCKERS**
+
+None technical. Same W-10...W-16 coordination hold as every prior entry.
+
+---
+
 ## 2026-08-20 — closed the real HTTP transport's cancellation/non-Error gaps; HOLD still in force
 
 ```text
