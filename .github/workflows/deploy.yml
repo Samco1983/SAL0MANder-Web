@@ -54,6 +54,10 @@ jobs:
           # means changing this ONE value; the router and share links both read
           # it, and src/config/deployBasePath.test.ts pins that behaviour.
           VITE_BASE_PATH: /SAL0MANder-Web/
+          # Emergency Pages-hosted WebGL build. Longer-term this can move back
+          # to a CDN once Unity licensing is healthy enough for repeat builds.
+          VITE_UNITY_BUILD_BASE_URL: /unity
+          VITE_UNITY_BUILD_NAME: sal0-unity-webgl
         run: npm run build
 
       # Pages has no server-side rewrite, so a deep link like /play/SUN-42 —
@@ -85,6 +89,18 @@ jobs:
       # answered with 404.html and the router has to recover the path itself.
       - name: walk every visitor path against the deploy shape
         run: node scripts/verify-deployed-site.mjs dist
+
+      # A status page that ships with the site.
+      #
+      # Every tool that answers "is anything blocked" lives in a terminal, so
+      # the answer was only ever available by asking an agent. This puts it at a
+      # URL the owner can open on a phone. Computed once here and passed in —
+      # the scorer rebuilds and re-verifies, so calling it from inside the build
+      # is both recursive and slow.
+      - name: status page
+        run: |
+          python3 scripts/lib/sal0_championship.py --json > /tmp/champ.json || true
+          node scripts/build-status-page.mjs dist /tmp/champ.json
 
       - uses: actions/upload-pages-artifact@v3
         with:

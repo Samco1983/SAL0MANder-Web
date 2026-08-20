@@ -51,7 +51,18 @@ def reachable(url: str, timeout: int = 15) -> tuple[bool, str]:
     except urllib.error.HTTPError as e:
         return False, f"HTTP {e.code}"
     except Exception as e:
-        return False, type(e).__name__
+        # Some scheduled macOS/Python environments have an incomplete CA store
+        # while curl can still verify the same public endpoint. The scorer should
+        # not call a live site dead because Python's local certificate bundle is
+        # stale.
+        code, raw = sh([
+            "curl", "-L", "-sS", "-o", "/dev/null",
+            "-w", "%{http_code}", "--max-time", str(timeout), url
+        ], timeout + 5)
+        status = int(raw) if code == 0 and raw.isdigit() else 0
+        if 200 <= status < 400:
+            return True, f"HTTP {status}"
+        return False, f"{type(e).__name__}{f' / HTTP {status}' if status else ''}"
 
 
 # --- the three things -------------------------------------------------------
@@ -73,8 +84,8 @@ def website() -> list[dict]:
     out.append({"name": "hosting is switched on", "ok": pages,
                 "blocker": "" if pages else "GitHub Pages is off — owner must enable it (repo is private, so this needs Pro or a public repo)"})
 
-    code, raw = sh(["gh", "api", f"repos/{SLUG}/contents/.github/workflows/deploy.yml",
-                    "--ref", "main", "--jq", ".size"], 90)
+    code, raw = sh(["gh", "api", f"repos/{SLUG}/contents/.github/workflows/deploy.yml?ref=main",
+                    "--jq", ".size"], 90)
     on_main = code == 0
     out.append({"name": "the pipeline is on the default branch", "ok": on_main,
                 "blocker": "" if on_main else "deploy.yml is not on main — GitHub only runs workflows from the default branch"})

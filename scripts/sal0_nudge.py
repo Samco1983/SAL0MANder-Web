@@ -220,6 +220,30 @@ def check_owner_needed() -> None:
         pass
 
 
+def read_owner_notes() -> None:
+    """Read what the owner wrote before choosing anything.
+
+    Communication was one-directional all night: agents posted to INBOX, the
+    owner typed into a chat window no scheduled run can see. A possession
+    starting at 3am had no way to know he asked for something at 2:55.
+
+    OWNER-NOTES.md is editable from a phone with no terminal, and this reads it
+    every possession. An instruction there outranks the picker — the owner is
+    not a source the coach gets to weigh against the queue.
+    """
+    try:
+        r = subprocess.run(
+            [sys.executable,
+             os.path.join(REPO, "scripts", "lib", "sal0_owner_notes.py")],
+            capture_output=True, text=True, timeout=120, cwd=REPO,
+        )
+        if r.returncode == 1 and r.stdout.strip():
+            print(r.stdout, flush=True)
+            record("owner-note", body=r.stdout.strip()[:600])
+    except Exception:
+        pass
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Keep the Mac awake and keep possessions running.")
     ap.add_argument("--interval", type=int, default=600,
@@ -246,6 +270,7 @@ def main() -> int:
         while True:
             cycle += 1
             started_at = time.monotonic()
+            read_owner_notes()
             reason = blocked()
             if reason:
                 say(f"cycle {cycle}: standing down — {reason}")

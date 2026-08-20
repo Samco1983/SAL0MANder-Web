@@ -5,6 +5,84 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — fixed the bball V3 picker filing duplicate "shot bank exhausted" issues; W-10…W-16 HOLD still stands, nothing new to answer on the hub
+
+```text
+AGENT: Claude Code
+AREA: Council tooling — hourly work-loop check-in; bounded non-held infra fix
+STATUS: SHIPPED — `8f0a222`, verify green, mutation-verified; HOLD on W-10...W-16 unaffected
+```
+
+**CHECKED FIRST**
+
+`git status`: clean at `18136c8` before this run, 2 local commits ahead of
+`origin/council/2026-08-18` (the merge-from-main commit and the Aug 15
+`overnight-claude-web-worker.yml`/`overnight-gemini-web-review.yml` automation
+that had never been pushed) — pushed both, no conflicts. `node
+scripts/check-upstream.mjs`: no upstream Unity-docs changes. `gh auth status`:
+healthy. Hub (`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle
+--comments`) reachable; newest comment is still my own prior run's `13:08:07Z`
+Gemini-credential finding — no reply from any lane since, nothing new to
+answer.
+
+**WHAT I FOUND**
+
+`gh issue list --repo Samco1983/SAL0MANder-Web --state open` showed two
+identical open issues, `#46` and `#47`, both titled `[WEB][PRODUCT] Split the
+next smallest user-visible web shot`, filed 26 minutes apart
+(`12:23:39Z`/`12:49:47Z`) by the same automated mechanism
+(`scripts/lib/sal0_bball_v3.py`, confirmed by grep — this is the only place
+that title string exists). Root cause in `build_packet()`: every real
+candidate is deduped against `open_issue_titles()` before ranking, but the
+synthesized "shot bank exhausted" fallback issue (created when the real
+candidate list is empty) was created unconditionally — it never checked
+whether an identical fallback issue was already open. Every scheduled run
+that finds the bank empty was filing a fresh duplicate. Codex's `aed4c73`
+(05:23:24Z, earlier today) is what introduced this fallback in the first
+place — not reverting anything, closing a gap it left.
+
+**WHAT I DID**
+
+Closed `#47` as a duplicate of `#46`, with the root cause in the close
+comment. Fixed `build_packet()` to check `open_issue_titles()` for its own
+fixed title (`EXHAUSTED_BANK_TITLE`) before creating it — if already open,
+action becomes `HOLD` with an explicit reason instead of filing a second
+issue. Added `test_v3_does_not_duplicate_the_exhausted_bank_issue` in
+`sal0_bball_v3_test.py`.
+
+**Mutation-verified before committing**: temporarily forced the new dedup
+check to `if False:` — the new test failed as expected
+(`'CREATE_PRODUCT_ISSUE' != 'HOLD'`), confirming it actually exercises the
+fix rather than passing regardless. Reverted, all 6 tests in the file green,
+`git diff` matched only the intended fix before staging.
+
+Scope check: `scripts/lib/` council tooling, not `src/` runtime, not
+`docs/design`, not W-10...W-16, no non-negotiable touched.
+
+**EVIDENCE**
+
+`npm run verify` green: lint (pre-existing script warnings only, unrelated),
+typecheck, **65 files / 700 tests**, 58 Python mission tests (up from 57:
++1 new test), build. Commit
+[`8f0a222`](https://github.com/Samco1983/SAL0MANder-Web/commit/8f0a222),
+pushed clean. Issue close:
+[`#47`](https://github.com/Samco1983/SAL0MANder-Web/issues/47#issuecomment).
+
+**NEXT**
+
+Still watching for Gemini's bounded W-16 privacy/security verdict, the sole
+outstanding half keeping W-10...W-16 frozen — same as every recent entry, not
+re-litigating it. No other separable, non-held, web-actionable defect found
+this run; checked W-11/W-18/W-9 (all still blocked on Codex/Unity per
+`OPEN-ITEMS.md`) before landing on the duplicate-issue fix instead of
+defaulting to coverage padding.
+
+**BLOCKERS**
+
+None technical. Same W-10...W-16 coordination hold as every prior entry.
+
+---
+
 ## 2026-08-20 — the real reason W-16's verdict has never landed: Gemini has no credential, not a queue problem; caught up one unlogged web commit
 
 ```text
