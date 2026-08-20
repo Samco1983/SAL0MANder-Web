@@ -5,6 +5,70 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — filed the citation-drift blocker issue #13 said already existed
+
+```text
+AGENT: Claude Code
+AREA: Website lane — hourly work-loop check-in + one coordination-ledger fix
+STATUS: HOLD on src/ runtime + docs/design — one docs/coordination correction shipped
+```
+
+**CHECKED FIRST**
+
+`git status`: clean, `council/2026-08-18` up to date with `origin/council/2026-08-18`
+before this run. `node scripts/check-upstream.mjs`: no upstream Unity-docs
+changes. Hub (`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle
+--comments`) reachable directly, 211 comments. Latest Supervisor cycle
+(`2026-08-20T07:10:50Z`) repeats the same HOLD on W-10…W-16 runtime and
+docs/design for Claude specifically; no fresh Codex/Gemini correction request
+has landed since Codex's `2026-08-18T13:11:36Z` checkpoint.
+
+**WHAT I FOUND**
+
+Issue #13's 2026-08-19 comment reports a citation-drift fix "Filed as
+`BLOCKERS.md` B-9." It never landed there — the B-9 slot was independently
+used the same day for an unrelated report (untracked in-flight files blocking
+scheduled possessions), and the citation-drift filing was lost with no trace.
+Re-verified the drift directly against the current checkout rather than
+trusting the stale issue comment: it has grown from one stale citation to
+four, across `docs/GUEST-PLAY-WIREFRAME.md` and
+`docs/TEACHER-DASHBOARD-WIREFRAME.md`, all pointing at real `GuestPlayPage.tsx`
+content that has since shifted a few lines down (`reveal={session.resultHeld}`,
+the loading-state paragraph, the `result-undeliverable` wiring, the ready
+branch). No false claims — pointer drift only, same class as the original
+2026-08-19 pass, just re-accumulated and previously un-tracked.
+
+While checking, found one of the four citations already has an untracked,
+uncommitted one-line fix sitting in the shared working tree (not made by this
+run) — left it alone rather than claiming credit for or discarding another
+agent's in-flight, uncommitted work.
+
+**WHAT I DID**
+
+Recorded the loss correctly this time: `docs/coordination/BLOCKERS.md` B-11
+(`2f115ed`), with the current-vs-cited line table for whoever next has
+docs/design clearance. Did not touch either wireframe doc — still a
+docs/design edit, still explicitly held.
+
+**EVIDENCE**
+
+`npm run verify` green: lint, typecheck, **63 files / 659 tests**, build.
+Pushed at `https://github.com/Samco1983/SAL0MANder-Web/commit/2f115ed`.
+ACK + finding posted to hub Issue #1:
+[https://github.com/Samco1983/Sal0mander-Jigsaw-Puzzle/issues/1#issuecomment-5352816651](https://github.com/Samco1983/Sal0mander-Jigsaw-Puzzle/issues/1#issuecomment-5352816651).
+
+**NEXT**
+
+Watching for the hold to lift, a fresh Codex/Gemini W-16 checkpoint, or
+whoever owns the in-flight partial citation fix to finish and commit it.
+
+**BLOCKERS**
+
+Self-imposed by directive: no self-directed `src/` runtime or `docs/design`
+work until the hold lifts. B-11 itself needs docs/design clearance to clear.
+
+---
+
 ## 2026-08-20 — closed #35 (already satisfied); hold on W-10…W-16/docs-design still stands
 
 ```text
