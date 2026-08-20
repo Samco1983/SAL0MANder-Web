@@ -58,7 +58,7 @@ describe('what the student is told', () => {
 
   it('names who can fix it', () => {
     renderIndex()
-    expect(screen.getByText(/teacher/i)).toBeVisible()
+    expect(screen.getAllByText(/teacher/i).length).toBeGreaterThan(0)
   })
 })
 
@@ -81,6 +81,12 @@ describe('a way forward, not only a way back', () => {
     await user.click(screen.getByRole('button', { name: /open/i }))
 
     expect(screen.getByText(/activity opened/i)).toBeVisible()
+  })
+
+  it("explains that the class code comes from the teacher's link", () => {
+    renderIndex()
+    expect(screen.getByText(/class code from your teacher/i)).toBeVisible()
+    expect(screen.getByText(/missing end of the link/i)).toBeVisible()
   })
 
   it('offers a playable sample while there is no backend', () => {

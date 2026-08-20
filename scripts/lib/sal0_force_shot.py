@@ -227,6 +227,21 @@ def local_generated_product_shot() -> dict:
                 r"class code from your teacher|teacher's class code",
             ),
         },
+        {
+            "title": "[LOCAL][PRODUCT] Link Home progress copy to Profile",
+            "success_check": (
+                "Home's progress card gives visitors a direct path to the Profile placeholder "
+                "without suggesting an account is required"
+            ),
+            "files": [
+                "src/routes/home/HomePage.tsx",
+                "src/routes/home/HomePage.test.tsx",
+            ],
+            "complete": lambda: file_has(
+                "src/routes/home/HomePage.tsx",
+                r"to=\{paths\.profile\}|to=\{paths\['profile'\]\}",
+            ),
+        },
     ]
     shot = next((candidate for candidate in shots if not candidate["complete"]()), shots[0])
     return {

@@ -415,6 +415,9 @@ export function GuestPlayIndexPage() {
           <label className={styles.codeLabel} htmlFor="guest-share-code">
             Enter a class code
           </label>
+          <p className={styles.centeredBody}>
+            Use the class code from your teacher or paste the missing end of the link.
+          </p>
           <div className={styles.codeControls}>
             <input
               id="guest-share-code"
