@@ -28,6 +28,8 @@
     "make:payload:nudge": "node scripts/sal0-make-payload.mjs nudge-agents",
     "mission:bball": "python3 scripts/lib/sal0_bball_assistant.py",
     "mission:bball:json": "python3 scripts/lib/sal0_bball_assistant.py --json",
+    "mission:bench": "python3 scripts/lib/sal0_autobench.py",
+    "mission:bench:apply": "python3 scripts/lib/sal0_autobench.py --apply",
     "mission:blockers": "bash scripts/sal0-blocker-report.sh",
     "mission:control-room": "bash scripts/sal0-control-room.sh",
     "mission:desktop:install": "bash scripts/sal0-desktop-automation.sh install",
