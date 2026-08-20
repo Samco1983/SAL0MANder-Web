@@ -21,6 +21,37 @@ The difference from the real game: a human coach cannot rewrite the scoreboard,
 automate substitutions, and rebuild film study during the same quarter. This
 team can. That is the edge — and the trap.
 
+### AI-world corrections
+
+Basketball is a metaphor, not the operating system. Any rule copied from human
+sports has to survive this question first:
+
+> **Does this protect the objective and help the agent produce verified work?**
+
+If not, change the rule. Human coaches can read effort, nerves, fatigue, and
+chemistry. Mission Control cannot. It reads evidence: diffs, commits, logs,
+exit codes, elapsed time, issue movement, retries, and repeated failure causes.
+
+The unit of judgment is not the agent. It is the
+**agent-task-environment fit**. Do not say "Claude is bad" or "Codex is slow"
+when the evidence only proves "Claude + this task + this prompt + this runtime
+failed twice the same way." Change one variable before judging the player.
+
+The corrected AI rule:
+
+- **one miss is data;**
+- **two same-cause misses means change the play;**
+- **three same-cause misses benches that player-task fit until conditions
+  change.**
+
+The corrected hot-hand rule is the same: feed the agent-task fit that is
+scoring, not the agent's name. A player can be hot on UI and cold on launchd,
+or hot on architecture and cold on browser scouting.
+
+This protects the agents from blame and protects the objective from loyalty.
+The team is not trying to prove one model is good. The team is trying to win
+with the best fit available on the next possession.
+
 ### Three courts
 
 | Court | What happens there | Tonight |
