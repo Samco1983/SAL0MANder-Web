@@ -971,3 +971,38 @@ them before recording a lane as blocked.**
 Web state: `npm run verify` green, **161 tests**, 87.8% statements. Nothing
 shared is wired or frozen beyond error-body *tolerance*, which is defensive and
 assumes no envelope.
+
+## Bridge observability audit — 2026-08-19 (issue #5)
+
+**Implemented facts** — verified against the code, not assumed:
+
+- Failure classes are distinguishable without reading a payload: `malformed`,
+  `version`, `unknown-type`, `wrong-direction`, plus send-side
+  `no Unity instance is attached` and `SendMessage threw`.
+- `sendToUnity` logs the message **type** and never the message, so a `boot`
+  carrying a share code cannot reach a console line.
+- `summarizeBridgeMismatch` drops `detail` on every class.
+- Diagnostics are suppressed in production (`env.isProd` guard).
+
+**Defect found and fixed:** `summarizeBridgeMismatch` copied `received`
+verbatim from inbound traffic into the value its own docstring calls "safe for
+logs and support notes". A build sending an object there placed its contents —
+a share code, in test — inside the thing a human is told to paste into a
+ticket. Non-primitives are now reduced to a shape (`[object]`, `[array]`);
+numbers and strings still pass through because the actual version is the
+diagnostic.
+
+**Unresolved cross-system questions for Codex** — these need real Unity, not
+static reasoning:
+
+1. Does the v1 receiver **acknowledge** a message, or is `SendMessage`
+   returning without throwing the only signal the web ever gets? Today a send
+   is called delivered when the call did not throw. That is not the same thing.
+2. Does Unity emit anything on **duplicate boot**? The web guards with
+   `bootedRef`, but nothing proves a second boot would be rejected rather than
+   silently restarting a student's game.
+3. When Unity's own load fails **after** boot, is there an outbound message, or
+   does the web only find out by timeout?
+
+**Not done, deliberately:** no telemetry vendor, no new logging surface, no
+change to receiver names or DTOs.

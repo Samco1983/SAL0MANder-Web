@@ -336,6 +336,26 @@ export type BridgeMismatchSummary =
   | { reason: 'unknown-type'; type: string }
   | { reason: 'wrong-direction'; type: string }
 
+/**
+ * Reduce an untrusted version field to something safe to log.
+ *
+ * Kept deliberately dumb: a primitive is the answer, anything else becomes a
+ * one-word shape. No recursion, no truncation of nested values — a summariser
+ * that walks a payload is a summariser that can leak from inside it.
+ */
+function describeVersionValue(received: unknown): unknown {
+  if (received === null) return 'null'
+  switch (typeof received) {
+    case 'number':
+    case 'string':
+    case 'boolean':
+    case 'undefined':
+      return received
+    default:
+      return Array.isArray(received) ? '[array]' : `[${typeof received}]`
+  }
+}
+
 export function summarizeBridgeMismatch(mismatch: BridgeMismatch): BridgeMismatchSummary {
   switch (mismatch.reason) {
     case 'malformed':
@@ -344,7 +364,14 @@ export function summarizeBridgeMismatch(mismatch: BridgeMismatch): BridgeMismatc
       return {
         reason: 'version',
         type: mismatch.type,
-        received: mismatch.received,
+        // `received` arrives on untrusted inbound traffic and is typed unknown,
+        // so a build sending an object there would land its contents inside the
+        // value this function documents as safe to paste into a ticket. A share
+        // code did exactly that in test. Numbers and strings pass through
+        // because the actual version is the diagnostic; anything else is
+        // reduced to its shape, which still answers "what arrived where a
+        // version belongs" without carrying the payload.
+        received: describeVersionValue(mismatch.received),
         expected: mismatch.expected,
       }
     case 'unknown-type':
