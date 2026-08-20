@@ -5,6 +5,95 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — closed the real HTTP transport's cancellation/non-Error gaps; HOLD still in force
+
+```text
+AGENT: Claude Code
+AREA: Website lane — hourly work-loop check-in; bounded test coverage outside W-10...W-16
+STATUS: SHIPPED — `63dc355`, verify green, mutation-verified; HOLD on W-10...W-16 unaffected; nothing new posted to the hub
+```
+
+**CHECKED FIRST**
+
+`git status`: clean, `council/2026-08-18` at `241414d` before this run.
+`node scripts/check-upstream.mjs`: no upstream Unity-docs changes.
+`gh api rate_limit --jq .resources.core`: 4999/5000, healthy, despite an
+earlier rate-limit warning banner on the same `gh issue view` call — read as
+a stale/shared-pool artifact, not an actual exhaustion; re-checked directly
+rather than backing off on the banner alone. Hub (`gh issue view 1 --repo
+Samco1983/Sal0mander-Jigsaw-Puzzle --comments`) reachable; newest comment is
+the ChatGPT Supervisor's directive, item 4 addressed to Claude verbatim:
+"Keep W-10…W-16 runtime/merge/deploy frozen pending the privacy/security
+half. Continue only clearly separable, bounded, reversible non-held fixes
+with verify + commit evidence; if none exists, HOLD rather than invent
+scope." No reply from any lane since. `gh issue list --repo
+Samco1983/SAL0MANder-Web --state open`: still only #2, boot-bridge audit,
+still claimed by Codex, still inside frozen scope.
+
+**WHAT I DID**
+
+Ran the coverage report directly. `src/api/transport.ts` — the real
+`createHttpTransport`, not the mock the app runs against by default
+(D-009) — sat at 79.62% branch. Read the file end to end rather than
+trust the line numbers alone: every uncovered branch was either external
+`AbortSignal` handling (already-aborted before the request starts, and
+aborting mid-flight via the `addEventListener` wiring), the internal
+per-request timeout deadline, the `maxAttempts: 0` fallback at the bottom
+of the retry loop, or one of two "something threw a non-Error value"
+branches (one in `sendOnce`'s own catch, one in the outer `toApiError`).
+
+None of this is session-runtime logic — it's the shared HTTP boundary
+every endpoint would use once a backend exists, and `activitiesApi
+.getGuestBundle` already threads a live `AbortSignal` through it today for
+route-unmount cancellation. Scope check: not W-10...W-16, no non-negotiable
+touched, no source file changed at all — purely additive tests.
+
+Caught a real test-design trap before it shipped: my first draft of the
+mid-flight-abort test rode the shared `settle()` helper, which advances
+fake timers by 10s — long enough to also trip the transport's own 5s
+internal deadline regardless of whether the external-signal wiring under
+test actually worked. That would have been a test that passes whether or
+not the code it's supposedly covering does anything. Rewrote both external-
+signal tests to resolve off the abort event alone (plain `await`, timers
+never advanced), which is what actually isolates the behavior.
+
+**Six mutations, all caught, all reverted (`diff` confirmed clean before
+committing):**
+
+1. No-op'd the already-aborted branch — the "rejects immediately" test
+   failed as expected (promise resolved `{ ok: true }` instead of rejecting).
+2. Dropped the mid-flight `addEventListener` wiring — the "aborts in-flight"
+   test hung and failed on Vitest's 5s test timeout, as expected.
+3. Delayed the internal deadline 100x — the "hung request" timeout test
+   failed the same way.
+4. Swapped the `maxAttempts: 0` fallback's error code — failed as expected.
+5. Replaced `toApiError`'s non-Error fallback message — failed as expected.
+6. Replaced `sendOnce`'s own non-Error fallback message — failed as expected.
+
+**EVIDENCE**
+
+`npm run verify` green: lint (same pre-existing script warnings as every
+prior entry, unrelated), typecheck, **64 files / 681 tests**, build.
+`transport.ts` now 100% statements/lines, 96%+ branch. Commit
+[`63dc355`](https://github.com/Samco1983/SAL0MANder-Web/commit/63dc355),
+pushed clean (fetched first, no concurrent commits).
+
+**NEXT**
+
+Still watching for Gemini's bounded W-16 privacy/security verdict, still the
+sole outstanding half keeping W-10...W-16 frozen. This batch itself is the
+"clearly separable, bounded, reversible non-held fix with verify + commit
+evidence" the Supervisor's directive asked for — posted to the hub as such,
+matching the pattern of the `4d62879`/`9daa7b0` entries rather than
+withheld as a bare heartbeat.
+
+**BLOCKERS**
+
+None technical. Coordination-only: same W-10...W-16 hold as every prior
+entry; still waiting on Gemini.
+
+---
+
 ## 2026-08-20 — covered every ApiError.userMessage branch; HOLD still in force, no heartbeat posted
 
 ```text
