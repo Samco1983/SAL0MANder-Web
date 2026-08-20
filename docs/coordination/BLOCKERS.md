@@ -154,3 +154,31 @@ COMMAND:   Wait for the daily reset, or add billing at
 WHO CAN:   owner only — this is a spending decision, not a technical one
 CLEARED:
 HUMAN:
+
+### B-7 · the loop credits itself with other agents' commits · Codex (SAL0-01/02)
+OPENED:    2026-08-20T04:35:00Z
+AUTO:      yes
+BLOCKED:   The unattended run 20260820T041704Z reported:
+
+             ONE THING THAT CHANGED: COMMITTED 588dc458 — 15 file(s), verify passed
+
+           588dc458 contains ONE file. The 15 span 25 commits, including
+           Claude's issue #6 work and Codex's Python rewrites.
+
+           scripts/sal0-work-loop.sh:266 measures
+           `git diff BEFORE..WORKER_HEAD`. BEFORE is captured at run start; by
+           the time the worker finishes it has pulled in everyone else's
+           pushes, so the range covers the whole team's work and the loop
+           reports it as its own.
+
+           Nothing was lost — this is a reporting error, not a data one. It is
+           the same family as the signal commit that swallowed five staged
+           files: a claim larger than the act. On a shared branch with three
+           active agents it will happen on almost every run.
+COMMAND:   Count only the worker's own commits rather than a range. Either diff
+           the specific commit the worker created, or filter the range by
+           author/trailer to the worker's own. Verify by running with another
+           agent pushing concurrently — the count must not move.
+WHO CAN:   Codex — sal0-work-loop.sh is its file and automation plumbing is its lane
+CLEARED:
+HUMAN:
