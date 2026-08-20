@@ -7,6 +7,67 @@ ones without a scar are the ones most likely to be wrong.
 
 ---
 
+## Evolved BBall
+
+> **An AI teamwork system where agents score product points while continuously
+> upgrading the coach, scoreboard, playbook, and court vision.**
+
+The difference from the real game: a human coach cannot rewrite the scoreboard,
+automate substitutions, and rebuild film study during the same quarter. This
+team can. That is the edge — and the trap.
+
+### Three courts
+
+| Court | What happens there | Tonight |
+| --- | --- | --- |
+| **Product** | the website, the game, what a student touches | 6 issues closed |
+| **Mission Control** | how the team works — scoreboards, benching, auth checks | ~250 changes |
+| **Training facility** | experiments: worktrees, dry runs, proposed configs | worktrees, `settings.proposed.json` |
+
+**The budget rule, and it is the one this project keeps failing.** Mission
+Control Court is more fun to build than Product Court, it always looks urgent,
+and it produces no points. The first honest measurement here read **253 changes
+to plumbing against 6 to the product**, with 15 issues open and 0 closed — a
+team that spent a night building a better scoreboard and never took a shot.
+
+So: **improving the court is legitimate work, and it is not a point.** Track
+both, never let the first substitute for the second, and when they diverge that
+badly, stop and shoot.
+
+**Core rule for changing the court:** agents may improve it, but only through
+changes that are *verified, reversible, and documented.* Benching is a label
+you can remove. Closing an issue is not. That asymmetry decides what may be
+automated.
+
+### The vocabulary
+
+| Term | Means |
+| --- | --- |
+| **Shot** | one bounded task with a success check |
+| **Made shot** | verified commit, closed issue, working artifact |
+| **Miss** | attempted, evidence preserved, no score |
+| **Bad turnover** | repeated miss, hidden failure, lost work, wrong lane, fake green |
+| **Flagrant turnover** | secret leaked, destructive command, cross-lane damage |
+| **Rebound** | another agent reviews and saves a miss |
+| **Assist** | one agent prepares a handoff another can finish |
+| **Court vision** | the data-plus-anticipation layer — `npm run mission:bball` |
+| **Coach layer** | deciding bench, shrink, switch, continue |
+| **Shot clock** | 10 min probe · 30 min shot · 60 min build gate |
+| **Box score** | run logs, commits, issue movement, tests |
+| **Season log** | performance over time, so a trend exists at all |
+| **Bench call** | stop repeating a task that keeps missing |
+| **Practice facility** | tooling that makes future work cheaper |
+| **Playing blind** | working without current repo, log, or context |
+| **Fake green** | success claimed without evidence — the one law, violated |
+| **Live-ball miss** | a failure with the diff preserved. Useful |
+| **Dead-ball miss** | a failure with no diff, no log, nothing learned |
+| **Championship** | product ships, system improves, owner babysitting drops |
+
+The two that carry the most weight are **fake green** and **dead-ball miss**.
+Every expensive hour on 2026-08-19 was one or the other: eight hours of runs
+that never called a model and reported "nothing changed", and five separate
+claims of success that were not true.
+
 ## The question that catches it
 
 Before you report anything, ask:

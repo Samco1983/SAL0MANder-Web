@@ -28,6 +28,7 @@ from collections import Counter
 from dataclasses import dataclass, asdict, field
 
 HOME = os.path.expanduser("~")
+REPO_ROOT = os.path.join(HOME, "Desktop", "SAL0MANder-Web")
 LOG_DIRS = [
     os.path.join(HOME, ".sal0mander", "logs"),
     os.path.join(HOME, "Desktop", "SAL0MANder-Web", "docs", "coordination", "runs", "logs"),
@@ -268,6 +269,78 @@ def season_trend() -> list[str]:
     return out
 
 
+def _sh(cmd: list[str], timeout: int = 20) -> str:
+    try:
+        import subprocess
+
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=REPO_ROOT)
+        return r.stdout.strip() if r.returncode == 0 else ""
+    except Exception:
+        return ""
+
+
+def anticipate(report: Report) -> list[str]:
+    """What is probably about to go wrong.
+
+    Every signal here is measured, never guessed. The line this respects:
+    predicting FAILURE is computable from patterns; deciding what MATTERS is
+    not. The most valuable shot of 2026-08-19 — a privacy leak in
+    summarizeBridgeMismatch — appears in no log, and no amount of
+    scoreboard-reading would have found it. So this warns; it does not choose.
+    """
+    out: list[str] = []
+
+    # Repeated misses are the strongest predictor there is: the same shot has
+    # already failed the same way, so the next attempt is the likeliest failure.
+    for f in report.repeated_failures[:2]:
+        out.append(
+            f"NEXT LIKELY FAILURE — {f['shot'][:50]} again with {f['cause']}. "
+            f"It has missed {f['times']}x. Shrink it or leave it benched."
+        )
+
+    dirty = _sh(["git", "status", "--porcelain"])
+    if dirty:
+        n = len(dirty.split("\n"))
+        out.append(
+            f"BLOCKED START — {n} uncommitted file(s). A scheduled run will refuse "
+            "to start. Commit, or expect the next possession to be skipped."
+        )
+
+    token = os.path.join(HOME, ".sal0mander", "secrets", "claude_oauth_token")
+    if os.path.exists(token):
+        import time
+
+        days = int((time.time() - os.path.getmtime(token)) / 86400)
+        if 365 - days < 30:
+            out.append(
+                f"AUTH EXPIRING — the token is {days} days old, ~{365 - days} left. "
+                "Renew before it dies mid-run: ~/.sal0mander/new-token.sh"
+            )
+    else:
+        out.append("AUTH MISSING — no token file. The scheduled worker cannot call a model.")
+
+    # A seat out of quota is not a broken seat, and the difference decides
+    # whether the court waits for it.
+    gem = _sh(["bash", os.path.join(REPO_ROOT, "scripts", "sal0-gemini.sh"), "-p", "ok"], 60)
+    if not gem or re.search(r"quota|429|exhaust", gem, re.I):
+        out.append("SEAT OUT — Gemini is unavailable or out of quota. Do not block the court on it.")
+
+    last = _sh(["git", "log", "-1", "--format=%ct"])
+    if last:
+        import time
+
+        hours = (time.time() - int(last)) / 3600
+        if hours > 2:
+            out.append(
+                f"COLD — {hours:.1f}h since the last commit. Force a smaller product shot "
+                "rather than another audit."
+            )
+
+    if not out:
+        out.append("NOTHING PENDING — no repeated miss, clean tree, auth healthy.")
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Read the scoreboard and call a substitution.")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
@@ -313,6 +386,11 @@ def main() -> int:
     for rec in report.recommendations:
         print(f"    · {rec}")
     print()
+    print("  ANTICIPATION — what is probably next")
+    for line in anticipate(report):
+        print(f"    · {line}")
+    print()
+
     trend = season_trend()
     if trend:
         print("  SEASON — since the last reading")
