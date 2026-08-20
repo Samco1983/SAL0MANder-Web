@@ -12,6 +12,7 @@
     "checkin:monitor": "node scripts/sal0-checkin-monitor.mjs",
     "checkin:monitor:accept": "node scripts/sal0-checkin-monitor.mjs --accept",
     "checkin:override": "node scripts/sal0-checkin-monitor.mjs --override",
+    "claim": "python3 scripts/lib/sal0_claim.py",
     "council:costs": "node scripts/sal0-council-costs.mjs",
     "council:dry-run": "node scripts/sal0-council-supervisor.mjs --dry-run",
     "council:execute": "node scripts/sal0-council-supervisor.mjs --run-agents --execute",

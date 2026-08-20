@@ -55,6 +55,25 @@ MSG
   fi
 fi
 
+# ---------------------------------------------------------------------------
+# Warn if you are committing a path a teammate claimed.
+#
+# WARNING, not a block, on purpose. A claim is information — "I am already on
+# this" — not a lock, and there are legitimate reasons to touch a claimed path.
+# Blocking here would wedge us the way the first inbox gate did.
+#
+# It fires BEFORE the push, which is the difference that matters: DIRTY_OVERLAP
+# tells you about a collision after both of you have committed.
+# ---------------------------------------------------------------------------
+if [ -n "${SAL0_AGENT:-}" ]; then
+  for f in $(git diff --cached --name-only --diff-filter=ACM); do
+    OUT=$(python3 "$(git rev-parse --show-toplevel)/scripts/lib/sal0_claim.py" --mine "$SAL0_AGENT" --check "$f" 2>/dev/null)
+    if [ -n "$OUT" ]; then
+      printf '\n  ⚠ %s is claimed:\n%s\n' "$f" "$(printf '%s' "$OUT" | sed 's/^/    /')" >&2
+    fi
+  done
+fi
+
 STAGED=$(git diff --cached --name-only --diff-filter=ACM)
 [ -z "$STAGED" ] && exit 0
 
