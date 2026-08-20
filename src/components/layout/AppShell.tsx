@@ -81,10 +81,12 @@ export function AppShell({
           <span>
             {env.appName} — cloud companion platform. Gameplay runs in the Unity application.
           </span>
-          <span className={styles.envBadge}>
-            env: {env.appEnv} · contract: {env.api.contractVersion} ·{' '}
-            {env.api.isConfigured ? 'api: live' : 'api: mock'}
-          </span>
+          {env.isProd ? null : (
+            <span className={styles.envBadge}>
+              env: {env.appEnv} · contract: {env.api.contractVersion} ·{' '}
+              {env.api.isConfigured ? 'api: live' : 'api: mock'}
+            </span>
+          )}
         </footer>
       )}
     </div>

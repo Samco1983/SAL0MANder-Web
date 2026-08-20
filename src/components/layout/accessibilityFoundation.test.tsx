@@ -49,6 +49,13 @@ describe('landmarks', () => {
     renderShell()
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main')
   })
+
+  it('keeps deployment diagnostics available during local development', () => {
+    renderShell()
+    expect(screen.getByText(/env: local/i)).toHaveTextContent(
+      'env: local · contract: v1 · api: mock',
+    )
+  })
 })
 
 describe('the skip link', () => {
