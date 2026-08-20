@@ -31,6 +31,8 @@ INBOX = os.path.join(REPO, "docs", "coordination", "INBOX.md")
 # "### SAL0-04 → SAL0-01 · what do you actually need from me?"
 HEADER = re.compile(r"^###\s+(SAL0-\d+)\s*(?:→|->)\s*(SAL0-\d+)\s*[·:-]\s*(.+?)\s*$", re.M)
 ACK = re.compile(r"^\s*(?:ACK|ANSWERED)\b", re.M | re.I)
+ASK = re.compile(r"^\s*ASK:\s*(.+?)\s*$", re.M | re.I)
+NONBLOCKING = re.compile(r"\bnot blocking\b", re.I)
 
 
 def unanswered(mine: str) -> list[dict]:
@@ -48,6 +50,11 @@ def unanswered(mine: str) -> list[dict]:
         end = marks[i + 1].start() if i + 1 < len(marks) else len(text)
         body = text[m.end():end]
         if ACK.search(body):
+            continue
+        ask = ASK.search(body)
+        if not ask or ask.group(1).strip().upper() in {"NONE", "NO", "N/A"}:
+            continue
+        if NONBLOCKING.search(body):
             continue
         out.append({"from": sender, "subject": subject})
     return out

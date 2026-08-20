@@ -18,6 +18,7 @@ class InboxGateTest(unittest.TestCase):
         inbox = self.write_inbox(
             "### SAL0-04 -> SAL0-01: What do you need?\n\n"
             "MESSAGE: Pick one of three options.\n"
+            "ASK: Choose a lane.\n"
         )
 
         with patch.object(sal0_inbox_gate, "INBOX", inbox):
@@ -42,6 +43,7 @@ class InboxGateTest(unittest.TestCase):
         inbox = self.write_inbox(
             "### SAL0-04 -> SAL0-01: What do you need?\n\n"
             "MESSAGE: Choose a lane.\n\n"
+            "ASK: Choose a lane.\n\n"
             "### SAL0-01 -> SAL0-04: Different subject\n\n"
             "MESSAGE: I shipped another thing.\n"
         )
@@ -51,6 +53,29 @@ class InboxGateTest(unittest.TestCase):
 
         self.assertEqual(len(waiting), 1)
         self.assertEqual(waiting[0]["subject"], "What do you need?")
+
+    def test_message_without_actionable_ask_does_not_block(self):
+        inbox = self.write_inbox(
+            "### SAL0-04 -> SAL0-01: FYI\n\n"
+            "MESSAGE: Useful context only.\n"
+        )
+
+        with patch.object(sal0_inbox_gate, "INBOX", inbox):
+            waiting = sal0_inbox_gate.unanswered("SAL0-01")
+
+        self.assertEqual(waiting, [])
+
+    def test_not_blocking_ask_does_not_block(self):
+        inbox = self.write_inbox(
+            "### SAL0-04 -> SAL0-01: Later question\n\n"
+            "ACK -- not blocking. Answer when there is clock.\n"
+            "ASK: Choose a lane later.\n"
+        )
+
+        with patch.object(sal0_inbox_gate, "INBOX", inbox):
+            waiting = sal0_inbox_gate.unanswered("SAL0-01")
+
+        self.assertEqual(waiting, [])
 
 
 if __name__ == "__main__":
