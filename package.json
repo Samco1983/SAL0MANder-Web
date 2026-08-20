@@ -65,9 +65,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:mission": "PYTHONDONTWRITEBYTECODE=1 python3 -W error::ResourceWarning -m unittest discover -s scripts/lib -p '*_test.py'",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run test:mission && npm run build"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",

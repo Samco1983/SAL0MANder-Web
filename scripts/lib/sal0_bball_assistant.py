@@ -101,7 +101,8 @@ def read_runs() -> list[Run]:
             if stamp in seen:
                 continue
             try:
-                text = open(path, errors="replace").read()
+                with open(path, errors="replace") as handle:
+                    text = handle.read()
             except OSError:
                 continue
 
