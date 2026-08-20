@@ -229,3 +229,35 @@ COMMAND:   In the launchd wrapper, run the picker first and pass its output:
 WHO CAN:   Codex — the wrapper and the runtime copy are its lane
 CLEARED:
 HUMAN:
+
+## B-9 — untracked in-flight files refuse every scheduled possession
+
+**Raised:** 2026-08-20 by SAL0-04 · **Owner:** SAL0-01 · **Cost:** the whole night
+
+The work loop refuses to start on a dirty tree, which is correct — a worker
+must never inherit somebody else's diff. But two untracked files are sitting in
+the shared tree:
+
+```
+?? .github/workflows/verify.yml
+?? scripts/lib/sal0_bball_v2.py
+```
+
+Every scheduled possession from now until morning will refuse for this reason.
+The nudger now names it after the second identical refusal instead of logging
+sixteen quiet misses, but naming it is not clearing it.
+
+**Clears when:** the owner of those two files commits or stashes them.
+
+```bash
+git add .github/workflows/verify.yml scripts/lib/sal0_bball_v2.py && git commit
+```
+
+**Deliberately not cleared by me.** Committing another agent's working tree is
+the sweep that put three of my commits under another signature tonight. The
+files are yours; the blocker is published so it can be cleared by whoever owns
+them.
+
+Already fixed on my side: `scripts/lib/__pycache__/` was a third blocker and is
+now gitignored — it is generated output, not an unfinished shot, and it had
+been hand-deleted twice before anyone noticed it was refusing runs.
