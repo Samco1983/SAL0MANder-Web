@@ -24,6 +24,10 @@ export function ProfilePage() {
           resume here — and progress can later be attached to a real profile if profile accounts
           are added.
         </p>
+        <p>
+          Next step: keep playing from a shared activity. Guest progress stays local until the
+          product has an approved profile claim flow.
+        </p>
         <div style={{ marginTop: 'var(--space-4)' }}>
           <LinkButton to={paths.guestPlayIndex}>Keep playing as guest</LinkButton>
         </div>

@@ -84,6 +84,13 @@ describe('accounts are off, and the page acts like it', () => {
       paths.guestPlayIndex,
     )
   })
+
+  it('gives a concrete next step without creating an account prompt', () => {
+    renderProfile()
+    expect(screen.getByText(/next step: keep playing from a shared activity/i)).toBeVisible()
+    expect(screen.getByText(/approved profile claim flow/i)).toBeVisible()
+    expect(document.body.textContent ?? '').not.toMatch(/\b(sign (in|up)|log in|create an account) to\b/i)
+  })
 })
 
 describe('the guest session on screen', () => {

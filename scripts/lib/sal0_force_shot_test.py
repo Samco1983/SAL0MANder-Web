@@ -138,6 +138,20 @@ class ForceShotTest(unittest.TestCase):
         self.assertEqual(shot["title"], "[LOCAL][PRODUCT] Give the Unity host a non-gameplay return path")
         self.assertIn("src/routes/unity/UnityHostPage.tsx", shot["files"])
 
+    def test_generated_product_shots_keep_moving_after_profile_completes(self):
+        completed = {
+            "src/routes/home/HomePage.tsx",
+            "src/routes/unity/UnityHostPage.tsx",
+            "src/routes/profile/ProfilePage.tsx",
+        }
+        with patch.object(sal0_force_shot, "file_has") as file_has:
+            file_has.side_effect = lambda path, _pattern: path in completed
+
+            shot = sal0_force_shot.local_generated_product_shot()
+
+        self.assertEqual(shot["title"], "[LOCAL][PRODUCT] Add a class-code recovery hint to Guest Play")
+        self.assertIn("src/routes/guest-play/GuestPlayPage.tsx", shot["files"])
+
 
 if __name__ == "__main__":
     unittest.main()

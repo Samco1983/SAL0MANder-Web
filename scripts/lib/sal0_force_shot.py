@@ -212,6 +212,21 @@ def local_generated_product_shot() -> dict:
             ],
             "complete": lambda: file_has("src/routes/profile/ProfilePage.tsx", r"Next step|What you can do next"),
         },
+        {
+            "title": "[LOCAL][PRODUCT] Add a class-code recovery hint to Guest Play",
+            "success_check": (
+                "The no-code Guest Play screen tells a student what kind of class code to enter "
+                "and keeps the sample activity path safe"
+            ),
+            "files": [
+                "src/routes/guest-play/GuestPlayPage.tsx",
+                "src/routes/guest-play/truncatedLink.test.tsx",
+            ],
+            "complete": lambda: file_has(
+                "src/routes/guest-play/GuestPlayPage.tsx",
+                r"class code from your teacher|teacher's class code",
+            ),
+        },
     ]
     shot = next((candidate for candidate in shots if not candidate["complete"]()), shots[0])
     return {
