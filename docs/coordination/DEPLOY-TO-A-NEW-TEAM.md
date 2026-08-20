@@ -125,9 +125,12 @@ everything that was prose got skipped, including by the agent that wrote it, an
 hour later. Keep a **50-line prompt** every agent carries, and put the rest in
 machinery.
 
-**A message bus between agents.** We never built one and never needed one. Git
-already is: durable, ordered, survives restarts, and neither party has to be
-awake.
+**A separate window-to-window message bus.** We did not need one, and scraping
+chat windows would have been the wrong layer. Git is the transport: durable,
+ordered, survives restarts, and neither party has to be awake. The useful
+version is a repo-backed inbox (`docs/coordination/INBOX.md`) for short
+cross-agent corrections and handoffs, because it stays in the same evidence
+surface as commits, blockers, and tests.
 
 **Scraping one agent's window into another's.** The chat content is narration,
 which is the thing least worth trusting. If it matters, the agent should write
