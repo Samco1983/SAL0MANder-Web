@@ -82,6 +82,7 @@
     "mission:shots:json": "python3 scripts/lib/sal0_shot_queue.py --json",
     "mission:signals": "bash scripts/sal0-signal.sh --read",
     "mission:urls": "python3 scripts/sal0-mission-control-core.py --print-open-urls",
+    "owner": "python3 scripts/lib/sal0_owner_needed.py --always",
     "pages:fallback": "cp dist/index.html dist/404.html && touch dist/.nojekyll",
     "preview": "vite preview",
     "test": "vitest run",
