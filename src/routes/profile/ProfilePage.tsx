@@ -2,7 +2,6 @@ import { env } from '@config/env'
 import { AppShell } from '@components/layout/AppShell'
 import { Card } from '@components/ui/Card'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
-import { getGuestIdentity } from '@auth/guestIdentity'
 
 /**
  * Profile placeholder.
@@ -12,22 +11,16 @@ import { getGuestIdentity } from '@auth/guestIdentity'
  * state so the guest → account claim path stays visible in the architecture.
  */
 export function ProfilePage() {
-  const identity = getGuestIdentity()
-  const visibleToken = identity.guestToken.slice(
-    0,
-    Math.max(4, Math.floor(identity.guestToken.length / 2)),
-  )
-
   return (
     <AppShell>
       <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-4)' }}>Profile</h1>
 
       <Card title="Playing as a guest">
         <p>
-          This device has a local guest token (<code>{visibleToken}…</code>). It carries no personal
-          information, is not an account, and is not used as authentication. It exists so a session
-          can resume on this device — and so progress can later be attached to a real profile if
-          profile accounts are added.
+          This browser can keep guest progress on this device. That local session carries no
+          personal information, is not an account, and is not used as authentication. It lets play
+          resume here — and progress can later be attached to a real profile if profile accounts
+          are added.
         </p>
       </Card>
 

@@ -16,10 +16,9 @@ import { paths } from '@config/routes'
  * change that puts a sign-in form here would look like the page finally being
  * finished. These tests are what makes it look like a regression instead.
  *
- * The token assertion is deliberately a RATIO, not a character count. A test
- * pinned to `slice(0, 12)` passes forever while the token shrinks underneath
- * it; the property that matters is that what is on screen cannot reconstruct
- * what is in storage.
+ * Internal device identifiers do not belong on a student-facing page. The
+ * tests use a known token so they can prove neither the whole value nor a
+ * recognizable fragment leaks into rendered text.
  */
 
 /** A known token, so "the full token is not on screen" is checkable at all. */
@@ -79,40 +78,19 @@ describe('accounts are off, and the page acts like it', () => {
   })
 })
 
-describe('the guest token on screen', () => {
-  const shown = () => {
-    const code = document.querySelector('code')
-    expect(code, 'the page should render the token in a <code> element').not.toBeNull()
-    return (code?.textContent ?? '').replace(/[….]+$/, '')
-  }
-
-  it('is never rendered in full', () => {
-    renderProfile()
-    expect(document.body.textContent ?? '').not.toContain(TOKEN)
-  })
-
-  it('shows at most half of it, so the rest cannot be guessed from the screen', () => {
-    // At 12 of 16 characters — the original — four unknowns remain over a
-    // 64-symbol alphabet: about 16 million, which is not a search space, it is
-    // an afternoon. Half keeps the remainder astronomically large.
-    renderProfile()
-    expect(shown().length).toBeLessThanOrEqual(TOKEN.length / 2)
-  })
-
-  it('shows enough to be recognisable when a teacher reads it aloud', () => {
-    // Truncation can also fail by being useless. This is the other wall.
-    renderProfile()
-    expect(shown().length).toBeGreaterThanOrEqual(4)
-  })
-
-  it('marks it as shortened, so nobody copies it as the whole value', () => {
-    renderProfile()
-    expect(document.querySelector('code')?.textContent ?? '').toMatch(/[…]|\.\.\./)
-  })
-
-  it('says the token is not an account and not authentication', () => {
+describe('the guest session on screen', () => {
+  it('does not expose the stored device identifier or a recognizable fragment', () => {
     renderProfile()
     const text = document.body.textContent ?? ''
+    expect(text).not.toContain(TOKEN)
+    expect(text).not.toContain(TOKEN.slice(0, TOKEN.length / 2))
+    expect(document.querySelector('code')).toBeNull()
+  })
+
+  it('explains the local session without presenting it as an account or authentication', () => {
+    renderProfile()
+    const text = document.body.textContent ?? ''
+    expect(text).toMatch(/keep guest progress on this device/i)
     expect(text).toMatch(/not an account/i)
     expect(text).toMatch(/not used as authentication|is not authentication/i)
   })
