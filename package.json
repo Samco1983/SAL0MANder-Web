@@ -44,6 +44,8 @@
     "mission:bench": "python3 scripts/lib/sal0_autobench.py",
     "mission:bench:apply": "python3 scripts/lib/sal0_autobench.py --apply",
     "mission:blockers": "bash scripts/sal0-blocker-report.sh",
+    "mission:championship": "python3 scripts/lib/sal0_championship.py",
+    "mission:championship:json": "python3 scripts/lib/sal0_championship.py --json",
     "mission:collision": "python3 scripts/lib/sal0_collision.py",
     "mission:collision:json": "python3 scripts/lib/sal0_collision.py --json",
     "mission:control-room": "bash scripts/sal0-control-room.sh",

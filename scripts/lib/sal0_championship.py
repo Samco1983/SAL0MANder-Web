@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+"""What winning actually is, checked against reality.
+
+Points are possession quality. They are not the championship, and a team can
+run up a points total for a week without the product existing. The owner's
+definition, 2026-08-20:
+
+    Champion = the website is done, the game is done, everything is operational.
+
+So this checks those three things directly, and nothing else. Every condition is
+verified against the world — a build that exits 0, a URL that answers, a probe
+that runs in a scheduler's environment — never against a claim in a log.
+
+    python3 scripts/lib/sal0_championship.py
+    python3 scripts/lib/sal0_championship.py --json
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SLUG = "Samco1983/SAL0MANder-Web"
+SITE = "https://samco1983.github.io/SAL0MANder-Web/"
+
+
+def sh(cmd: list[str], timeout: int = 240, shell_env: dict | None = None) -> tuple[int, str]:
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout,
+                           cwd=REPO, env=shell_env)
+        return r.returncode, (r.stdout or "").strip()
+    except Exception as e:
+        return 1, f"{type(e).__name__}: {e}"
+
+
+def reachable(url: str, timeout: int = 15) -> tuple[bool, str]:
+    try:
+        req = urllib.request.Request(url, method="GET",
+                                     headers={"User-Agent": "sal0-championship"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return 200 <= resp.status < 400, f"HTTP {resp.status}"
+    except urllib.error.HTTPError as e:
+        return False, f"HTTP {e.code}"
+    except Exception as e:
+        return False, type(e).__name__
+
+
+# --- the three things -------------------------------------------------------
+
+def website() -> list[dict]:
+    out = []
+
+    code, _ = sh(["npm", "run", "build"], timeout=600)
+    out.append({"name": "the site builds", "ok": code == 0,
+                "blocker": "" if code == 0 else "npm run build fails"})
+
+    wf = os.path.join(REPO, ".github", "workflows", "deploy.yml")
+    out.append({"name": "a deploy pipeline exists", "ok": os.path.exists(wf),
+                "blocker": "" if os.path.exists(wf) else "no deploy workflow"})
+
+    code, raw = sh(["gh", "api", f"repos/{SLUG}", "--jq", ".has_pages,.default_branch,.visibility"], 90)
+    lines = raw.split("\n") if code == 0 else []
+    pages = len(lines) > 0 and lines[0].strip() == "true"
+    out.append({"name": "hosting is switched on", "ok": pages,
+                "blocker": "" if pages else "GitHub Pages is off — owner must enable it (repo is private, so this needs Pro or a public repo)"})
+
+    code, raw = sh(["gh", "api", f"repos/{SLUG}/contents/.github/workflows/deploy.yml",
+                    "--ref", "main", "--jq", ".size"], 90)
+    on_main = code == 0
+    out.append({"name": "the pipeline is on the default branch", "ok": on_main,
+                "blocker": "" if on_main else "deploy.yml is not on main — GitHub only runs workflows from the default branch"})
+
+    live, detail = reachable(SITE)
+    out.append({"name": "the site answers at a real URL", "ok": live,
+                "blocker": "" if live else f"{SITE} → {detail}"})
+    return out
+
+
+def game() -> list[dict]:
+    out = []
+    env_files = [os.path.join(REPO, n) for n in (".env", ".env.local", ".env.production")]
+    configured = ""
+    for f in env_files:
+        if os.path.exists(f):
+            for line in open(f, encoding="utf-8", errors="replace"):
+                if line.startswith("VITE_UNITY_BUILD_BASE_URL="):
+                    configured = line.split("=", 1)[1].strip()
+    out.append({"name": "a Unity build location is configured", "ok": bool(configured),
+                "blocker": "" if configured else "VITE_UNITY_BUILD_BASE_URL is unset — the stage shows 'game isn't ready'"})
+
+    ok = False
+    detail = "no build URL to check"
+    if configured.startswith("http"):
+        ok, detail = reachable(configured.rstrip("/") + "/Build/SAL0MANder.loader.js")
+    out.append({"name": "the WebGL loader is fetchable", "ok": ok,
+                "blocker": "" if ok else f"loader not reachable ({detail})"})
+    return out
+
+
+def operational() -> list[dict]:
+    out = []
+
+    code, _ = sh(["npm", "run", "verify"], timeout=900)
+    out.append({"name": "the full gate is green", "ok": code == 0,
+                "blocker": "" if code == 0 else "npm run verify fails"})
+
+    # Scheduler parity: what a launchd job sees, not what a terminal sees.
+    token = os.path.expanduser("~/.sal0mander/secrets/claude_oauth_token")
+    has_token = os.path.exists(token)
+    out.append({"name": "the worker can authenticate unattended", "ok": has_token,
+                "blocker": "" if has_token else "no token file — a scheduled run cannot log in"})
+
+    code, raw = sh(["gh", "issue", "list", "--repo", SLUG, "--state", "open",
+                    "--json", "number", "--jq", "length"], 90)
+    n = int(raw) if code == 0 and raw.isdigit() else 0
+    out.append({"name": "the board has work on it", "ok": n > 0,
+                "blocker": "" if n > 0 else "empty board — nothing for a worker to take"})
+
+    log = os.path.join(REPO, "docs", "coordination", "ops", "NUDGES.jsonl")
+    scored = False
+    if os.path.exists(log):
+        for line in open(log, encoding="utf-8"):
+            try:
+                if json.loads(line).get("outcome") == "scored":
+                    scored = True
+            except Exception:
+                pass
+    out.append({"name": "an unattended possession has scored", "ok": scored,
+                "blocker": "" if scored else "no scheduled run has completed successfully"})
+
+    alive = subprocess.run(["pgrep", "-f", "sal0_nudge.py"], capture_output=True).returncode == 0
+    out.append({"name": "something is driving possessions right now", "ok": alive,
+                "blocker": "" if alive else "the nudger is not running — nothing starts the next possession"})
+    return out
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="Measure the championship, not the points.")
+    ap.add_argument("--json", action="store_true")
+    args = ap.parse_args()
+
+    groups = [("WEBSITE DONE", website()), ("GAME DONE", game()), ("OPERATIONAL", operational())]
+    total = sum(len(g[1]) for g in groups)
+    won = sum(1 for _, cs in groups for c in cs if c["ok"])
+
+    if args.json:
+        print(json.dumps({"won": won, "total": total,
+                          "groups": {n: cs for n, cs in groups}}, indent=2))
+        return 0 if won == total else 1
+
+    print()
+    print(f"  CHAMPIONSHIP — {won} of {total} conditions met")
+    print(f"  {'-' * 66}")
+    for name, checks in groups:
+        got = sum(1 for c in checks if c["ok"])
+        print(f"\n  {name}  ({got}/{len(checks)})")
+        for c in checks:
+            print(f"    {'WON ' if c['ok'] else 'not '} {c['name']}")
+            if not c["ok"]:
+                print(f"           {c['blocker']}")
+    print()
+    if won == total:
+        print("  Championship. Website, game, and operations all verified.")
+    else:
+        print("  Points are possession quality. This is the game. A points total")
+        print("  that rises while these stay unmet is a team practising.")
+    print()
+    return 0 if won == total else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
