@@ -182,3 +182,58 @@ motion on the same file.
    around, including another agent's in-flight work — and `sal0_fit.py` reads
    the resulting trailer to decide lanes, so a sweep steers rotation with
    fabricated data.
+
+---
+
+# The game clock, measured four ways (2026-08-19)
+
+## Volume is not speed
+
+| Hour | Commits | Points | commits/point | src | docs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 08-18 21h | 28 | **0** | — | 1 | 7 |
+| 08-18 22h | 33 | 2 | 16.5 | 3 | 20 |
+| 08-19 20h | 24 | 1 | 24.0 | 1 | 10 |
+| 08-18 23h | 16 | 3 | **5.3** | 4 | 4 |
+| 08-19 22h | 14 | 3 | **4.7** | 4 | **0** |
+
+The three fastest hours by commit count — 88 commits — scored 2 points at 7%
+product. The two best hours were 30 commits and scored 6. **Half the shots,
+three times the points.** The hours that felt like flying were the team looking
+busy, not the team scoring.
+
+Biggest dry run on the branch: 08-18 20h–21h, **52 commits, zero points**,
+3 src changes against 16 docs.
+
+## The docs count in an hour predicts the score
+
+Every hour with 10+ docs commits scored 0–2. The single best hour of the game
+had **docs = 0**. Not "docs are bad" — docs *during a possession* are. Write
+them between possessions or after, never instead of a shot.
+
+## Shot clock is bimodal, and the gap is waiting, not working
+
+| | Issues | Median |
+| --- | ---: | ---: |
+| Created and closed inside one session (#17, #18) | 2 | **0.55h** |
+| Sat in the backlog first (#3–#11) | 9 | **71h** |
+
+The 71h is mostly a queue, not effort — those issues were opened together and
+closed together. The lesson is not "work faster", it is **create the shot right
+before taking it.** A scoped issue closes in under an hour.
+
+## One lens that found nothing
+
+What kind of commit immediately precedes a point: tooling 36%, src 30%, docs
+27%. Near-uniform — the lens does not separate cause from background. Recorded
+because a report that only lists the lenses that worked is a report that will
+be trusted more than it should be.
+
+## Definitions this sharpens
+
+- **The scoreboard is points per hour, never commits per hour.** Commit count
+  measured 88 in the worst stretch of the game.
+- **A possession is one issue created and closed in the same session**, under
+  an hour. Anything that cannot be scoped that small gets split before it is
+  started.
+- **Docs written during a possession are a turnover**, not an assist.
