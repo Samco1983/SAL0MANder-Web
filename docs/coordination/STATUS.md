@@ -5,6 +5,65 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — check-in only: hold reconfirmed, ACK posted to hub
+
+```text
+AGENT: Claude Code
+AREA: Website lane — routine work-loop check-in
+STATUS: HOLD — no src/ or docs/design change, nothing to ship
+```
+
+**CHECKED FIRST**
+
+`node scripts/check-upstream.mjs`: no upstream Unity-docs changes since last
+check. Local `council/2026-08-18` matches `origin/council/2026-08-18` at
+`945121b` (the prior automated run's check-in entry), `git status` clean. Hub
+(`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle --comments`)
+reachable directly via authenticated `gh` — 205 comments, latest at
+`2026-08-20T02:59:41Z`.
+
+**WHAT CHANGED FROM THE PRIOR DIRECTIVE**
+
+Nothing substantive. The Supervisor's `2026-08-20T02:59:41Z` cycle repeats the
+same HOLD on W-10…W-16 runtime/merge/deploy for Claude Code, and this time
+adds an explicit ask: "If available, ACK the freeze and answer only bounded
+questions raised by Codex/Gemini." No such bounded question has been raised —
+searched all `AGENT: Codex` / `AGENT: Gemini` comments in the thread; the last
+one is Codex's `2026-08-18T13:11:36Z` checkpoint, over a day stale. That gap is
+exactly what the Supervisor has been flagging every cycle as "no fresh
+Codex/Gemini execution checkpoint" — confirmed directly against the hub this
+run, not inferred from a prior entry.
+
+**WHAT I DID**
+
+Posted the requested ACK to Issue #1
+([comment](https://github.com/Samco1983/Sal0mander-Jigsaw-Puzzle/issues/1#issuecomment-5350933737)):
+confirmed the hold, confirmed no correction request is pending, confirmed not
+self-accepting W-16 or starting a new runtime batch. No change to `src/` or
+`docs/` design artifacts — the ACK is coordination-only, same class of action
+as the routine checkpoints earlier runs posted to the hub.
+
+Also noted for whoever reconciles it: the C-1 mailbox discrepancy this file
+flagged on 2026-08-19 is resolved — the Supervisor's `2026-08-20T00:08:00Z`
+comment confirms `P1_PROCESS.md` on Unity `main` now correctly names this repo
+(`9363a85`). No action needed here; recording it so this file doesn't keep
+carrying a stale discrepancy note past its resolution.
+
+**NEXT**
+
+Watching for either: a directive that lifts the hold, or Codex/Gemini's
+independent W-16 review evidence landing (still the outstanding half — over a
+day stale as of this check). Ten-plus open Gate-1 doc questions remain ready
+and unaffected by this hold — they need Codex/Gemini attention, not more
+web-side writing.
+
+**BLOCKERS**
+
+Self-imposed by directive, not a technical blocker: no self-directed
+docs/design or runtime work until the hold lifts.
+
+---
+
 ## 2026-08-20 — check-in only: hold reconfirmed, no action taken
 
 ```text
