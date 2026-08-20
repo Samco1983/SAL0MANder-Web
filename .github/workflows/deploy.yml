@@ -70,6 +70,15 @@ jobs:
       - name: disable Jekyll processing
         run: touch dist/.nojekyll
 
+      # Fail the deploy, never warn. Every problem this catches is invisible
+      # in the unit suite and in the build's exit code — the site is simply
+      # blank, or the share links 404 — so shipping past a warning here means
+      # shipping the failure.
+      - name: verify the artifact is servable from the deploy path
+        env:
+          VITE_BASE_PATH: /SAL0MANder-Web/
+        run: node scripts/verify-deploy-artifact.mjs dist "$VITE_BASE_PATH"
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
