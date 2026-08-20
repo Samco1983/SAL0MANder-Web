@@ -5,7 +5,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { ProfilePage } from './ProfilePage'
 import { GUEST_TOKEN_KEY } from '@auth/guestIdentity'
-import { paths } from '@config/routes'
+import { buildPath, paths } from '@config/routes'
+import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
 
 /**
  * Profile is the surface where an account requirement creeps in.
@@ -82,6 +83,14 @@ describe('accounts are off, and the page acts like it', () => {
     expect(screen.getByRole('link', { name: /keep playing as guest/i })).toHaveAttribute(
       'href',
       paths.guestPlayIndex,
+    )
+  })
+
+  it('offers a direct sample activity path from Profile', () => {
+    renderProfile()
+    expect(screen.getByRole('link', { name: /open sample activity/i })).toHaveAttribute(
+      'href',
+      buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID),
     )
   })
 
