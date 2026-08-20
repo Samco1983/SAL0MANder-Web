@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { env } from '@config/env'
-import { buildShareLink, paths } from '@config/routes'
+import { paths } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
 import { AppShell } from '@components/layout/AppShell'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
@@ -92,7 +92,6 @@ export function GuestPlayPage() {
   const state = useGuestActivity(activityId)
   // Minted lazily on the device; not authentication, carries no PII.
   const identity = getGuestIdentity()
-  const shareUrl = buildShareLink(activityId ?? '', env.publicBaseUrl)
 
   const bundle = state.status === 'ready' ? state.bundle : undefined
   const allowedPlayModes = (
@@ -337,7 +336,7 @@ export function GuestPlayPage() {
                 <p className={styles.description}>{state.bundle.summary.description}</p>
                 {/* No `title` — the heading is directly above; repeating it
                     here would just be noise on this surface. */}
-                <SharePanel url={shareUrl} />
+                {activityId ? <SharePanel activityId={activityId} baseUrl={env.publicBaseUrl} /> : null}
               </>
             ) : null}
 

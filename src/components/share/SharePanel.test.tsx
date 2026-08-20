@@ -24,6 +24,20 @@ afterEach(() => {
 })
 
 describe('the link itself', () => {
+  it('builds the visible share link through the canonical route helper', () => {
+    render(<SharePanel activityId="space mission/1" baseUrl="https://sal0mander.example/" />)
+
+    expect(screen.getByLabelText(/share link/i)).toHaveValue(
+      'https://sal0mander.example/play/space%20mission%2F1',
+    )
+  })
+
+  it('still accepts a prebuilt share URL for non-activity callers', () => {
+    render(<SharePanel url={URL_UNDER_TEST} />)
+
+    expect(screen.getByLabelText(/share link/i)).toHaveValue(URL_UNDER_TEST)
+  })
+
   it('is always visible and selectable, not just copyable', () => {
     // The manual path has to exist: clipboard access can be denied, and a
     // teacher who cannot select the link has no way to share it.
