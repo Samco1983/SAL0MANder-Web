@@ -43,6 +43,90 @@ class PackSeed:
 
 
 PACKS: dict[str, PackSeed] = {
+    # --- packs added to close the gap against the production mix -------------
+    # The six original packs cover fantasy, space and nature well and leave the
+    # three largest business priorities empty: cute animals is 30% of the target
+    # with one pack, and bonus crossover (15%), sports (10%) and seasonal (5%)
+    # had none at all. Nature is 33% of packs against a 10% target, so nothing
+    # further is added there.
+    "puppy-park": PackSeed(
+        pack="puppy-park",
+        use="friendly default / broadest appeal",
+        runtime_group="puppy-park",
+        assets=(
+            AssetSeed("background", "sunny-dog-park", "stage background", "16:9 background concept", "bright park lawn with a low fence, a shady tree, scattered toys at the edges, and an open uncluttered center where puzzle pieces can sit"),
+            AssetSeed("character", "puppy-guide", "helper/coach character", "transparent PNG sprite concept", "round-faced puppy sitting upright with head tilted, one ear up, looking toward the player as if waiting to help"),
+            AssetSeed("character", "old-dog-mentor", "helper/coach character", "transparent PNG sprite concept", "calm older dog with soft grey muzzle wearing a small neckerchief, settled and patient rather than excited"),
+            AssetSeed("reward", "bone-badge", "positive feedback token", "square icon concept", "rounded bone-shaped badge with a soft shine and a silhouette that stays readable at icon size"),
+            AssetSeed("tile-set", "toy-set", "decorative puzzle tile variants", "sprite sheet concept", "six simple dog-toy tiles — ball, bone, rope, frisbee, squeaker, water bowl — each with a distinct silhouette so they do not read alike when small"),
+            AssetSeed("ui-frame", "fence-frame", "stage frame or companion panel decoration", "transparent PNG UI frame concept", "rounded wooden-fence frame with warm tones and an empty readable center"),
+        ),
+    ),
+    "farm-friends": PackSeed(
+        pack="farm-friends",
+        use="younger students / early sessions",
+        runtime_group="farm-friends",
+        assets=(
+            AssetSeed("background", "red-barn-morning", "stage background", "16:9 background concept", "gentle farmyard at morning light with a red barn to one side, rolling green field behind, and a clear flat center area"),
+            AssetSeed("character", "calf-helper", "helper/coach character", "transparent PNG sprite concept", "small friendly calf with large soft eyes standing square, one hoof lifted in a welcoming pose"),
+            AssetSeed("character", "duckling-helper", "helper/coach character", "transparent PNG sprite concept", "cheerful duckling mid-step with a tiny satchel, bright enough to read against a green field"),
+            AssetSeed("reward", "sunflower-badge", "positive feedback token", "square icon concept", "bright sunflower badge with bold petals and a strong outline for small sizes"),
+            AssetSeed("sticker-sheet", "barn-stickers", "reward collection", "sprite sheet concept", "six farm reward stickers — egg, hay bale, apple, watering can, boot, rainbow — flat and high contrast"),
+            AssetSeed("ui-frame", "hay-frame", "companion panel decoration", "transparent PNG UI frame concept", "rounded frame of stylised hay and rope with an empty readable content area"),
+        ),
+    ),
+    "cosmic-critters": PackSeed(
+        pack="cosmic-critters",
+        use="bonus crossover unlock — animals x space",
+        runtime_group="cosmic-critters",
+        assets=(
+            AssetSeed("background", "pet-space-station", "stage background", "16:9 background concept", "cheerful space station interior with round windows showing planets, animal-sized bunks along the edges, and a clear open center"),
+            AssetSeed("character", "cat-astronaut", "unlockable reward character", "transparent PNG sprite concept", "cat in a rounded space helmet floating with paws out, tail curled, clearly delighted rather than alarmed"),
+            AssetSeed("character", "hamster-pilot", "unlockable reward character", "transparent PNG sprite concept", "hamster in a small flight jacket and goggles gripping a tiny control stick"),
+            AssetSeed("reward", "crossover-medal", "unlock celebration token", "square icon concept", "medal combining a paw print and a star, readable at icon size, clearly a rarer award than a standard badge"),
+            AssetSeed("poster", "cat-astronaut-poster", "completion reward image", "portrait poster concept", "a cat astronaut planting a small flag on a friendly cratered moon with Earth behind — composed as a keepsake image a student earns, not as a play surface"),
+            AssetSeed("ui-frame", "porthole-frame", "reward reveal frame", "transparent PNG UI frame concept", "rounded porthole frame with soft metal edging and an empty center for the revealed image"),
+        ),
+    ),
+    "dragon-court": PackSeed(
+        pack="dragon-court",
+        use="bonus crossover unlock — fantasy x sports",
+        runtime_group="dragon-court",
+        assets=(
+            AssetSeed("background", "castle-court", "stage background", "16:9 background concept", "outdoor basketball court in a castle courtyard, banners on the walls, hoop to one side, clear playable center"),
+            AssetSeed("character", "basketball-dragon", "unlockable reward character", "transparent PNG sprite concept", "friendly round-snouted dragon mid-dribble with a basketball, wings tucked, expression focused and playful"),
+            AssetSeed("character", "knight-referee", "unlockable reward character", "transparent PNG sprite concept", "small cheerful knight in light armour holding a whistle, visor up so the face reads friendly"),
+            AssetSeed("reward", "flame-trophy", "unlock celebration token", "square icon concept", "trophy with a soft flame motif, distinct in silhouette from the standard star and paw badges"),
+            AssetSeed("poster", "dragon-dunk-poster", "completion reward image", "portrait poster concept", "a dragon completing a gentle dunk with banners flying — a keepsake image a student earns, energetic but never aggressive"),
+            AssetSeed("tile-set", "banner-set", "decorative puzzle tile variants", "sprite sheet concept", "six castle banner tiles in different colours and simple heraldic shapes, readable at small sizes"),
+        ),
+    ),
+    "race-day": PackSeed(
+        pack="race-day",
+        use="motion and challenge stage",
+        runtime_group="race-day",
+        assets=(
+            AssetSeed("background", "sunny-racetrack", "stage background", "16:9 background concept", "friendly racetrack with soft curves, striped kerbs, cheering flags along the far side, and a clear flat center"),
+            AssetSeed("character", "racer-fox", "helper/coach character", "transparent PNG sprite concept", "fox in a rounded helmet leaning on a small go-kart, thumbs up toward the player"),
+            AssetSeed("character", "pit-crew-badger", "helper/coach character", "transparent PNG sprite concept", "badger in overalls holding an oversized wrench, mid-wave"),
+            AssetSeed("reward", "checkered-badge", "positive feedback token", "square icon concept", "rounded checkered-flag badge with strong contrast and a clear silhouette"),
+            AssetSeed("tile-set", "vehicle-set", "decorative puzzle tile variants", "sprite sheet concept", "six simple vehicle tiles — go-kart, bicycle, rocket car, tractor, sailboat, hot-air balloon — each distinct in outline"),
+            AssetSeed("ui-frame", "pit-lane-frame", "stage frame or companion panel decoration", "transparent PNG UI frame concept", "rounded frame with subtle kerb striping and an empty readable center"),
+        ),
+    ),
+    "winter-workshop": PackSeed(
+        pack="winter-workshop",
+        use="seasonal rotation — timely, not evergreen",
+        runtime_group="winter-workshop",
+        assets=(
+            AssetSeed("background", "snowy-workshop", "stage background", "16:9 background concept", "warm wooden workshop interior with frosted windows, hanging lanterns, and an uncluttered center bench area"),
+            AssetSeed("character", "mitten-mouse", "helper/coach character", "transparent PNG sprite concept", "small mouse in oversized knitted mittens and a scarf, holding a candy-striped pencil"),
+            AssetSeed("character", "snow-fox", "helper/coach character", "transparent PNG sprite concept", "white fox with a woollen hat, sitting attentively with tail curled around its paws"),
+            AssetSeed("reward", "snowflake-badge", "positive feedback token", "square icon concept", "six-point snowflake badge with a bold readable silhouette, not lacy or thin"),
+            AssetSeed("sticker-sheet", "winter-stickers", "reward collection", "sprite sheet concept", "six winter reward stickers — mitten, cocoa, sled, pinecone, lantern, snowflake — flat and high contrast, no religious or holiday-specific symbols so the pack stays usable in any classroom"),
+            AssetSeed("ui-frame", "frost-frame", "companion panel decoration", "transparent PNG UI frame concept", "rounded frame with soft frost edging and an empty readable content area"),
+        ),
+    ),
     "space-lab": PackSeed(
         pack="space-lab",
         use="early high-energy stage",
