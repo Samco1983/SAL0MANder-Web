@@ -1,0 +1,172 @@
+name: SAL0MANder Web Overnight - Gemini Review
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 6-14 * * *'
+
+concurrency:
+  group: sal0mander-web-overnight-gemini-review
+  cancel-in-progress: false
+
+jobs:
+  pick-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      has_pr: ${{ steps.pick.outputs.has_pr }}
+      pr_json: ${{ steps.pick.outputs.pr_json }}
+      pr_number: ${{ steps.pick.outputs.pr_number }}
+      head_ref: ${{ steps.pick.outputs.head_ref }}
+    steps:
+      - name: Pick unreviewed Claude overnight draft PR
+        id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='<!-- sal0mander-gemini-web-overnight-review -->'
+          candidates="$(gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --state open \
+            --limit 50 \
+            --json number,title,headRefName,url,createdAt,isDraft)"
+
+          picked=''
+          while IFS= read -r pr; do
+            [[ -z "$pr" ]] && continue
+            number="$(jq -r '.number' <<<"$pr")"
+            head_ref="$(jq -r '.headRefName' <<<"$pr")"
+            is_draft="$(jq -r '.isDraft' <<<"$pr")"
+
+            [[ "$is_draft" != 'true' ]] && continue
+            [[ "$head_ref" != agent/claude-web-overnight-* ]] && continue
+
+            comments="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$number/comments" --jq '.[].body' || true)"
+            if grep -Fq "$marker" <<<"$comments"; then
+              continue
+            fi
+
+            picked="$pr"
+            break
+          done < <(jq -c 'sort_by(.createdAt)[]' <<<"$candidates")
+
+          if [[ -z "$picked" ]]; then
+            echo 'has_pr=false' >> "$GITHUB_OUTPUT"
+            echo 'No unreviewed Claude overnight draft PR.'
+            exit 0
+          fi
+
+          echo 'has_pr=true' >> "$GITHUB_OUTPUT"
+          echo "pr_json=$picked" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$(jq -r '.number' <<<"$picked")" >> "$GITHUB_OUTPUT"
+          echo "head_ref=$(jq -r '.headRefName' <<<"$picked")" >> "$GITHUB_OUTPUT"
+
+  review:
+    needs: pick-pr
+    if: needs.pick-pr.outputs.has_pr == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      review_summary: ${{ steps.gemini.outputs.summary }}
+    steps:
+      - name: Check Gemini credential
+        id: credential
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        shell: bash
+        run: |
+          if [[ -n "$GEMINI_API_KEY" ]]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'GEMINI_API_KEY is not configured; reviewer is inert.'
+          fi
+
+      - name: Checkout draft PR branch
+        if: steps.credential.outputs.ready == 'true'
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.pick-pr.outputs.head_ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run read-only Gemini review
+        if: steps.credential.outputs.ready == 'true'
+        id: gemini
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          gemini_cli_version: latest
+          settings: |
+            {
+              "tools": {
+                "core": [
+                  "read_file",
+                  "glob",
+                  "grep_search",
+                  "list_directory",
+                  "run_shell_command(git)"
+                ]
+              }
+            }
+          prompt: |
+            You are Gemini, the independent cloud/cross-system reviewer for a SAL0MANder web draft PR created by Claude.
+
+            PR: #${{ needs.pick-pr.outputs.pr_number }}
+            PR metadata: ${{ needs.pick-pr.outputs.pr_json }}
+
+            Read CLAUDE.md and docs/CHARTER-WEB-POINT-PERSON.md first. Do not edit files and do not post to GitHub directly.
+
+            Inspect origin/main...HEAD and review for:
+            - accidental shared API/data/media contract drift;
+            - provider-specific coupling that violates the Transport/MediaStorage boundary;
+            - auth/privacy/moderation/idempotency/retry/asset-lifecycle risks where relevant;
+            - Guest Play being gated or made dependent on an account/name/email;
+            - duplicated Unity gameplay logic in the web app;
+            - unsupported claims about production cloud or Unity runtime verification;
+            - regression risk, missing tests, and scope expansion beyond the queue issue.
+
+            Return concise Markdown with exactly these headings:
+            ## Verdict
+            ## Summary
+            ## Must Fix
+            ## Risks
+            ## Verification Needed
+
+            Verdict must be one of: PASS_FOR_HUMAN_REVIEW, CHANGES_REQUESTED, BLOCKED_NEEDS_CROSS_SYSTEM_REVIEW.
+            Do not invent runtime, cloud, or deployment evidence.
+
+  publish-review:
+    needs: [pick-pr, review]
+    if: needs.review.outputs.review_summary != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Post Gemini review to draft PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.pick-pr.outputs.pr_number }}
+          GEMINI_REVIEW: ${{ needs.review.outputs.review_summary }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          body_file="$(mktemp)"
+          {
+            echo '<!-- sal0mander-gemini-web-overnight-review -->'
+            echo '## Gemini overnight independent web review'
+            echo
+            printf '%s\n' "$GEMINI_REVIEW"
+          } > "$body_file"
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$body_file"
