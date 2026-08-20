@@ -18,6 +18,7 @@ that runs in a scheduler's environment — never against a claim in a log.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 import subprocess
@@ -27,6 +28,8 @@ import urllib.request
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SLUG = "Samco1983/SAL0MANder-Web"
+# A driver that has not moved in this long is not driving.
+DRIVER_STALE_MINUTES = 25
 SITE = "https://samco1983.github.io/SAL0MANder-Web/"
 
 
@@ -134,9 +137,29 @@ def operational() -> list[dict]:
     out.append({"name": "an unattended possession has scored", "ok": scored,
                 "blocker": "" if scored else "no scheduled run has completed successfully"})
 
-    alive = subprocess.run(["pgrep", "-f", "sal0_nudge.py"], capture_output=True).returncode == 0
-    out.append({"name": "something is driving possessions right now", "ok": alive,
-                "blocker": "" if alive else "the nudger is not running — nothing starts the next possession"})
+    # Heartbeat, not pgrep.
+    #
+    # `pgrep` answers "can THIS process see that process", which is a different
+    # question in a sandbox. The nudger was running at pid 27264 while another
+    # agent's checker reported it dead — the same condition read true and false
+    # at the same moment, from two seats. A check whose answer depends on who is
+    # asking is not a check.
+    #
+    # A written heartbeat is the same fact for everyone who can read the repo.
+    recent = 0.0
+    if os.path.exists(log):
+        for line in open(log, encoding="utf-8"):
+            try:
+                t = dt.datetime.fromisoformat(json.loads(line).get("at", "")).timestamp()
+                recent = max(recent, t)
+            except Exception:
+                pass
+    age = (dt.datetime.now().astimezone().timestamp() - recent) / 60 if recent else None
+    driving = age is not None and age < DRIVER_STALE_MINUTES
+    out.append({"name": "something is driving possessions right now", "ok": driving,
+                "blocker": "" if driving else
+                (f"no possession recorded for {age:.0f} min — nothing is starting the next one"
+                 if age is not None else "no possession has ever been recorded")})
     return out
 
 
