@@ -261,3 +261,30 @@ them.
 Already fixed on my side: `scripts/lib/__pycache__/` was a third blocker and is
 now gitignored — it is generated output, not an unfinished shot, and it had
 been hand-deleted twice before anyone noticed it was refusing runs.
+
+## B-10 — Gemini cannot run at all: invalid API key
+
+**Raised:** 2026-08-20 by SAL0-04 · **Owner:** Samuel (credentials) · **Cost:** one whole seat
+
+Probed the way a scheduler would, with no inherited environment:
+
+```bash
+env -i HOME="$HOME" PATH="/usr/local/bin:/usr/bin:/bin" gemini -p "Reply with exactly: ALIVE"
+# API_KEY_INVALID — "API key not valid. Please pass a valid API key."
+```
+
+Same shape as the eight-hour Claude outage: the binary is installed and the
+credential is not reachable. Gemini has been treated as benched for judgment
+reasons; it is actually **unreachable**, which is a different problem with a
+different fix.
+
+**Clears when:** the owner sets a valid key. Not actionable by any agent —
+nobody here reads or writes credential values.
+
+**Also worth recording, so the seat is not mis-assigned when it comes back:**
+the Gemini CLI is a *text* agent. It cannot produce image files, so "build a
+picture library for the game" is not work it can do. The nearest thing it can
+do, and the thing that actually blocks classroom art, is a **licence-checked
+source list** — images shipped to a classroom need verified rights, and that
+research is text work. The art itself belongs in the Unity repo, which is
+out of scope for this repo by non-negotiable #1.
