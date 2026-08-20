@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from '
 import { dirname, join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
-const repo = '/Users/samuel_saldivar/Desktop/SAL0MANder-Web'
+const repo = process.env.SAL0_REPO || '/Users/samuel_saldivar/Desktop/SAL0MANder-Web'
 const repoSlug = 'Samco1983/SAL0MANder-Web'
 const blockersPath = join(repo, 'docs/coordination/BLOCKERS.md')
 const outPath = join(repo, 'docs/coordination/ops/CURRENT-TASK.md')
@@ -160,4 +160,3 @@ try {
   console.error(`BLOCKED - NEED OWNER - ${error.message}`)
   process.exit(1)
 }
-

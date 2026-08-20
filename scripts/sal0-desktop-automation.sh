@@ -156,7 +156,8 @@ export SAL0_REPO="$RUNTIME_REPO"
 export SAL0_LOG_DIR="$LOG_DIR"
 export SAL0_LOCK="$HOME/.sal0mander/work-loop.lock"
 export SAL0_CLAUDE_TOKEN_FILE="$HOME/.sal0mander/secrets/claude_oauth_token"
-exec /bin/bash "$RUNTIME_REPO/scripts/sal0-work-loop.sh"
+/bin/bash "$RUNTIME_REPO/scripts/sal0-next-task.sh" || exit \$?
+exec /bin/bash "$RUNTIME_REPO/scripts/sal0-work-loop.sh" "$RUNTIME_REPO/docs/coordination/ops/CURRENT-TASK.md"
 EOF
   chmod 755 "$WRAPPER"
   mkdir -p "$HOME/Library/LaunchAgents"
@@ -181,7 +182,9 @@ uninstall_job() {
 
 run_once() {
   require_repo
-  bash "$REPO/scripts/sal0-work-loop.sh"
+  export SAL0_REPO="$REPO"
+  bash "$REPO/scripts/sal0-next-task.sh" || exit $?
+  bash "$REPO/scripts/sal0-work-loop.sh" "$REPO/docs/coordination/ops/CURRENT-TASK.md"
 }
 
 pause_loop() {

@@ -6,9 +6,8 @@
 
 set -uo pipefail
 
-REPO="/Users/samuel_saldivar/Desktop/SAL0MANder-Web"
+REPO="${SAL0_REPO:-/Users/samuel_saldivar/Desktop/SAL0MANder-Web}"
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
 
 cd "$REPO" || { echo "REPO NOT FOUND"; exit 1; }
 node "$REPO/scripts/sal0-next-task.mjs"
-
