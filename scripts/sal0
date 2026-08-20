@@ -28,12 +28,36 @@ ok()  { echo "  ✓ $*"; }
 case "${1:-help}" in
 
 start-game)
-  # One button before play. Answers the five questions an owner actually has,
-  # in the order that lets them stop reading early: if the court is not ready,
-  # nothing below it matters.
+  # One button before play. Answers the five questions an owner has, in the
+  # order that lets them stop reading early.
+  #
+  # SPEED IS THE FEATURE. The first version took 23s because it invoked the
+  # assistant twice and the doctor once, each shelling out to a model. A
+  # tip-off report nobody waits for is a report nobody reads. Every expensive
+  # thing now runs ONCE, in parallel, with a hard timeout.
   echo
   echo "  ══ SAL0MANDER BBALL — TIP OFF ══"
   echo
+
+  TMP="$(mktemp -d)"
+  trap 'rm -rf "$TMP"' EXIT
+
+  # Fire both slow readers at once rather than one after the other.
+  ( bash scripts/sal0-doctor.sh >"$TMP/doc" 2>&1 ) &
+  DOC_PID=$!
+  ( python3 scripts/lib/sal0_bball_assistant.py >"$TMP/court" 2>&1 ) &
+  COURT_PID=$!
+  ( python3 scripts/lib/sal0_shot_queue.py >"$TMP/shots" 2>&1 ) &
+  SHOTS_PID=$!
+
+  # Hard cap. A tip-off that hangs is worse than one that says "unknown".
+  DEADLINE=$(( $(date +%s) + 25 ))
+  for pid in $DOC_PID $COURT_PID $SHOTS_PID; do
+    while kill -0 "$pid" 2>/dev/null; do
+      [ "$(date +%s)" -ge "$DEADLINE" ] && { kill -9 "$pid" 2>/dev/null; break; }
+      sleep 1
+    done
+  done
 
   READY=yes; OWNER=no; REASONS=""
 
@@ -41,22 +65,19 @@ start-game)
   DIRTY=$(git status --porcelain | wc -l | tr -d ' ')
   [ "$DIRTY" -gt 0 ] && { READY=no; REASONS="$REASONS\n    · $DIRTY uncommitted file(s) — a scheduled run will refuse to start"; }
 
-  # The doctor exits non-zero if ANY agent is unreachable, including one that
-  # was deliberately benched. A benched seat blocking the whole court is the
-  # exact failure the bench rule exists to prevent — Gemini being out of quota
-  # is a budget, not a broken court.
-  #
-  # Only the worker actually taking the shot decides readiness.
-  DOC="$(bash scripts/sal0-doctor.sh 2>&1)"
-  if ! printf '%s' "$DOC" | grep -qE '^\s*claude\s+ok\s+ok'; then
+  # Only the worker taking the shot decides readiness. A benched seat blocking
+  # the court is the failure the bench rule exists to prevent.
+  if [ -s "$TMP/doc" ] && ! grep -qE '^\s*claude\s+ok\s+ok' "$TMP/doc"; then
     READY=no; OWNER=yes
     REASONS="$REASONS\n    · the worker cannot reach a model from a scheduled shell — bash scripts/sal0-doctor.sh"
+  elif [ ! -s "$TMP/doc" ]; then
+    REASONS="$REASONS\n    · doctor timed out — readiness UNKNOWN, run it directly"
   fi
-  BENCHED="$(printf '%s' "$DOC" | grep -cE '^\s*(gemini|codex).*FAIL' || true)"
+  BENCHED=$(grep -cE '^\s*(gemini|codex).*FAIL' "$TMP/doc" 2>/dev/null || echo 0)
   [ "${BENCHED:-0}" -gt 0 ] && REASONS="$REASONS\n    · $BENCHED seat(s) benched — noted, not blocking"
 
-  ls ~/Library/LaunchAgents/ 2>/dev/null | grep -q sal0mander || {
-    REASONS="$REASONS\n    · no launchd job installed — nothing wakes up on its own"; }
+  ls ~/Library/LaunchAgents/ 2>/dev/null | grep -q sal0mander || \
+    REASONS="$REASONS\n    · no launchd job installed — nothing wakes up on its own"
 
   echo "  Court ready:  $READY"
   [ -n "$REASONS" ] && printf "%b\n" "$REASONS"
@@ -64,14 +85,13 @@ start-game)
   echo
 
   echo "  ── COURT ──"
-  python3 scripts/lib/sal0_bball_assistant.py 2>/dev/null | sed -n '/COURT:/,/^$/p' | sed 's/^/  /'
+  sed -n '/COURT:/,/^$/p' "$TMP/court" 2>/dev/null | sed 's/^/  /' || echo "    (unavailable)"
 
   echo "  ── NEXT SHOT ──"
-  python3 scripts/lib/sal0_shot_queue.py 2>/dev/null | sed -n '/SHOT QUEUE/,/scores when/p' | sed 's/^/  /'
+  sed -n '/SHOT QUEUE/,/scores when/p' "$TMP/shots" 2>/dev/null | sed 's/^/  /' || echo "    (unavailable)"
 
   echo "  ── RISK ──"
-  python3 scripts/lib/sal0_bball_assistant.py 2>/dev/null \
-    | sed -n '/ANTICIPATION/,/^$/p' | tail -n +2 | sed 's/^/  /'
+  sed -n '/ANTICIPATION/,/^$/p' "$TMP/court" 2>/dev/null | tail -n +2 | sed 's/^/  /' || echo "    (unavailable)"
 
   echo "  ── VERIFY ──"
   echo "    npm run verify        must exit 0 before any commit"
