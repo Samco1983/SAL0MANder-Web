@@ -38,6 +38,12 @@ REWORK_AT = 3
 # Commits that touch only doctrine. Measured conversion of docs: 1.0%.
 DOCTRINE_AT = 3
 DOCTRINE = re.compile(r'^docs/', re.I)
+# Local commits nobody else can see. The precondition for every sweep.
+UNPUSHED_AT = 3
+# Words that assert a verified result. Free to write, expensive to trust.
+CLAIM = re.compile(r'verif(y|ied)|tests? pass|green|all pass|confirmed|proven|clean run', re.I)
+# What makes a claim checkable: a command, an exit code, a hash, a count.
+EVIDENCE = re.compile(r'exit[ =:]|npm run|\\b[0-9a-f]{7,40}\\b|\\b\\d+ (tests?|files?|commits?)\\b', re.I)
 
 
 def sh(cmd: list[str], timeout: int = 40) -> tuple[int, str]:
@@ -49,10 +55,20 @@ def sh(cmd: list[str], timeout: int = 40) -> tuple[int, str]:
 
 
 def recent(window_min: int) -> list[dict]:
-    """Commits inside the window, with signature and touched files."""
+    """Commits inside the window, with signature, body, and touched files.
+
+    Parsing note, learned the expensive way: %b is MULTI-LINE. A first
+    version split the block's first line into fields, which meant the body
+    terminator was never reached and 59 of 62 commits ended up with prose in
+    their file lists — every file-based detector silently reading sentences as
+    filenames while still reporting findings.
+
+    So: \x03 terminates the header, and the split happens on THAT, never on a
+    newline. Field order after \x02: sha, timestamp, subject, signature, body.
+    """
     code, out = sh([
         "git", "log", f"--since={window_min} minutes ago",
-        "--format=%x01%h%x02%at%x02%s%x02%(trailers:key=Sal0-From,valueonly)",
+        "--format=%x01%h%x02%at%x02%s%x02%(trailers:key=Sal0-From,valueonly)%x02%b%x03",
         "--name-only",
     ])
     if code != 0:
@@ -62,15 +78,16 @@ def recent(window_min: int) -> list[dict]:
     for block in out.split("\x01"):
         if not block.strip():
             continue
-        head, _, rest = block.partition("\n")
-        parts = head.split("\x02")
+        header, _, filetext = block.partition("\x03")
+        parts = header.split("\x02")
         if len(parts) < 4:
             continue
         sha, ts, subject, sign = parts[0], parts[1], parts[2], parts[3].strip()
-        files = [f for f in rest.split("\n") if f.strip()]
+        body = parts[4] if len(parts) > 4 else ""
+        files = [f for f in filetext.split("\n") if f.strip()]
         commits.append({
             "sha": sha, "ts": int(ts or 0), "subject": subject,
-            "agent": sign or "UNSIGNED", "files": files,
+            "agent": sign or "UNSIGNED", "files": files, "body": body,
         })
     return commits
 
@@ -240,8 +257,76 @@ def d_doctrine_churn(commits, _dirty, w):
     }]
 
 
-DETECTORS = [d_dirty_overlap, d_duplicate_file, d_sweep, d_self_rework,
-             d_doctrine_churn, d_duplicate_issue, d_unsigned]
+def d_unpushed(commits, _dirty, _w):
+    """Commits sitting locally, invisible to every other agent.
+
+    This is the precondition for every sweep we have had. Work that is not
+    pushed cannot be seen, so a second agent cannot know it exists — it either
+    redoes it or stages it under its own name. Both of today's collisions began
+    here.
+
+    Costs one `rev-list`; no network. The check that would have prevented the
+    damage is cheaper than the check that found it.
+    """
+    code, out = sh(["git", "rev-list", "--count", "@{upstream}..HEAD"])
+    if code != 0:
+        return []
+    try:
+        n = int(out.strip() or 0)
+    except ValueError:
+        return []
+    if n < UNPUSHED_AT:
+        return []
+    return [{
+        "detector": "UNPUSHED",
+        "severity": "high",
+        "what": f"{n} commit(s) exist only on this machine",
+        "detail": ["no other agent can see this work, so it cannot be coordinated around"],
+        "do": "push now — invisible work is what a sweep picks up",
+    }]
+
+
+def d_claim_without_evidence(commits, _dirty, w):
+    """A commit that asserts verification while changing nothing verifiable.
+
+    Our most expensive failure class, by a distance: 'verify passed' printed
+    while lint failed, a merge reported clean that had not merged, a bench
+    reported applied that never applied. The words are free; the check is not.
+
+    Flags a commit whose subject or body claims a green result while its diff
+    touches no source and no test — nothing that any verifier could have run.
+    """
+    hits = []
+    for c in commits:
+        if not CLAIM.search(c["subject"]):
+            continue
+        if any(f.startswith("src/") or ".test." in f or ".spec." in f for f in c["files"]):
+            continue
+        # A commit whose whole purpose is to RECORD evidence is the behaviour
+        # we want, not the failure. The first version of this flagged exactly
+        # that — a docs commit reading "B-8 chain verified" whose diff was the
+        # evidence itself — and a detector that punishes writing evidence down
+        # teaches agents to stop writing it down.
+        #
+        # Fire only when the claim cites nothing checkable: no command, no exit
+        # code, no commit hash, no count.
+        if EVIDENCE.search(c.get("body", "") + " " + c["subject"]):
+            continue
+        hits.append(c)
+    if not hits:
+        return []
+    return [{
+        "detector": "CLAIM_WITHOUT_EVIDENCE",
+        "severity": "high",
+        "what": f"{len(hits)} commit(s) in {w}m claim a verified result but changed nothing a verifier runs",
+        "detail": [f"{c['sha']} {c['subject'][:56]}" for c in hits[:5]],
+        "do": "name the command and its exit code, or drop the claim from the message",
+    }]
+
+
+DETECTORS = [d_dirty_overlap, d_unpushed, d_duplicate_file, d_sweep,
+             d_claim_without_evidence, d_self_rework, d_doctrine_churn,
+             d_duplicate_issue, d_unsigned]
 SEV_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 
 
