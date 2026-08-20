@@ -1,2 +1,4 @@
 {"at": "2026-08-20T05:57:38-07:00", "event": "take", "path": "src/components/share", "agent": "SAL0-04", "why": "QR freshness tests"}
 {"at": "2026-08-20T05:57:39-07:00", "event": "drop", "path": "src/components/share", "agent": "SAL0-04", "why": ""}
+{"at": "2026-08-20T06:20:22-07:00", "event": "take", "path": "live-site-verification", "agent": "SAL0-04", "why": "walking the deployed site on mobile + all paths"}
+{"at": "2026-08-20T06:22:59-07:00", "event": "take", "path": "scripts/build-status-page.mjs", "agent": "SAL0-04", "why": "owner status page on the live site"}
