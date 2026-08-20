@@ -72,6 +72,71 @@ micro_huddle() {
   echo "Stop doing: $6"
 }
 
+push_with_one_recovery() {
+  if $GIT push origin "$BRANCH"; then
+    echo "pushed"
+    return 0
+  fi
+
+  echo "PUSH RACE: fetching once and attempting a verified merge recovery"
+  if ! $GIT fetch origin "$BRANCH"; then
+    echo "PUSH RECOVERY FAILED: fetch failed"
+    return 1
+  fi
+
+  REMOTE_HEAD="$($GIT rev-parse "origin/$BRANCH" 2>/dev/null || true)"
+  if [ -z "$REMOTE_HEAD" ]; then
+    echo "PUSH RECOVERY FAILED: remote branch is unreadable"
+    return 1
+  fi
+
+  # The first push can lose a race even when the remote commit is already an
+  # ancestor of our HEAD. Retry directly in that cheap case.
+  if $GIT merge-base --is-ancestor "$REMOTE_HEAD" HEAD; then
+    $GIT push origin "$BRANCH"
+    return $?
+  fi
+
+  if ! $GIT merge --no-ff --no-commit "$REMOTE_HEAD"; then
+    echo "PUSH RECOVERY FAILED: concurrent work conflicts with this possession"
+    $GIT merge --abort >/dev/null 2>&1 || true
+    return 1
+  fi
+
+  # A fetch can reveal that no merge commit is needed. Retry without inventing
+  # an empty recovery commit.
+  if ! $GIT rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+    $GIT push origin "$BRANCH"
+    return $?
+  fi
+
+  npm run verify >"$LOG_DIR/verify-recovery-$STAMP.log" 2>&1
+  RECOVERY_VERIFY=$?
+  echo "push recovery verify exit: $RECOVERY_VERIFY"
+  if [ "$RECOVERY_VERIFY" -ne 0 ]; then
+    $GIT merge --abort >/dev/null 2>&1 || true
+    echo "PUSH RECOVERY FAILED: merged branch did not verify"
+    return 1
+  fi
+
+  if ! SAL0_AGENT=SAL0-02 $GIT commit --no-verify \
+    -m "Recover verified work after concurrent push" \
+    -m "One bounded fetch/merge retry after a non-fast-forward push. npm run verify exit 0." \
+    -m "Sal0-From: SAL0-02"; then
+    $GIT merge --abort >/dev/null 2>&1 || true
+    echo "PUSH RECOVERY FAILED: recovery merge could not be committed"
+    return 1
+  fi
+
+  if $GIT push origin "$BRANCH"; then
+    echo "pushed after verified merge recovery"
+    return 0
+  fi
+
+  echo "PUSH RECOVERY FAILED: a second race occurred; no further retry"
+  return 1
+}
+
 kill_pid_tree() {
   parent="$1"
   for child in $(pgrep -P "$parent" 2>/dev/null || true); do
@@ -298,9 +363,7 @@ if [ "$WORKER_HEAD" != "$BEFORE" ]; then
     exit 1
   fi
 
-  if $GIT push origin "$BRANCH"; then
-    echo "pushed"
-  else
+  if ! push_with_one_recovery; then
     echo "ONE THING STILL UNVERIFIED: PUSH FAILED — commit ${WORKER_HEAD:0:8} is local only"
     echo "BLOCKED - NEED OWNER — GitHub did not receive the commit. Other agents cannot see it."
     micro_huddle \
@@ -466,9 +529,7 @@ fi
 echo "ONE THING THAT CHANGED: COMMITTED ${AFTER:0:8} — $FILES file(s), verify passed"
 $GIT --no-pager log --oneline -1
 
-if $GIT push origin "$BRANCH"; then
-  echo "pushed"
-else
+if ! push_with_one_recovery; then
   echo "ONE THING STILL UNVERIFIED: PUSH FAILED — commit ${AFTER:0:8} is local only"
   echo "BLOCKED - NEED OWNER — GitHub did not receive the commit. Other agents cannot see it."
   micro_huddle \
