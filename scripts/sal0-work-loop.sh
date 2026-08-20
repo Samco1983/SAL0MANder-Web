@@ -222,6 +222,45 @@ run_worker_with_clock "$LOG_DIR/work-loop-$STAMP.json"
 EXIT=$?
 echo "claude exit code: $EXIT"
 
+# ── Bench the player instead of playing 5-on-4 ──────────────────────────────
+#
+# An auth failure is not a task failure, and the loop could not tell them apart.
+# On 2026-08-19 the worker returned "Not logged in · Please run /login" in 109ms
+# on every run for eight hours, and each one was logged as "nothing changed" —
+# a line that reads exactly like an idle night. The loop kept taking the floor
+# with a locked-out player.
+#
+# Locked out is a substitution, not a possession: stop the clock, say who is
+# unavailable, and do not keep burning wake-ups pretending otherwise.
+WORKER_JSON="$LOG_DIR/work-loop-$STAMP.json"
+if [ -f "$WORKER_JSON" ] && grep -qiE 'not logged in|please run /login|401|OAuth (access )?token|authentication_error|invalid api key' "$WORKER_JSON"; then
+  echo "ONE THING THAT CHANGED: BLOCKED - NEED OWNER — worker is not authenticated"
+  echo "This is an auth failure, not a task failure. No model was called."
+
+  cat >> "$REPO/docs/coordination/BLOCKERS.md" <<BLOCKER
+
+### B-AUTH-$STAMP · the worker is locked out · owner only
+OPENED:    $(date -u +%Y-%m-%dT%H:%M:%SZ)
+AUTO:      no
+BLOCKED:   The scheduled worker could not authenticate. Every run in this state
+           produces no diff and logs like an idle night, which is how eight
+           hours were lost on 2026-08-19. The loop has paused itself rather
+           than keep taking the floor with a locked-out player.
+COMMAND:   ~/.sal0mander/new-token.sh    # then: rm ~/.sal0mander/PAUSE
+WHO CAN:   owner only — the browser approval step cannot, and should not, be automated
+CLEARED:
+HUMAN:
+BLOCKER
+
+  # Self-pause. A loop that cannot call a model must not keep waking up.
+  echo "auth failure $STAMP — worker locked out, renew with ~/.sal0mander/new-token.sh" > "$PAUSE"
+  command -v osascript >/dev/null 2>&1 && osascript -e 'display notification "Worker is locked out. Run ~/.sal0mander/new-token.sh" with title "SAL0MANder: signed out"' >/dev/null 2>&1 || true
+
+  echo "PAUSED itself. Renew the token, then: rm ~/.sal0mander/PAUSE"
+  echo "=== end $STAMP (auth) ==="
+  exit 1
+fi
+
 WORKER_HEAD="$($GIT rev-parse HEAD)"
 if [ "$WORKER_HEAD" != "$BEFORE" ]; then
   COMMITTED_FILES="$($GIT diff --name-only "$BEFORE..$WORKER_HEAD" -- . ':(exclude)docs/coordination/runs')"
