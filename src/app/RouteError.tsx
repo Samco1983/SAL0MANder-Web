@@ -67,6 +67,16 @@ export function RouteError() {
         <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)' }}>{message}</p>
         {staleChunk ? (
           <Button onClick={() => window.location.reload()}>Reload</Button>
+        ) : notFound ? (
+          // Matches NotFoundPage's recovery: the likely visitor followed a
+          // broken share link, so "back to home" alone strands them one click
+          // short of the thing they actually wanted.
+          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+            <LinkButton to={paths.guestPlayIndex}>Enter a class code</LinkButton>
+            <LinkButton to={paths.home} variant="secondary">
+              Back to home
+            </LinkButton>
+          </div>
         ) : (
           <LinkButton to={paths.home}>Back to home</LinkButton>
         )}

@@ -107,6 +107,30 @@ describe('render errors', () => {
     renderThrowingRoute(new Error('kaboom'))
     expect(await screen.findByRole('link', { name: /back to home/i })).toHaveAttribute('href', '/')
   })
+
+  it('shows the not-found copy for a real 404 route error response, distinct from a generic failure', async () => {
+    // Unlike the catch-all path (NotFoundPage, rendered directly with no throw),
+    // this is what happens when a *matched* route's own loader decides its
+    // resource doesn't exist — e.g. an activity id that doesn't resolve. React
+    // Router converts a thrown Response into an object isRouteErrorResponse
+    // recognizes; RouteError must tell that apart from an ordinary crash rather
+    // than showing the generic "something went wrong" copy.
+    renderThrowingRoute(new Response('Not found', { status: 404, statusText: 'Not Found' }))
+
+    expect(await screen.findByRole('heading', { name: /couldn.t find that page/i })).toBeVisible()
+    expect(screen.getByText(/link may be incomplete, or the page may have moved/i)).toBeVisible()
+    expect(screen.queryByText(/something went wrong/i)).toBeNull()
+  })
+
+  it('offers a way back into play on a real 404 route error response, not only home', async () => {
+    // Same reasoning as the catch-all NotFoundPage: the likely visitor followed
+    // a broken share link and wants a class-code field, not marketing copy.
+    renderThrowingRoute(new Response('Not found', { status: 404, statusText: 'Not Found' }))
+
+    const guestPlay = await screen.findByRole('link', { name: /enter a class code/i })
+    expect(guestPlay).toHaveAttribute('href', '/play')
+    expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', '/')
+  })
 })
 
 describe('a stale chunk after a deploy', () => {
