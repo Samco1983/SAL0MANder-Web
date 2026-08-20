@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from dataclasses import asdict, dataclass
 
@@ -47,6 +48,32 @@ def _shot_number(shot: dict | None) -> str:
     return f"#{number}" if number is not None else "NEW"
 
 
+def _issue_has_label(number: int | None, label: str) -> bool:
+    if number is None:
+        return False
+    try:
+        r = subprocess.run(
+            [
+                "gh",
+                "issue",
+                "view",
+                str(number),
+                "--repo",
+                "Samco1983/SAL0MANder-Web",
+                "--json",
+                "labels",
+                "--jq",
+                ".labels[].name",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    except Exception:
+        return False
+    return r.returncode == 0 and label in r.stdout.splitlines()
+
+
 def decide(packet: dict) -> CoachCall:
     repo = packet.get("repo", {}) or {}
     risk_flags = set(packet.get("riskFlags", []) or [])
@@ -78,18 +105,22 @@ def decide(packet: dict) -> CoachCall:
         )
 
     if repeated:
-        issue = _shot_number({"number": _extract_issue(repeated.get("shot", ""))})
-        return CoachCall(
-            action="BENCH_APPLY",
-            actor="Python",
-            clockMinutes=5,
-            reason=(
-                f"{repeated.get('shot', '')[:80]} failed {repeated.get('times')}x "
-                f"with {repeated.get('cause')}; repeating it is slower than rotating."
-            ),
-            command="npm run mission:bench:apply",
-            successCheck=f"{issue or 'the repeated issue'} has the blocked label or was already benched",
-            risk="REPEATED_FAILURE",
+        issue_number = _extract_issue(repeated.get("shot", ""))
+        issue = _shot_number({"number": issue_number})
+        if _issue_has_label(issue_number, "blocked"):
+            repeated = None
+        else:
+            return CoachCall(
+                action="BENCH_APPLY",
+                actor="Python",
+                clockMinutes=5,
+                reason=(
+                    f"{repeated.get('shot', '')[:80]} failed {repeated.get('times')}x "
+                    f"with {repeated.get('cause')}; repeating it is slower than rotating."
+                ),
+                command="npm run mission:bench:apply",
+                successCheck=f"{issue or 'the repeated issue'} has the blocked label or was already benched",
+                risk="REPEATED_FAILURE",
         )
 
     if not shot:
