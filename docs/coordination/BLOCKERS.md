@@ -288,3 +288,36 @@ do, and the thing that actually blocks classroom art, is a **licence-checked
 source list** — images shipped to a classroom need verified rights, and that
 research is text work. The art itself belongs in the Unity repo, which is
 out of scope for this repo by non-negotiable #1.
+
+### B-10 update — the diagnosis was wrong, and the fix is different
+
+`API_KEY_INVALID` reads like a bad key. It is not. Checked without reading any
+value:
+
+- `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `GOOGLE_GENAI_API_KEY` — **all unset.**
+  The error means *no key*, not a wrong one.
+- `~/.gemini/oauth_creds.json` — **missing.** The interactive login on Aug 18
+  never persisted a token.
+- `~/.gemini/settings.json` — has no `selectedAuthType`, so the CLI defaults to
+  key auth, finds nothing, and fails.
+
+So Gemini has never completed an auth flow that survives the session. Same root
+cause class as the eight-hour Claude outage: a credential that does not persist
+to a file a non-interactive shell can read.
+
+**Owner fix — OAuth, not a key.** Run `gemini`, choose *Login with Google*,
+complete the browser step. That writes `~/.gemini/oauth_creds.json`, which is
+file-based and readable by launchd. An API key would work too but adds a secret
+to manage; the login adds none.
+
+**Verify with the probe, never the happy path:**
+
+```bash
+env -i HOME="$HOME" PATH="/usr/local/bin:/usr/bin:/bin" gemini -p "Reply with exactly: ALIVE"
+```
+
+Working when typed and failing under `env -i` is the exact trap that cost eight
+hours on the Claude seat. The probe is the test; the terminal is not.
+
+No agent can do this step. Authenticating and clicking OAuth approval are both
+owner-only, and no agent here reads or writes credential values.
