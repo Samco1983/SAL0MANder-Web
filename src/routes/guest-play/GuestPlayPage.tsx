@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { env } from '@config/env'
 import { buildPath, paths } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
@@ -392,6 +392,15 @@ export function GuestPlayIndexPage() {
   // activity that may not exist — a worse dead end than the one being fixed,
   // because this one looks like it works.
   const canDemo = !env.api.isConfigured
+  const [shareCode, setShareCode] = useState('')
+  const navigate = useNavigate()
+  const cleanedShareCode = shareCode.trim().toUpperCase()
+
+  function submitShareCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!cleanedShareCode) return
+    navigate(buildPath.guestPlay(cleanedShareCode))
+  }
 
   return (
     <AppShell>
@@ -402,6 +411,26 @@ export function GuestPlayIndexPage() {
           because a chat app or a class page cut it short. Nothing is wrong on your end. Ask your
           teacher to send the whole link again.
         </p>
+        <form className={styles.codeForm} onSubmit={submitShareCode}>
+          <label className={styles.codeLabel} htmlFor="guest-share-code">
+            Enter a class code
+          </label>
+          <div className={styles.codeControls}>
+            <input
+              id="guest-share-code"
+              className={styles.codeInput}
+              value={shareCode}
+              onChange={(event) => setShareCode(event.currentTarget.value)}
+              autoCapitalize="characters"
+              autoComplete="off"
+              spellCheck="false"
+              inputMode="text"
+            />
+            <Button type="submit" disabled={!cleanedShareCode}>
+              Open
+            </Button>
+          </div>
+        </form>
         {canDemo ? (
           <>
             <p className={styles.centeredBody}>In the meantime, you can try a sample puzzle.</p>

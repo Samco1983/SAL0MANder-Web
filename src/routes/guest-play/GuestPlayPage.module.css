@@ -89,3 +89,47 @@
   color: var(--color-text-muted);
   margin-bottom: var(--space-5);
 }
+
+.codeForm {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 auto var(--space-5);
+  text-align: left;
+}
+
+.codeLabel {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.codeControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.codeInput {
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  letter-spacing: 0;
+  padding: 0 var(--space-3);
+  text-transform: uppercase;
+}
+
+.codeInput:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .codeControls {
+    grid-template-columns: 1fr;
+  }
+}

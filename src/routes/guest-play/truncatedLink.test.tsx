@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { GuestPlayIndexPage } from './GuestPlayPage'
@@ -62,6 +63,26 @@ describe('what the student is told', () => {
 })
 
 describe('a way forward, not only a way back', () => {
+  it('lets a student enter a class code and opens that play route', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <ThemeProvider>
+        <MemoryRouter initialEntries={['/play']}>
+          <Routes>
+            <Route path="/play" element={<GuestPlayIndexPage />} />
+            <Route path="/play/:activityId" element={<p>Activity opened</p>} />
+          </Routes>
+        </MemoryRouter>
+      </ThemeProvider>,
+    )
+
+    await user.type(screen.getByLabelText(/class code/i), 'sal0 demo')
+    await user.click(screen.getByRole('button', { name: /open/i }))
+
+    expect(screen.getByText(/activity opened/i)).toBeVisible()
+  })
+
   it('offers a playable sample while there is no backend', () => {
     renderIndex()
     const demo = screen.getByRole('link', { name: /sample activity/i })
@@ -75,8 +96,7 @@ describe('a way forward, not only a way back', () => {
 
   it('never asks for an account, a name, or an email', () => {
     renderIndex()
-    expect(document.querySelector('input')).toBeNull()
-    expect(document.querySelector('form')).toBeNull()
-    expect(screen.queryByText(/sign in|sign up|your email/i)).toBeNull()
+    expect(screen.queryByLabelText(/name|email|password/i)).toBeNull()
+    expect(screen.queryByText(/sign in|sign up|your email|password/i)).toBeNull()
   })
 })
