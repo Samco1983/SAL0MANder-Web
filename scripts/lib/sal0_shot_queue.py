@@ -55,7 +55,7 @@ def gh_issues() -> list[dict]:
     try:
         r = subprocess.run(
             ["gh", "issue", "list", "--repo", REPO, "--state", "open", "--limit", "100",
-             "--json", "number,title,labels"],
+             "--json", "number,title,body,labels"],
             capture_output=True, text=True, timeout=40,
         )
         if r.returncode != 0:
@@ -74,9 +74,27 @@ def gh_issues() -> list[dict]:
         return []
 
 
-def categorise(title: str) -> tuple[str, str]:
+def categorise(title: str, body: str = "") -> tuple[str, str]:
+    text = f"{title}\n{body}"
+    if re.search(
+        r"\bthis is a docs shot\b|add/edit docs/? only|add or edit docs/? only|"
+        r"docs/? only|no src edits|do not touch src|systems analysis|"
+        r"wireframe specification",
+        text,
+        re.I,
+    ):
+        return "DOCS", "a decision is written down where other agents read it"
+    if re.search(
+        r"\bthis is a test shot\b|add tests under|fails a test|verified by mutation|"
+        r"test proves a defect|direct tests",
+        text,
+        re.I,
+    ):
+        return "TEST", "a defect that could ship is now caught"
+    if re.search(r"\bthis is a product shot\b|touch src\b|user-visible code\b", text, re.I):
+        return "PRODUCT", "a student or teacher can see the difference"
     for name, pattern, success in CATEGORIES:
-        if pattern.search(title):
+        if pattern.search(text):
             return name, success
     return "DOCS", "a decision is written down where other agents read it"
 
@@ -89,10 +107,11 @@ def build_board() -> dict:
     for i in issues:
         labels = {l["name"].lower() for l in i.get("labels", [])}
         title = i["title"]
+        body = i.get("body") or ""
         if "[WEB]" not in title.upper() and "[COORD]" not in title.upper():
             continue
 
-        cat, success = categorise(title)
+        cat, success = categorise(title, body)
         entry = {
             "number": i["number"],
             "title": title,
