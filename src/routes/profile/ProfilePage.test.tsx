@@ -59,11 +59,18 @@ describe('accounts are off, and the page acts like it', () => {
 
   it('does not present an account as something the student is missing', () => {
     // "Sign up to save your progress" is a prompt wearing a placeholder's
-    // clothes. The page may say accounts do not exist yet; it may not imply
-    // the student should go get one.
+    // clothes. The page may say accounts do not exist yet; it may not tell a
+    // student to go get one.
+    //
+    // Ban the IMPERATIVE, not the vocabulary. The first version of this banned
+    // the words "sign up" outright, which would fail against correct copy —
+    // describing that progress could later be claimed by an account is stating
+    // a future, not asking for anything.
     renderProfile()
     const text = document.body.textContent ?? ''
-    expect(text).not.toMatch(/sign (in|up)|log in|create an account|enter your/i)
+    expect(text).not.toMatch(/\b(sign (in|up)|log in|create an account) to\b/i)
+    expect(text).not.toMatch(/\byou (must|need to|have to) (sign|log|create|register)/i)
+    expect(text).not.toMatch(/\benter your\b/i)
   })
 
   it('says out loud that a profile never gates play', () => {
@@ -157,6 +164,8 @@ describe('storage the browser refuses to give us', () => {
     denyStorage()
     renderProfile()
     expect(document.querySelector('input')).toBeNull()
-    expect(document.body.textContent ?? '').not.toMatch(/sign (in|up)|log in/i)
+    expect(document.querySelector('form')).toBeNull()
+    expect(screen.queryByRole('button', { name: /sign in|sign up|log in/i })).toBeNull()
+    expect(document.body.textContent ?? '').not.toMatch(/\b(sign (in|up)|log in) to\b/i)
   })
 })
