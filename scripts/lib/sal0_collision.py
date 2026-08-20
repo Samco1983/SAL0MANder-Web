@@ -28,6 +28,11 @@ import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Whose commits are 'mine'. Set from --mine or SAL0_AGENT. Empty means every
+# agent is a stranger, which is the safe default for a report and the wrong
+# one for a gate — so the gate always passes it.
+MINE = ""
+
 # A burst this long by one signature, while others are active, is a sweep.
 BURST_RUN = 5
 # Files this many agents touch inside the window are a duplicated shot.
@@ -140,6 +145,12 @@ def d_dirty_overlap(commits, dirty, w):
         return []
     committed = {}
     for c in commits:
+        # Your OWN recent commit is not a collision, it is iteration. Without
+        # this, the pre-commit gate blocks every second commit an agent makes —
+        # a guard that cries wolf at normal work gets disabled within an hour,
+        # and then it protects nothing. MINE is set by --mine / SAL0_AGENT.
+        if MINE and c["agent"] == MINE:
+            continue
         for f in c["files"]:
             committed.setdefault(f, c)
 
@@ -334,7 +345,12 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Scan for agents colliding on one repo.")
     ap.add_argument("--window", type=int, default=120, help="minutes of history to scan")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--mine", default=os.environ.get("SAL0_AGENT", ""),
+                    help="your signature (e.g. SAL0-04); your own commits stop counting as collisions")
     args = ap.parse_args()
+
+    global MINE
+    MINE = args.mine.strip()
 
     code, _ = sh(["git", "rev-parse", "--git-dir"])
     if code != 0:
