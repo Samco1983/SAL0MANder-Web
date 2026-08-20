@@ -122,11 +122,15 @@ Google Docs should be the shared awareness layer, not the source of truth.
 
 Make should not orchestrate local code. It should:
 
-- receive manual button presses;
-- post/update GitHub dashboard comments;
-- send phone/email/browser notifications;
-- write the Google Docs mirror;
+- send phone/email/browser notifications for meaningful evidence events;
+- accept external intake from Samuel's phone and turn it into GitHub/INBOX work;
+- send a daily "Signal is alive" heartbeat so notification failure is visible;
+- post/update GitHub dashboard comments only when the write is idempotent;
 - record Make run ids.
+
+Skip owner buttons until a button is clearly faster than the terminal command
+and does not add a second debug surface. Skip Google Docs mirrors until the
+source scoreboard is stable.
 
 For the local/Make boundary, see `DESKTOP-MAKE-AUTOMATION.md`.
 

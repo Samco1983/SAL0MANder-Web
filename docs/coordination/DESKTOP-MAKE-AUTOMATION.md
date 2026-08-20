@@ -9,7 +9,7 @@ local executor.
 | --- | --- | --- |
 | Desktop launchd | waking local scripts on Samuel's Mac | product decisions |
 | Terminal scripts | local checks, worker loop, logs, commits | secrets or arbitrary remote commands |
-| Make Cloud | buttons, webhooks, notifications, Google Docs mirror | local code execution |
+| Make Cloud | notifications, external intake, daily heartbeat | local code execution, strategy, source of truth |
 | GitHub | durable work queue and evidence ledger | hidden state |
 
 ## Desktop Commands
@@ -29,6 +29,32 @@ npm run mission:desktop:logs
 `status` and `logs` are read-only. `install`, `uninstall`, `pause`, and
 `resume` intentionally change local Mac state.
 
+## Make's Real Job
+
+Make is SAL0-09 Signal: the outside edge, not the coach.
+
+Use it first for:
+
+1. **Notifications** — tell Samuel when the evidence says `SCORED`,
+   `BAD_TURNOVER`, `OWNER_BLOCKED`, `AUTH_FAILED`, or `DEPLOY_READY`.
+2. **External intake** — phone/text/form/voice note becomes a GitHub issue or
+   `docs/coordination/INBOX.md` entry.
+3. **Daily heartbeat** — one small "Signal is alive" message. A notification
+   system that fails silently looks exactly like a quiet night, which is the
+   failure class that cost eight hours.
+
+Skip for now:
+
+- Owner buttons for actions already faster in terminal.
+- Google Docs report mirrors until the source scoreboard is stable.
+- Any strategy, code execution, or live scenario mutation.
+
+Architecture:
+
+```text
+Python Coach decides -> GitHub records -> Make notifies/intakes -> heartbeat proves Make itself is alive
+```
+
 ## Make Payload Commands
 
 These generate JSON bodies Make can use for manual buttons or webhooks. They do
@@ -47,7 +73,7 @@ Output:
 docs/coordination/ops/MAKE-PAYLOAD-LATEST.json
 ```
 
-## Button Contracts
+## Payload Contracts
 
 ### NUDGE AGENTS
 
@@ -101,4 +127,3 @@ repo, but it is not installed until `mission:desktop:install` is run.
 
 Make may request or signal. Local scripts decide whether a request is safe.
 No Make payload should contain shell chosen by Make or by an agent.
-

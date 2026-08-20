@@ -95,6 +95,8 @@ Core seats:
 - **INBOX / Pass Lane:** short cross-agent corrections and handoffs.
 - **BLOCKERS / Stop Sign:** exact blockers with the command or condition that
   clears them.
+- **Make / Signal:** outside-edge notifications, external intake, and its own
+  heartbeat. It does not coach, execute local code, or decide truth.
 
 ## Rotation Rules
 
@@ -171,6 +173,9 @@ If another agent needs it, write it where agents read:
 - Git commits and GitHub issues for durable proof.
 
 Chat is for Samuel. The repo is for the team.
+
+Make is for signals that need to leave the repo: alerts, intake, and heartbeat.
+If Make fails silently, the team is blind, so Make must prove it is alive.
 
 ## The Championship Test
 
