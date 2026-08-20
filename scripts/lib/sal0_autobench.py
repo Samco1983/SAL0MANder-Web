@@ -23,7 +23,14 @@ import re
 import subprocess
 import sys
 
+import os
+from datetime import datetime, timezone
+
 REPO = "Samco1983/SAL0MANder-Web"
+SEASON_LOG = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "docs", "coordination", "ops", "SEASON.jsonl",
+)
 ASSISTANT = "scripts/lib/sal0_bball_assistant.py"
 ISSUE_NUM = re.compile(r"#(\d+)")
 
@@ -96,6 +103,29 @@ def bench(number: str, failure: dict) -> bool:
     return True
 
 
+def record_bench(number: str, failure: dict) -> None:
+    """Write the substitution into the season log.
+
+    A bench with no record is indistinguishable from an issue nobody wanted.
+    Six weeks from now the label alone will not say why, and the run logs that
+    justified it will have rotated away.
+    """
+    entry = {
+        "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "event": "BENCH",
+        "issue": int(number),
+        "cause": failure.get("cause"),
+        "times": failure.get("times"),
+        "shot": failure.get("shot", "")[:120],
+    }
+    try:
+        os.makedirs(os.path.dirname(SEASON_LOG), exist_ok=True)
+        with open(SEASON_LOG, "a") as fh:
+            fh.write(json.dumps(entry) + "\n")
+    except OSError as e:
+        print(f"  (could not record the bench: {e})", file=sys.stderr)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Bench shots the assistant says keep missing.")
     ap.add_argument("--apply", action="store_true", help="actually apply the label")
@@ -135,6 +165,7 @@ def main() -> int:
             skipped += 1
             continue
         if bench(number, failure):
+            record_bench(number, failure)
             print(f"  BENCHED  {line}")
             benched += 1
 
