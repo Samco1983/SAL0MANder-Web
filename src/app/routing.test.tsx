@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider, matchRoutes } from 'react-router-dom'
 
 import { ThemeProvider } from '@app/providers/ThemeProvider'
@@ -127,8 +128,12 @@ describe('routes that download before they render', () => {
   })
 
   it('loads the bare WebGL host', async () => {
+    const user = userEvent.setup()
+
     renderAt(paths.unity)
     expect(await screen.findByRole('heading', { name: /unity webgl host/i })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: /show companion/i }))
+    expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', paths.home)
   })
 
   it('serves home eagerly, with no loading state at all', () => {

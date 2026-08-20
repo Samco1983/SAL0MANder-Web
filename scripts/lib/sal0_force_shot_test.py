@@ -99,8 +99,17 @@ class ForceShotTest(unittest.TestCase):
 
         self.assertEqual(result["action"], "TAKE_SHOT")
         self.assertEqual(result["shot"]["category"], "PRODUCT")
-        self.assertIn("src/routes/home/HomePage.tsx", result["shot"]["files"])
+        self.assertTrue(result["shot"]["files"])
         self.assertIn("instead of waiting for owner input", result["reason"])
+
+    def test_generated_product_shots_skip_completed_work(self):
+        with patch.object(sal0_force_shot, "file_has") as file_has:
+            file_has.side_effect = lambda path, _pattern: path == "src/routes/home/HomePage.tsx"
+
+            shot = sal0_force_shot.local_generated_product_shot()
+
+        self.assertEqual(shot["title"], "[LOCAL][PRODUCT] Give the Unity host a non-gameplay return path")
+        self.assertIn("src/routes/unity/UnityHostPage.tsx", shot["files"])
 
 
 if __name__ == "__main__":

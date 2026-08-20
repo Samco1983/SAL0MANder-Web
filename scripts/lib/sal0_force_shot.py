@@ -157,22 +157,62 @@ def local_tracked_finding() -> dict | None:
     }
 
 
+def file_has(path: str, pattern: str) -> bool:
+    try:
+        with open(os.path.join(REPO, path), encoding="utf-8") as handle:
+            return re.search(pattern, handle.read(), re.I | re.S) is not None
+    except OSError:
+        return False
+
+
 def local_generated_product_shot() -> dict:
     """Concrete product fallback when neither GitHub nor local findings can feed play."""
+    shots = [
+        {
+            "title": "[LOCAL][PRODUCT] Add a teacher preview path from Home",
+            "success_check": (
+                "Home exposes a teacher-oriented preview action that points to an existing route "
+                "and npm run verify exits 0"
+            ),
+            "files": [
+                "src/routes/home/HomePage.tsx",
+                "src/routes/home/HomePage.test.tsx",
+            ],
+            "complete": lambda: file_has("src/routes/home/HomePage.tsx", r"Preview student link"),
+        },
+        {
+            "title": "[LOCAL][PRODUCT] Give the Unity host a non-gameplay return path",
+            "success_check": (
+                "The Unity host page offers a visible return-to-play or return-home action, "
+                "without changing Unity gameplay"
+            ),
+            "files": [
+                "src/routes/unity/UnityHostPage.tsx",
+                "src/app/routing.test.tsx",
+            ],
+            "complete": lambda: file_has("src/routes/unity/UnityHostPage.tsx", r"Back to home|Return to"),
+        },
+        {
+            "title": "[LOCAL][PRODUCT] Add visible next-step copy to the profile placeholder",
+            "success_check": (
+                "Profile tells students what guest progress can do next and keeps the no account prompt invariant"
+            ),
+            "files": [
+                "src/routes/profile/ProfilePage.tsx",
+                "src/routes/profile/ProfilePage.test.tsx",
+            ],
+            "complete": lambda: file_has("src/routes/profile/ProfilePage.tsx", r"Next step|What you can do next"),
+        },
+    ]
+    shot = next((candidate for candidate in shots if not candidate["complete"]()), shots[0])
     return {
         "number": None,
-        "title": "[LOCAL][PRODUCT] Add a teacher preview path from Home",
+        "title": shot["title"],
         "category": "PRODUCT",
-        "success_check": (
-            "Home exposes a teacher-oriented preview action that points to an existing route "
-            "and npm run verify exits 0"
-        ),
+        "success_check": shot["success_check"],
         "size": "local generated product shot — sync board after GitHub recovers",
         "source": "scripts/lib/sal0_force_shot.py",
-        "files": [
-            "src/routes/home/HomePage.tsx",
-            "src/routes/home/HomePage.test.tsx",
-        ],
+        "files": shot["files"],
     }
 
 
