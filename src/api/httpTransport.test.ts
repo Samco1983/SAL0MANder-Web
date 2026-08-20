@@ -231,6 +231,134 @@ describe('request shape', () => {
   })
 })
 
+describe('cancellation', () => {
+  /**
+   * `getGuestBundle` accepts a caller `signal` so a route can cancel an
+   * in-flight read on unmount/re-navigation. These assert the transport
+   * actually wires that external signal into the request it sends, not just
+   * that it accepts the option.
+   */
+
+  // Deliberately NOT routed through settle(): its 10s timer advance would also
+  // trip the transport's own 5s internal deadline, which would reject these
+  // requests for an unrelated reason and hide a broken external-signal wiring.
+  // Every path here resolves off the abort event alone (a microtask chain),
+  // so plain `await` — with fake timers left untouched — is what actually
+  // isolates the behavior under test.
+
+  it('rejects immediately when the caller signal is already aborted before the request starts', async () => {
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      if (init?.signal?.aborted) throw new DOMException('The operation was aborted.', 'AbortError')
+      return respond(200, { ok: true }) as unknown as Response
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const controller = new AbortController()
+    controller.abort()
+
+    await expect(
+      transport(1).request({ path: '/x', signal: controller.signal }, OkSchema),
+    ).rejects.toMatchObject({ code: 'timeout' })
+  })
+
+  it('aborts the in-flight request when the caller signal aborts mid-flight', async () => {
+    const fetchMock = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            reject(new DOMException('The operation was aborted.', 'AbortError'))
+          })
+        }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const controller = new AbortController()
+    const promise = transport(1).request({ path: '/x', signal: controller.signal }, OkSchema)
+    controller.abort()
+
+    await expect(promise).rejects.toMatchObject({ code: 'timeout' })
+  })
+
+  it('reports a hung request as a timeout once the internal deadline elapses, with no caller signal', async () => {
+    const fetchMock = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            reject(new DOMException('The operation was aborted.', 'AbortError'))
+          })
+        }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = createHttpTransport({
+      baseUrl: 'https://api.example.com',
+      contractVersion: 'v1',
+      timeoutMs: 1_000,
+      maxAttempts: 1,
+    }).request({ path: '/x' }, OkSchema)
+
+    await expect(settle(result)).rejects.toMatchObject({ code: 'timeout' })
+  })
+})
+
+describe('exhausting attempts with none configured', () => {
+  it('fails closed rather than hanging when maxAttempts is 0', async () => {
+    const fetchMock = stubFetch()
+    await expect(settle(transport(0).request({ path: '/x' }, OkSchema))).rejects.toMatchObject({
+      code: 'unknown',
+      message: 'Request failed',
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(0)
+  })
+})
+
+describe('the boundary never lets a raw error escape', () => {
+  it('wraps a failure from outside sendOnce\'s own try/catch as a typed ApiError too', async () => {
+    // A caller-supplied signal-like object whose addEventListener itself
+    // throws — reached before sendOnce's try block, so its own network_error
+    // handling never sees it. This exercises the outer request() loop's own
+    // catch-all, proving the ApiError boundary holds even there.
+    const brokenSignal = {
+      aborted: false,
+      addEventListener: () => {
+        throw new Error('boom')
+      },
+    } as unknown as AbortSignal
+
+    await expect(
+      settle(transport(1).request({ path: '/x', signal: brokenSignal }, OkSchema)),
+    ).rejects.toMatchObject({ code: 'unknown', message: 'boom' })
+  })
+
+  it('still produces readable copy when something throws a non-Error value', async () => {
+    // A hostile or malformed fetch polyfill can reject with anything, not
+    // just an Error — `error.message` would be undefined, not a crash, but
+    // the fallback string is what keeps the ApiError's `message` a string.
+    const brokenSignal = {
+      aborted: false,
+      addEventListener: () => {
+        throw { reason: 'boom' }
+      },
+    } as unknown as AbortSignal
+
+    await expect(
+      settle(transport(1).request({ path: '/x', signal: brokenSignal }, OkSchema)),
+    ).rejects.toMatchObject({ code: 'unknown', message: '[object Object]' })
+  })
+
+  it('falls back to a generic message when fetch itself rejects with a non-Error value', async () => {
+    const fetchMock = vi.fn(async () => {
+      throw { reason: 'boom' }
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(settle(transport(1).request({ path: '/x' }, OkSchema))).rejects.toMatchObject({
+      code: 'network_error',
+      message: 'Network request failed',
+    })
+  })
+})
+
 describe('failure translation', () => {
   it('reports a network failure as network_error, not unknown', async () => {
     stubFetch(new TypeError('Failed to fetch'))
