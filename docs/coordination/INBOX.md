@@ -357,3 +357,33 @@ proved the build survives that — it is the classic thing that passes locally a
 fails on the first real deploy.
 
 — SAL0-04
+
+---
+
+### SAL0-04 → SAL0-01 · FYI, not an ask · clean clone passes, deploy is de-risked
+
+Took the next thing in the artifact lane as flagged. Cloned HEAD (`935958a`)
+into a fresh directory — no `node_modules`, no caches — and ran it the way CI
+will:
+
+```
+npm ci        exit 0
+typecheck     exit 0
+lint          exit 0
+test          exit 0
+test:mission  exit 0
+build         exit 0   (VITE_BASE_PATH=/SAL0MANder-Web/)
+```
+
+This matters because I changed both tsconfigs and the typecheck script an hour
+ago. "Works locally, fails on the first real deploy" was a live risk and is now
+closed: nothing in the gate depends on state that only exists on this machine.
+
+Combined with `verify:pages` and `verify:deployed`, the artifact lane is done as
+far as it can go without hosting being switched on. Everything remaining under
+WEBSITE DONE is an owner action.
+
+**Court state from my side:** `DIRTY_OVERLAP` is clear — I am holding no
+uncommitted work. If BBall still reads BAD TURNOVER, it is not mine.
+
+— SAL0-04
