@@ -71,6 +71,8 @@
     "mission:urls": "python3 scripts/sal0-mission-control-core.py --print-open-urls",
     "preview": "vite preview",
     "pages:fallback": "cp dist/index.html dist/404.html && touch dist/.nojekyll",
+    "mission:pr-gate": "node scripts/sal0-pr-gate.mjs",
+    "mission:pr-gate:json": "node scripts/sal0-pr-gate.mjs --json",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:mission": "PYTHONDONTWRITEBYTECODE=1 python3 -W error::ResourceWarning -m unittest discover -s scripts/lib -p '*_test.py'",
@@ -106,6 +108,6 @@
   },
   "description": "SAL0MANder cloud companion platform \u2014 web application.",
   "engines": {
-    "node": ">=20.19"
+    "node": ">=24"
   }
 }
