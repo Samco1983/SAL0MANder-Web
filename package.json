@@ -34,6 +34,8 @@
     "mission:asset-scout:gemini": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_asset_scout.py --nudge-gemini pet-classroom --json",
     "mission:asset-scout:mix": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_asset_scout.py --production-mix",
     "mission:asset-scout:write-missing": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_asset_scout.py --write-missing",
+    "mission:backlog": "python3 scripts/lib/sal0_backlog_sync.py",
+    "mission:backlog:apply": "python3 scripts/lib/sal0_backlog_sync.py --apply",
     "mission:bball": "python3 scripts/lib/sal0_bball_assistant.py",
     "mission:bball:json": "python3 scripts/lib/sal0_bball_assistant.py --json",
     "mission:bball:v3": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_bball_v3.py",
