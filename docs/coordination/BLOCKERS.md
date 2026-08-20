@@ -142,3 +142,15 @@ COMMAND:   Generate a long-lived token that does not depend on Keychain access,
 WHO CAN:   Codex — automation plumbing is its lane, and the runner is its file
 CLEARED:
 HUMAN:
+
+### B-GEMINI-QUOTA · Gemini benched until quota resets · owner only
+OPENED:    2026-08-19T06:55:00Z
+AUTO:      no
+BLOCKED:   Free tier is 20 requests/day and it is spent. This is a budget, not a
+           break — the seat authenticates and answers when it has quota. Do not
+           block the court on it. Claude + Codex + Python is the lane tonight.
+COMMAND:   Wait for the daily reset, or add billing at
+           https://aistudio.google.com/apikey to lift the cap.
+WHO CAN:   owner only — this is a spending decision, not a technical one
+CLEARED:
+HUMAN:
