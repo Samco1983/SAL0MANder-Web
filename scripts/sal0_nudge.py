@@ -201,7 +201,8 @@ def note_for_codex(cycle: int) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Keep the Mac awake and keep possessions running.")
-    ap.add_argument("--interval", type=int, default=1800, help="seconds between possessions")
+    ap.add_argument("--interval", type=int, default=600,
+                    help="minimum seconds between possession STARTS, not a delay after each")
     ap.add_argument("--max-cycles", type=int, default=0, help="0 = until stopped")
     ap.add_argument("--dry-run", action="store_true", help="prove the wiring without running an agent")
     args = ap.parse_args()
@@ -214,7 +215,7 @@ def main() -> int:
 
     awake = keep_awake()
     say(f"machine held awake: {'yes' if awake else 'NO — it may sleep'}")
-    say(f"interval {args.interval}s, cap {POSSESSION_CAP_SECONDS}s per possession")
+    say(f"floor {args.interval}s between starts, cap {POSSESSION_CAP_SECONDS}s per possession")
     say(f"stand down with: touch {PAUSE}")
     record("start", interval=args.interval, awake=awake, dry_run=args.dry_run, pid=os.getpid())
 
@@ -223,6 +224,7 @@ def main() -> int:
     try:
         while True:
             cycle += 1
+            started_at = time.monotonic()
             reason = blocked()
             if reason:
                 say(f"cycle {cycle}: standing down — {reason}")
@@ -253,7 +255,24 @@ def main() -> int:
             if args.max_cycles and cycle >= args.max_cycles:
                 say(f"reached --max-cycles {args.max_cycles}")
                 break
-            time.sleep(args.interval)
+
+            # A FLOOR between possession starts, not a nap after each one.
+            #
+            # This used to sleep the full interval after the work finished, so
+            # a 240s possession on a 1800s interval left the player standing
+            # still for 26 minutes out of every 30. The clock does not stop
+            # because the shot went in.
+            #
+            # A floor rather than zero delay: back-to-back invocations with no
+            # gap would stack against the loop's own lock and spend quota
+            # discovering that a run is already in flight.
+            elapsed = time.monotonic() - started_at
+            wait = max(0.0, args.interval - elapsed)
+            if wait > 0:
+                say(f"next possession in {int(wait)}s (took {int(elapsed)}s)")
+                time.sleep(wait)
+            else:
+                say(f"possession took {int(elapsed)}s — starting the next immediately")
     except KeyboardInterrupt:
         say("stopped")
         record("stop", cycles=cycle)
