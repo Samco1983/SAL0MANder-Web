@@ -83,6 +83,12 @@ describe('a link that arrived damaged', () => {
   it('shows the not-found page for a path that matches nothing', async () => {
     renderAt('/teacher/dashboard')
     expect(await screen.findByRole('heading', { name: /couldn.t find that page/i })).toBeVisible()
+    expect(screen.getByRole('link', { name: /enter a class code/i })).toHaveAttribute(
+      'href',
+      paths.guestPlayIndex,
+    )
+    expect(screen.queryByLabelText(/password|email|name/i)).toBeNull()
+    expect(screen.queryByRole('button', { name: /sign in|log in|create account/i })).toBeNull()
   })
 })
 

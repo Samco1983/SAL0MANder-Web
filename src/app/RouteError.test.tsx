@@ -60,7 +60,7 @@ describe('unknown routes', () => {
     // The likely visitor is a student whose share link was mistyped or wrapped
     // by an LMS. Sending them to marketing copy is a dead end.
     renderUnknownRoute('/play/')
-    const guestPlay = await screen.findByRole('link', { name: /guest play/i })
+    const guestPlay = await screen.findByRole('link', { name: /enter a class code/i })
     expect(guestPlay).toHaveAttribute('href', '/play')
     expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', '/')
   })

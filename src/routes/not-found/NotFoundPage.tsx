@@ -19,10 +19,11 @@ export function NotFoundPage() {
         </h1>
         <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)' }}>
           If you followed a share link from a teacher, it may have been mistyped or the activity may
-          no longer be published. You can still start playing without an account.
+          no longer be published. You can still enter a class code and start playing without an
+          account.
         </p>
         <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-          <LinkButton to={paths.guestPlayIndex}>Go to Guest Play</LinkButton>
+          <LinkButton to={paths.guestPlayIndex}>Enter a class code</LinkButton>
           <LinkButton to={paths.home} variant="secondary">
             Back to home
           </LinkButton>

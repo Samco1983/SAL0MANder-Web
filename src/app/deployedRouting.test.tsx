@@ -68,7 +68,7 @@ describe('a share link opened on project Pages', () => {
   it('still shows not-found for a path that matches nothing', async () => {
     renderDeployed(`${BASENAME}/definitely-not-a-route`)
     await waitFor(() =>
-      expect(screen.queryByText(/not found|cannot find|Guest Play/i)).not.toBeNull(),
+      expect(screen.queryByRole('link', { name: /enter a class code/i })).not.toBeNull(),
     )
   })
 })
