@@ -112,6 +112,11 @@ automated.
 Every metaphor needs a technical definition. If Python cannot measure it, the
 term is coaching language only and must not drive automation.
 
+For AI decision-making, the technical definition wins every time. Metaphors are
+labels for human understanding; they are not executable criteria. When a word
+could be interpreted more than one way, agents must restate it in exact
+observable terms before acting.
+
 | Term | Metaphor | Technical definition |
 | --- | --- | --- |
 | **Shot** | one bounded task with a success check | one issue/task id, one lane, one owner, one time box, one falsifiable success check |
