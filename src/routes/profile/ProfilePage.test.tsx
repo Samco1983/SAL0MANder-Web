@@ -76,6 +76,14 @@ describe('accounts are off, and the page acts like it', () => {
     renderProfile()
     expect(screen.getByText(/never gate/i)).toBeVisible()
   })
+
+  it('offers a direct way to keep playing as a guest', () => {
+    renderProfile()
+    expect(screen.getByRole('link', { name: /keep playing as guest/i })).toHaveAttribute(
+      'href',
+      paths.guestPlayIndex,
+    )
+  })
 })
 
 describe('the guest session on screen', () => {

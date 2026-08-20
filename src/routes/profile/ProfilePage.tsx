@@ -1,6 +1,8 @@
 import { env } from '@config/env'
+import { paths } from '@config/routes'
 import { AppShell } from '@components/layout/AppShell'
 import { Card } from '@components/ui/Card'
+import { LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 
 /**
@@ -22,6 +24,9 @@ export function ProfilePage() {
           resume here — and progress can later be attached to a real profile if profile accounts
           are added.
         </p>
+        <div style={{ marginTop: 'var(--space-4)' }}>
+          <LinkButton to={paths.guestPlayIndex}>Keep playing as guest</LinkButton>
+        </div>
       </Card>
 
       <div style={{ marginTop: 'var(--space-6)' }}>
