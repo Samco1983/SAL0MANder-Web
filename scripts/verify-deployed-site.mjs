@@ -47,9 +47,18 @@ const server = createServer((req, res) => {
   res.end(readFileSync(file))
 })
 
+/**
+ * Without a viewport meta tag every phone renders the page at ~980px and scales
+ * it down: text unreadable, tap targets tiny, horizontal scroll on a device a
+ * student is actually holding. It is one line in index.html, it breaks nothing
+ * in any test, and a classroom is mostly phones and tablets — so it is checked
+ * here rather than discovered there.
+ */
+const MOBILE = [/<meta[^>]+name=["']viewport["'][^>]*>/i, /width=device-width/i]
+
 const CHECKS = [
-  { path: `${BASE}/`, must: [/<div id="root">/, new RegExp(`${BASE}/assets/`)] },
-  { path: `${BASE}/play/demo-activity`, must: [new RegExp(`${BASE}/assets/`)] },
+  { path: `${BASE}/`, must: [/<div id="root">/, new RegExp(`${BASE}/assets/`), ...MOBILE] },
+  { path: `${BASE}/play/demo-activity`, must: [new RegExp(`${BASE}/assets/`), ...MOBILE] },
   { path: `${BASE}/play/`, must: [new RegExp(`${BASE}/assets/`)] },
   { path: `${BASE}/teacher/dashboard`, must: [new RegExp(`${BASE}/assets/`)] },
 ]
