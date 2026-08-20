@@ -59,6 +59,19 @@ try:
     print('FAIL: '+str(d.get('result'))[:38] if d.get('is_error') else 'ok')
 except Exception: print('FAIL: no json')")
   [ -z "$TOKEN" ] && sched="$sched (no token file)"
+
+  # Warn BEFORE it expires, not after. A token that dies unattended produces a
+  # 3am "Not logged in" that reads exactly like an idle night — which is how
+  # eight hours were lost once already. setup-token issues these for one year.
+  if [ -n "$TOKEN" ] && [ -f "$TOKEN_FILE" ]; then
+    age_days=$(( ( $(date +%s) - $(stat -f %m "$TOKEN_FILE") ) / 86400 ))
+    left=$(( 365 - age_days ))
+    if [ "$left" -lt 0 ]; then
+      echo "  ⚠ token is ${left#-} day(s) PAST its one-year life — renew: ~/.sal0mander/new-token.sh"
+    elif [ "$left" -lt 30 ]; then
+      echo "  ⚠ token expires in ~$left day(s) — renew: ~/.sal0mander/new-token.sh"
+    fi
+  fi
   row "claude" "$mine" "$sched"
   case "$sched" in ok*) pass=$((pass+1));; *) fail=$((fail+1));; esac
 else
