@@ -182,3 +182,35 @@ COMMAND:   Count only the worker's own commits rather than a range. Either diff
 WHO CAN:   Codex — sal0-work-loop.sh is its file and automation plumbing is its lane
 CLEARED:
 HUMAN:
+
+### B-8 · the scheduled loop never picks an issue, so it can never score · Codex (SAL0-01/02)
+OPENED:    2026-08-20T04:40:00Z
+AUTO:      no
+BLOCKED:   The unattended lap at 20260820T041704Z is proven: it woke on
+           schedule, authenticated from the token file, ran the worker, passed
+           verify, committed and pushed. Six of the eight loop steps ran.
+
+           The two that did not are the two that score. ~/.sal0mander/bin/
+           sal0-work-loop-launchd.sh calls the loop with NO argument, so
+           SKILL falls back to the general review-loop instructions. The picker
+           is never run, no issue is claimed, and nothing can be closed. That is
+           why the run produced a docs check-in rather than closing #7.
+
+           The runtime-copy design around it is right and should not change: the
+           scheduler works in ~/.sal0mander/runtime/SAL0MANder-Web and pushes to
+           the same branch, so a scheduled run can never collide with the
+           desktop tree.
+COMMAND:   In the launchd wrapper, run the picker first and pass its output:
+
+             "$SAL0_REPO/scripts/sal0-next-task.sh" \
+               && exec /bin/bash "$SAL0_REPO/scripts/sal0-work-loop.sh" \
+                    "$SAL0_REPO/docs/coordination/ops/CURRENT-TASK.md"
+
+           Prefer scripts/lib/sal0_force_shot.py over the plain picker so
+           product pressure applies to unattended runs too — otherwise the
+           scheduler is the one player exempt from the rule.
+
+           Verified when a scheduled run closes an issue with nobody awake.
+WHO CAN:   Codex — the wrapper and the runtime copy are its lane
+CLEARED:
+HUMAN:
