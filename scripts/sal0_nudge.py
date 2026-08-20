@@ -199,6 +199,27 @@ def note_for_codex(cycle: int) -> None:
                 "machine, so this is a durable note rather than an invocation.")
 
 
+def check_owner_needed() -> None:
+    """Speak to the owner only when the set of things only he can clear changes.
+
+    This is the piece that ends the asking. Everything else here reports when
+    someone runs it; this reaches out — and only on a change, because a notifier
+    that fires on an unchanged state gets muted, taking the one that mattered
+    with it.
+
+    Never fatal. A notifier that can break a possession is worse than one that
+    occasionally stays quiet.
+    """
+    try:
+        subprocess.run(
+            [sys.executable,
+             os.path.join(REPO, "scripts", "lib", "sal0_owner_needed.py")],
+            capture_output=True, text=True, timeout=900, cwd=REPO,
+        )
+    except Exception:
+        pass
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Keep the Mac awake and keep possessions running.")
     ap.add_argument("--interval", type=int, default=600,
@@ -251,6 +272,7 @@ def main() -> int:
                 else:
                     repeats.clear()
                 note_for_codex(cycle)
+                check_owner_needed()
 
             if args.max_cycles and cycle >= args.max_cycles:
                 say(f"reached --max-cycles {args.max_cycles}")
