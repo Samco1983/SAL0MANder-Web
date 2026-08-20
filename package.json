@@ -26,6 +26,7 @@
     "make:payload:control-room": "node scripts/sal0-make-payload.mjs open-control-room",
     "make:payload:done": "node scripts/sal0-make-payload.mjs done-need-new-task",
     "make:payload:nudge": "node scripts/sal0-make-payload.mjs nudge-agents",
+    "build:pages": "VITE_BASE_PATH=/SAL0MANder-Web/ npm run build",
     "mission:bball": "python3 scripts/lib/sal0_bball_assistant.py",
     "mission:bball:json": "python3 scripts/lib/sal0_bball_assistant.py --json",
     "mission:bench": "python3 scripts/lib/sal0_autobench.py",
@@ -65,12 +66,15 @@
     "mission:signals": "bash scripts/sal0-signal.sh --read",
     "mission:urls": "python3 scripts/sal0-mission-control-core.py --print-open-urls",
     "preview": "vite preview",
+    "pages:fallback": "cp dist/index.html dist/404.html && touch dist/.nojekyll",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:mission": "PYTHONDONTWRITEBYTECODE=1 python3 -W error::ResourceWarning -m unittest discover -s scripts/lib -p '*_test.py'",
     "test:watch": "vitest",
     "typecheck": "tsc -b --noEmit",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run test:mission && npm run build"
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run test:mission && npm run build",
+    "verify:artifact": "node scripts/verify-deploy-artifact.mjs dist /SAL0MANder-Web/",
+    "verify:pages": "npm run build:pages && npm run pages:fallback && npm run verify:artifact"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
