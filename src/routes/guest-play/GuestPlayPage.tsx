@@ -304,6 +304,7 @@ export function GuestPlayPage() {
         reveal={session.resultHeld}
         stage={
           <UnityStage
+            audience="student"
             {...(activityId ? { activityId } : {})}
             {...(boot ? { boot } : {})}
             {...(sessionStarted ? { sessionStarted } : {})}
