@@ -99,6 +99,7 @@ class ForceShotTest(unittest.TestCase):
             "category": "PRODUCT",
             "success_check": "npm run verify exits 0",
             "size": "local generated product shot",
+            "files": ["src/routes/home/HomePage.tsx"],
         }
 
         with (
@@ -113,6 +114,15 @@ class ForceShotTest(unittest.TestCase):
         self.assertIn("require another lane", result["reason"])
 
     def test_queue_unreadable_generates_concrete_product_shot_when_backlog_is_blocked(self):
+        generated = {
+            "number": None,
+            "title": "[LOCAL][PRODUCT] next visible web shot",
+            "category": "PRODUCT",
+            "success_check": "npm run verify exits 0",
+            "size": "local generated product shot",
+            "files": ["src/routes/home/HomePage.tsx"],
+        }
+
         with (
             patch.object(sal0_force_shot, "measure_mix", return_value=MIX),
             patch.object(
@@ -121,6 +131,7 @@ class ForceShotTest(unittest.TestCase):
                 return_value={"board": [], "queue_error": "api.github.com unavailable"},
             ),
             patch.object(sal0_force_shot, "local_tracked_finding", return_value=None),
+            patch.object(sal0_force_shot, "local_generated_product_shot", return_value=generated),
         ):
             result = sal0_force_shot.choose()
 
@@ -128,6 +139,31 @@ class ForceShotTest(unittest.TestCase):
         self.assertEqual(result["shot"]["category"], "PRODUCT")
         self.assertTrue(result["shot"]["files"])
         self.assertIn("instead of waiting for owner input", result["reason"])
+
+    def test_queue_unreadable_creates_shot_when_generated_bank_is_exhausted(self):
+        exhausted = {
+            "number": None,
+            "title": "[LOCAL][PRODUCT] Split the next smallest user-visible web shot",
+            "category": "PRODUCT",
+            "success_check": "a new WEB product issue exists",
+            "size": "setup shot",
+            "files": [],
+        }
+
+        with (
+            patch.object(sal0_force_shot, "measure_mix", return_value=MIX),
+            patch.object(
+                sal0_force_shot,
+                "read_board",
+                return_value={"board": [], "queue_error": "api.github.com unavailable"},
+            ),
+            patch.object(sal0_force_shot, "local_tracked_finding", return_value=None),
+            patch.object(sal0_force_shot, "local_generated_product_shot", return_value=exhausted),
+        ):
+            result = sal0_force_shot.choose()
+
+        self.assertEqual(result["action"], "CREATE_SHOT")
+        self.assertEqual(result["shot"], exhausted)
 
     def test_generated_product_shots_skip_completed_work(self):
         with patch.object(sal0_force_shot, "file_has") as file_has:
@@ -155,7 +191,7 @@ class ForceShotTest(unittest.TestCase):
     def test_generated_product_shots_keep_moving_after_guest_play_completes(self):
         def completed(path, pattern):
             if path == "src/routes/home/HomePage.tsx":
-                return "Preview student link" in pattern
+                return "Preview WebGL host" in pattern
             return path in {
                 "src/routes/unity/UnityHostPage.tsx",
                 "src/routes/profile/ProfilePage.tsx",
@@ -188,6 +224,50 @@ class ForceShotTest(unittest.TestCase):
 
         self.assertEqual(shot["title"], "[LOCAL][PRODUCT] Add a sample activity path from Profile")
         self.assertIn("src/routes/profile/ProfilePage.tsx", shot["files"])
+
+    def test_generated_product_shots_do_not_repeat_after_sample_profile_completes(self):
+        def completed(path, pattern):
+            if path == "src/routes/home/HomePage.tsx":
+                return True
+            if path == "src/routes/profile/ProfilePage.tsx":
+                return "MOCK_DEMO_ACTIVITY_ID" in pattern or "Next step" in pattern
+            return path in {
+                "src/routes/unity/UnityHostPage.tsx",
+                "src/routes/guest-play/GuestPlayPage.tsx",
+            }
+
+        with patch.object(sal0_force_shot, "file_has") as file_has:
+            file_has.side_effect = completed
+
+            shot = sal0_force_shot.local_generated_product_shot()
+
+        self.assertEqual(shot["title"], "[LOCAL][PRODUCT] Add a teacher WebGL preview path from Profile")
+        self.assertIn("src/routes/profile/ProfilePage.tsx", shot["files"])
+
+    def test_generated_product_shots_keep_moving_after_profile_webgl_completes(self):
+        def completed(path, pattern):
+            if path == "src/routes/unity/UnityHostPage.tsx":
+                return "Back to home" in pattern
+            return path in {
+                "src/routes/home/HomePage.tsx",
+                "src/routes/profile/ProfilePage.tsx",
+                "src/routes/guest-play/GuestPlayPage.tsx",
+            }
+
+        with patch.object(sal0_force_shot, "file_has") as file_has:
+            file_has.side_effect = completed
+
+            shot = sal0_force_shot.local_generated_product_shot()
+
+        self.assertEqual(shot["title"], "[LOCAL][PRODUCT] Add a sample activity return path from Unity host")
+        self.assertIn("src/routes/unity/UnityHostPage.tsx", shot["files"])
+
+    def test_generated_product_shots_split_instead_of_repeating_when_all_known_shots_are_done(self):
+        with patch.object(sal0_force_shot, "file_has", return_value=True):
+            shot = sal0_force_shot.local_generated_product_shot()
+
+        self.assertEqual(shot["title"], "[LOCAL][PRODUCT] Split the next smallest user-visible web shot")
+        self.assertEqual(shot["files"], [])
 
 
 if __name__ == "__main__":

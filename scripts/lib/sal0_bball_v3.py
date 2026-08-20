@@ -143,6 +143,41 @@ def product_candidates() -> list[ProductCandidate]:
             reason="small route copy shot; useful if other surfaces are too hot",
         ),
         ProductCandidate(
+            title="[WEB][PRODUCT] Add a teacher WebGL preview path from Profile",
+            files=(
+                "src/routes/profile/ProfilePage.tsx",
+                "src/routes/profile/ProfilePage.test.tsx",
+            ),
+            success_check=(
+                "Profile gives a teacher or tester a direct WebGL-host preview path without changing Unity gameplay"
+            ),
+            body=(
+                "Profile is the guest-progress surface, but it can also hand a teacher/tester back to the "
+                "web-only WebGL host preview. Add the path without introducing any account, email, name, "
+                "or Unity gameplay change."
+            ),
+            value=54,
+            risk=20,
+            reason="small visible product shot after the existing Profile student path",
+        ),
+        ProductCandidate(
+            title="[WEB][PRODUCT] Add a sample activity return path from Unity host",
+            files=(
+                "src/routes/unity/UnityHostPage.tsx",
+                "src/app/routing.test.tsx",
+            ),
+            success_check=(
+                "The WebGL host page offers a direct sample-activity path without changing Unity gameplay"
+            ),
+            body=(
+                "The WebGL host is a smoke-test surface. Add a web-only return path into the sample activity "
+                "so a teacher/tester can recover from the host into playable content without touching Unity gameplay."
+            ),
+            value=52,
+            risk=22,
+            reason="web-only recovery from a host surface",
+        ),
+        ProductCandidate(
             title="[WEB][PRODUCT] Clarify 404 recovery for teacher-shared activity links",
             files=(
                 "src/routes/not-found/NotFoundPage.tsx",
@@ -161,6 +196,32 @@ def product_candidates() -> list[ProductCandidate]:
             reason="useful recovery shot, but recently touched by SAL0-01",
         ),
     ]
+
+
+def file_contains(path: str, pattern: str) -> bool:
+    try:
+        return bool((REPO_ROOT / path).read_text(encoding="utf-8").find(pattern) >= 0)
+    except OSError:
+        return False
+
+
+def candidate_complete(candidate: ProductCandidate) -> bool:
+    title = candidate.title
+    if "teacher preview path from Home" in title:
+        return file_contains("src/routes/home/HomePage.tsx", "Preview WebGL host")
+    if "Unity host a non-gameplay return path" in title:
+        return file_contains("src/routes/unity/UnityHostPage.tsx", "Back to home")
+    if "visible next-step copy to the profile" in title:
+        return file_contains("src/routes/profile/ProfilePage.tsx", "Next step:")
+    if "teacher WebGL preview path from Profile" in title:
+        return file_contains("src/routes/profile/ProfilePage.tsx", "Preview WebGL host")
+    if "sample activity return path from Unity host" in title:
+        return file_contains("src/routes/unity/UnityHostPage.tsx", "MOCK_DEMO_ACTIVITY_ID")
+    if "404 recovery" in title:
+        return file_contains("src/app/RouteError.tsx", "Enter a class code")
+    if "Extract class code" in title:
+        return file_contains("src/routes/guest-play/GuestPlayPage.tsx", "paste the missing end of the link")
+    return False
 
 
 def recent_files(limit: int = 80) -> set[str]:
@@ -235,7 +296,8 @@ def rank_candidates(
 
 def build_packet() -> dict:
     next_state = mission_next()
-    ranked = rank_candidates(product_candidates(), recent_files(), open_issue_titles())
+    candidates = [candidate for candidate in product_candidates() if not candidate_complete(candidate)]
+    ranked = rank_candidates(candidates, recent_files(), open_issue_titles())
     top = ranked[0] if ranked else None
     action = "CREATE_PRODUCT_ISSUE" if next_state.get("action") == "CREATE_SHOT" else "HOLD"
     return {

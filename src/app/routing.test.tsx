@@ -133,6 +133,10 @@ describe('routes that download before they render', () => {
     renderAt(paths.unity)
     expect(await screen.findByRole('heading', { name: /unity webgl host/i })).toBeVisible()
     await user.click(screen.getByRole('button', { name: /show companion/i }))
+    expect(screen.getByRole('link', { name: /open sample activity/i })).toHaveAttribute(
+      'href',
+      `/play/${MOCK_DEMO_ACTIVITY_ID}`,
+    )
     expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', paths.home)
   })
 

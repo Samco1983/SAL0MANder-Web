@@ -187,7 +187,7 @@ def local_generated_product_shot() -> dict:
                 "src/routes/home/HomePage.tsx",
                 "src/routes/home/HomePage.test.tsx",
             ],
-            "complete": lambda: file_has("src/routes/home/HomePage.tsx", r"Preview student link"),
+            "complete": lambda: file_has("src/routes/home/HomePage.tsx", r"Preview WebGL host"),
         },
         {
             "title": "[LOCAL][PRODUCT] Give the Unity host a non-gameplay return path",
@@ -253,6 +253,36 @@ def local_generated_product_shot() -> dict:
             ],
             "complete": lambda: file_has("src/routes/profile/ProfilePage.tsx", r"MOCK_DEMO_ACTIVITY_ID"),
         },
+        {
+            "title": "[LOCAL][PRODUCT] Add a teacher WebGL preview path from Profile",
+            "success_check": (
+                "Profile gives a teacher or tester a direct WebGL-host preview path without changing Unity gameplay"
+            ),
+            "files": [
+                "src/routes/profile/ProfilePage.tsx",
+                "src/routes/profile/ProfilePage.test.tsx",
+            ],
+            "complete": lambda: file_has("src/routes/profile/ProfilePage.tsx", r"Preview WebGL host"),
+        },
+        {
+            "title": "[LOCAL][PRODUCT] Add a sample activity return path from Unity host",
+            "success_check": (
+                "The WebGL host page offers a direct sample-activity path without changing Unity gameplay"
+            ),
+            "files": [
+                "src/routes/unity/UnityHostPage.tsx",
+                "src/app/routing.test.tsx",
+            ],
+            "complete": lambda: file_has("src/routes/unity/UnityHostPage.tsx", r"MOCK_DEMO_ACTIVITY_ID"),
+        },
+        {
+            "title": "[LOCAL][PRODUCT] Split the next smallest user-visible web shot",
+            "success_check": (
+                "a new WEB product issue exists with one lane, one clock, and one falsifiable success check"
+            ),
+            "files": [],
+            "complete": lambda: False,
+        },
     ]
     shot = next((candidate for candidate in shots if not candidate["complete"]()), shots[0])
     return {
@@ -264,6 +294,10 @@ def local_generated_product_shot() -> dict:
         "source": "scripts/lib/sal0_force_shot.py",
         "files": shot["files"],
     }
+
+
+def generated_action(shot: dict) -> str:
+    return "CREATE_SHOT" if not shot.get("files") else "TAKE_SHOT"
 
 
 def choose() -> dict:
@@ -284,16 +318,17 @@ def choose() -> dict:
                 "action": "TAKE_SHOT",
             }
         generated = local_generated_product_shot()
+        action = generated_action(generated)
         return {
             "shot": generated,
             "reason": (
                 f"QUEUE UNREADABLE — {board['queue_error'][:180]}. "
                 "No actionable local tracked product finding is available, so the coach is "
-                "forcing a concrete local product shot instead of waiting for owner input."
+                "forcing a local product action instead of waiting for owner input."
             ),
             "mix": mix,
             "forced": True,
-            "action": "TAKE_SHOT",
+            "action": action,
         }
         return {
             "shot": None,
@@ -308,16 +343,17 @@ def choose() -> dict:
 
     if not shots:
         generated = local_generated_product_shot()
+        action = generated_action(generated)
         if blocked_web_shots:
             return {
                 "shot": generated,
                 "reason": (
                     f"{len(blocked_web_shots)} ready board shot(s) require another lane. "
-                    "Passing those instead of idling, then forcing a concrete local product shot."
+                    "Passing those instead of idling, then forcing a local product action."
                 ),
                 "mix": mix,
                 "forced": True,
-                "action": "TAKE_SHOT",
+                "action": action,
             }
         # An empty board is almost never an empty backlog.
         #

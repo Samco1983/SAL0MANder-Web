@@ -79,6 +79,13 @@ jobs:
           VITE_BASE_PATH: /SAL0MANder-Web/
         run: node scripts/verify-deploy-artifact.mjs dist "$VITE_BASE_PATH"
 
+      # Walk the built site the way a visitor does, before it can be published.
+      # The shape check above proves the files are right; this proves the shape
+      # works — Pages has no rewrite, so every share link on a hard load is
+      # answered with 404.html and the router has to recover the path itself.
+      - name: walk every visitor path against the deploy shape
+        run: node scripts/verify-deployed-site.mjs dist
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

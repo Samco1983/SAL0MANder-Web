@@ -1,8 +1,10 @@
 import unittest
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sal0_bball_v3
 from sal0_bball_v3 import ProductCandidate, issue_body, rank_candidates
 
 
@@ -57,6 +59,13 @@ class BballV3Test(unittest.TestCase):
         self.assertIn("npm run verify exits 0", body)
         self.assertIn("No Unity gameplay changes", body)
         self.assertIn("src/routes/home/HomePage.tsx", body)
+
+    def test_v3_drops_completed_home_teacher_preview(self):
+        shots = sal0_bball_v3.product_candidates()
+        home = next(shot for shot in shots if "teacher preview path from Home" in shot.title)
+
+        with patch.object(sal0_bball_v3, "file_contains", return_value=True):
+            self.assertTrue(sal0_bball_v3.candidate_complete(home))
 
 
 if __name__ == "__main__":

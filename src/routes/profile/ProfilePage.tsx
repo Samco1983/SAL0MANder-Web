@@ -32,6 +32,9 @@ export function ProfilePage() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
           <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)}>Open sample activity</LinkButton>
           <LinkButton to={paths.guestPlayIndex}>Keep playing as guest</LinkButton>
+          <LinkButton to={paths.unity} variant="secondary">
+            Preview WebGL host
+          </LinkButton>
         </div>
       </Card>
 

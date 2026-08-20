@@ -94,6 +94,15 @@ describe('accounts are off, and the page acts like it', () => {
     )
   })
 
+  it('offers a teacher or tester path to the WebGL host', () => {
+    renderProfile()
+    expect(screen.getByRole('link', { name: /preview webgl host/i })).toHaveAttribute(
+      'href',
+      paths.unity,
+    )
+    expect(document.body.textContent ?? '').not.toMatch(/\b(sign (in|up)|log in|create an account) to\b/i)
+  })
+
   it('gives a concrete next step without creating an account prompt', () => {
     renderProfile()
     expect(screen.getByText(/next step: keep playing from a shared activity/i)).toBeVisible()
