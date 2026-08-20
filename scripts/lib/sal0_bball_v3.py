@@ -294,38 +294,47 @@ def rank_candidates(
     return sorted(ranked, key=lambda shot: (-shot.score, -shot.value, shot.title))
 
 
+EXHAUSTED_BANK_TITLE = "[WEB][PRODUCT] Split the next smallest user-visible web shot"
+
+
 def build_packet() -> dict:
     next_state = mission_next()
+    existing_titles = open_issue_titles()
     candidates = [candidate for candidate in product_candidates() if not candidate_complete(candidate)]
-    ranked = rank_candidates(candidates, recent_files(), open_issue_titles())
+    ranked = rank_candidates(candidates, recent_files(), existing_titles)
     top = ranked[0] if ranked else None
     action = "CREATE_PRODUCT_ISSUE" if next_state.get("action") == "CREATE_SHOT" else "HOLD"
+    reason = (
+        "board is empty; stimulate the offense with a ranked product shot"
+        if action == "CREATE_PRODUCT_ISSUE"
+        else "a concrete shot already exists or the board is unreadable"
+    )
     if top is None and action == "CREATE_PRODUCT_ISSUE":
-        top = RankedShot(
-            title="[WEB][PRODUCT] Split the next smallest user-visible web shot",
-            category="PRODUCT",
-            files=(),
-            success_check=(
-                "a new WEB product issue exists with one lane, one clock, and one falsifiable success check"
-            ),
-            body=(
-                "The known local product shot bank is exhausted. Split the next smallest user-visible "
-                "web improvement from the current product surface instead of replaying a completed shot."
-            ),
-            value=45,
-            risk=12,
-            collision_risk=0,
-            score=33,
-            reason="shot bank exhausted; create the next bounded product possession",
-        )
+        if EXHAUSTED_BANK_TITLE in existing_titles:
+            action = "HOLD"
+            reason = "shot bank exhausted and a split-request issue is already open; not filing a duplicate"
+        else:
+            top = RankedShot(
+                title=EXHAUSTED_BANK_TITLE,
+                category="PRODUCT",
+                files=(),
+                success_check=(
+                    "a new WEB product issue exists with one lane, one clock, and one falsifiable success check"
+                ),
+                body=(
+                    "The known local product shot bank is exhausted. Split the next smallest user-visible "
+                    "web improvement from the current product surface instead of replaying a completed shot."
+                ),
+                value=45,
+                risk=12,
+                collision_risk=0,
+                score=33,
+                reason="shot bank exhausted; create the next bounded product possession",
+            )
     return {
         "schemaVersion": "sal0-bball-v3",
         "action": action,
-        "reason": (
-            "board is empty; stimulate the offense with a ranked product shot"
-            if action == "CREATE_PRODUCT_ISSUE"
-            else "a concrete shot already exists or the board is unreadable"
-        ),
+        "reason": reason,
         "missionNext": next_state,
         "recommended": asdict(top) if top else None,
         "bench": [asdict(shot) for shot in ranked[1:5]],

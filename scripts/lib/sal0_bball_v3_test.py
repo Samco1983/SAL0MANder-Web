@@ -83,6 +83,22 @@ class BballV3Test(unittest.TestCase):
             "[WEB][PRODUCT] Split the next smallest user-visible web shot",
         )
 
+    def test_v3_does_not_duplicate_the_exhausted_bank_issue(self):
+        with (
+            patch.object(sal0_bball_v3, "mission_next", return_value={"action": "CREATE_SHOT"}),
+            patch.object(sal0_bball_v3, "product_candidates", return_value=[]),
+            patch.object(sal0_bball_v3, "recent_files", return_value=set()),
+            patch.object(
+                sal0_bball_v3,
+                "open_issue_titles",
+                return_value={"[WEB][PRODUCT] Split the next smallest user-visible web shot"},
+            ),
+        ):
+            packet = sal0_bball_v3.build_packet()
+
+        self.assertEqual(packet["action"], "HOLD")
+        self.assertIsNone(packet["recommended"])
+
 
 if __name__ == "__main__":
     unittest.main()
