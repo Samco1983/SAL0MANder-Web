@@ -52,6 +52,38 @@ This protects the agents from blame and protects the objective from loyalty.
 The team is not trying to prove one model is good. The team is trying to win
 with the best fit available on the next possession.
 
+### Coach brief
+
+Coach the system, not the personalities. In human basketball, a coach may say
+"feed this player" or "bench that player" because the player is the unit that
+acts. In AI BBall, the useful unit is usually smaller:
+
+```text
+agent + task + prompt + tools + repo state + runtime environment + verifier
+```
+
+When something fails, change the cheapest useful part of that bundle first. A
+new agent is only one option. A better prompt, smaller task, cleaner data,
+fresh worktree, or stricter verifier may be the real substitution.
+
+Roles are not sacred. They are handles for coordination. A role should exist
+only while it makes passes cleaner, decisions faster, or evidence stronger.
+Hybrid roles are allowed when they reduce delay: a builder may also scout a
+small local fact, a reviewer may propose the next shot, and SAL0-01 may fill in
+when the court is idle. Do not make a hybrid role the referee for its own work.
+
+Eliminate or merge a role when it repeatedly adds latency without adding
+evidence. Split a role when one surface keeps scoring in one lane and turning
+it over in another. The goal is not a beautiful org chart. The goal is a team
+that keeps producing verified product movement while learning from misses.
+
+Remember that AI BBall has tools human basketball does not. Python can gather
+the box score before the agent thinks, compare the current possession to the
+season log, detect repeated failures, time out a stuck player, prepare a
+catchable packet, and recommend the next shot. Shell, GitHub, test runners,
+browser tools, Make, and Unity inspection are also part of the court. Use them
+to feed clean data quickly instead of asking agents to reason from stale chat.
+
 ### Three courts
 
 | Court | What happens there | Tonight |
