@@ -48,6 +48,29 @@ fixture manifest, and 8-12 candidate prompts. Do not generate final gameplay
 assets until the Unity lane accepts dimensions, art style, file format, and
 import path.
 
+## Business Ranking Provenance
+
+Samuel's remembered original approximate production split:
+
+| Share | Category | Examples |
+| ---: | --- | --- |
+| 35% | Cute animals/pets | cats, dogs, baby animals |
+| 20% | Fantasy/adventure | dragons, castles, magical worlds |
+| 15% | Space/science | planets, astronauts, rockets |
+| 15% | Nature/scenery | oceans, forests, waterfalls |
+| 10% | Sports/vehicles/action | sports, vehicles, action |
+| 5% | Seasonal/holiday packs | seasonal and holiday packs |
+
+Current active production mix shifts some share into **bonus crossover
+pictures** because combined themes are collectible and feel more original:
+cat astronaut in space, dog superhero over a city, dragon playing basketball,
+animals exploring an underwater castle, robot teacher with animal students,
+dinosaur driving a race car, space-themed sports stadium, and fantasy
+creatures doing science experiments.
+
+Rule for agents: preserve the original ranking as business memory; use the
+current mix for production unless Samuel changes it again.
+
 | Pack | Use | Pictures To Produce |
 | --- | --- | --- |
 | `space-lab` | early high-energy stage | starfield background, soft planet tiles, comet rewards, spaceship frame, astronaut cat helper, astronaut dog helper |

@@ -59,6 +59,12 @@ class AssetScoutTest(unittest.TestCase):
         self.assertEqual(wake["status"], "STARTED_BUT_STALLED")
         self.assertIn("did not return", wake["reason"])
 
+    def test_gemini_probe_timeout_bytes_are_json_safe(self):
+        wake = scout.classify_gemini_output(None, b"", b"partial warning", True)
+
+        json.dumps(wake)
+        self.assertEqual(wake["stderrPreview"], "partial warning")
+
     def test_gemini_probe_classifies_auth_and_quota(self):
         auth = scout.classify_gemini_output(1, "", "API key invalid", False)
         quota = scout.classify_gemini_output(1, "", "429 quota exhausted", False)

@@ -177,6 +177,39 @@ PRODUCTION_MIX = [
     },
 ]
 
+ORIGINAL_APPROXIMATE_MIX = [
+    {
+        "category": "cute animals/pets",
+        "weight": 35,
+        "examples": ["cats", "dogs", "baby animals"],
+    },
+    {
+        "category": "fantasy/adventure",
+        "weight": 20,
+        "examples": ["dragons", "castles", "magical worlds"],
+    },
+    {
+        "category": "space/science",
+        "weight": 15,
+        "examples": ["planets", "astronauts", "rockets"],
+    },
+    {
+        "category": "nature/scenery",
+        "weight": 15,
+        "examples": ["oceans", "forests", "waterfalls"],
+    },
+    {
+        "category": "sports/vehicles/action",
+        "weight": 10,
+        "examples": ["sports", "vehicles", "action scenes"],
+    },
+    {
+        "category": "seasonal/holiday packs",
+        "weight": 5,
+        "examples": ["seasonal packs", "holiday packs"],
+    },
+]
+
 
 def production_mix() -> list[dict]:
     """Business-prioritized picture mix.
@@ -311,12 +344,18 @@ def gemini_packet(pack_names: list[str]) -> str:
         "- if blocked for 10 minutes, record SCOUT_UNREACHABLE and move on.\n\n"
         "Production mix:\n"
         f"{json.dumps(PRODUCTION_MIX, indent=2)}\n\n"
+        "Original approximate mix, preserved as business-ranking provenance:\n"
+        f"{json.dumps(ORIGINAL_APPROXIMATE_MIX, indent=2)}\n\n"
         "Seed manifests:\n"
         f"{json.dumps(packs, indent=2)}\n"
     )
 
 
 def classify_gemini_output(exit_code: int | None, stdout: str, stderr: str, timed_out: bool) -> dict:
+    if isinstance(stdout, bytes):
+        stdout = stdout.decode(errors="replace")
+    if isinstance(stderr, bytes):
+        stderr = stderr.decode(errors="replace")
     text = f"{stdout}\n{stderr}".lower()
     if timed_out:
         status = "STARTED_BUT_STALLED"
@@ -376,6 +415,7 @@ def nudge_packet(pack_names: list[str], wake: dict | None = None) -> dict:
         "timeoutSeconds": 20,
         "packs": pack_names or list(PACKS),
         "productionMix": PRODUCTION_MIX,
+        "originalApproximateMix": ORIGINAL_APPROXIMATE_MIX,
         "handoff": gemini_packet(pack_names),
     }
 
@@ -396,6 +436,7 @@ def main() -> int:
     parser.add_argument("--force", action="store_true", help="overwrite an existing manifest when used with --write")
     parser.add_argument("--validate", action="store_true", help="validate all manifests")
     parser.add_argument("--production-mix", action="store_true", help="print the business-prioritized picture mix")
+    parser.add_argument("--original-mix", action="store_true", help="print the original approximate business ranking")
     parser.add_argument("--gemini-packet", nargs="*", choices=sorted(PACKS), help="print a Gemini handoff packet")
     parser.add_argument("--probe-gemini", action="store_true", help="probe whether Gemini is awake from the script lane")
     parser.add_argument("--nudge-gemini", nargs="*", choices=sorted(PACKS), help="write a Gemini asset-scout nudge packet")
@@ -416,6 +457,13 @@ def main() -> int:
         print(json.dumps(PRODUCTION_MIX, indent=2) if args.json else "\n".join(
             f"{item['weight']:>2}% {item['category']} — {item['why']}"
             for item in PRODUCTION_MIX
+        ))
+        return 0
+
+    if args.original_mix:
+        print(json.dumps(ORIGINAL_APPROXIMATE_MIX, indent=2) if args.json else "\n".join(
+            f"{item['weight']:>2}% {item['category']} — {', '.join(item['examples'])}"
+            for item in ORIGINAL_APPROXIMATE_MIX
         ))
         return 0
 
