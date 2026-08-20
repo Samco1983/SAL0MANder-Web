@@ -73,6 +73,7 @@ class Report:
     missed: int
     blocked: int
     idle: int
+    assists: dict = field(default_factory=dict)
     repeated_failures: list[dict] = field(default_factory=list)
     recommendations: list[str] = field(default_factory=list)
     huddle: dict = field(default_factory=dict)
@@ -125,6 +126,25 @@ def classify(runs: list[Run]) -> str:
     return "REBOUNDABLE MISS"
 
 
+def issue_is_blocked(shot: str) -> bool:
+    m = re.search(r"#(\d+)", shot or "")
+    if not m:
+        return False
+    labels = _sh([
+        "gh",
+        "issue",
+        "view",
+        m.group(1),
+        "--repo",
+        "Samco1983/SAL0MANder-Web",
+        "--json",
+        "labels",
+        "--jq",
+        ".labels[].name",
+    ])
+    return "blocked" in labels.splitlines()
+
+
 def repeated_failures(runs: list[Run]) -> list[dict]:
     """Shots that failed the same way more than once — the bench signal."""
     pairs = Counter(
@@ -135,6 +155,8 @@ def repeated_failures(runs: list[Run]) -> list[dict]:
     out = []
     for (shot, cause), n in pairs.most_common():
         if n >= BENCH_AFTER:
+            if issue_is_blocked(shot):
+                continue
             out.append({"shot": shot, "cause": cause, "times": n})
     return out
 
@@ -174,6 +196,74 @@ def recommend(court: str, repeats: list[dict], runs: list[Run]) -> list[str]:
     return recs
 
 
+def _commit_agent(sha: str) -> str:
+    text = _sh([
+        "git",
+        "log",
+        "-1",
+        "--format=%(trailers:key=Sal0-From,valueonly)%n%(trailers:key=Co-Authored-By,valueonly)",
+        sha,
+    ])
+    if m := re.search(r"(SAL0-\d+)", text):
+        return m.group(1)
+    if "Claude Opus" in text:
+        return "SAL0-04"
+    return "UNSIGNED"
+
+
+def _assist_category(files: list[str], subject: str) -> str:
+    joined = "\n".join(files)
+    text = f"{subject}\n{joined}"
+    if re.search(r"(^|/)src/|(^|/)public/|page|navigation|guest play|teacher|student", text, re.I):
+        return "PRODUCT"
+    if re.search(r"test|spec|coverage|__tests__", text, re.I):
+        return "TEST"
+    if re.search(r"script|mission|launchd|automation|scheduler|work-loop|package\.json", text, re.I):
+        return "AUTOMATION"
+    if re.search(r"(^|/)docs/", text, re.I):
+        return "DOCS"
+    return "CLEANUP"
+
+
+def assist_points(hours: int = 24) -> dict:
+    """Count signed commits that helped the team in the recent window.
+
+    These are not primary points. They expose assists and reliability work that
+    unblocked scoring, so the coach can feed the hot fit without pretending
+    plumbing is the championship.
+    """
+    raw = _sh([
+        "git",
+        "log",
+        f"--since={hours} hours ago",
+        "--format=%H%x1f%s",
+    ])
+    by_agent: dict[str, dict[str, int]] = {}
+    total = 0
+    unsigned = 0
+
+    for line in raw.splitlines():
+        if "\x1f" not in line:
+            continue
+        sha, subject = line.split("\x1f", 1)
+        agent = _commit_agent(sha)
+        if agent == "UNSIGNED":
+            unsigned += 1
+            continue
+        files = _sh(["git", "show", "--name-only", "--format=", sha]).splitlines()
+        category = _assist_category(files, subject)
+        by_agent.setdefault(agent, {}).setdefault(category, 0)
+        by_agent[agent][category] += 1
+        total += 1
+
+    return {
+        "window_hours": hours,
+        "total": total,
+        "unsigned": unsigned,
+        "by_agent": by_agent,
+    }
+
+
 def build(runs: list[Run]) -> Report:
     court = classify(runs)
     repeats = repeated_failures(runs)
@@ -190,6 +280,7 @@ def build(runs: list[Run]) -> Report:
         missed=missed,
         blocked=blocked,
         idle=idle,
+        assists=assist_points(),
         repeated_failures=repeats,
         recommendations=recommend(court, repeats, runs),
         huddle={
@@ -376,6 +467,16 @@ def main() -> int:
     print()
     print(f"  COURT: {report.court}")
     print(f"  {report.runs_read} runs — {report.scored} scored · {report.blocked} blocked · {report.idle} idle")
+    print(
+        "  assists: "
+        f"{report.assists.get('total', 0)} signed commit(s) in "
+        f"{report.assists.get('window_hours', 24)}h"
+    )
+    by_agent = report.assists.get("by_agent", {})
+    if by_agent:
+        for agent, counts in sorted(by_agent.items()):
+            parts = [f"{k.lower()} {v}" for k, v in sorted(counts.items())]
+            print(f"    {agent}: {', '.join(parts)}")
     print()
     if report.repeated_failures:
         print("  REPEATED MISSES")
