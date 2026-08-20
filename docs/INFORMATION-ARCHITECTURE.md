@@ -113,11 +113,9 @@ non-negotiable is structurally true today, not just intended.
 
 `/play/:activityId` resolves to a terminal `LinkFailure` (`SHARE_LINK_REVOKED`,
 `ACTIVITY_UNPUBLISHED`, or not-found). No retry offered for terminal failures —
-retrying a revoked link cannot succeed. Only path forward is "back to home,"
-which is also the 404 page's own offer. **Gap, not a defect**: neither surface
-suggests "ask your teacher for a new link," which is the actual next action for
-a student in this state — a copy addition, not a routing change (see §6,
-Batch A).
+retrying a revoked link cannot succeed. Recovery actions point back to Guest
+Play and home, and the failure copy tells the student when the real next action
+is asking the teacher for a corrected or new link.
 
 ### 3.3 Browsing visitor, no link
 
@@ -209,7 +207,7 @@ rediscover that `'resource'` is already a typed media kind.
 
 | Surface | Loading | Empty | Error | Success |
 | --- | --- | --- | --- | --- |
-| Guest Play — activity resolve | "Loading activity…" text | N/A (a link always names one activity) | `LinkFailure`: recoverable → retry, terminal → dead end + home link | title/byline/description/`SharePanel` render |
+| Guest Play — activity resolve | "Loading activity…" text | N/A (a link always names one activity) | `LinkFailure`: recoverable → retry, terminal → Guest Play + home recovery links | title/byline/description/`SharePanel` render |
 | Guest Play — session | `submitting` state, Unity stage unaffected | N/A | `result-undeliverable`: companion auto-reveals, retry surfaced when `canRetry`, held result survives reload | session marked complete, storage cleared |
 | Unity stage | loader progress state machine (`unconfigured→loading→ready→error`) | N/A | retry token bump | canvas mounted, stage never unmounts regardless of any of the above |
 | Home | N/A (static) | N/A | N/A | static render |

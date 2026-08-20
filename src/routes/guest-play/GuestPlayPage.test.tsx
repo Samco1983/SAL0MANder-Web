@@ -43,6 +43,19 @@ describe('Guest Play', () => {
     expect(screen.queryByRole('button', { name: /try again/i })).toBeNull()
   })
 
+  it('gives a dead link a recovery path without asking for an account', async () => {
+    renderAt('/play/does-not-exist')
+    await screen.findByRole('alert')
+
+    expect(screen.getByRole('link', { name: /open guest play/i })).toHaveAttribute(
+      'href',
+      '/play',
+    )
+    expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', '/')
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /sign in|log in|create account/i })).toBeNull()
+  })
+
   it('shows the student the plain-language reason, never a server string', async () => {
     renderAt('/play/does-not-exist')
     const alert = await screen.findByRole('alert')
@@ -79,6 +92,10 @@ describe('link states a student can tell apart', () => {
       const { unmount } = renderAt(`/play/${code}`)
       await screen.findByRole('alert')
       expect(screen.queryByRole('button', { name: /try again/i })).toBeNull()
+      expect(screen.getByRole('link', { name: /open guest play/i })).toHaveAttribute(
+        'href',
+        '/play',
+      )
       unmount()
     }
   })

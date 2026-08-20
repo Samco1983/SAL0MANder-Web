@@ -335,9 +335,9 @@ one.
 | Failure | Where it's caught | Recoverable? | Status |
 | --- | --- | --- | --- |
 | Activity resolve — loading | `useGuestActivity` `status: 'loading'` | N/A | IMPLEMENTED |
-| Activity resolve — invalid/mistyped | `not_found`, no `serverCode` match | No — no retry offered, no navigation action either (Batch A gap, `INFORMATION-ARCHITECTURE.md` §6) | IMPLEMENTED, with a known gap |
-| Activity resolve — revoked | `serverCode: SHARE_LINK_REVOKED` | No — retrying a revoked link cannot succeed (`linkState.ts:60-62`) | IMPLEMENTED |
-| Activity resolve — unpublished | `serverCode: ACTIVITY_UNPUBLISHED` | No | IMPLEMENTED |
+| Activity resolve — invalid/mistyped | `not_found`, no `serverCode` match | No retry — retrying the same bad URL cannot resolve it. Navigation recovery links point back to Guest Play and home. | IMPLEMENTED |
+| Activity resolve — revoked | `serverCode: SHARE_LINK_REVOKED` | No retry — retrying a revoked link cannot succeed (`linkState.ts:60-62`). Navigation recovery links point back to Guest Play and home. | IMPLEMENTED |
+| Activity resolve — unpublished | `serverCode: ACTIVITY_UNPUBLISHED` | No retry. Navigation recovery links point back to Guest Play and home. | IMPLEMENTED |
 | Activity resolve — offline/transient | `error.retryable` from the transport | Yes — `[Try again]` re-invokes the fetch | IMPLEMENTED |
 | Session start — offline/server error | Buffered if a `session-finished` already raced ahead of it; otherwise surfaces as `result-undeliverable` with `retryable: false` (no session exists to resend against) | Partial — see `canRetry` gating | IMPLEMENTED (W-12/W-13) |
 | Session start — duplicate submit (retried write) | `idempotencyKey = startKeyFor(...)`, same key replays the same response | Yes, by construction — same key ⇒ same session | IMPLEMENTED |

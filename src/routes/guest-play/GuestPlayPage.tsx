@@ -26,16 +26,24 @@ import styles from './GuestPlayPage.module.css'
 function LinkFailure({ error, retry }: { error: ApiError; retry: () => void }) {
   const state = linkStateFrom(error)
   const { title, body } = linkCopy(state, error)
+  const recoverable = isRecoverable(state, error)
 
   return (
     <div role="alert">
       <h1 className={styles.companionTitle}>{title}</h1>
       <p className={styles.description}>{body}</p>
-      {isRecoverable(state, error) ? (
+      {recoverable ? (
         <Button className={styles.retry} onClick={retry}>
           Try again
         </Button>
-      ) : null}
+      ) : (
+        <div className={styles.failureActions}>
+          <LinkButton to={paths.guestPlayIndex}>Open Guest Play</LinkButton>
+          <LinkButton to={paths.home} variant="secondary">
+            Back to home
+          </LinkButton>
+        </div>
+      )}
     </div>
   )
 }

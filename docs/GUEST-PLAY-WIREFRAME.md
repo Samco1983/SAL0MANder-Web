@@ -174,12 +174,11 @@ Same layout. Copy: *"We couldn't find that activity... a single wrong
 character is enough to break it."* (`linkState.ts:49-53`). No retry button —
 retrying an identical URL cannot resolve a code that doesn't exist.
 
-**Cross-cutting gap found while wireframing all three (3.1–3.3):** none of the
-three terminal copy strings suggest the one action that could actually work —
-going back to the teacher for a corrected or new link. `NotFoundPage` (the
-`*` route) at least offers "Go to Guest Play" / "Back to home"; these three
-offer *no* navigation action at all, only prose. Recorded as **Batch A** in
-`INFORMATION-ARCHITECTURE.md` §6 — a copy-only fix, not a routing change.
+**Cross-cutting recovery behavior:** all three terminal link failures withhold
+the retry button, because re-running the same dead link cannot succeed, and
+offer navigation actions back to Guest Play and home. The copy still tells the
+student what to do next — ask the teacher for a corrected or new link — without
+putting an account gate between the student and play.
 
 ### 3.4 Link failure — transient/unavailable (recoverable)
 
