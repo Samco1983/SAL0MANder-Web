@@ -46,12 +46,11 @@ still be losing if points do not move.
 
 A **point** is a durable, verified unit of objective progress.
 
-Examples:
+Primary point examples:
 
 - A GitHub issue closes with passing verification.
 - A user-visible feature or fix lands with tests.
 - A deploy blocker is removed and proven from the target environment.
-- A repeated failure is benched automatically and skipped by the picker.
 
 A **pivotal point** changes the team's future scoring rate.
 
@@ -62,11 +61,27 @@ Examples:
 - `INBOX.md` replaces owner copy-paste between agent windows.
 - Python Coach emits one action, one actor, one clock, and one success check.
 - A false-green path becomes impossible or loudly visible.
+- A repeated failure is benched automatically and skipped by the picker.
 
 Pivotal points matter because they compound. One product point wins one
 possession. One pivotal point can make every future possession faster or safer.
 But pivotal points cannot replace product points forever. If the system keeps
 improving and the product does not, the team is practicing instead of playing.
+
+An **assist point** is measured help, not a win condition. It is a signed commit
+in the measurement window that improves product, tests, automation, docs, or
+cleanup without necessarily closing a user-facing issue. Assist points answer
+"who is helping the team score?" They are reported separately so infrastructure
+work is visible without letting infrastructure pretend to be the championship.
+
+Minimum evidence by point type:
+
+| Type | Required evidence | Machine rule |
+| --- | --- | --- |
+| Product point | closed issue, user-visible commit, deploy proof, or passing verifier tied to the objective | counts toward primary score |
+| Pivotal point | guard, script, automation, label, verifier, or runtime fix that changes future play | counts as system improvement |
+| Assist point | signed commit attributed by `Sal0-From` or co-author evidence and bucketed by touched files | counts in the assist window only |
+| Non-point | discussion, plan, vague doc, passing verify alone, or unsigned/unattributed work | report as context, not score |
 
 ## The Agent System
 

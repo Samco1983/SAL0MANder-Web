@@ -172,6 +172,7 @@ observable terms before acting.
 | **Flagrant turnover** | game-losing risk | secret exposure, destructive command, unauthorized deploy, live Make change, or Unity gameplay edit outside lane |
 | **Rebound** | save a miss | second agent/tool reviews failure evidence and either fixes it or converts it into a smaller next shot |
 | **Assist** | catchable pass | handoff packet containing repo, branch, issue, diff/log pointer, success check, and next command |
+| **Assist point** | useful setup work | signed commit in the current measurement window that improves product, tests, automation, docs, or cleanup, but does not replace the primary score |
 | **Court vision** | data plus anticipation | Python-generated state from git, issues, logs, tests, clocks, agent health, and repeated patterns |
 | **Coach layer** | decide the next play | policy that chooses bench, shrink, switch, continue, escalate, or take shot based on evidence |
 | **Shot clock** | time pressure | hard timeout by play type: 10 min probe, 30 min shot, 60 min gate, 5 min agent call |
@@ -210,6 +211,29 @@ label was not there.
 **Masking stderr is how a claim becomes a belief.** `2>/dev/null` on a command
 whose success you are about to report is the single cheapest way to lie to your
 own team. Read the failure, or do not claim the outcome.
+
+## Exact Scoring Definitions
+
+These definitions are for machines first and humans second. If a metaphor and
+this table disagree, this table wins.
+
+| Event | Counts when | Does not count when | Required next action |
+| --- | --- | --- | --- |
+| **Product point** | a user-facing issue closes, deploy readiness moves, or a classroom/game behavior is visibly better with evidence | code changed but no user-visible path moved | report issue/commit/verifier and pick the next product-safe shot |
+| **Reliability point** | a repeated failure mode becomes mechanically harder to repeat | a doc says "be careful" but no check, script, guard, or label changed | keep the guard, then return to product pressure |
+| **Evidence point** | an unknown becomes a durable fact another agent can act on | a chat message says what probably happened | write the command/log/link and either close the uncertainty or create the next shot |
+| **Assist point** | a signed commit in the last 24h improves the court but does not itself close the primary objective | unsigned commit, vague docs, or work nobody can verify | show it separately from points so the scoreboard does not lie |
+| **Miss** | the worker attempted the shot and preserved evidence, but the success check failed | nothing ran, no log exists, or the agent only discussed the work | rebound once or shrink the shot |
+| **Dead-ball miss** | the run produced no diff, no useful log, no blocker, and no smaller next shot | a failure produced test output, diagnosis, or a patchable blocker | change the play before retrying |
+| **Bad turnover** | work becomes harder to trust: fake green, swallowed diff, wrong lane, hidden auth failure, or repeated same-cause retry | a clean failed test with evidence | pause that play long enough to preserve evidence and remove the repeat path |
+| **Flagrant turnover** | secrets, destructive commands, unauthorized deploy, live Make mutation, or Unity gameplay edit outside lane | normal code/test failure inside the approved repo | stop, record, and require owner or explicit lane owner clearance |
+| **Bench** | the same agent-task-environment fit fails repeatedly with the same cause and a reversible skip is available | the issue is merely hard, new, or failed once with evidence | label/record the bench and take a smaller different shot |
+| **Redeem** | the named bench condition changes: smaller issue, fixed auth/quota, clearer prompt, new verifier, different tool, or owner decision | time passed but nothing changed | remove the bench label or assign a new fit, then retry under a fresh clock |
+
+Assist points answer "who helped the team move faster?" Product points answer
+"did the objective move?" A championship team needs both, but the primary score
+stays product movement because Samuel cannot use a beautiful court with no
+game.
 
 ## The one law
 
