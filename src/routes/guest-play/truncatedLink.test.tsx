@@ -1,0 +1,82 @@
+import { describe, expect, it, vi, afterEach } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+
+import { ThemeProvider } from '@app/providers/ThemeProvider'
+import { GuestPlayIndexPage } from './GuestPlayPage'
+import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
+
+/**
+ * The student whose share link got cut off.
+ *
+ * routing.test.tsx proves a truncated `/play/` lands here rather than on the
+ * 404, so this surface is reached by real students with damaged links — an LMS
+ * or a chat app wrapping at the last slash produces exactly it.
+ *
+ * It used to show them `/play/<activity-id>`: URL syntax, angle brackets and
+ * all, to a child — and one link back to the page they had just come from. A
+ * dead end dressed as an explanation.
+ */
+
+vi.mock('@config/env', async (orig) => {
+  const actual = await orig<typeof import('@config/env')>()
+  return { ...actual, env: { ...actual.env, api: { ...actual.env.api, isConfigured: false } } }
+})
+
+const renderIndex = () =>
+  render(
+    <ThemeProvider>
+      <MemoryRouter>
+        <GuestPlayIndexPage />
+      </MemoryRouter>
+    </ThemeProvider>,
+  )
+
+afterEach(() => vi.clearAllMocks())
+
+describe('what the student is told', () => {
+  it('says the link arrived incomplete', () => {
+    renderIndex()
+    expect(screen.getByRole('heading', { name: /link looks incomplete/i })).toBeVisible()
+  })
+
+  it('never shows URL syntax to a child', () => {
+    // The specific regression: `/play/<activity-id>` rendered in a <code> tag.
+    renderIndex()
+    const text = document.body.textContent ?? ''
+    expect(text).not.toMatch(/<activity-id>|\/play\/</)
+    expect(document.querySelector('code')).toBeNull()
+  })
+
+  it('does not blame the student', () => {
+    renderIndex()
+    const text = document.body.textContent ?? ''
+    expect(text).toMatch(/nothing is wrong on your end/i)
+    expect(text).not.toMatch(/invalid|you entered|you typed|bad link/i)
+  })
+
+  it('names who can fix it', () => {
+    renderIndex()
+    expect(screen.getByText(/teacher/i)).toBeVisible()
+  })
+})
+
+describe('a way forward, not only a way back', () => {
+  it('offers a playable sample while there is no backend', () => {
+    renderIndex()
+    const demo = screen.getByRole('link', { name: /sample activity/i })
+    expect(demo).toHaveAttribute('href', `/play/${MOCK_DEMO_ACTIVITY_ID}`)
+  })
+
+  it('still offers home, so the page is not a one-way door either', () => {
+    renderIndex()
+    expect(screen.getByRole('link', { name: /back to home/i })).toBeVisible()
+  })
+
+  it('never asks for an account, a name, or an email', () => {
+    renderIndex()
+    expect(document.querySelector('input')).toBeNull()
+    expect(document.querySelector('form')).toBeNull()
+    expect(screen.queryByText(/sign in|sign up|your email/i)).toBeNull()
+  })
+})

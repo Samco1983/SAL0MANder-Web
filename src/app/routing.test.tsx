@@ -70,11 +70,14 @@ describe('the share link a teacher hands out', () => {
 describe('a link that arrived damaged', () => {
   it('sends a truncated /play/ to Guest Play, not to the 404', async () => {
     // An LMS that wraps a link at the last slash produces exactly this. The
-    // index page explains what a share link looks like; the 404 does not.
+    // index page tells the student the link arrived incomplete and offers a way
+    // forward; the 404 does neither.
     expect(firstRouteMatch('/play/').route.path).toBe(paths.guestPlayIndex)
 
     renderAt('/play/')
-    expect(await screen.findByRole('heading', { name: /open a shared activity/i })).toBeVisible()
+    expect(await screen.findByRole('heading', { name: /link looks incomplete/i })).toBeVisible()
+    // The assertion that carries the intent: this is NOT the not-found page.
+    expect(screen.queryByRole('heading', { name: /couldn.t find that page/i })).toBeNull()
   })
 
   it('shows the not-found page for a path that matches nothing', async () => {

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { env } from '@config/env'
-import { paths } from '@config/routes'
+import { buildPath, paths } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
 import { AppShell } from '@components/layout/AppShell'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
@@ -10,6 +10,7 @@ import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
 import { correlateAttempt, isUsableFinishedPayload, onUnityMessage } from '@unity/bridge'
+import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
 import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
@@ -376,14 +377,39 @@ export function GuestPlayPage() {
 
 /** `/play` with no activity — a share link is what normally lands here. */
 export function GuestPlayIndexPage() {
+  /*
+    Who actually arrives here: a student whose share link was cut off. The
+    routing tests already prove a truncated /play/ lands on this page rather
+    than the 404, so this is a real arrival, not a developer browsing.
+
+    It used to show them `/play/<activity-id>` — URL syntax with angle
+    brackets, to a child — and a single link back to where they just came from.
+    A dead end dressed as an explanation.
+  */
+
+  // Only offered while there is no backend. The demo lives in the mock
+  // transport, so promising it against a real API would be offering an
+  // activity that may not exist — a worse dead end than the one being fixed,
+  // because this one looks like it works.
+  const canDemo = !env.api.isConfigured
+
   return (
     <AppShell>
       <div className={styles.centeredInner}>
-        <h1 className={styles.centeredTitle}>Open a shared activity</h1>
+        <h1 className={styles.centeredTitle}>This link looks incomplete</h1>
         <p className={styles.centeredBody}>
-          Guest Play starts from a teacher's share link. Links look like{' '}
-          <code>/play/&lt;activity-id&gt;</code> and never ask a student to sign in.
+          Share links carry the name of the activity, and this one arrived without it — often
+          because a chat app or a class page cut it short. Nothing is wrong on your end. Ask your
+          teacher to send the whole link again.
         </p>
+        {canDemo ? (
+          <>
+            <p className={styles.centeredBody}>In the meantime, you can try a sample puzzle.</p>
+            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)}>
+              Try a sample activity
+            </LinkButton>
+          </>
+        ) : null}
         <LinkButton to={paths.home}>Back to home</LinkButton>
       </div>
     </AppShell>
