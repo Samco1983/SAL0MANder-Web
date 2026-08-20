@@ -125,16 +125,17 @@ everything that was prose got skipped, including by the agent that wrote it, an
 hour later. Keep a **50-line prompt** every agent carries, and put the rest in
 machinery.
 
-**A separate window-to-window message bus.** We did not need one, and scraping
-chat windows would have been the wrong layer. Git is the transport: durable,
-ordered, survives restarts, and neither party has to be awake. The useful
-version is a repo-backed inbox (`docs/coordination/INBOX.md`) for short
-cross-agent corrections and handoffs, because it stays in the same evidence
-surface as commits, blockers, and tests.
+**A window-to-window message bus.** Do not scrape one agent's chat into
+another's. The chat content is narration — the least trustworthy artifact in the
+system, and the one most often stale by the time it arrives.
 
-**Scraping one agent's window into another's.** The chat content is narration,
-which is the thing least worth trusting. If it matters, the agent should write
-it to a file.
+What you want instead is already there: **git is the transport** — durable,
+ordered, survives restarts, and neither agent has to be awake. Add a
+repo-backed inbox (`docs/coordination/INBOX.md`) for the short corrections and
+handoffs that are too small for a blocker and too judgment-shaped for a commit
+message. It keeps cross-agent messages in the same evidence surface as the
+commits, tests, and blockers they refer to, so a claim and its proof never live
+in different places.
 
 ---
 
