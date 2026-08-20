@@ -24,6 +24,7 @@ import json
 import os
 import re
 import sys
+import time
 from collections import Counter
 from dataclasses import dataclass, asdict, field
 
@@ -44,6 +45,12 @@ BENCH_AFTER = 2
 VERDICT = re.compile(r"ONE THING THAT CHANGED:\s*([A-Z][A-Z \-]*)")
 NEXT_SHOT = re.compile(r"Next shot:\s*(.+)")
 EXIT_LINE = re.compile(r"=== end \S+ \(([^)]*)\)")
+RUN_END = re.compile(r"=== end \S+ \([^)]+\) ===")
+
+# A healthy worker writes a heartbeat every 30 seconds. Three missed beats is
+# enough to call the possession stalled without waiting for the 30-minute
+# worker timeout to expire invisibly.
+STALE_RUN_SECONDS = 90
 
 # Ordered: the first match wins, so the most specific cause is reported. An
 # auth failure that also produced no diff must read as auth, not as idleness.
@@ -98,19 +105,45 @@ def read_runs() -> list[Run]:
             except OSError:
                 continue
 
-            run = Run(stamp=stamp, path=path)
-            if m := VERDICT.search(text):
-                run.verdict = m.group(1).strip()
-            if m := NEXT_SHOT.search(text):
-                run.shot = m.group(1).strip()
-            if m := EXIT_LINE.search(text):
-                run.exit_note = m.group(1).strip()
-            for name, pattern in CAUSES:
-                if pattern.search(text):
-                    run.cause = name
-                    break
+            run = parse_run(path, text)
             seen[stamp] = run
     return [seen[k] for k in sorted(seen)]
+
+
+def parse_run(path: str, text: str, now: float | None = None) -> Run:
+    """Parse one run and expose silent supervisor/worker failure as evidence."""
+    stamp = os.path.basename(path).replace("work-loop-", "").replace(".log", "")
+    run = Run(stamp=stamp, path=path)
+    if m := VERDICT.search(text):
+        run.verdict = m.group(1).strip()
+    if m := NEXT_SHOT.search(text):
+        run.shot = m.group(1).strip()
+    if m := EXIT_LINE.search(text):
+        run.exit_note = m.group(1).strip()
+    for name, pattern in CAUSES:
+        if pattern.search(text):
+            run.cause = name
+            break
+
+    worker_path = os.path.splitext(path)[0] + ".json"
+    try:
+        with open(worker_path, errors="replace") as handle:
+            worker = json.load(handle)
+    except (OSError, ValueError):
+        worker = {}
+
+    if not run.cause and worker.get("is_error"):
+        run.cause = "WORKER_ABORTED"
+
+    if not RUN_END.search(text):
+        try:
+            age = (time.time() if now is None else now) - os.path.getmtime(path)
+        except OSError:
+            age = 0
+        if age >= STALE_RUN_SECONDS:
+            run.cause = run.cause or "STALLED_RUN"
+
+    return run
 
 
 def classify(runs: list[Run]) -> str:
@@ -118,13 +151,25 @@ def classify(runs: list[Run]) -> str:
     if not runs:
         return "IDLE"
     recent = runs[-5:]
+    latest = runs[-1]
     verdicts = [r.verdict for r in recent]
+
+    # The latest possession decides current court state. An older score cannot
+    # hide a worker that just aborted, stalled, or inherited a dirty tree.
+    if latest.cause in {"DIRTY_TREE", "WORKER_ABORTED", "STALLED_RUN"}:
+        return "BAD TURNOVER"
+    if latest.cause in {"AUTH", "TRUST", "QUOTA"}:
+        return "BLOCKED"
+    if latest.verdict.startswith(("COMMITTED", "MERGED")):
+        return "SCORING"
+    if latest.verdict.startswith("NOTHING"):
+        return "IDLE"
 
     if any(v.startswith("COMMITTED") or v.startswith("MERGED") for v in verdicts):
         return "SCORING"
     if any(r.cause in {"AUTH", "TRUST", "QUOTA"} for r in recent):
         return "BLOCKED"
-    if any(r.cause == "DIRTY_TREE" for r in recent):
+    if any(r.cause in {"DIRTY_TREE", "WORKER_ABORTED", "STALLED_RUN"} for r in recent):
         # Work that exists and cannot land is worse than work not attempted.
         return "BAD TURNOVER"
     if all(v.startswith("NOTHING") for v in verdicts):
@@ -194,6 +239,16 @@ def recommend(court: str, repeats: list[dict], runs: list[Run]) -> list[str]:
         )
     if "TIMEOUT" in causes:
         recs.append("SHRINK — the shot exceeded its clock. Split the issue and take a smaller one.")
+    if "WORKER_ABORTED" in causes:
+        recs.append(
+            "REBOUND — the worker stream aborted before the supervisor recorded an outcome. "
+            "Preserve the JSON evidence, clear only a stale lock, and switch to a smaller shot."
+        )
+    if "STALLED_RUN" in causes:
+        recs.append(
+            "RESET CLOCK — the latest run missed three heartbeats without an end marker. "
+            "Treat it as stopped, not working, and inspect the worker JSON before retrying."
+        )
     if court == "IDLE" and not repeats:
         recs.append("SHOOT — nothing is blocked and nothing is scoring. Take the next unclaimed issue.")
 
