@@ -41,6 +41,8 @@
     "mission:desktop:uninstall": "bash scripts/sal0-desktop-automation.sh uninstall",
     "mission:next-task": "bash scripts/sal0-next-task.sh",
     "mission:preflight": "python3 scripts/sal0-mission-control-core.py",
+    "mission:shots": "python3 scripts/lib/sal0_shot_queue.py",
+    "mission:shots:json": "python3 scripts/lib/sal0_shot_queue.py --json",
     "mission:signals": "bash scripts/sal0-signal.sh --read",
     "mission:urls": "python3 scripts/sal0-mission-control-core.py --print-open-urls",
     "preview": "vite preview",
