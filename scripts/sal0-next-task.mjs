@@ -85,7 +85,8 @@ ${blocker.command}
 
 RULES:
 - Work only in ${repo}. Never touch /Users/samuel_saldivar/SAL0MANDER-Puzzle-Prototype.
-- Read docs/coordination/AGENT-DOCTRINE.md first. It binds you.
+- Read docs/coordination/AGENT-DOCTRINE.md and docs/coordination/INBOX.md
+  first. They bind you.
 - Do the thing. Do not write a document about the thing.
 - Never read, print, move, or commit secrets, tokens, .env files, or auth files.
 - Never run destructive git: no reset --hard, clean -fd, checkout -f, rebase,
@@ -119,8 +120,9 @@ ${issue.body || '(no description)'}
 
 RULES:
 - Work only in ${repo}. Never touch /Users/samuel_saldivar/SAL0MANDER-Puzzle-Prototype.
-- Read CLAUDE.md, docs/CHARTER-WEB-POINT-PERSON.md and
-  docs/coordination/AGENT-DOCTRINE.md first. They bind you.
+- Read CLAUDE.md, docs/CHARTER-WEB-POINT-PERSON.md,
+  docs/coordination/AGENT-DOCTRINE.md, and docs/coordination/INBOX.md first.
+  They bind you.
 - Change code. Do not write a proposal or a plan document unless the issue
   explicitly asks for a written artifact.
 - Scope: one coherent batch toward this issue. Do not start a second issue.

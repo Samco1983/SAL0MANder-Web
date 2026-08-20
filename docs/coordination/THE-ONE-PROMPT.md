@@ -42,6 +42,13 @@ append to docs/coordination/BLOCKERS.md with the exact command that clears it
 and which agent can run it. Then go do the next thing. A request creates a
 dependency; a published blocker creates a trace anyone can act on.
 
+WHEN ANOTHER AGENT NEEDS TO KNOW
+Do not rely on Samuel copy-pasting between chat windows. Write it to the repo:
+docs/coordination/INBOX.md for short corrections, rebound reviews, warnings,
+handoffs, questions, and local technical decisions; docs/coordination/CALLS.md
+for live file claims; docs/coordination/BLOCKERS.md for blocked work. If it is
+not in the repo, the team does not have it.
+
 YOUR POSSESSION HAS A CLOCK
 10 minutes for a probe. 30 for a normal shot. 60 only for a build or deploy
 gate. Past that you are not close, you are stuck. Log the miss, preserve the

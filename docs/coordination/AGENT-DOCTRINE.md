@@ -217,3 +217,24 @@ Four things that make it work rather than become paperwork:
   fast with another verifying behind beats two agents both being careful.
 
 A call made after a collision is an apology, not a call.
+
+## 13. If it matters to another agent, write it where agents read
+
+Chat windows are not shared state. Claude cannot see Codex Desktop, Codex
+cannot see Claude's browser chat, and Samuel copy-pasting between them makes
+the owner the message bus again.
+
+Use the repo channels:
+
+- `BLOCKERS.md` for work that cannot continue and needs an exact clearing
+  command.
+- `CALLS.md` for live file/area claims while moving.
+- `INBOX.md` for short cross-agent corrections, rebound reviews, handoffs,
+  warnings, questions, and local technical decisions.
+- Commits and GitHub issue comments for finished evidence.
+
+If a thing only matters to Samuel, say it in chat. If another agent needs it,
+write it to `docs/coordination/` in the same turn.
+
+The failure mode to avoid: an agent says "I found the blocker" in a private
+window, the other agent never sees it, and Samuel has to carry the ball by hand.
