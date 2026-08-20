@@ -300,6 +300,24 @@ def build_packet() -> dict:
     ranked = rank_candidates(candidates, recent_files(), open_issue_titles())
     top = ranked[0] if ranked else None
     action = "CREATE_PRODUCT_ISSUE" if next_state.get("action") == "CREATE_SHOT" else "HOLD"
+    if top is None and action == "CREATE_PRODUCT_ISSUE":
+        top = RankedShot(
+            title="[WEB][PRODUCT] Split the next smallest user-visible web shot",
+            category="PRODUCT",
+            files=(),
+            success_check=(
+                "a new WEB product issue exists with one lane, one clock, and one falsifiable success check"
+            ),
+            body=(
+                "The known local product shot bank is exhausted. Split the next smallest user-visible "
+                "web improvement from the current product surface instead of replaying a completed shot."
+            ),
+            value=45,
+            risk=12,
+            collision_risk=0,
+            score=33,
+            reason="shot bank exhausted; create the next bounded product possession",
+        )
     return {
         "schemaVersion": "sal0-bball-v3",
         "action": action,

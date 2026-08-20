@@ -67,6 +67,22 @@ class BballV3Test(unittest.TestCase):
         with patch.object(sal0_bball_v3, "file_contains", return_value=True):
             self.assertTrue(sal0_bball_v3.candidate_complete(home))
 
+    def test_v3_creates_split_recommendation_when_known_bank_is_exhausted(self):
+        with (
+            patch.object(sal0_bball_v3, "mission_next", return_value={"action": "CREATE_SHOT"}),
+            patch.object(sal0_bball_v3, "product_candidates", return_value=[]),
+            patch.object(sal0_bball_v3, "recent_files", return_value=set()),
+            patch.object(sal0_bball_v3, "open_issue_titles", return_value=set()),
+        ):
+            packet = sal0_bball_v3.build_packet()
+
+        self.assertEqual(packet["action"], "CREATE_PRODUCT_ISSUE")
+        self.assertIsNotNone(packet["recommended"])
+        self.assertEqual(
+            packet["recommended"]["title"],
+            "[WEB][PRODUCT] Split the next smallest user-visible web shot",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
