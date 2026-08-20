@@ -228,8 +228,37 @@ describe('revealing the companion for something that must be seen', () => {
 
   it('caps auto-revealed mobile sheets so the stage cannot be mostly covered', () => {
     const narrowBlock = companionCss.slice(companionCss.indexOf('@media (max-width: 60rem)'))
-
     expect(narrowBlock).toMatch(/\.layout\[data-revealed='true'\]\s+\.companion/)
-    expect(narrowBlock).toMatch(/max-height:\s*42%/)
+  })
+
+  it('leaves most of the stage visible, whatever the number is', () => {
+    /*
+     * W-17: the ruling is that an auto-reveal may not cover the playable area,
+     * and the guarantee has to hold regardless of who calls `reveal`.
+     *
+     * This used to assert `max-height: 42%` — the literal value. That tests the
+     * number rather than the rule, and it fails in both directions: a
+     * legitimate change to 45% breaks a passing build for no reason, and a
+     * change to 80% gets "fixed" by editing the expected number, which is
+     * exactly how a guarantee quietly stops being one.
+     *
+     * The invariant is that the majority of the stage survives a reveal. Any
+     * value at or under half satisfies it; nothing above it does.
+     */
+    const narrowBlock = companionCss.slice(companionCss.indexOf('@media (max-width: 60rem)'))
+    const revealed = narrowBlock.slice(narrowBlock.indexOf("[data-revealed='true']"))
+    const match = /max-height:\s*(\d+(?:\.\d+)?)%/.exec(revealed)
+
+    expect(match, 'the revealed sheet must declare a max-height cap').not.toBeNull()
+    expect(Number(match![1])).toBeLessThanOrEqual(50)
+  })
+
+  it('still reserves enough sheet for the revealed content to be readable', () => {
+    // The other wall. A cap so aggressive that the revealed result is unreadable
+    // fixes the covering problem by making the feature useless.
+    const narrowBlock = companionCss.slice(companionCss.indexOf('@media (max-width: 60rem)'))
+    const revealed = narrowBlock.slice(narrowBlock.indexOf("[data-revealed='true']"))
+    const match = /max-height:\s*(\d+(?:\.\d+)?)%/.exec(revealed)
+    expect(Number(match![1])).toBeGreaterThanOrEqual(30)
   })
 })
