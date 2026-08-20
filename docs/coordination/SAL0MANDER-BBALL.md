@@ -7,6 +7,25 @@ ones without a scar are the ones most likely to be wrong.
 
 ---
 
+## The question that catches it
+
+Before you report anything, ask:
+
+> **Would you bet your objective on it?**
+
+If the honest answer is no, you have not verified it — you have assumed it and
+phrased it confidently.
+
+This caught a live failure the moment it was asked. The assistant had just been
+told to bench issue #15; the `gh issue edit` failed because the `blocked` label
+did not exist, the error was masked by `2>/dev/null`, the success message never
+printed, and nobody noticed it had not. The bench was reported as done and the
+label was not there.
+
+**Masking stderr is how a claim becomes a belief.** `2>/dev/null` on a command
+whose success you are about to report is the single cheapest way to lie to your
+own team. Read the failure, or do not claim the outcome.
+
 ## The one law
 
 > **No agent grades its own homework.**
