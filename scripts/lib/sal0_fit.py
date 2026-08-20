@@ -120,6 +120,34 @@ def collect() -> dict:
     }
 
 
+def sweep_warning() -> str | None:
+    """Is the attribution this table rests on currently trustworthy?
+
+    Every number here comes from the Sal0-From trailer. A sweep — one agent
+    running `git add -A` on a shared tree — commits another agent's work under
+    its own signature, so the trailer stops describing who did the work and
+    starts describing who committed last. Four sweeps happened in one night.
+
+    A roster decision made from swept data is not a slightly-wrong decision, it
+    is a decision about a fiction. So the table says so rather than printing
+    confident columns over it.
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    try:
+        r = subprocess.run(
+            [sys.executable, os.path.join(here, "sal0_collision.py"),
+             "--window", "240", "--json"],
+            capture_output=True, text=True, timeout=90, cwd=REPO,
+        )
+        data = json.loads(r.stdout or "{}")
+    except Exception:
+        return None
+    for f in data.get("findings", []):
+        if f.get("detector") == "SWEEP":
+            return f.get("what", "a sweep was detected")
+    return None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Measured agent-category fit.")
     ap.add_argument("--json", action="store_true")
@@ -141,6 +169,15 @@ def main() -> int:
     print()
     print(f"  attributed: {data['attributed']}   unattributed: {data['unattributed']}")
     print()
+
+    warning = sweep_warning()
+    if warning:
+        print("  ** ATTRIBUTION IS NOT TRUSTWORTHY RIGHT NOW **")
+        print(f"  ** {warning}")
+        print("  ** A sweep commits another agent's work under its own signature, so")
+        print("  ** every column above may credit the committer rather than the author.")
+        print("  ** Do not make a roster decision from this table until it clears.")
+        print()
 
     if not data["meaningful"]:
         print(f"  Too few closes ({data['attributed']}) to mean anything. Below {MEANINGFUL}")
