@@ -69,6 +69,9 @@ export function HomePage() {
               Use the same demo link as Guest Play to try the teacher side of distribution: copy it,
               post it, or open the QR when you need a printable handoff.
             </p>
+            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)} variant="secondary">
+              Preview student link
+            </LinkButton>
           </div>
           <SharePanel
             activityId={MOCK_DEMO_ACTIVITY_ID}

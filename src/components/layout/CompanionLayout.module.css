@@ -88,6 +88,10 @@
     transition: transform var(--duration-normal) var(--ease-standard);
   }
 
+  .layout[data-revealed='true'] .companion {
+    max-height: 42%;
+  }
+
   .layout[data-collapsed='true'] .companion {
     transform: translateY(100%);
   }

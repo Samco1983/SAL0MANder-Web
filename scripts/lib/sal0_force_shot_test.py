@@ -65,6 +65,43 @@ class ForceShotTest(unittest.TestCase):
         self.assertEqual(result["shot"], promoted_product)
         self.assertIn("PROMOTED BACKLOG", result["reason"])
 
+    def test_local_fallback_skips_cross_lane_findings(self):
+        with patch("sal0_backlog_sync.parse_items") as parse_items:
+            parse_items.return_value = [
+                {
+                    "key": "W-18",
+                    "title": "bridge observability audit still needs one real Unity receiver pass",
+                    "body": "Still needs Codex / Unity confirmation.",
+                },
+                {
+                    "key": "W-17",
+                    "title": "reveal is safe because of what calls it",
+                    "body": "Touches src/components/layout/CompanionLayout.module.css.",
+                },
+            ]
+
+            shot = sal0_force_shot.local_tracked_finding()
+
+        self.assertIsNotNone(shot)
+        self.assertEqual(shot["key"], "W-17")
+
+    def test_queue_unreadable_generates_concrete_product_shot_when_backlog_is_blocked(self):
+        with (
+            patch.object(sal0_force_shot, "measure_mix", return_value=MIX),
+            patch.object(
+                sal0_force_shot,
+                "read_board",
+                return_value={"board": [], "queue_error": "api.github.com unavailable"},
+            ),
+            patch.object(sal0_force_shot, "local_tracked_finding", return_value=None),
+        ):
+            result = sal0_force_shot.choose()
+
+        self.assertEqual(result["action"], "TAKE_SHOT")
+        self.assertEqual(result["shot"]["category"], "PRODUCT")
+        self.assertIn("src/routes/home/HomePage.tsx", result["shot"]["files"])
+        self.assertIn("instead of waiting for owner input", result["reason"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -113,7 +113,7 @@ export function CompanionLayout({
   }, [reveal, collapsed])
 
   return (
-    <div className={styles.layout} data-collapsed={collapsed}>
+    <div className={styles.layout} data-collapsed={collapsed} data-revealed={reveal && !collapsed}>
       <aside
         id={COMPANION_ID}
         className={styles.companion}

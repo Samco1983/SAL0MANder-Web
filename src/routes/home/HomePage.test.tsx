@@ -105,6 +105,15 @@ describe('the demo share panel', () => {
     expect(new URL(shareInput.value).pathname).toBe(playHref)
   })
 
+  it('lets a teacher preview the same student link they are sharing', () => {
+    renderHome()
+
+    expect(screen.getByRole('link', { name: /preview student link/i })).toHaveAttribute(
+      'href',
+      `/play/${MOCK_DEMO_ACTIVITY_ID}`,
+    )
+  })
+
   it('keeps the QR work hidden until a teacher asks for it', () => {
     renderHome()
 

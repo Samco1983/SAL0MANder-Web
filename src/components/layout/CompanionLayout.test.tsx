@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { CompanionLayout } from './CompanionLayout'
 
 function renderLayout(defaultCollapsed = false) {
@@ -17,6 +19,7 @@ function renderLayout(defaultCollapsed = false) {
 }
 
 const COLLAPSE_KEY = 'sal0mander.companion.collapsed'
+const companionCss = readFileSync(resolve(__dirname, 'CompanionLayout.module.css'), 'utf8')
 
 /** Renders with a controllable `reveal`, and a `show()` to raise or lower it. */
 function renderRevealable(startCollapsed: boolean) {
@@ -207,5 +210,26 @@ describe('revealing the companion for something that must be seen', () => {
 
     expect(isOpen()).toBe(true)
     expect(localStorage.getItem(COLLAPSE_KEY)).toBe('false')
+  })
+
+  it('marks only the active auto-reveal state, so CSS can cap it on phones', async () => {
+    const user = userEvent.setup()
+    const { show } = renderRevealable(true)
+    const layout = screen.getByTestId('stage').closest('[data-collapsed]')
+
+    expect(layout).toHaveAttribute('data-revealed', 'false')
+
+    show(true)
+    expect(layout).toHaveAttribute('data-revealed', 'true')
+
+    await user.click(screen.getByRole('button', { name: /hide companion/i }))
+    expect(layout).toHaveAttribute('data-revealed', 'false')
+  })
+
+  it('caps auto-revealed mobile sheets so the stage cannot be mostly covered', () => {
+    const narrowBlock = companionCss.slice(companionCss.indexOf('@media (max-width: 60rem)'))
+
+    expect(narrowBlock).toMatch(/\.layout\[data-revealed='true'\]\s+\.companion/)
+    expect(narrowBlock).toMatch(/max-height:\s*42%/)
   })
 })

@@ -115,11 +115,32 @@ def local_tracked_finding() -> dict | None:
     if not items:
         return None
 
+    def blocked_for_web(item: dict) -> bool:
+        text = f"{item.get('title', '')}\n{item.get('body', '')}"
+        return bool(
+            re.search(
+                r"still needs codex\s*/\s*unity confirmation|needs one real unity receiver pass|"
+                r"what web cannot verify|for codex|live make scenarios|owner action|"
+                r"owner/gemini call|needs a ruling first|make cannot reach a laptop|"
+                r"make is cloud-hosted|adapter polls make",
+                text,
+                re.I,
+            )
+        )
+
     def productish(item: dict) -> bool:
         text = f"{item.get('title', '')}\n{item.get('body', '')}"
         return bool(re.search(r"\bsrc/|student|teacher|guest|play|unity|web|user-visible", text, re.I))
 
-    item = next((candidate for candidate in items if productish(candidate)), items[0])
+    actionable = [item for item in items if not blocked_for_web(item)]
+    if not actionable:
+        return None
+
+    product = [candidate for candidate in actionable if productish(candidate)]
+    if not product:
+        return None
+
+    item = product[0]
     title = strip_emoji(str(item.get("title", "")))
     key = item.get("key")
     return {
@@ -133,6 +154,25 @@ def local_tracked_finding() -> dict | None:
         "size": "local tracked finding — sync board after GitHub recovers",
         "source": "docs/coordination/OPEN-ITEMS.md",
         "key": key,
+    }
+
+
+def local_generated_product_shot() -> dict:
+    """Concrete product fallback when neither GitHub nor local findings can feed play."""
+    return {
+        "number": None,
+        "title": "[LOCAL][PRODUCT] Add a teacher preview path from Home",
+        "category": "PRODUCT",
+        "success_check": (
+            "Home exposes a teacher-oriented preview action that points to an existing route "
+            "and npm run verify exits 0"
+        ),
+        "size": "local generated product shot — sync board after GitHub recovers",
+        "source": "scripts/lib/sal0_force_shot.py",
+        "files": [
+            "src/routes/home/HomePage.tsx",
+            "src/routes/home/HomePage.test.tsx",
+        ],
     }
 
 
@@ -153,6 +193,18 @@ def choose() -> dict:
                 "forced": True,
                 "action": "TAKE_SHOT",
             }
+        generated = local_generated_product_shot()
+        return {
+            "shot": generated,
+            "reason": (
+                f"QUEUE UNREADABLE — {board['queue_error'][:180]}. "
+                "No actionable local tracked product finding is available, so the coach is "
+                "forcing a concrete local product shot instead of waiting for owner input."
+            ),
+            "mix": mix,
+            "forced": True,
+            "action": "TAKE_SHOT",
+        }
         return {
             "shot": None,
             "reason": f"QUEUE UNREADABLE — {board['queue_error'][:180]}",
