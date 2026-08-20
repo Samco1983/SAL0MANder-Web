@@ -1,4 +1,5 @@
 {
+  "_comment": "PROPOSED — review, then replace .claude/settings.json with this. Every allow entry is something Claude was actually stopped on during 2026-08-18/19, costing a relay through the owner each time. The deny list is what must never be automated: each one destroys work or changes the machine's security posture, and each is an owner decision.",
   "permissions": {
     "allow": [
       "Bash(npm run build)",
@@ -8,20 +9,80 @@
       "Bash(npm run typecheck)",
       "Bash(npm run verify)",
       "Bash(npm run format:check)",
+      "Bash(npm run council:*)",
       "Bash(npm ls *)",
       "Bash(npm view *)",
+      "Bash(npx vitest run *)",
+
       "Bash(git show *)",
       "Bash(git ls-files *)",
       "Bash(git rev-parse *)",
       "Bash(git branch *)",
       "Bash(git stash list)",
-      "Bash(git worktree list)",
       "Bash(git archive *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git status *)",
+      "Bash(git check-ignore *)",
+
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push origin *)",
+      "Bash(git pull *)",
+      "Bash(git fetch *)",
+      "Bash(git merge *)",
+      "Bash(git config core.hooksPath *)",
+
+      "Bash(git worktree list)",
+      "Bash(git worktree add *)",
+      "Bash(git worktree remove *)",
+      "Bash(git worktree prune)",
+
+      "Bash(bash scripts/sal0*)",
+      "Bash(chmod +x scripts/*)",
+
+      "Bash(gh issue list *)",
+      "Bash(gh issue view *)",
+      "Bash(gh issue comment *)",
+      "Bash(gh issue edit *)",
+      "Bash(gh issue close *)",
+      "Bash(gh label create *)",
+      "Bash(gh auth status)",
+
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(wc *)",
+      "Bash(stat *)",
+      "Bash(df *)",
+      "Bash(date *)",
+      "Bash(command -v *)",
+      "Bash(env -i *)",
+      "Bash(python3 *)",
+      "Bash(node --check *)",
+      "Bash(bash -n *)",
+
       "mcp__Claude_Browser__navigate",
       "mcp__Claude_Browser__read_page",
       "mcp__Claude_Browser__read_network_requests",
       "mcp__Claude_Browser__find",
       "mcp__scheduled-tasks__list_scheduled_tasks"
+    ],
+    "deny": [
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+      "Bash(git checkout -f *)",
+      "Bash(git push --force *)",
+      "Bash(git rebase *)",
+      "Bash(git remote *)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(launchctl *)",
+      "Bash(security *)",
+      "Bash(npm publish *)"
     ]
   }
 }

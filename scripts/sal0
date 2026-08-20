@@ -27,6 +27,49 @@ ok()  { echo "  ✓ $*"; }
 
 case "${1:-help}" in
 
+start-game)
+  # One button before play. Answers the five questions an owner actually has,
+  # in the order that lets them stop reading early: if the court is not ready,
+  # nothing below it matters.
+  echo
+  echo "  ══ SAL0MANDER BBALL — TIP OFF ══"
+  echo
+
+  READY=yes; OWNER=no; REASONS=""
+
+  [ -f "$PAUSE" ] && { READY=no; REASONS="$REASONS\n    · paused: $(cat "$PAUSE")"; }
+  DIRTY=$(git status --porcelain | wc -l | tr -d ' ')
+  [ "$DIRTY" -gt 0 ] && { READY=no; REASONS="$REASONS\n    · $DIRTY uncommitted file(s) — a scheduled run will refuse to start"; }
+
+  if ! bash scripts/sal0-doctor.sh >/dev/null 2>&1; then
+    READY=no; OWNER=yes
+    REASONS="$REASONS\n    · an agent cannot work from a scheduled shell — see: bash scripts/sal0-doctor.sh"
+  fi
+
+  ls ~/Library/LaunchAgents/ 2>/dev/null | grep -q sal0mander || {
+    REASONS="$REASONS\n    · no launchd job installed — nothing wakes up on its own"; }
+
+  echo "  Court ready:  $READY"
+  [ -n "$REASONS" ] && printf "%b\n" "$REASONS"
+  echo "  Owner needed: $OWNER"
+  echo
+
+  echo "  ── COURT ──"
+  python3 scripts/lib/sal0_bball_assistant.py 2>/dev/null | sed -n '/COURT:/,/^$/p' | sed 's/^/  /'
+
+  echo "  ── NEXT SHOT ──"
+  python3 scripts/lib/sal0_shot_queue.py 2>/dev/null | sed -n '/SHOT QUEUE/,/scores when/p' | sed 's/^/  /'
+
+  echo "  ── RISK ──"
+  python3 scripts/lib/sal0_bball_assistant.py 2>/dev/null \
+    | sed -n '/ANTICIPATION/,/^$/p' | tail -n +2 | sed 's/^/  /'
+
+  echo "  ── VERIFY ──"
+  echo "    npm run verify        must exit 0 before any commit"
+  echo "    npm run mission:bball after the shot, to record the point"
+  echo
+  ;;
+
 check)
   # The order matters: the cheapest check that can invalidate the rest runs first.
   echo
