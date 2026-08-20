@@ -5,6 +5,95 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — the real reason W-16's verdict has never landed: Gemini has no credential, not a queue problem; caught up one unlogged web commit
+
+```text
+AGENT: Claude Code
+AREA: Website lane — hourly work-loop check-in; blocker surfaced to owner + docs catch-up
+STATUS: FOUND — Gemini is structurally unreachable, not silent by choice; one real web commit mirrored into this file
+```
+
+**CHECKED FIRST**
+
+`git status`: clean at `f13613a`. `node scripts/check-upstream.mjs`: no
+upstream Unity-docs changes. Hub (`gh issue view 1 --repo
+Samco1983/Sal0mander-Jigsaw-Puzzle --comments`) reachable; newest comment is
+the Supervisor's `12:54:21Z` cycle, item 4 to Claude: keep W-10…W-16 HOLD, the
+W-17 review is accepted, no new runtime change without a concrete correction
+request or a tracked separable defect. Nothing new addressed to Claude beyond
+that reconfirmation, so not re-posting a bare ACK.
+
+**THE FINDING WORTH SURFACING**
+
+Every Supervisor cycle for days has repeated some form of "GEMINI — ACK only
+the bounded W-16 privacy/security review" and gotten silence, read each time
+as a stale/unresponsive lane. `docs/coordination/BLOCKERS.md` **B-10** (filed
+2026-08-20 by a different SAL0-04 process, never mirrored to this file or the
+hub) has the actual reason: **Gemini cannot authenticate at all.**
+
+Verified directly, not trusted from the doc:
+
+```
+env -i HOME="$HOME" PATH="/usr/local/bin:/usr/bin:/bin" gemini -p "Reply with exactly: ALIVE"
+→ API_KEY_INVALID — "API key not valid. Please pass a valid API key."
+```
+
+`GEMINI_API_KEY` / `GOOGLE_API_KEY` / `GOOGLE_GENAI_API_KEY` are all unset (not
+wrong — absent), and `~/.gemini/oauth_creds.json` does not exist — confirmed
+by `ls`, no credential value read. The interactive login on 2026-08-18 never
+persisted a token to a file a non-interactive shell (this loop, launchd, a
+scheduler) can read. Same failure class as the earlier eight-hour Claude
+credential outage.
+
+**This means the W-10…W-16 hold, as currently scoped, cannot resolve on its
+own.** It is waiting on a review from a seat that has never once been able to
+start a session. No amount of re-asking on the hub fixes this — the fix is a
+one-time interactive step only the owner can do: run `gemini`, choose *Login
+with Google*, complete the browser step. That writes the missing
+`oauth_creds.json`. An API key would also work but adds a secret to manage;
+the OAuth login adds none. `docs/coordination/BLOCKERS.md` B-10 has the exact
+verify-after command.
+
+**SEPARATE, SMALLER CATCH-UP**
+
+`HEAD` had one real web-product commit not yet mirrored here:
+[`58522bc`](https://github.com/Samco1983/SAL0MANder-Web/commit/58522bc) — the
+`verify:deployed` deploy gate now also asserts the phone/mobile viewport meta
+tag on the `/` and `/play/demo-activity` responses, closing the other half of
+the "track 1" deploy-artifact audit Codex assigned (desktop half landed
+earlier in `34ecfd5`). Confirmed the tag is actually present in `index.html`
+(`width=device-width`, `viewport-fit=cover`) so the new gate check isn't
+asserting against nothing. Already reported to Codex directly via
+`docs/coordination/INBOX.md` (`935958a`, "report track 1 complete... as FYI,
+not an ask") — this is a mirror for this file's own record, not a new report.
+The other ten commits in the same range are `council:`-prefixed Mission
+Control/inbox-gate automation (game-system tooling, not web product) —
+noted, not reviewed in depth, same treatment as prior bball-system commits in
+this file.
+
+`npm run verify` at current `HEAD`: lint (same pre-existing script warnings as
+every prior entry), typecheck, **65 files / 700 tests**, 57 mission tests,
+build. All green.
+
+**EVIDENCE**
+
+Docs-only commit this run (this entry). No source touched — `58522bc` was
+already committed and verified by the process that shipped it.
+
+**NEXT**
+
+Relaying B-10 to the hub so the Supervisor's repeated per-cycle ask stops
+re-asking a seat that structurally cannot answer, and so the owner sees the
+actual one-time fix instead of another "still waiting on Gemini" line.
+
+**BLOCKERS**
+
+B-10 (Gemini OAuth login) — owner-only, no agent here can complete it. Same
+W-10…W-16 hold as every prior entry, now with the real cause named instead of
+assumed silence.
+
+---
+
 ## 2026-08-20 — bounded W-17 accessibility/regression review, as directed; ACK'd the HOLD chronology correction
 
 ```text
