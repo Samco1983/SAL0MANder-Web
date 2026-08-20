@@ -56,8 +56,18 @@ export function UnityStage({
   activityId,
   boot,
   sessionStarted,
+  audience = 'developer',
 }: {
   activityId?: string
+  /**
+   * Who is looking at this surface when something is wrong.
+   *
+   * The bare /unity route is a developer smoke test and wants the env var
+   * name. Guest Play is a student who followed a teacher's link, and showing
+   * them `VITE_UNITY_BUILD_BASE_URL` is both useless and slightly alarming.
+   * Same component, same states — different reader.
+   */
+  audience?: 'student' | 'developer'
   boot?: BootPayload
   /**
    * The canonical session, once the web has opened it. Sent on to Unity so it
@@ -233,6 +243,23 @@ export function UnityStage({
   }, [config?.loaderUrl, retryToken])
 
   if (!config) {
+    if (audience === 'student') {
+      // No build deployed. The student did nothing wrong and can do nothing
+      // about it, so this says what is true and who can fix it — and never
+      // implies the link they followed was bad.
+      return (
+        <div className={styles.stage}>
+          <div className={styles.empty} role="status">
+            <h2 className={styles.emptyTitle}>The game isn&apos;t ready yet</h2>
+            <p className={styles.emptyBody}>
+              This activity&apos;s link works, but the game itself hasn&apos;t been published yet.
+              Nothing is wrong on your end — let your teacher know, and try again later.
+            </p>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className={styles.stage}>
         <div className={styles.empty}>
