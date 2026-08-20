@@ -127,6 +127,35 @@ type PendingResult = {
  * error path leaves the stage untouched, and the caller is expected to keep
  * rendering it.
  */
+/**
+ * What belongs in the one buffer slot.
+ *
+ * This used to be `??=`, which keeps whatever got there first. That is correct
+ * for the case it was written for — the same attempt's result arriving twice is
+ * a duplicate, not a second result — and wrong for the case nobody had reached
+ * yet: a buffer left by an ABANDONED attempt is also "first", so a newer
+ * attempt's result was dropped silently while the stale one waited to be shown.
+ * The student would then see an alert about the wrong attempt, with the real
+ * result gone and no signal anywhere.
+ *
+ * That was latent rather than live, because every path that could leave a stale
+ * buffer happened to consume it first. Safety by accident of the current
+ * callers is not safety — it is the same shape as W-17, and the next caller is
+ * what turns it into a defect.
+ *
+ * The rule, stated so it does not depend on who calls it: the slot holds the
+ * CURRENT attempt's result. A newer attempt always replaces a stale occupant; a
+ * repeat of the attempt already held is ignored as the duplicate it is.
+ */
+export function nextPendingResult(
+  held: PendingResult | undefined,
+  attemptId: string,
+  result: Omit<SessionResult, 'sessionId'>,
+): PendingResult {
+  if (held && held.attemptId === attemptId) return held
+  return { attemptId, result }
+}
+
 export function usePlaySession({
   activityId,
   activityVersionId,
@@ -304,7 +333,11 @@ export function usePlaySession({
        */
       if (state.status === 'idle' || state.status === 'starting') {
         if (clientAttemptId) {
-          pendingResultRef.current ??= { attemptId: clientAttemptId, result }
+          pendingResultRef.current = nextPendingResult(
+            pendingResultRef.current,
+            clientAttemptId,
+            result,
+          )
         }
         return
       }
