@@ -311,7 +311,29 @@ export function UnityStage({
           </div>
         </div>
       ) : null}
-      {state.status === 'error' ? (
+      {state.status === 'error' && audience === 'student' ? (
+        /*
+          The same reader #17 was about, at the other failure. A build that is
+          configured and then fails — wrong deploy path, CDN down, file never
+          uploaded — is the first thing a class hits if hosting is off, and the
+          developer copy below tells a child that SAL0MANder "could not start"
+          and then shows them a fetch error.
+
+          No raw reason here: a student cannot act on it, and it reads as
+          something they broke. Retry stays, because a transient network
+          failure is the common case and pressing a button is the one useful
+          thing they CAN do.
+        */
+        <div className={styles.empty} role="alert">
+          <h2 className={styles.emptyTitle}>The game didn&apos;t load</h2>
+          <p className={styles.emptyBody}>
+            Something went wrong loading the game — not the link you followed, and nothing you did.
+            Try again, and if it keeps happening let your teacher know.
+          </p>
+          <Button onClick={() => setRetryToken((n) => n + 1)}>Try again</Button>
+        </div>
+      ) : null}
+      {state.status === 'error' && audience !== 'student' ? (
         <div className={styles.empty} role="alert">
           <h2 className={styles.emptyTitle}>SAL0MANder could not start</h2>
           <p className={styles.emptyBody}>{describeLoadFailure(state.message)}</p>

@@ -62,10 +62,10 @@ const loaderScript = () => loaderScripts()[loaderScripts().length - 1] ?? null
 const fireLoad = () => act(() => void loaderScript()?.onload?.(new Event('load')))
 const fireError = () => act(() => void loaderScript()?.onerror?.(new Event('error')))
 
-const renderStage = () =>
+const renderStage = (audience: 'student' | 'developer' = 'developer') =>
   render(
     <ThemeProvider>
-      <UnityStage activityId="abc" />
+      <UnityStage activityId="abc" audience={audience} />
     </ThemeProvider>,
   )
 
@@ -129,6 +129,81 @@ describe('the failure is explained in words a student can act on', () => {
 
     const alert = screen.getByRole('alert')
     expect(alert).toHaveTextContent(/webgl context creation failed/i)
+  })
+})
+
+describe('a student whose game failed to load', () => {
+  it('is told the game did not load, in words a child can read', async () => {
+    stubUnityFactory()
+    renderStage('student')
+    await fireError()
+
+    expect(screen.getByRole('alert')).toBeVisible()
+    expect(screen.getByText(/game didn.t load/i)).toBeVisible()
+  })
+
+  it('never sees the raw technical reason', async () => {
+    stubUnityFactory()
+    renderStage('student')
+    await fireError()
+
+    const text = document.body.textContent ?? ''
+    expect(text).not.toMatch(/cdn\.example\.com/)
+    expect(text).not.toMatch(/loader\.js|\.wasm|\.framework/)
+    expect(text).not.toMatch(/fetch|network error|status \d{3}/i)
+  })
+
+  it('is not blamed, and neither is the link they followed', async () => {
+    // A student who is told the link is broken goes back to the teacher with
+    // the wrong problem, and the teacher re-sends a link that already works.
+    stubUnityFactory()
+    renderStage('student')
+    await fireError()
+
+    const text = document.body.textContent ?? ''
+    expect(text).toMatch(/not the link|nothing you did/i)
+    expect(text).not.toMatch(/invalid|expired|mistyped|not found/i)
+  })
+
+  it('can still retry, because a dropped download is the common case', async () => {
+    stubUnityFactory()
+    const user = userEvent.setup()
+
+    renderStage('student')
+    await fireError()
+    const before = loaderScript()
+
+    await user.click(screen.getByRole('button', { name: /try again/i }))
+
+    expect(loaderScript()).not.toBeNull()
+    expect(loaderScript()).not.toBe(before)
+  })
+
+  it('is never asked for an account on the failure path', async () => {
+    stubUnityFactory()
+    renderStage('student')
+    await fireError()
+
+    expect(document.querySelector('input')).toBeNull()
+    expect(document.querySelector('form')).toBeNull()
+  })
+})
+
+describe('a developer on the same failure', () => {
+  it('still gets the loader URL', async () => {
+    stubUnityFactory()
+    renderStage('developer')
+    await fireError()
+
+    expect(screen.getByText(/cdn\.example\.com/)).toBeVisible()
+  })
+
+  it('still gets the original wording', async () => {
+    stubUnityFactory()
+    renderStage('developer')
+    await fireError()
+
+    expect(screen.getByText(/could not start/i)).toBeVisible()
   })
 })
 
