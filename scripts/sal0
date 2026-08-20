@@ -47,14 +47,20 @@ start-game)
   DOC_PID=$!
   ( python3 scripts/lib/sal0_bball_assistant.py >"$TMP/court" 2>&1 ) &
   COURT_PID=$!
-  ( python3 scripts/lib/sal0_shot_queue.py >"$TMP/shots" 2>&1 ) &
+  ( python3 scripts/lib/sal0_force_shot.py >"$TMP/shots" 2>&1 ) &
   SHOTS_PID=$!
+  DOC_TIMEOUT=no
 
   # Hard cap. A tip-off that hangs is worse than one that says "unknown".
   DEADLINE=$(( $(date +%s) + 25 ))
   for pid in $DOC_PID $COURT_PID $SHOTS_PID; do
     while kill -0 "$pid" 2>/dev/null; do
-      [ "$(date +%s)" -ge "$DEADLINE" ] && { kill -9 "$pid" 2>/dev/null; break; }
+      [ "$(date +%s)" -ge "$DEADLINE" ] && {
+        [ "$pid" = "$DOC_PID" ] && DOC_TIMEOUT=yes
+        kill "$pid" 2>/dev/null
+        wait "$pid" 2>/dev/null || true
+        break
+      }
       sleep 1
     done
   done
@@ -67,13 +73,16 @@ start-game)
 
   # Only the worker taking the shot decides readiness. A benched seat blocking
   # the court is the failure the bench rule exists to prevent.
-  if [ -s "$TMP/doc" ] && ! grep -qE '^\s*claude\s+ok\s+ok' "$TMP/doc"; then
+  if [ "$DOC_TIMEOUT" = yes ]; then
+    REASONS="$REASONS\n    · doctor timed out — readiness UNKNOWN, run it directly"
+  elif [ -s "$TMP/doc" ] && ! grep -qE '^\s*claude\s+ok\s+ok' "$TMP/doc"; then
     READY=no; OWNER=yes
     REASONS="$REASONS\n    · the worker cannot reach a model from a scheduled shell — bash scripts/sal0-doctor.sh"
   elif [ ! -s "$TMP/doc" ]; then
     REASONS="$REASONS\n    · doctor timed out — readiness UNKNOWN, run it directly"
   fi
-  BENCHED=$(grep -cE '^\s*(gemini|codex).*FAIL' "$TMP/doc" 2>/dev/null || echo 0)
+  BENCHED=$(grep -cE '^\s*(gemini|codex).*FAIL' "$TMP/doc" 2>/dev/null || true)
+  [ -n "$BENCHED" ] || BENCHED=0
   [ "${BENCHED:-0}" -gt 0 ] && REASONS="$REASONS\n    · $BENCHED seat(s) benched — noted, not blocking"
 
   ls ~/Library/LaunchAgents/ 2>/dev/null | grep -q sal0mander || \
@@ -88,7 +97,7 @@ start-game)
   sed -n '/COURT:/,/^$/p' "$TMP/court" 2>/dev/null | sed 's/^/  /' || echo "    (unavailable)"
 
   echo "  ── NEXT SHOT ──"
-  sed -n '/SHOT QUEUE/,/scores when/p' "$TMP/shots" 2>/dev/null | sed 's/^/  /' || echo "    (unavailable)"
+  sed 's/^/  /' "$TMP/shots" 2>/dev/null || echo "    (unavailable)"
 
   echo "  ── RISK ──"
   sed -n '/ANTICIPATION/,/^$/p' "$TMP/court" 2>/dev/null | tail -n +2 | sed 's/^/  /' || echo "    (unavailable)"

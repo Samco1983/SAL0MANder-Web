@@ -111,6 +111,22 @@ catchable packet, and recommend the next shot. Shell, GitHub, test runners,
 browser tools, Make, and Unity inspection are also part of the court. Use them
 to feed clean data quickly instead of asking agents to reason from stale chat.
 
+Python can sub in for deterministic plays. That means work whose correctness
+can be checked mechanically: build a packet, classify logs, label a repeated
+bench, create a one-shot issue template, verify a branch, time out a stuck
+process, sync a runtime, or produce the next command. Python should not sub in
+for product taste, owner risk, secret handling, deploy approval, or final
+acceptance. In AI BBall, Python is allowed to touch the ball when the play is
+repeatable and the verifier is clear.
+
+Use role atoms instead of rigid personalities. A role atom is one capability
+attached to a possession: scout, builder, reviewer, referee, coach, scribe,
+dispatcher, verifier, or equipment manager. An agent can carry a primary role
+and temporary sub-roles when that speeds the play. Python can carry the
+deterministic atoms: scribe, dispatcher, verifier, clock, packet-builder, and
+equipment manager. No agent or tool may carry both builder and referee for the
+same artifact.
+
 ### Three courts
 
 | Court | What happens there | Tonight |

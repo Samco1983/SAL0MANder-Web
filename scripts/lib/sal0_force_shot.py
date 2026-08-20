@@ -75,11 +75,25 @@ def choose() -> dict:
     shots = board.get("board", [])
 
     if not shots:
+        category = "PRODUCT" if mix["below_floor"] else "PRODUCT"
         return {
-            "shot": None,
-            "reason": "the board is empty — no unclaimed shot exists. Add issues.",
+            "shot": {
+                "number": None,
+                "title": "[PRODUCT] Create the next smallest user-visible web shot",
+                "category": category,
+                "success_check": (
+                    "a new WEB product issue exists with one lane, one clock, "
+                    "and one falsifiable success check"
+                ),
+                "size": "setup shot — create/split before assigning",
+            },
+            "reason": (
+                "EMPTY BOARD — no unclaimed shot exists. Do not drift into another audit. "
+                "Create or split one PRODUCT issue before running a worker."
+            ),
             "mix": mix,
-            "forced": False,
+            "forced": True,
+            "action": "CREATE_SHOT",
         }
 
     by_cat = {s["category"]: s for s in shots}
@@ -97,6 +111,7 @@ def choose() -> dict:
             ),
             "mix": mix,
             "forced": True,
+            "action": "TAKE_SHOT",
         }
 
     # A shot flagged BIG is the shape that failed 14 times before being
@@ -114,9 +129,10 @@ def choose() -> dict:
                     "reason": f"{cat} — highest-priority available shot that fits a possession.",
                     "mix": mix,
                     "forced": False,
+                    "action": "TAKE_SHOT",
                 }
 
-    return {"shot": pool[0], "reason": "first available.", "mix": mix, "forced": False}
+    return {"shot": pool[0], "reason": "first available.", "mix": mix, "forced": False, "action": "TAKE_SHOT"}
 
 
 def main() -> int:
@@ -138,8 +154,10 @@ def main() -> int:
     s = result["shot"]
     mark = "  ⚑ FORCED" if result["forced"] else "  NEXT SHOT"
     print(f"{mark}")
-    print(f"    #{s['number']}  {s['title'][:56]}")
+    number = f"#{s['number']}" if s.get("number") is not None else "NEW"
+    print(f"    {number}  {s['title'][:56]}")
     print(f"    category:  {s['category']}")
+    print(f"    action:    {result.get('action', 'TAKE_SHOT')}")
     print(f"    size:      {s['size']}")
     print(f"    scores when: {s['success_check']}")
     print()
