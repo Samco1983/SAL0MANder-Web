@@ -38,6 +38,31 @@ named here only because `CHARTER-WEB-POINT-PERSON.md` commits web to owning them
 "eventually," and a sitemap that omits them would understate what a route table
 addition later needs to reserve path-namespace for.
 
+### 1.1 Hosting and the share-link base path
+
+New since this doc's first revision: the site is now deployable to GitHub Pages
+(`.github/workflows/deploy.yml`), not yet turned on (that publish step is an
+owner call, not an agent one). Project Pages serves under a path prefix
+(`/SAL0MANder-Web/`), not at the domain root, which changes what "the sitemap"
+above actually resolves to in production and is worth stating here rather than
+leaving implicit:
+
+- **In-app navigation** (`<Link>`, `buildPath`) — React Router's `basename`
+  applies the prefix once; every route above is reachable relative to it with
+  no code change.
+- **Share links** (`buildShareLink` in `src/config/routes.ts`) — a share link is
+  an absolute string pasted into Classroom/TPT or printed on a QR code, so it
+  must carry the prefix itself; nothing downstream adds it. `readBasePath()`
+  reads Vite's `BASE_URL` so the deploy path is one env var, not a hardcoded
+  string, so moving the site to a custom domain later does not orphan a link
+  already printed on a worksheet.
+- This is a distribution correctness concern, not a route-ownership one — it
+  does not change the sitemap or the ownership table below, only how a route
+  resolves to a URL a teacher can actually hand to a student. Recorded here
+  because §2's "Guest Play" row is exactly the row it affects, and a route
+  table that is silent about it would understate the failure mode: a
+  correctly-owned route reachable in dev and dead the moment it is deployed.
+
 ---
 
 ## 2. Route responsibility table
