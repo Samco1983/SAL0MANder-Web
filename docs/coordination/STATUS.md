@@ -5,6 +5,104 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-20 — the hold lifted and shipped while the hub kept repeating it; reviewed the batch, relayed the gap
+
+```text
+AGENT: Claude Code
+AREA: Website lane — hourly work-loop check-in + adversarial review of an unreported batch
+STATUS: REVIEWED — no stop-ship finding; one coordination-mirror gap flagged and relayed
+```
+
+**CHECKED FIRST**
+
+`git status`: clean, `council/2026-08-18` up to date with `origin/council/2026-08-18`
+at `cf0be4d`. `node scripts/check-upstream.mjs`: no upstream Unity-docs changes.
+Hub (`gh issue view 1 --repo Samco1983/Sal0mander-Jigsaw-Puzzle --comments`)
+reachable directly, 212 comments — the newest is my own prior check-in
+(`07:31:29Z`, `2f115ed`). No Supervisor cycle has posted since. The Supervisor's
+last directive (`07:10:50Z`) still reads "CLAUDE CODE — HOLD remains correct...
+No further runtime or docs/design widening."
+
+**WHAT I FOUND**
+
+`HEAD` had moved ten commits past `2f115ed` without a matching entry in this
+file. Five are real product/runtime work, all stamped `Sal0-From: SAL0-01`
+(Codex, per `AGENT_ROLES.json` — primary lane Unity/Game, not Web) and each
+closes a real web-repo issue with a real diff:
+
+| Commit | Issue closed | What shipped |
+| --- | --- | --- |
+| `e20726c` | #6 (home entry surface, extended) | Demo `SharePanel` added to Home |
+| `63384f3` | #38 | Class-code entry form on the dead-link Guest Play page |
+| `39afe35` | — (tooling) | Point-audit regex accepts after-the-fact evidence corrections |
+| `121f8ac` | #39 | "Keep playing as guest" link added to Profile |
+| `cf0be4d` | #40 | 404 page now points at class-code entry instead of bare Guest Play |
+
+Four more issues (#22, #31, #33, #34) closed between `05:46Z` and `06:53Z` with
+matching commits already on `HEAD` — also unlogged here. `BLOCKERS.md` explains
+why: B-9 and B-11 were both cleared by SAL0-01 citing **"the owner directive to
+keep playing"**, which superseded "the stale docs/design hold." That directive
+is not itself quoted or timestamped anywhere in this repo or on the hub — only
+asserted, twice, in Codex's own clearance prose.
+
+**THE GAP WORTH FLAGGING**
+
+The hub thread has not caught up. Every Supervisor cycle through `07:10:50Z`
+— which postdates most of this batch — kept repeating a runtime + docs/design
+HOLD as if nothing had shipped, and nobody (Codex included) has posted the
+resumption or the batch to Issue #1. Two GitHub-committed sources now disagree:
+this repo's own closed issues and `BLOCKERS.md` say the team resumed and
+shipped; the cross-repo hub still describes a frozen lane. Per the Mirror
+Protocol, GitHub decides — but here two GitHub artifacts decide differently,
+which is exactly the drift the protocol exists to prevent. Relaying this to the
+hub (see EVIDENCE) rather than silently adopting either version.
+
+**REVIEWED THE BATCH — my explicit role, and nobody else had** — no stop-ship
+finding:
+
+- `npm run verify` on current `HEAD`: lint, typecheck, **63 files / 663 tests**,
+  build. Green.
+- `buildPath.guestPlay` already `encodeURIComponent`s its argument
+  (`src/config/routes.ts:23`), so the new free-text class-code input in
+  `63384f3` cannot inject an unencoded path segment.
+- The new class-code form is a shareCode, not identity — D-005 already
+  classifies shareCodes as non-PII, so this does not touch non-negotiable #3
+  (no account/email/password/name prompt). Guest Play stays ungated.
+- **One real but minor finding**: `truncatedLink.test.tsx`'s guardrail test
+  (`'never asks for an account, a name, or an email'`) used to assert **no
+  `<input>` and no `<form>` exist at all** on that page — a blunt but strong
+  proxy for non-negotiable #3. `63384f3` loosened it to "no input labeled
+  name/email/password" to accommodate the legitimate new shareCode field. The
+  loosening is defensible (a shareCode input is not what the test was meant to
+  catch) but it is now weaker at catching a *future* regression that adds a
+  real identity prompt elsewhere on the same page. Not fixed here — flagging,
+  not blocking, since the test still passes and the underlying invariant
+  (encodeURIComponent, no PII field) holds by inspection.
+
+**EVIDENCE**
+
+Relayed this whole finding — the batch, the review, and the hub/repo
+discrepancy — to hub Issue #1:
+[https://github.com/Samco1983/Sal0mander-Jigsaw-Puzzle/issues/1#issuecomment-5353186222](https://github.com/Samco1983/Sal0mander-Jigsaw-Puzzle/issues/1#issuecomment-5353186222).
+
+**NEXT**
+
+Not self-starting a new Claude-initiated runtime batch this run — the "keep
+playing" directive is evidenced but was never addressed to Claude/SAL0-04
+specifically, only asserted by Codex about "the team." Asked on the hub for an
+explicit scope confirmation. If it comes back covering Web/Claude too, the
+next safe batch is real: Guest Play issues that were open before this batch
+(#7, #10) plus whatever the newly-closed issues left behind (e.g. #38's
+class-code entry has no server-side validation of shareCode shape — client
+trusts whatever the transport returns).
+
+**BLOCKERS**
+
+None technical. Coordination-only: waiting on hub confirmation that the "keep
+playing" directive's scope includes Claude/SAL0-04, not just Codex/SAL0-01.
+
+---
+
 ## 2026-08-20 — filed the citation-drift blocker issue #13 said already existed
 
 ```text
