@@ -237,3 +237,23 @@ be trusted more than it should be.
   an hour. Anything that cannot be scoped that small gets split before it is
   started.
 - **Docs written during a possession are a turnover**, not an assist.
+
+## Fit is measured in time — but only over shots created for that possession
+
+| | Shots | Median time to verified point |
+| --- | ---: | ---: |
+| Created and taken in the same possession | 5 | **2 min** |
+| Pulled off the backlog | 9 | **71 h** |
+
+The 71h is shelf time, not work time. Measuring it as agent performance made
+one agent's median look 2000x worse than that same agent's fastest shot — same
+player, same category, different shot *origin*.
+
+Per-agent, on scoped shots, both agents land at 0–2 minutes. With n=5 there is
+no measurable player difference. **Shot scoping explains the variance; player
+identity does not.**
+
+So: measure fit as minutes from shot *created* to verified point, and only over
+shots created for that possession. Anything else times the queue. And optimise
+shot creation before optimising the roster — the fast break works when the ball
+is already in someone's hands, not when it has to be dug out of a backlog.

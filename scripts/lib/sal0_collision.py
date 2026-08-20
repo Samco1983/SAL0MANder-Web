@@ -143,16 +143,28 @@ def d_dirty_overlap(commits, dirty, w):
     """
     if not dirty:
         return []
-    committed = {}
-    for c in commits:
-        # Your OWN recent commit is not a collision, it is iteration. Without
-        # this, the pre-commit gate blocks every second commit an agent makes —
-        # a guard that cries wolf at normal work gets disabled within an hour,
-        # and then it protects nothing. MINE is set by --mine / SAL0_AGENT.
-        if MINE and c["agent"] == MINE:
-            continue
+    # Newest commit per file, split by who made it. Both halves are needed:
+    # a collision is only live while THEIR commit is newer than MY last word on
+    # the file.
+    theirs, mine_ts = {}, {}
+    for c in commits:  # newest first
         for f in c["files"]:
-            committed.setdefault(f, c)
+            if MINE and c["agent"] == MINE:
+                # Your own recent commit is iteration, not collision. Without
+                # this the gate blocks every second commit an agent makes.
+                mine_ts.setdefault(f, c["ts"])
+            else:
+                theirs.setdefault(f, c)
+
+    committed = {}
+    for f, c in theirs.items():
+        # Already resolved. If I committed this file AFTER they did, I have
+        # demonstrably seen their work — the merge is behind me. Continuing to
+        # warn for the rest of the window is how a guard becomes noise, and a
+        # noisy guard gets bypassed on the commit that actually mattered.
+        if f in mine_ts and mine_ts[f] >= c["ts"]:
+            continue
+        committed[f] = c
 
     hits = [(f, committed[f]) for f in dirty if f in committed]
     if not hits:
