@@ -46,6 +46,10 @@ DOCTRINE = re.compile(r'^docs/', re.I)
 # Local commits nobody else can see. The precondition for every sweep.
 UNPUSHED_AT = 3
 # Words that assert a verified result. Free to write, expensive to trust.
+# What a test file imports. Its subject is what it tests, not its filename.
+MOCKED = re.compile(r"vi\.mock\(")
+MOCKED_ARGS = re.compile(r"""vi\.mock\(\s*['"]([^'"]+)['"]""")
+IMPORT = re.compile(r"""import[^'\"]*['\"]([^'\"]+)['\"]""")
 CLAIM = re.compile(r'verif(y|ied)|tests? pass|green|all pass|confirmed|proven|clean run', re.I)
 # What makes a claim checkable: a command, an exit code, a hash, a count.
 EVIDENCE = re.compile(r'exit[ =:]|npm run|\\b[0-9a-f]{7,40}\\b|\\b\\d+ (tests?|files?|commits?)\\b', re.I)
@@ -349,9 +353,64 @@ def d_claim_without_evidence(commits, _dirty, w):
     }]
 
 
-DETECTORS = [d_dirty_overlap, d_unpushed, d_duplicate_file, d_sweep,
-             d_claim_without_evidence, d_self_rework, d_doctrine_churn,
-             d_duplicate_issue, d_unsigned]
+def d_same_subject(commits, _dirty, w):
+    """Two agents testing the same module from different files.
+
+    The file-level detectors pushed us into separate files and the duplication
+    survived: one agent added QR staleness tests to SharePanel.test.tsx while
+    another added the same three behaviours in qrFreshness.test.tsx, same hour,
+    two possessions, zero extra correctness. Neither gate fired, because the
+    filenames differed.
+
+    A collision is about the SUBJECT, not the filename. This resolves each
+    touched test file to the source modules it imports, and flags a subject
+    that two signatures worked on inside the window.
+    """
+    subjects: dict[str, dict[str, str]] = {}
+
+    for c in commits:
+        for f in c["files"]:
+            if not (".test." in f or ".spec." in f):
+                continue
+            code, body = sh(["git", "show", f"{c['sha']}:{f}"], timeout=15)
+            if code != 0:
+                continue
+            mocked = set(MOCKED_ARGS.findall(body))
+            for m in IMPORT.finditer(body):
+                mod = m.group(1)
+                # A test's SUBJECT is what it imports from its own directory.
+                # Alias imports (@app/…, @config/…) are almost always harness —
+                # every React test here pulls in ThemeProvider and the route
+                # table — and counting those flagged seven "collisions" of which
+                # none were real. A detector that cries wolf is switched off,
+                # and then it protects nothing.
+                if not mod.startswith("./"):
+                    continue
+                # A MOCKED module is a stubbed dependency, not the subject.
+                # hostRecovery.test.tsx imports buildConfig and immediately
+                # vi.mock()s it — counting that made two agents look like they
+                # were testing the same thing when one was only stubbing it.
+                if mod in mocked:
+                    continue
+                key = mod[2:].rsplit("/", 1)[-1]
+                subjects.setdefault(key, {})[c["agent"]] = c["sha"]
+
+    hits = {k: v for k, v in subjects.items() if len(v) >= 2}
+    if not hits:
+        return []
+    return [{
+        "detector": "SAME_SUBJECT",
+        "severity": "high",
+        "what": f"{len(hits)} module(s) tested by more than one agent in {w}m, from different files",
+        "detail": [f"{k} — " + ", ".join(f"{a} ({s})" for a, s in v.items())
+                   for k, v in list(hits.items())[:5]],
+        "do": "read their tests before adding yours; separate files hide duplicate coverage",
+    }]
+
+
+DETECTORS = [d_dirty_overlap, d_unpushed, d_duplicate_file, d_same_subject,
+             d_sweep, d_claim_without_evidence, d_self_rework,
+             d_doctrine_churn, d_duplicate_issue, d_unsigned]
 SEV_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 
 
