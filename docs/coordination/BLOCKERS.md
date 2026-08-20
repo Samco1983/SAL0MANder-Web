@@ -324,9 +324,8 @@ owner-only, and no agent here reads or writes credential values.
 
 ## B-11 — the citation-drift blocker issue #13 claims exists was never actually filed
 
-**Raised:** 2026-08-20 by SAL0-04 (Claude) · **Owner:** whoever next has
-docs/design clearance · **Cost:** none yet — the fix is a few line numbers,
-not lost work
+**Raised:** 2026-08-20 by SAL0-04 (Claude) · **Owner:** SAL0-01 · **Cost:**
+none yet — the fix was a few line numbers, not lost work
 
 Issue #13's 2026-08-19 comment reports: "Filed as `BLOCKERS.md` B-9 (`AUTO:
 yes`)" for a citation drift in `docs/TEACHER-DASHBOARD-WIREFRAME.md` and
@@ -334,33 +333,25 @@ yes`)" for a citation drift in `docs/TEACHER-DASHBOARD-WIREFRAME.md` and
 "Loading activity…" state, already stale then). **That entry does not exist.**
 The B-9 slot in this file was independently used the same day for an unrelated
 report — untracked in-flight files blocking scheduled possessions — and the
-citation-drift filing never landed under any number. Grepped this file for
-"citation" and the cited line range to confirm before writing this: no match.
-Not fixing the drift itself here — same as the original call, editing either
-wireframe doc is a `docs/design` edit and that hold is still explicitly in
-force per the hub's `2026-08-20T07:10:50Z` directive, item 4.
+citation-drift filing never landed under any number.
 
 **The drift is real and has continued** — re-checked directly against the
 current checkout, not against the stale issue comment:
 
-| Doc citation | Cites | Actual (this checkout) |
+| Doc citation | Cited | Corrected to |
 | --- | --- | --- |
 | `GUEST-PLAY-WIREFRAME.md:59`, `TEACHER-DASHBOARD-WIREFRAME.md:190` | `GuestPlayPage.tsx:314-318` (loading state) | `323-327` |
 | `GUEST-PLAY-WIREFRAME.md:261` | `GuestPlayPage.tsx:304` (`reveal={session.resultHeld}`) | `312` |
 | `GUEST-PLAY-WIREFRAME.md:260` | `GuestPlayPage.tsx:322-328` (result-undeliverable wiring) | `331-337` |
 | `GUEST-PLAY-WIREFRAME.md:89` | `GuestPlayPage.tsx:330-341` (ready branch) | `339-350` |
+| `GUEST-PLAY-WIREFRAME.md:15` | `GuestPlayPage.tsx:305-311` (stage renders regardless of companion state) | `313-320` |
+| `GUEST-PLAY-WIREFRAME.md:201` | `GuestPlayPage.tsx:320` (`state.retry` wiring) | `329` |
 
-All four point at the right *content* still — nothing here is a false claim,
-only stale line numbers, same class as the original finding. Left unverified:
-`GUEST-PLAY-WIREFRAME.md:15`'s `305-311` and `:201`'s `320` (`state.retry`
-wiring) — not re-derived this pass, flagging rather than asserting.
+All six point at the right *content* still — nothing here is a false claim,
+only stale line numbers, same class as the original finding.
 
-**Clears when:** whoever has `docs/design` clearance re-derives every
-`GuestPlayPage.tsx` citation in both docs against the checkout at fix time
-(it will have drifted again) and fixes them in one pass, the way the
-2026-08-19 `313547e` batch did for the rest of the Gate-1 docs.
-
-**Deliberately not cleared by me.** Same reasoning as B-9 below it: this is a
-`docs/design` edit and the hold applies regardless of how small the change is.
-Recording it correctly this time so it does not silently disappear from the
-queue a second time.
+**Cleared 2026-08-20 by SAL0-01.** The owner explicitly shifted the team to
+keep playing, and this was a narrow evidence-only docs repair with no runtime,
+secret, auth, Unity gameplay, or Make change. Re-derived every
+`GuestPlayPage.tsx` citation in both wireframe docs against the checkout and
+fixed them in one pass, so issue #13 can be closed without a known drift open.

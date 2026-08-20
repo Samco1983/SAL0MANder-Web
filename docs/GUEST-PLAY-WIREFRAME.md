@@ -12,7 +12,7 @@ route (`/play/:activityId`) that is fully built.
 **The one rule every state below obeys, because it is a non-negotiable, not a
 preference:** the Unity stage (`<UnityStage>`) renders unconditionally inside
 `CompanionLayout`'s `stage` slot regardless of what the companion panel is
-doing (`GuestPlayPage.tsx:305-311`). No wireframe in this document ever shows
+doing (`GuestPlayPage.tsx:313-320`). No wireframe in this document ever shows
 the stage blocked, hidden, or replaced by a companion-panel state.
 
 ---
@@ -56,7 +56,7 @@ URL: /play/K7Q4M2XP  (or /play/<activityId>)
 │                                 │   state once one does.           │
 └─────────────────────────────────┴───────────────────────────────┘
 ```
-Code: `GuestPlayPage.tsx:314-318` (`state.status === 'loading'`),
+Code: `GuestPlayPage.tsx:323-327` (`state.status === 'loading'`),
 `UnityStage.tsx:236-251` (`!config` placeholder) or `:269-286` (`loading`,
 determinate progress bar, `role="progressbar"`). These two loaders are
 unrelated — the activity metadata fetch and the WebGL download race, and either
@@ -86,7 +86,7 @@ can finish first (`UnityStage.tsx:116-118`).
 │ guest: 9f3a21b8… (device-local)  │                                 │
 └─────────────────────────────────┴───────────────────────────────┘
 ```
-Code: `GuestPlayPage.tsx:330-341` (ready branch), `SharePanel.tsx` (copy/QR),
+Code: `GuestPlayPage.tsx:339-350` (ready branch), `SharePanel.tsx` (copy/QR),
 `usePlaySession` starts the session as soon as `bundle` exists and a mode is
 known (`GuestPlayPage.tsx:166-174`, `enabled: Boolean(bundle)`). Session start
 is invisible in this wireframe by design — there is no "starting…" companion
@@ -198,7 +198,7 @@ Code: `linkState.ts:54-56` (default/`unavailable` branch), `isRecoverable`
 returns `error.retryable` (`linkState.ts:61`) — only network/server-class
 errors the transport itself flagged retryable get this treatment. `retry`
 re-invokes `useGuestActivity`'s fetch (`state.retry`, wired at
-`GuestPlayPage.tsx:320`).
+`GuestPlayPage.tsx:329`).
 
 ### 3.5 Unity WebGL load failure (independent of activity state)
 
@@ -257,8 +257,8 @@ in this section.
 │  share panel, etc.)              │                                 │
 └─────────────────────────────────┴───────────────────────────────┘
 ```
-Code: `GuestPlayPage.tsx:55-80` (`UndeliveredResult`), `:322-328` (wired to
-`session.status === 'result-undeliverable'`), `GuestPlayPage.tsx:304`
+Code: `GuestPlayPage.tsx:55-89` (`UndeliveredResult`), `:331-337` (wired to
+`session.status === 'result-undeliverable'`), `GuestPlayPage.tsx:312`
 (`reveal={session.resultHeld}`). **Survives a reload** — `resultHold.ts`
 persists the held result to `sessionStorage`, scoped to the live
 `clientAttemptId`, rehydrated on the session-start effect's first live run

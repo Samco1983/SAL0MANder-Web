@@ -187,7 +187,7 @@ fourth action exists because there is no fourth web-owned responsibility.
 ### 3.4 Loading
 
 `role="status"`, same pattern as Guest Play's `"Loading activity…"`
-(`GuestPlayPage.tsx:314-318`) — text-only, no skeleton screens invented here
+(`GuestPlayPage.tsx:323-327`) — text-only, no skeleton screens invented here
 since none exist elsewhere in the app to be consistent with.
 
 ### 3.5 Error — activity list fetch failed
