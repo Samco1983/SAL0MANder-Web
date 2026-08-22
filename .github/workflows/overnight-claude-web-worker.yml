@@ -95,6 +95,14 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Without an explicit token the action exchanges an OIDC token for a
+          # GitHub App token and fails 401: "Claude Code is not installed on
+          # this repository." Installing that App is an owner-only action, so
+          # this uses the workflow's own token instead — the job already grants
+          # contents/issues/pull-requests write, which is everything the task
+          # needs. Swap back to the App if it is ever installed; App tokens are
+          # narrower than GITHUB_TOKEN.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             You are Claude Code, the web engineering point person for SAL0MANder.
 
