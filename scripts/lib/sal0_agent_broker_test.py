@@ -135,8 +135,15 @@ class AgentBrokerTest(unittest.TestCase):
         result = broker.invoke(task)
         command = run.call_args.args[0]
         self.assertEqual("exec", command[1])
-        self.assertIn("workspace-write", command)
+        # --approve-for-me implies the workspace-write sandbox. Codex rejects the
+        # pair outright ("--sandbox cannot be used with --approve-for-me"), so
+        # asserting the flag was present is what kept this adapter green while
+        # every real dispatch exited 2 in ~40ms. Assert the pair is never sent.
+        self.assertIn("--approve-for-me", command)
+        self.assertNotIn("-s", command)
+        self.assertNotIn("--sandbox", command)
         self.assertNotIn("danger-full-access", command)
+        self.assertNotIn("--dangerously-bypass-approvals-and-sandbox", command)
         self.assertEqual("abc", result.session_id)
 
     @patch.object(broker.subprocess, "run")

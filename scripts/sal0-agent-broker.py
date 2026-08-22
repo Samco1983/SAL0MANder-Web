@@ -257,7 +257,11 @@ def invoke(task: dict[str, Any], dry_run: bool = False) -> AgentResult:
     prompt = agent_prompt(task)
     if task["role"] == "codex-cli":
         binary = resolve_binary("SAL0_CODEX_BIN", CODEX_CANDIDATES, "codex")
-        command = [binary, "exec", "-C", workspace, "-s", "workspace-write",
+        # --approve-for-me already implies the workspace-write sandbox, and codex
+        # rejects the pair: "--sandbox cannot be used with --approve-for-me".
+        # Passing both made every codex-cli dispatch exit 2 in ~40ms without
+        # ever reaching a model.
+        command = [binary, "exec", "-C", workspace,
                    "--approve-for-me", "--json", prompt]
     else:
         binary = resolve_binary("SAL0_CLAUDE_BIN", CLAUDE_CANDIDATES, "claude")
