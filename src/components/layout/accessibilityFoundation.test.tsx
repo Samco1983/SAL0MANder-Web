@@ -52,8 +52,14 @@ describe('landmarks', () => {
 
   it('keeps deployment diagnostics available during local development', () => {
     renderShell()
+    // Asserts the diagnostics line is PRESENT and complete, not which transport
+    // happens to be wired. It previously pinned `api: mock`, which made it fail
+    // the moment VITE_API_BASE_URL was set to point at a real endpoint — a
+    // legitimate config change, not a regression in diagnostics. The transport
+    // in use is deliberately still shown, because "which backend am I talking
+    // to" is the first question when a page misbehaves.
     expect(screen.getByText(/env: local/i)).toHaveTextContent(
-      'env: local · contract: v1 · api: mock',
+      /env: local · contract: v1 · api: \w+/,
     )
   })
 })

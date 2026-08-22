@@ -96,7 +96,8 @@
     "verify": "npm run lint && npm run typecheck && npm run test && npm run test:mission && npm run build",
     "verify:artifact": "node scripts/verify-deploy-artifact.mjs dist /SAL0MANder-Web/",
     "verify:deployed": "node scripts/verify-deployed-site.mjs",
-    "verify:pages": "npm run build:pages && npm run pages:fallback && npm run verify:artifact"
+    "verify:pages": "npm run build:pages && npm run pages:fallback && npm run verify:artifact",
+    "score": "node scripts/sal0-score.mjs"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
