@@ -120,10 +120,7 @@ describe('focus visibility', () => {
 })
 
 describe('touch targets', () => {
-  const buttonCss = readFileSync(
-    resolve(__dirname, '../ui/Button.module.css'),
-    'utf8',
-  )
+  const buttonCss = readFileSync(resolve(__dirname, '../ui/Button.module.css'), 'utf8')
 
   it('gives every button size a minimum height, including the small one', () => {
     const minHeights = [...buttonCss.matchAll(/min-height:\s*([\d.]+)rem/g)].map((m) =>
@@ -150,6 +147,28 @@ describe('touch targets', () => {
   })
 
   const shellCss = readFileSync(resolve(__dirname, './AppShell.module.css'), 'utf8')
+
+  it('puts the 44px touch floor on the shared Button, not on each caller', () => {
+    // Issue #53. #48 scoped its fix to `.navLink`, so every control outside the
+    // shell nav stayed at the `sm` size's 36px — the theme toggle and the
+    // companion toggle were both found under the floor afterwards, on the
+    // student surface.
+    //
+    // The floor now lives on the shared component, so a NEW small button cannot
+    // ship under the minimum. This asserts that, because the alternative is
+    // finding the same defect a fourth time in whatever gets built next.
+    const coarse = buttonCss.match(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/)
+    expect(coarse, 'the pointer: coarse floor was removed from Button').not.toBeNull()
+    const minHeight = coarse?.[0].match(/min-height:\s*(\d+)px/)
+    expect(Number(minHeight?.[1])).toBeGreaterThanOrEqual(44)
+  })
+
+  it('leaves the compact desktop button alone', () => {
+    // The floor must apply only to coarse pointers. A mouse keeps the 36px
+    // control; fattening every button on desktop is a real regression.
+    const outsideCoarse = buttonCss.replace(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/, '')
+    expect(outsideCoarse).toMatch(/\.sm\s*\{[\s\S]*?min-height:\s*2\.25rem/)
+  })
 
   it('floors the shell nav links at 44px on touch pointers', () => {
     // Issue #48: measured at 38px on the live site. Every primary nav link

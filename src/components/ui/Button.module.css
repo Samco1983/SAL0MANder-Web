@@ -98,3 +98,27 @@
     box-shadow: var(--shadow-glow);
   }
 }
+
+/*
+ * Issue #53 — the 44px floor belongs HERE, not in each caller.
+ *
+ * `sm` is 2.25rem (36px), which is under the WCAG 2.5.5 / Apple HIG touch
+ * minimum. That is fine for a mouse and wrong for a finger, and it made every
+ * small button in the product a 36px target: the theme toggle in the shell and
+ * the companion toggle on the student surface both measured 36px on a phone.
+ *
+ * #48 fixed the shell nav by scoping a rule to `.navLink`, and #51/#53 then
+ * found the same defect twice more in controls that rule never covered. Putting
+ * the floor on the shared component is the fix that stops the third repetition:
+ * a NEW small button cannot ship under the minimum, because it inherits this.
+ *
+ * Gated on `pointer: coarse` so desktop keeps its compact 36px control — a
+ * tablet in landscape is wider than any width breakpoint and is still a finger,
+ * which is why this is not a max-width query.
+ */
+@media (pointer: coarse) {
+  .button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
