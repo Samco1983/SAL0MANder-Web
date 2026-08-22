@@ -55,6 +55,13 @@ const EnvSchema = z.object({
 
   VITE_UNITY_BUILD_BASE_URL: url,
   VITE_UNITY_BUILD_NAME: z.string().optional().default('SAL0MANder'),
+  /*
+   * Unity compresses WebGL data/framework/wasm by default and appends the
+   * suffix to the filename. Verified against a real build: WebGL.data.br,
+   * WebGL.framework.js.br, WebGL.wasm.br. The loader stays uncompressed.
+   * 'none' is for a build made with compression disabled.
+   */
+  VITE_UNITY_BUILD_COMPRESSION: z.enum(['br', 'gzip', 'none']).optional().default('br'),
 
   VITE_STORAGE_PROVIDER: z.enum(['memory', 'http']).optional().default('memory'),
   VITE_MEDIA_CDN_BASE_URL: url,
@@ -169,6 +176,7 @@ export function readEnv(source: unknown) {
     unity: {
       buildBaseUrl: raw.VITE_UNITY_BUILD_BASE_URL,
       buildName: raw.VITE_UNITY_BUILD_NAME,
+      compression: raw.VITE_UNITY_BUILD_COMPRESSION,
       isConfigured: raw.VITE_UNITY_BUILD_BASE_URL.length > 0,
     },
 
