@@ -57,6 +57,13 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      # Required by claude-code-action, which authenticates via OIDC. Without it
+      # every scheduled run died in ~40s with "Could not fetch an OIDC token",
+      # having already checked out the repo and reported the credential present —
+      # so the failure looked like a task problem rather than a permissions one.
+      # Eight consecutive hourly runs failed this way on 2026-08-22 before anyone
+      # opened the log.
+      id-token: write
     steps:
       - name: Check Anthropic credential
         id: credential
