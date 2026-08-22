@@ -32,6 +32,19 @@ export type QuizSubmission = {
  */
 const keyFor = (attemptId: string, quizId: string) => `sal0:quiz:${attemptId}:${quizId}`
 
+/**
+ * Submitted-ness has to persist too, and for a while it did not.
+ *
+ * Answers survived a refresh but the "finished" flag was React state only, so a
+ * student could finish, reload, and submit the whole lesson a second time —
+ * duplicate results in a teacher's record. The in-memory guards were real and
+ * caught a double CLICK; they simply did not survive the page.
+ *
+ * Found by measuring a reloaded page rather than by re-reading the component.
+ */
+const doneKeyFor = (attemptId: string, quizId: string) =>
+  `sal0:quiz:${attemptId}:${quizId}:submitted`
+
 function loadAnswers(key: string): Answers {
   try {
     const raw = window.localStorage.getItem(key)
@@ -64,7 +77,15 @@ export function QuizPanel({
   submitted?: boolean
 }) {
   const storageKey = keyFor(attemptId, quiz.quizId)
+  const doneKey = doneKeyFor(attemptId, quiz.quizId)
   const [answers, setAnswers] = useState<Answers>(() => loadAnswers(storageKey))
+  const [wasSubmitted, setWasSubmitted] = useState<boolean>(() => {
+    try {
+      return window.localStorage.getItem(doneKey) === '1'
+    } catch {
+      return false
+    }
+  })
   const startedAt = useRef<number>(Date.now())
 
   // Restored progress must not be counted as time spent, or a lesson resumed
@@ -117,7 +138,21 @@ export function QuizPanel({
     })
   }, [allAnswered, submitting, submitted, onComplete, answeredCount, correctCount])
 
-  if (submitted) {
+  useEffect(() => {
+    if (!submitted) return
+    setWasSubmitted(true)
+    try {
+      // Written only when `submitted` is true, and the parent flips that only
+      // AFTER the result write is awaited. Recording it earlier would lock a
+      // student out of a lesson whose result never left the device.
+      window.localStorage.setItem(doneKey, '1')
+    } catch {
+      // A full store means the guard is in-memory only for this page. Losing
+      // it is better than refusing to let a student finish.
+    }
+  }, [submitted, doneKey])
+
+  if (submitted || wasSubmitted) {
     return (
       <section className={styles.panel} aria-labelledby="quiz-done">
         <h2 id="quiz-done" className={styles.title}>
