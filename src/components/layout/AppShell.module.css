@@ -82,6 +82,21 @@
   color: var(--color-text);
 }
 
+/* WCAG 2.5.5 and Apple's HIG both floor touch targets at 44x44. Those numbers
+   come from adult motor precision; this shell is used by elementary and middle
+   school students on shared tablets, who have less of it.
+   Gated on `pointer: coarse` rather than a width breakpoint on purpose: a
+   tablet in landscape is wider than the mobile breakpoint and is still a
+   finger. A width gate would leave exactly the primary device unfixed.
+   Desktop (fine pointer) is untouched, so the header does not fatten. */
+@media (pointer: coarse) {
+  .navLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
 .navLinkActive {
   color: var(--color-text);
   background: var(--color-surface-sunken);

@@ -142,4 +142,31 @@ describe('touch targets', () => {
     await user.tab()
     expect(button).toHaveFocus()
   })
+
+  const shellCss = readFileSync(resolve(__dirname, './AppShell.module.css'), 'utf8')
+
+  it('floors the shell nav links at 44px on touch pointers', () => {
+    // Issue #48: measured at 38px on the live site. Every primary nav link
+    // (Home, Play, Profile, WebGL Host, System) was under the WCAG 2.5.5 and
+    // Apple HIG minimum, for students on shared tablets.
+    const coarse = shellCss.match(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/)
+    expect(coarse, 'the pointer: coarse block was removed').not.toBeNull()
+    expect(coarse?.[0]).toMatch(/\.navLink\b/)
+    const minHeight = coarse?.[0].match(/min-height:\s*(\d+)px/)
+    expect(Number(minHeight?.[1])).toBeGreaterThanOrEqual(44)
+  })
+
+  it('gates the floor on pointer, not width, so landscape tablets are covered', () => {
+    // A 10" tablet in landscape is wider than the mobile breakpoint and is
+    // still a finger. Gating on max-width would leave the primary device — the
+    // one this product is actually used on — unfixed.
+    expect(shellCss).toMatch(/@media\s*\(pointer:\s*coarse\)/)
+  })
+
+  it('leaves the desktop header alone, so nothing fattens on a mouse', () => {
+    // min-height on .navLink must live inside the coarse-pointer block only.
+    const outsideCoarse = shellCss.replace(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/, '')
+    const navLinkBase = outsideCoarse.match(/\.navLink\s*\{[\s\S]*?\}/)?.[0] ?? ''
+    expect(navLinkBase).not.toMatch(/min-height/)
+  })
 })

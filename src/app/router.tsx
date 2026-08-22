@@ -30,6 +30,9 @@ const ProfilePage = lazy(() =>
 const UnityHostPage = lazy(() =>
   import('@routes/unity/UnityHostPage').then((m) => ({ default: m.UnityHostPage })),
 )
+const SystemPage = lazy(() =>
+  import('@routes/system/SystemPage').then((m) => ({ default: m.SystemPage })),
+)
 
 /**
  * A split route must never show a student a blank screen while its chunk
@@ -58,6 +61,7 @@ export const routes: RouteObject[] = [
   { path: paths.guestPlay, element: split(<GuestPlayPage />), errorElement: <RouteError /> },
   { path: paths.profile, element: split(<ProfilePage />), errorElement: <RouteError /> },
   { path: paths.unity, element: split(<UnityHostPage />), errorElement: <RouteError /> },
+  { path: paths.system, element: split(<SystemPage />), errorElement: <RouteError /> },
   // The catch-all needs a boundary too: without one, a throw inside
   // NotFoundPage renders React Router's default blank screen — the exact
   // outcome RouteError exists to prevent.

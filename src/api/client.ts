@@ -4,6 +4,7 @@ import { createMockTransport } from './mockTransport'
 import { activitiesApi } from './endpoints/activities'
 import { playApi } from './endpoints/play'
 import { sessionsApi } from './endpoints/sessions'
+import { opsApi } from './endpoints/ops'
 
 /**
  * The app's single entry point to the backend.
@@ -18,6 +19,8 @@ export function createApiClient(transport: Transport) {
     /** Share-link resolution (draft; runs alongside `activities`). */
     play: playApi(transport),
     sessions: sessionsApi(transport),
+    /** Operator actions — reaches Make via our own edge endpoint, never directly. */
+    ops: opsApi(transport),
   }
 }
 
