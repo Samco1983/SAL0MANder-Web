@@ -13,6 +13,7 @@ import json
 import os
 import shutil
 import sqlite3
+import stat
 import subprocess
 import sys
 import uuid
@@ -32,6 +33,7 @@ CODEX_CANDIDATES = (
     Path.home() / ".local" / "bin" / "codex",
 )
 CLAUDE_CANDIDATES = (Path.home() / ".local" / "bin" / "claude",)
+DEFAULT_CLAUDE_TOKEN_FILE = Path.home() / ".sal0mander" / "secrets" / "claude_oauth_token"
 ROLES = {"codex-cli", "claude"}
 LANES = {"Coordination", "Web", "Unity/Game"}
 STATUSES = {
@@ -263,6 +265,14 @@ def invoke(task: dict[str, Any], dry_run: bool = False) -> AgentResult:
                    "auto", "--no-chrome", "--name", f"sal0-{task['id'][:8]}", prompt]
     if dry_run:
         return AgentResult(command, 0, "", "", None)
+    environment = None
+    if task["role"] == "claude":
+        token_file = Path(os.environ.get("SAL0_CLAUDE_TOKEN_FILE", DEFAULT_CLAUDE_TOKEN_FILE))
+        if token_file.is_file():
+            if stat.S_IMODE(token_file.stat().st_mode) != 0o600:
+                return AgentResult(command, 78, "", "Claude token file must have mode 600", None)
+            environment = os.environ.copy()
+            environment["CLAUDE_CODE_OAUTH_TOKEN"] = token_file.read_text(encoding="utf-8").strip()
     try:
         completed = subprocess.run(
             command,
@@ -271,6 +281,7 @@ def invoke(task: dict[str, Any], dry_run: bool = False) -> AgentResult:
             text=True,
             timeout=int(task["timeout_seconds"]),
             check=False,
+            env=environment,
         )
         return AgentResult(
             command,

@@ -139,6 +139,47 @@ class AgentBrokerTest(unittest.TestCase):
         self.assertNotIn("danger-full-access", command)
         self.assertEqual("abc", result.session_id)
 
+    @patch.object(broker.subprocess, "run")
+    def test_claude_adapter_reads_private_token_file_into_child_environment(self, run):
+        run.return_value.returncode = 0
+        run.return_value.stdout = '{}\n'
+        run.return_value.stderr = ""
+        token_file = Path(self.tmp.name) / "claude_oauth_token"
+        token_file.write_text("test-token\n", encoding="utf-8")
+        token_file.chmod(0o600)
+        old_token_file = os.environ.get("SAL0_CLAUDE_TOKEN_FILE")
+        os.environ["SAL0_CLAUDE_TOKEN_FILE"] = str(token_file)
+        self.addCleanup(
+            lambda: os.environ.pop("SAL0_CLAUDE_TOKEN_FILE", None)
+            if old_token_file is None
+            else os.environ.__setitem__("SAL0_CLAUDE_TOKEN_FILE", old_token_file)
+        )
+
+        task = broker.enqueue(self.db, self.args(role="claude"))
+        broker.invoke(task)
+
+        environment = run.call_args.kwargs["env"]
+        self.assertEqual("test-token", environment["CLAUDE_CODE_OAUTH_TOKEN"])
+
+    @patch.object(broker.subprocess, "run")
+    def test_claude_adapter_refuses_unsafe_token_permissions(self, run):
+        token_file = Path(self.tmp.name) / "claude_oauth_token"
+        token_file.write_text("test-token\n", encoding="utf-8")
+        token_file.chmod(0o644)
+        old_token_file = os.environ.get("SAL0_CLAUDE_TOKEN_FILE")
+        os.environ["SAL0_CLAUDE_TOKEN_FILE"] = str(token_file)
+        self.addCleanup(
+            lambda: os.environ.pop("SAL0_CLAUDE_TOKEN_FILE", None)
+            if old_token_file is None
+            else os.environ.__setitem__("SAL0_CLAUDE_TOKEN_FILE", old_token_file)
+        )
+
+        task = broker.enqueue(self.db, self.args(role="claude"))
+        result = broker.invoke(task)
+
+        self.assertEqual(78, result.exit_code)
+        run.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
