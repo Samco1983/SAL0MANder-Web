@@ -131,7 +131,16 @@ jobs:
             Safe edit scope for overnight work is existing/new text source and tests under src/ and docs/. No binaries or generated artifacts.
             If the requested task requires a major product decision, production credential, deployment, destructive migration, or live Unity evidence, make no speculative implementation and return a blocker report.
           claude_args: |
-            --max-turns 14
+            # 14 was too small to finish the smallest real task. The first run
+            # that got this far spent every turn reading CLAUDE.md, the charter,
+            # the bridge code and its tests — the orientation this job's own
+            # prompt requires — and hit the cap before making a single edit,
+            # exiting `error_max_turns` with nothing to show.
+            #
+            # The job already has a 55-minute timeout and a diff guard, so turns
+            # were the wrong place to bound the blast radius: a cap that stops a
+            # task mid-orientation only guarantees the run produces nothing.
+            --max-turns 60
             --allowedTools Read,Edit,Write,Glob,Grep,Bash(npm run verify:*),Bash(npm test:*),Bash(git diff:*),Bash(git status:*)
 
       - name: Guard unattended diff
