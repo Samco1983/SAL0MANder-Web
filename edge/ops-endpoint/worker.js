@@ -113,8 +113,18 @@ export default {
   },
 }
 
-/** Must match opsIdempotencyKey() in src/api/endpoints/ops.ts. */
-async function deriveKey(action, reason) {
+/**
+ * Must match opsIdempotencyKey() in src/api/endpoints/ops.ts byte for byte.
+ *
+ * This is deliberately duplicated rather than imported: the worker deploys to
+ * Cloudflare on its own and cannot reach into the site's source tree at deploy
+ * time. Duplication is the price of that separation, so the agreement is held
+ * by a test instead — src/api/endpoints/ops.test.ts imports BOTH and asserts
+ * they produce identical output. Without that test this is two functions that
+ * merely look alike, and a drift between them silently splits one write into
+ * two. Exported for exactly that test.
+ */
+export async function deriveKey(action, reason) {
   const minute = new Date().toISOString().slice(0, 16)
   const normalized = reason.toLowerCase().replace(/\s+/g, ' ')
   let hash = 0x811c9dc5
