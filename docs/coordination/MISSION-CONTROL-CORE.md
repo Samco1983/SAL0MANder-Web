@@ -54,6 +54,47 @@ To inspect local Mac launchd/pause/log state:
 npm run mission:desktop:status
 ```
 
+## Durable Claude/Codex Broker
+
+Mission Control can wake the two local CLI workers through one SQLite-backed
+queue. This is the actual machine-to-machine bridge; chat windows and
+`INBOX.md` remain human-readable surfaces, not execution APIs.
+
+```bash
+npm run mission:broker -- enqueue \
+  --role codex-cli \
+  --lane Coordination \
+  --workspace "$PWD" \
+  --prompt "Review the bounded broker change and report evidence." \
+  --success-check "python broker tests exit with code zero"
+
+npm run mission:broker:dispatch
+npm run mission:broker:list
+```
+
+The queue is local at
+`~/.sal0mander/mission-control/tasks.sqlite3`. Agent output is stored beneath
+`~/.sal0mander/mission-control/runs/`; it is not committed and must not contain
+secrets.
+
+State transitions are deliberately asymmetric:
+
+```text
+QUEUED -> RUNNING -> AWAITING_VERIFICATION -> DONE
+                     \-> FAILED
+```
+
+An agent exit code of zero reaches only `AWAITING_VERIFICATION`. A separate
+command must provide an existing evidence file and the verifier's exit code:
+
+```bash
+npm run mission:broker -- verify TASK_ID --exit-code 0 --evidence PATH
+```
+
+That is the mechanical form of "no agent grades its own homework." The broker
+also refuses Claude assignments in the Unity/Game lane and refuses Web work
+outside this repository.
+
 To print the human/browser links without writing a new preflight report:
 
 ```bash

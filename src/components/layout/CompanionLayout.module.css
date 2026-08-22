@@ -49,6 +49,10 @@
 }
 
 .stage {
+  /* Space the floating toggle occupies, published so the stage can reserve
+     exactly that much rather than guess at a magic number. See the note above
+     .toggle — issue #51. */
+  --companion-toggle-reserve: calc(var(--space-3) + 44px + var(--space-3));
   position: relative;
   min-width: 0;
   min-height: 0;
@@ -65,6 +69,21 @@
   z-index: var(--z-overlay);
 }
 
+/*
+ * Issue #51. The toggle floats over the stage, so anything centred in the stage
+ * can end up underneath it. Measured on /play/demo-activity at 375x812: the
+ * button overlapped the "The game isn't ready yet" heading by 122px across and
+ * 16px down, leaving a student reading the left half of the one message that
+ * explains why nothing is happening.
+ *
+ * z-index was not the problem — both elements were being laid out into the same
+ * box, so raising it would only have changed which one was unreadable.
+ *
+ * This publishes the space the toggle occupies as a custom property instead of
+ * nudging the stage by a magic number. The stage reserves exactly that much and
+ * the two stay in step if the button ever changes size. Declared on .stage
+ * rather than :root so it cannot leak into unrelated layouts.
+ */
 /* --- Narrow viewports ------------------------------------------------------
  * The stage keeps the full width. The companion becomes a bottom sheet layered
  * over it, so a phone/small tablet never shrinks the playable area. */

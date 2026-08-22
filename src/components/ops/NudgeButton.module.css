@@ -1,0 +1,24 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+/* Reserves its line whether or not there is a message, so pressing the button
+   never shifts the layout underneath the pointer that just pressed it. */
+.status {
+  min-height: 1.25rem;
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.ok {
+  color: var(--color-text);
+}
+
+.failed {
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
+}

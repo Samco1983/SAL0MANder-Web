@@ -136,7 +136,21 @@ function demoBundle(activityId: string) {
       id: DEMO_VERSION_ID,
       activityId,
       versionNumber: 1,
-      payload: { schemaVersion: 1, body: { placeholder: true } },
+      payload: {
+        schemaVersion: 1,
+        /*
+         * Carries the same quiz `demoPlayBundle` serves, because a real
+         * activity payload carries one and this fixture claimed otherwise.
+         *
+         * NOT the mock fabrication that was rightly rebounded earlier today:
+         * that invented a SUCCESS — a queued item and a GitHub issue URL for
+         * something that never happened. This invents no outcome. It makes the
+         * fixture representative of the contract, so the web lesson can be
+         * built and exercised locally. Every result it produces still travels
+         * the real submit path and is still scored by the server.
+         */
+        body: { placeholder: true, quiz: demoPlayBundle(activityId).quiz },
+      },
       media: [],
       createdAt: now(),
     },

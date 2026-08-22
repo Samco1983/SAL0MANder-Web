@@ -24,6 +24,27 @@
   text-align: center;
 }
 
+/*
+ * Issue #51: keep the empty state clear of the companion toggle.
+ *
+ * The toggle is absolutely positioned over the stage's top-left, so centred
+ * content can land underneath it. Measured at 375x812 the button covered the
+ * status heading by 122px across — a student read half of the only message
+ * explaining why nothing is happening.
+ *
+ * Only below 60rem, which is exactly where CompanionLayout turns the companion
+ * into a bottom sheet and the stage keeps full width. Wider layouts have room
+ * beside the toggle and must not gain a top gap.
+ *
+ * The reserve comes from CompanionLayout so one value moves both. The fallback
+ * keeps this honest if the stage is ever rendered outside that layout.
+ */
+@media (max-width: 60rem) {
+  .empty {
+    padding-top: calc(var(--space-6) + var(--companion-toggle-reserve, 68px));
+  }
+}
+
 .emptyTitle {
   font-size: var(--text-lg);
   margin-bottom: var(--space-3);
