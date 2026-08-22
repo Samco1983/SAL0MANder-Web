@@ -142,7 +142,6 @@ jobs:
           # wrong place to bound blast radius.
           claude_args: |
             --max-turns 60
-            --allowedTools Read,Edit,Write,Glob,Grep,Bash(npm run verify:*),Bash(npm test:*),Bash(git diff:*),Bash(git status:*)
 
       - name: Guard unattended diff
         if: steps.credential.outputs.ready == 'true'
