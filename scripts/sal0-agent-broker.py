@@ -8,6 +8,7 @@ The broker never promotes an agent's successful exit to DONE by itself.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import os
 import shutil
@@ -17,6 +18,7 @@ import sys
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +26,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB = Path.home() / ".sal0mander" / "mission-control" / "tasks.sqlite3"
 DEFAULT_RUNS = Path.home() / ".sal0mander" / "mission-control" / "runs"
+DEFAULT_SHARED_STATE = Path.home() / ".sal0mander" / "SHARED-STATE.md"
 CODEX_CANDIDATES = (
     Path("/Applications/ChatGPT.app/Contents/Resources/codex"),
     Path.home() / ".local" / "bin" / "codex",
@@ -43,6 +46,31 @@ STATUSES = {
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def shared_state_path() -> Path:
+    return Path(os.environ.get("SAL0_SHARED_STATE", DEFAULT_SHARED_STATE)).expanduser()
+
+
+def role_label(role: str) -> str:
+    return "Codex" if role == "codex-cli" else "Claude"
+
+
+def publish_event(role: str, status: str, thing: str, evidence: str) -> None:
+    """Append a non-sensitive V4 possession event without overwrite races."""
+    path = shared_state_path()
+    if not path.exists():
+        return
+    safe_thing = " ".join(thing.split())[:160]
+    safe_evidence = " ".join(evidence.split())[:240]
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+    line = f"{stamp}  {role_label(role):<7} {status:<20} {safe_thing} — {safe_evidence}\n"
+    with path.open("a", encoding="utf-8") as handle:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        handle.write(line)
+        handle.flush()
+        os.fsync(handle.fileno())
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
 def resolve_binary(env_name: str, candidates: tuple[Path, ...], fallback: str) -> str:
@@ -130,6 +158,12 @@ def enqueue(db: sqlite3.Connection, args: argparse.Namespace) -> dict[str, Any]:
          args.success_check.strip(), args.timeout, created),
     )
     db.commit()
+    publish_event(
+        args.role,
+        "NEXT-PASS",
+        f"task {task_id[:8]} queued in {args.lane}",
+        "SQLite broker accepted one bounded task",
+    )
     return task_dict(db.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone())
 
 
@@ -155,6 +189,13 @@ def claim_next(db: sqlite3.Connection, role: str | None) -> dict[str, Any] | Non
         db.rollback()
         return None
     db.commit()
+    expires = (datetime.now(timezone.utc) + timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%MZ")
+    publish_event(
+        row["role"],
+        f"CLAIMED until {expires}",
+        f"task {row['id'][:8]} in {row['lane']}",
+        "atomic SQLite claim; agent dispatch starting",
+    )
     return task_dict(db.execute("SELECT * FROM tasks WHERE id = ?", (row["id"],)).fetchone())
 
 
@@ -277,6 +318,12 @@ def finish_run(
          result.stderr[-2000:] if result.exit_code else None, task["id"]),
     )
     db.commit()
+    publish_event(
+        task["role"],
+        "AWAITING-VERIFICATION" if result.exit_code == 0 else "BLOCKED",
+        f"task {task['id'][:8]} agent run finished",
+        f"exit {result.exit_code}; run evidence at {run_dir}",
+    )
     return task_dict(db.execute("SELECT * FROM tasks WHERE id = ?", (task["id"],)).fetchone())
 
 
@@ -295,6 +342,12 @@ def verify(db: sqlite3.Connection, args: argparse.Namespace) -> dict[str, Any]:
         (status, str(evidence), now(), None if args.exit_code == 0 else "verification failed", args.id),
     )
     db.commit()
+    publish_event(
+        row["role"],
+        "DONE" if args.exit_code == 0 else "BLOCKED",
+        f"task {args.id[:8]} independently verified",
+        f"verifier exit {args.exit_code}; evidence {evidence}",
+    )
     return task_dict(db.execute("SELECT * FROM tasks WHERE id = ?", (args.id,)).fetchone())
 
 

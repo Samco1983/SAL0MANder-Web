@@ -1,5 +1,6 @@
 import argparse
 import importlib.util
+import os
 import sqlite3
 import sys
 import tempfile
@@ -23,6 +24,17 @@ class AgentBrokerTest(unittest.TestCase):
         self.db_path = Path(self.tmp.name) / "tasks.sqlite3"
         self.db = broker.connect(self.db_path)
         self.addCleanup(self.db.close)
+        self.shared_state = Path(self.tmp.name) / "SHARED-STATE.md"
+        self.shared_state.write_text("## LOG\n", encoding="utf-8")
+        self.old_shared_state = os.environ.get("SAL0_SHARED_STATE")
+        os.environ["SAL0_SHARED_STATE"] = str(self.shared_state)
+        self.addCleanup(self.restore_shared_state)
+
+    def restore_shared_state(self):
+        if self.old_shared_state is None:
+            os.environ.pop("SAL0_SHARED_STATE", None)
+        else:
+            os.environ["SAL0_SHARED_STATE"] = self.old_shared_state
 
     def args(self, **overrides):
         values = dict(
@@ -93,6 +105,26 @@ class AgentBrokerTest(unittest.TestCase):
         self.assertEqual("DRY_RUN", output["status"])
         self.assertEqual("QUEUED", row["status"])
         self.assertEqual(0, row["attempts"])
+
+    def test_v4_publishes_state_without_copying_private_prompt(self):
+        task = broker.enqueue(
+            self.db,
+            self.args(prompt="Private application detail must not enter shared state."),
+        )
+        claimed = broker.claim_next(self.db, None)
+        broker.finish_run(
+            self.db,
+            claimed,
+            broker.AgentResult(["fake"], 0, "", "", None),
+            Path(self.tmp.name) / "runs",
+            False,
+        )
+        text = self.shared_state.read_text(encoding="utf-8")
+        self.assertIn("NEXT-PASS", text)
+        self.assertIn("CLAIMED until", text)
+        self.assertIn("AWAITING-VERIFICATION", text)
+        self.assertIn(task["id"][:8], text)
+        self.assertNotIn("Private application detail", text)
 
     @patch.object(broker.subprocess, "run")
     def test_codex_adapter_uses_direct_argv_and_bounded_sandbox(self, run):
