@@ -45,7 +45,7 @@ const keyFor = (attemptId: string, quizId: string) => `sal0:quiz:${attemptId}:${
 const doneKeyFor = (attemptId: string, quizId: string) =>
   `sal0:quiz:${attemptId}:${quizId}:submitted`
 
-function loadAnswers(key: string): Answers {
+function loadAnswers(key: string, quiz: Quiz): Answers {
   try {
     const raw = window.localStorage.getItem(key)
     const parsed: unknown = raw ? JSON.parse(raw) : null
@@ -53,9 +53,20 @@ function loadAnswers(key: string): Answers {
     // Shape-check rather than cast: this is user-writable storage, and a
     // half-written or hand-edited value must degrade to "start over" instead of
     // rendering something incoherent to a child.
+    /*
+     * A stored value must be a real choice OF THAT QUESTION, not merely a
+     * non-empty string. Rebounded by Codex: the previous filter counted any
+     * string as an answer, so hand-edited or stale storage could mark a
+     * question answered with a choiceId that does not exist on it — enabling
+     * Finish for a lesson the student never completed, and submitting a count
+     * that overstates their work.
+     */
+    const valid = new Map(
+      quiz.questions.map((q) => [q.questionId, new Set(q.choices.map((c) => c.choiceId))]),
+    )
     return Object.fromEntries(
       Object.entries(parsed as Record<string, unknown>).filter(
-        ([k, v]) => typeof k === 'string' && typeof v === 'string',
+        ([k, v]) => typeof v === 'string' && (valid.get(k)?.has(v) ?? false),
       ),
     ) as Answers
   } catch {
@@ -78,7 +89,7 @@ export function QuizPanel({
 }) {
   const storageKey = keyFor(attemptId, quiz.quizId)
   const doneKey = doneKeyFor(attemptId, quiz.quizId)
-  const [answers, setAnswers] = useState<Answers>(() => loadAnswers(storageKey))
+  const [answers, setAnswers] = useState<Answers>(() => loadAnswers(storageKey, quiz))
   const [wasSubmitted, setWasSubmitted] = useState<boolean>(() => {
     try {
       return window.localStorage.getItem(doneKey) === '1'
@@ -87,6 +98,8 @@ export function QuizPanel({
     }
   })
   const startedAt = useRef<number>(Date.now())
+  /** One completion per mount. Reset with the attempt, which remounts the panel. */
+  const firedRef = useRef(false)
 
   // Restored progress must not be counted as time spent, or a lesson resumed
   // the next morning reports a sixteen-hour duration.
@@ -131,6 +144,18 @@ export function QuizPanel({
     // hint to a pointer and nothing at all to a double-fired event or a
     // keyboard repeat.
     if (!allAnswered || submitting || submitted) return
+    /*
+     * Own latch, because every other guard here round-trips through the parent.
+     * `submitting` and `submitted` are props: the page sets them inside an async
+     * handler, so a fast double-click fires onComplete twice before either prop
+     * comes back down. A ref flips synchronously, in the same tick as the click.
+     *
+     * Caught by the test below, not by reading this function — the same way the
+     * refresh double-submit was caught by reloading a page rather than
+     * re-reading the component.
+     */
+    if (firedRef.current) return
+    firedRef.current = true
     onComplete({
       questionsAnswered: answeredCount,
       questionsCorrect: correctCount,
