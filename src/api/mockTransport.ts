@@ -202,9 +202,15 @@ export function createMockTransport(): Transport {
        * fingerprint and replayed the invalid response forever. The key was
        * poisoned for the session and the correction could never land.
        *
-       * That is vector 4 in contracts/v1/idempotencyFixtures.ts, which was
-       * written to describe the same defect in Unity's bridge. It was here too.
-       * The bug ate its own repair on both sides of the boundary.
+       * RELATED TO vector 4, but NOT the same bug — the distinction matters and
+       * I originally got it wrong. Vector 4 is about an invalid REQUEST
+       * consuming its event id on the way IN. This was an invalid RESPONSE
+       * being cached under a key on the way OUT. Same family, opposite
+       * directions, different fix.
+       *
+       * So this ordering is a defensive improvement, NOT proof of vector 4.
+       * Vector 4 is unproven here and stays that way until the mock can emit a
+       * response that fails its own schema.
        */
       if (!parsed.success) {
         throw new ApiError({

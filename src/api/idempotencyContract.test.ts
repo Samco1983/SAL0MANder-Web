@@ -10,11 +10,14 @@ import { IDEMPOTENCY_VECTORS } from '@contracts/v1'
  *
  * These vectors were written to describe a defect in Unity's bridge, which
  * consumes an eventId before semantic validation so a corrected retry is
- * silently discarded. Writing them exposed the same defect here: the transport
- * recorded the idempotency key BEFORE validating the response, so a response
- * that failed the contract still burned its key — and because the retry is the
- * same request, it matched the stored fingerprint and replayed the invalid
- * response forever.
+ * silently discarded.
+ *
+ * Writing them exposed a RELATED — not identical — defect here, and the
+ * difference matters enough that it was ruled on explicitly. Unity's is an
+ * invalid REQUEST consuming its id on the way IN. The web's was an invalid
+ * RESPONSE being cached under a key on the way OUT, then replayed forever
+ * because the retry matched the stored fingerprint. Same family, opposite
+ * directions, different fixes. Calling them the same bug was my error.
  *
  * 733 tests passed with that bug in place. Every one of them asserted what this
  * code did rather than what the contract required, which is exactly the failure
@@ -70,11 +73,11 @@ describe('the idempotency contract, web side', () => {
     /*
      * HONEST FAILURE, marked so it cannot masquerade as coverage.
      *
-     * Vector 4 says a response that fails validation must not burn its key, or
-     * the corrected retry is discarded. The transport HAD that bug — it
-     * recorded before validating — and it is fixed. But this test cannot prove
-     * the fix, and I would rather say so than ship a green line that means
-     * nothing.
+     * Vector 4 is about an invalid REQUEST not consuming its event id. The web
+     * fixed a NEIGHBOURING defect — an invalid response being cached — which is
+     * a defensive improvement and explicitly NOT proof of vector 4. Neither is
+     * provable through this surface, and I would rather say so than ship a
+     * green line that means nothing.
      *
      * Why it is unreachable: making the SCHEMA impossible does not make the
      * RESPONSE invalid. route() always produces a well-formed object, so the
