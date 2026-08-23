@@ -17,7 +17,7 @@
  */
 
 import { readFileSync, existsSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 
 /** Local references the browser must be able to fetch. Ignores external URLs. */
 export function localAssetRefs(html) {
@@ -47,12 +47,43 @@ export function verifyArtifact(dir, basePath) {
   const index = readFileSync(indexPath, 'utf8')
 
   for (const ref of localAssetRefs(index)) {
-    if (!ref.startsWith('/')) continue // relative refs resolve against the page, fine
+    if (!ref.startsWith('/')) {
+      problems.push(
+        `index.html uses relative local reference "${ref}" — it resolves differently ` +
+          'from deep SPA fallback URLs and must be rooted at the deploy base',
+      )
+      continue
+    }
     if (!ref.startsWith(base)) {
       problems.push(
         `index.html references "${ref}", which is outside the deploy base "${base}" — ` +
           `the browser will request it from the wrong path and the page will render blank`,
       )
+      continue
+    }
+
+    const pathname = ref.split(/[?#]/, 1)[0]
+    let artifactRelativePath
+    try {
+      artifactRelativePath = decodeURIComponent(pathname.slice(base.length))
+    } catch {
+      problems.push(`index.html contains malformed URL encoding in local reference "${ref}"`)
+      continue
+    }
+
+    const artifactPath = resolve(dir, artifactRelativePath || '.')
+    const artifactRoot = resolve(dir)
+    const pathFromRoot = relative(artifactRoot, artifactPath)
+    if (pathFromRoot.startsWith('..') || pathFromRoot.startsWith('/')) {
+      problems.push(`index.html local reference "${ref}" escapes the deploy artifact`)
+      continue
+    }
+    if (!existsSync(artifactPath)) {
+      problems.push(
+        `index.html references "${ref}", but "${artifactPath}" is missing from the deploy artifact`,
+      )
+    } else if (artifactRelativePath && !statSync(artifactPath).isFile()) {
+      problems.push(`index.html references "${ref}", but it does not resolve to a file`)
     }
   }
 
