@@ -54,21 +54,23 @@ const home = await get('')
  *    still answering 200. */
 const refs = localAssetRefs(home.body)
 const basePath = new URL(base).pathname
-const scripts = refs.filter((r) => r.endsWith('.js'))
+const scripts = refs.filter((r) => r.split(/[?#]/, 1)[0].endsWith('.js'))
 if (scripts.length === 0) {
   failures.push(`the homepage references no javascript at all (${home.body.length} bytes) — it cannot be the app`)
 }
-for (const r of scripts) {
-  if (r.startsWith('/') && !r.startsWith(basePath)) {
+for (const r of refs) {
+  if (!r.startsWith('/')) {
+    failures.push(`asset "${r}" is relative — it resolves differently from deep links and must be rooted at the deploy base`)
+  } else if (!r.startsWith(basePath)) {
     failures.push(`asset "${r}" sits outside the deploy base "${basePath}" — the browser will request it from the wrong origin path and the page will render blank`)
   }
 }
 
-/* 2. Those assets must actually be fetchable, with real bytes. A correct href
+/* 2. Every local asset must actually be fetchable, with real bytes. A correct href
  *    to a file that was never uploaded fails identically for a student. */
-for (const r of scripts.slice(0, 3)) {
+for (const r of refs.filter((ref) => ref.startsWith(basePath))) {
   const a = await get(r)
-  if (a.status !== 200 || a.body.length < 100) {
+  if (a.status !== 200 || a.body.length === 0) {
     failures.push(`asset ${r} -> ${a.status}, ${a.body.length} bytes — referenced but not served`)
   }
 }
