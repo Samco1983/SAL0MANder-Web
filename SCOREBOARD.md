@@ -46,7 +46,7 @@ escalated. That is the failure this board is built to make impossible to miss.
 
 [ ] The LIVE site serves its own assets (not a stale index.html)  ::  CHECK: NET: curl -sf "https://samco1983.github.io/SAL0MANder-Web/" | grep -qE '(src|href)="/SAL0MANder-Web/assets/'
 
-[x] A student can finish the lesson on a phone, no Unity  ::  CHECK: npm run build >/dev/null 2>&1 && node scripts/sal0-web-proof.mjs
+[x] A student can finish the lesson on a phone, no Unity  ::  CHECK: node scripts/sal0-web-proof.mjs
 
 ## Unity
 

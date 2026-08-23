@@ -20,14 +20,59 @@
  * a finger. Measuring the element alone reported 20 of 30 controls failing when
  * only one was — a check has to be right before its result means anything.
  *
- * Usage: node scripts/sal0-web-proof.mjs   (expects `npm run build` to have run)
+ * Builds `dist/` itself when it is missing or stale, so the scoreboard line is
+ * one command and cannot be run against a stale artifact by accident. It used
+ * to be `npm run build && node this`, which rebuilt unconditionally and pushed
+ * `npm run score` past six minutes — a check too slow to run is a check nobody
+ * runs, and I made it that way.
+ *
+ * Staleness compares dist/index.html against the newest SOURCE FILE, walked
+ * recursively. Not a directory mtime: a directory's mtime does not change when a
+ * file inside it is edited, and comparing against one produced a confident false
+ * PASS in this very repo earlier today.
+ *
+ * Usage: node scripts/sal0-web-proof.mjs   (builds if needed)
  */
 import { chromium } from 'playwright'
 import { createServer } from 'node:http'
-import { createReadStream, existsSync, statSync } from 'node:fs'
+import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { extname, join, normalize, resolve } from 'node:path'
 
 const DIST = resolve(process.cwd(), 'dist')
+
+/** Newest mtime among real files under `dir`, recursively. 0 if absent. */
+function newestFileMtime(dir) {
+  if (!existsSync(dir)) return 0
+  let newest = 0
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name)
+    if (entry.isDirectory()) newest = Math.max(newest, newestFileMtime(full))
+    else if (entry.isFile()) newest = Math.max(newest, statSync(full).mtimeMs)
+  }
+  return newest
+}
+
+/**
+ * Build only when the artifact is older than the sources that produce it.
+ * Returns how the decision was made so the log says WHY, not just what.
+ */
+function ensureFreshDist() {
+  const built = existsSync(join(DIST, 'index.html')) ? statSync(join(DIST, 'index.html')).mtimeMs : 0
+  const sources = Math.max(
+    newestFileMtime(resolve(process.cwd(), 'src')),
+    ...['index.html', 'vite.config.ts', 'package.json', 'tsconfig.app.json']
+      .map((f) => resolve(process.cwd(), f))
+      .filter((f) => existsSync(f))
+      .map((f) => statSync(f).mtimeMs),
+  )
+  if (built > sources) {
+    console.log(`dist is newer than every source file — reusing it (saves a full build)`)
+    return
+  }
+  console.log(built === 0 ? 'no dist — building' : 'dist is older than a source file — rebuilding')
+  execFileSync('npm', ['run', 'build'], { stdio: ['ignore', 'ignore', 'inherit'] })
+}
 const PORT = 8121
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -39,10 +84,7 @@ const MIME = {
   '.json': 'application/json',
 }
 
-if (!existsSync(DIST)) {
-  console.error('FAIL  no dist/ — run `npm run build` first')
-  process.exit(1)
-}
+ensureFreshDist()
 
 const server = createServer((req, res) => {
   const p = decodeURIComponent((req.url ?? '/').split('?')[0])
