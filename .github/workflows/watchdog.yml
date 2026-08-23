@@ -1,0 +1,72 @@
+# The backup plan.
+#
+# Written from the numbers, not from theory. Over the last 100 runs:
+#   deploy              3/3 SUCCESS  — and all three shipped a blank site
+#   Claude Worker      0/35 failed   — silently, for three days
+#   Gemini Review     30/30 ok
+#
+# The first line is why this exists. Every existing check reports on our own
+# pipeline, and the pipeline was green throughout an outage. A backup plan that
+# triggers on CI status would have said nothing for three days. So this one
+# triggers on OUTCOME: it asks the live site and the agent record, on a
+# schedule, whether or not anything was deployed.
+#
+# It does not page anyone or open a pile of issues. It keeps exactly ONE issue
+# up to date, so the signal cannot be buried by its own noise.
+name: Watchdog — is anything actually working
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+
+      # Asks the PUBLISHED site, not our copy of it. Reads bytes, never status:
+      # this site answered 200 for three days while serving nothing.
+      - name: is the live site actually serving a lesson
+        id: site
+        run: |
+          if node scripts/verify-live-site.mjs "https://samco1983.github.io/SAL0MANder-Web/" > /tmp/site.txt 2>&1; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+          cat /tmp/site.txt
+
+      # An agent whose runs all fail is not "an agent having a bad day", it is a
+      # dead lane nobody noticed. Gemini sat at 30/30 while Claude sat at 0/35
+      # and both looked the same from outside.
+      - name: is every agent lane alive
+        id: agents
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/watchdog-agents.mjs > /tmp/agents.txt 2>&1 || true
+        continue-on-error: true
+
+      - name: keep one issue honest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BODY=$(printf 'Updated automatically each hour. This issue is opened and closed by the watchdog — it reflects the live site and the agent record right now, not a past claim.\n\n## The published site\n```\n%s\n```\n\n## Agent lanes\n```\n%s\n```\n' "$(cat /tmp/site.txt)" "$(cat /tmp/agents.txt 2>/dev/null || echo 'not checked')")
+          NUM=$(gh issue list --label watchdog --state open --limit 1 --json number --jq '.[0].number // empty')
+          if [ "${{ steps.site.outputs.ok }}" = "false" ]; then
+            if [ -n "$NUM" ]; then
+              gh issue edit "$NUM" --body "$BODY"
+            else
+              gh issue create --label watchdog --title "The published site is not serving a lesson" --body "$BODY"
+            fi
+          elif [ -n "$NUM" ]; then
+            gh issue comment "$NUM" --body "Recovered — the live site is serving a lesson again."
+            gh issue close "$NUM"
+          fi
