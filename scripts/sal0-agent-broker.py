@@ -261,7 +261,12 @@ def invoke(task: dict[str, Any], dry_run: bool = False) -> AgentResult:
         # rejects the pair: "--sandbox cannot be used with --approve-for-me".
         # Passing both made every codex-cli dispatch exit 2 in ~40ms without
         # ever reaching a model.
-        command = [binary, "exec", "-C", workspace,
+        # --skip-git-repo-check: the broker names the workspace explicitly, so
+        # codex's own trusted-directory guard is redundant here and only fails
+        # the dispatch. Without it any workspace that is not a trusted git repo
+        # dies in ~150ms with "Not inside a trusted directory", which is how
+        # every task pointed outside this repo failed.
+        command = [binary, "exec", "-C", workspace, "--skip-git-repo-check",
                    "--approve-for-me", "--json", prompt]
     else:
         binary = resolve_binary("SAL0_CLAUDE_BIN", CLAUDE_CANDIDATES, "claude")

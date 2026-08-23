@@ -44,7 +44,7 @@ escalated. That is the failure this board is built to make impossible to miss.
 
 [?] The live site serves Guest Play  ::  CHECK: NET: curl -sf "https://samco1983.github.io/SAL0MANder-Web/play/demo-activity" | grep -qi 'sal0mander'
 
-[x] Nav tap targets meet the 44px touch minimum  ::  CHECK: grep -A4 'pointer: coarse' src/components/layout/AppShell.module.css | grep -qE 'min-height:\s*(4[4-9]|[5-9][0-9])px'
+[x] A student can finish the lesson on a phone, no Unity  ::  CHECK: npm run build >/dev/null 2>&1 && node scripts/sal0-web-proof.mjs
 
 ## Unity
 

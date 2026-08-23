@@ -68,6 +68,9 @@
     "mission:next:json": "python3 scripts/lib/sal0_force_shot.py --json",
     "mission:nudge": "python3 scripts/sal0_nudge.py",
     "mission:nudge:dry": "python3 scripts/sal0_nudge.py --dry-run --max-cycles 1",
+    "mission:awake:start": "python3 scripts/sal0_awake.py start",
+    "mission:awake:status": "python3 scripts/sal0_awake.py status",
+    "mission:awake:stop": "python3 scripts/sal0_awake.py stop",
     "mission:packet": "python3 scripts/lib/sal0_court_packet.py",
     "mission:packet:json": "python3 scripts/lib/sal0_court_packet.py --json",
     "mission:points": "python3 scripts/lib/sal0_verify_points.py",
@@ -97,7 +100,8 @@
     "verify:artifact": "node scripts/verify-deploy-artifact.mjs dist /SAL0MANder-Web/",
     "verify:deployed": "node scripts/verify-deployed-site.mjs",
     "verify:pages": "npm run build:pages && npm run pages:fallback && npm run verify:artifact",
-    "score": "node scripts/sal0-score.mjs"
+    "score": "node scripts/sal0-score.mjs",
+    "proof:web": "node scripts/sal0-web-proof.mjs"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
