@@ -193,17 +193,29 @@ export function createMockTransport(): Transport {
       }
 
       const result = route(options, sessions)
-      if (options.idempotencyKey) {
-        idempotency.set(options.idempotencyKey, { fingerprint, response: result })
-      }
 
       const parsed = schema.safeParse(result)
+      /*
+       * RECORD ONLY AFTER VALIDATION. This used to record first, which burned
+       * the idempotency key on a response that then failed the contract — and
+       * because the retry is the SAME request, it matched the stored
+       * fingerprint and replayed the invalid response forever. The key was
+       * poisoned for the session and the correction could never land.
+       *
+       * That is vector 4 in contracts/v1/idempotencyFixtures.ts, which was
+       * written to describe the same defect in Unity's bridge. It was here too.
+       * The bug ate its own repair on both sides of the boundary.
+       */
       if (!parsed.success) {
         throw new ApiError({
           code: 'contract_mismatch',
           message: `Mock transport produced a payload that fails the contract for ${options.path}`,
           details: { issues: parsed.error.issues },
         })
+      }
+
+      if (options.idempotencyKey) {
+        idempotency.set(options.idempotencyKey, { fingerprint, response: result })
       }
       return parsed.data
     },
