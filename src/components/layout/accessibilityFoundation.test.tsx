@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
@@ -193,5 +193,35 @@ describe('touch targets', () => {
     const outsideCoarse = shellCss.replace(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/, '')
     const navLinkBase = outsideCoarse.match(/\.navLink\s*\{[\s\S]*?\}/)?.[0] ?? ''
     expect(navLinkBase).not.toMatch(/min-height/)
+  })
+})
+
+describe('the rebrand rule', () => {
+  /*
+   * CLAUDE.md: components consume SEMANTIC tokens, never primitives, so a
+   * rebrand touches design/tokens.css alone.
+   *
+   * That held everywhere except UnityStage.module.css, which used six
+   * primitives — not carelessness, but because the stage had only two
+   * on-surface tokens and a dark canvas needs four. The fix was to name the
+   * missing roles rather than to scold the file.
+   *
+   * Asserted across EVERY module stylesheet rather than a named list, because
+   * the next violation will be in whatever file is written next.
+   */
+  it('no component stylesheet reaches for a primitive colour token', () => {
+    const dir = resolve(__dirname, '../..')
+    const walk = (d: string): string[] =>
+      readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+        e.isDirectory()
+          ? walk(resolve(d, e.name))
+          : e.name.endsWith('.module.css')
+            ? [resolve(d, e.name)]
+            : [],
+      )
+    const offenders = walk(dir).filter((f) =>
+      /var\(--(neutral|blue|green|red|amber|purple)-\d/.test(readFileSync(f, 'utf8')),
+    )
+    expect(offenders.map((f) => f.replace(dir, ''))).toEqual([])
   })
 })
