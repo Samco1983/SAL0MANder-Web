@@ -44,7 +44,7 @@ escalated. That is the failure this board is built to make impossible to miss.
 
 [?] Unity WebGL loader is fetchable from the live site  ::  CHECK: NET: test $(curl -sf "https://samco1983.github.io/SAL0MANder-Web/unity-build/Build/sal0-unity-webgl.loader.js" | wc -c) -gt 10000
 
-[?] The live site serves Guest Play  ::  CHECK: NET: curl -sf "https://samco1983.github.io/SAL0MANder-Web/play/demo-activity" | grep -qi 'sal0mander'
+[ ] The LIVE site serves its own assets (not a stale index.html)  ::  CHECK: NET: curl -sf "https://samco1983.github.io/SAL0MANder-Web/" | grep -qE '(src|href)="/SAL0MANder-Web/assets/'
 
 [x] A student can finish the lesson on a phone, no Unity  ::  CHECK: npm run build >/dev/null 2>&1 && node scripts/sal0-web-proof.mjs
 
