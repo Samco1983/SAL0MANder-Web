@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
@@ -52,8 +52,14 @@ describe('landmarks', () => {
 
   it('keeps deployment diagnostics available during local development', () => {
     renderShell()
+    // Asserts the diagnostics line is PRESENT and complete, not which transport
+    // happens to be wired. It previously pinned `api: mock`, which made it fail
+    // the moment VITE_API_BASE_URL was set to point at a real endpoint — a
+    // legitimate config change, not a regression in diagnostics. The transport
+    // in use is deliberately still shown, because "which backend am I talking
+    // to" is the first question when a page misbehaves.
     expect(screen.getByText(/env: local/i)).toHaveTextContent(
-      'env: local · contract: v1 · api: mock',
+      /env: local · contract: v1 · api: \w+/,
     )
   })
 })
@@ -114,10 +120,7 @@ describe('focus visibility', () => {
 })
 
 describe('touch targets', () => {
-  const buttonCss = readFileSync(
-    resolve(__dirname, '../ui/Button.module.css'),
-    'utf8',
-  )
+  const buttonCss = readFileSync(resolve(__dirname, '../ui/Button.module.css'), 'utf8')
 
   it('gives every button size a minimum height, including the small one', () => {
     const minHeights = [...buttonCss.matchAll(/min-height:\s*([\d.]+)rem/g)].map((m) =>
@@ -141,5 +144,84 @@ describe('touch targets', () => {
     const button = screen.getByRole('button', { name: /press me/i })
     await user.tab()
     expect(button).toHaveFocus()
+  })
+
+  const shellCss = readFileSync(resolve(__dirname, './AppShell.module.css'), 'utf8')
+
+  it('puts the 44px touch floor on the shared Button, not on each caller', () => {
+    // Issue #53. #48 scoped its fix to `.navLink`, so every control outside the
+    // shell nav stayed at the `sm` size's 36px — the theme toggle and the
+    // companion toggle were both found under the floor afterwards, on the
+    // student surface.
+    //
+    // The floor now lives on the shared component, so a NEW small button cannot
+    // ship under the minimum. This asserts that, because the alternative is
+    // finding the same defect a fourth time in whatever gets built next.
+    const coarse = buttonCss.match(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/)
+    expect(coarse, 'the pointer: coarse floor was removed from Button').not.toBeNull()
+    const minHeight = coarse?.[0].match(/min-height:\s*(\d+)px/)
+    expect(Number(minHeight?.[1])).toBeGreaterThanOrEqual(44)
+  })
+
+  it('leaves the compact desktop button alone', () => {
+    // The floor must apply only to coarse pointers. A mouse keeps the 36px
+    // control; fattening every button on desktop is a real regression.
+    const outsideCoarse = buttonCss.replace(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/, '')
+    expect(outsideCoarse).toMatch(/\.sm\s*\{[\s\S]*?min-height:\s*2\.25rem/)
+  })
+
+  it('floors the shell nav links at 44px on touch pointers', () => {
+    // Issue #48: measured at 38px on the live site. Every primary nav link
+    // (Home, Play, Profile, WebGL Host, System) was under the WCAG 2.5.5 and
+    // Apple HIG minimum, for students on shared tablets.
+    const coarse = shellCss.match(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/)
+    expect(coarse, 'the pointer: coarse block was removed').not.toBeNull()
+    expect(coarse?.[0]).toMatch(/\.navLink\b/)
+    const minHeight = coarse?.[0].match(/min-height:\s*(\d+)px/)
+    expect(Number(minHeight?.[1])).toBeGreaterThanOrEqual(44)
+  })
+
+  it('gates the floor on pointer, not width, so landscape tablets are covered', () => {
+    // A 10" tablet in landscape is wider than the mobile breakpoint and is
+    // still a finger. Gating on max-width would leave the primary device — the
+    // one this product is actually used on — unfixed.
+    expect(shellCss).toMatch(/@media\s*\(pointer:\s*coarse\)/)
+  })
+
+  it('leaves the desktop header alone, so nothing fattens on a mouse', () => {
+    // min-height on .navLink must live inside the coarse-pointer block only.
+    const outsideCoarse = shellCss.replace(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/, '')
+    const navLinkBase = outsideCoarse.match(/\.navLink\s*\{[\s\S]*?\}/)?.[0] ?? ''
+    expect(navLinkBase).not.toMatch(/min-height/)
+  })
+})
+
+describe('the rebrand rule', () => {
+  /*
+   * CLAUDE.md: components consume SEMANTIC tokens, never primitives, so a
+   * rebrand touches design/tokens.css alone.
+   *
+   * That held everywhere except UnityStage.module.css, which used six
+   * primitives — not carelessness, but because the stage had only two
+   * on-surface tokens and a dark canvas needs four. The fix was to name the
+   * missing roles rather than to scold the file.
+   *
+   * Asserted across EVERY module stylesheet rather than a named list, because
+   * the next violation will be in whatever file is written next.
+   */
+  it('no component stylesheet reaches for a primitive colour token', () => {
+    const dir = resolve(__dirname, '../..')
+    const walk = (d: string): string[] =>
+      readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+        e.isDirectory()
+          ? walk(resolve(d, e.name))
+          : e.name.endsWith('.module.css')
+            ? [resolve(d, e.name)]
+            : [],
+      )
+    const offenders = walk(dir).filter((f) =>
+      /var\(--(neutral|blue|green|red|amber|purple)-\d/.test(readFileSync(f, 'utf8')),
+    )
+    expect(offenders.map((f) => f.replace(dir, ''))).toEqual([])
   })
 })

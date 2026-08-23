@@ -13,6 +13,7 @@ const NAV: NavItem[] = [
   { to: paths.guestPlayIndex, label: 'Play' },
   { to: paths.profile, label: 'Profile' },
   { to: paths.unity, label: 'WebGL Host' },
+  { to: paths.system, label: 'Console' },
 ]
 
 /**

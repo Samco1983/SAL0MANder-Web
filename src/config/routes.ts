@@ -16,6 +16,8 @@ export const paths = {
   profile: '/profile',
   /** Bare Unity WebGL host, used for smoke-testing a build in isolation. */
   unity: '/unity',
+  /** Operator console — where a human or an agent hands work to the council. */
+  system: '/console',
   notFound: '*',
 } as const
 

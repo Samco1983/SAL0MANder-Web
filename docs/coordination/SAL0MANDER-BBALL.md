@@ -156,6 +156,102 @@ deterministic atoms: scribe, dispatcher, verifier, clock, packet-builder, and
 equipment manager. No agent or tool may carry both builder and referee for the
 same artifact.
 
+### V4 possession contract
+
+V3 kept the team from chilling. V4 fixes the thing that was never solved: two
+agents could not see each other, so every pass went through Samuel's hands.
+V4 makes the possession itself publishable, and makes a human relay a bug.
+
+**The mandatory possession.** Every possession publishes all six states. A
+possession that skips a state did not happen.
+
+```text
+CLAIMED -> SHOT -> EVIDENCE -> AWAITING_VERIFICATION -> VERIFIED DONE | REBOUND -> NEXT PASS
+```
+
+`AWAITING_VERIFICATION` is the state V3 did not have, and it is the whole point.
+The shooter cannot walk a shot from EVIDENCE to DONE. It parks there until
+someone else moves it. This is B-5 written as a state machine: four defects
+shipped on 2026-08-19 and all four were caught by the agent that made them.
+
+The underscore form is the SQLite/API machine value. The shared-state wire
+label is `AWAITING-VERIFICATION`. Producers must translate at the boundary;
+consumers must not treat the two representations as two possession states.
+
+**Only an independent verifier declares DONE.** Not the shooter, not the
+shooter's next turn, not the shooter agreeing with itself. No agent or tool may
+carry both builder and referee for the same artifact — V3's rule, now enforced
+by the state machine instead of by good intentions.
+
+**The layers, and what each one is authoritative for.**
+
+```text
+GitHub / SQLite     the score and task state. Truth. If it disagrees, it wins.
+Python broker       dispatches CLI agents, locks claims, records sessions and timeouts.
+SHARED-STATE.md     cross-repo readable commentary. What changed, for the other agent.
+Claude/Codex chats  coaching and review rooms. NOT automation endpoints.
+CLI agents          the actual unattended players.
+```
+
+**The Data Fast Break packet.** A pass is one bounded message with enough
+evidence to act and enough timing data to detect a broken channel:
+
+```text
+PASS <id> | <UTC timestamp> | ACK by <UTC timestamp>
+POINT: <one falsifiable outcome that counts only after independent verification>
+STATE: <PREVIEW | AWAITING-VERIFICATION | REBOUND | NEXT-PASS>
+EVIDENCE: <commit/hash, file, test exit, receipt, or sensor result>
+LIKELY BLOCKER: <TOOL | AUTH | PERMISSION | SESSION | NETWORK | PROVIDER | TASK-FIT>
+CONFIDENCE: <measured/estimated/unknown; sample size and reason>
+ASK: <one action the receiver can finish or reject>
+REPLY: OBSERVING, then VERIFIED <evidence> | REBOUND <defect> | BLOCKED <layer>
+FALLBACK: 30s Desktop delivery; 60s diagnose/reroute; 5m possession stop
+```
+
+Confidence never turns activity into a point. A point requires the stated
+outcome plus independent evidence. Unknown is better than invented precision.
+Once the receiver posts `OBSERVING`, the sender stops messaging and scouts the
+next packet until a reply or the hard possession limit.
+
+That fourth line is a boundary, not a description. A chat window is where a
+human watches and coaches. Wiring one as a dispatch target puts a human in the
+critical path and calls it automation.
+
+**Communication rule.** Read shared state before acting. Append after every
+real change — a change on disk or on a website, not the intention to make one.
+Five-minute updates are required only when evidence changed. No filler, no
+hidden reasoning, no unsupported "working."
+
+**Lead-pass rule.** The point guard publishes the intended bounded move before
+execution. The verifier reads that move first and responds with one concise
+anticipation: the likeliest collision, missing evidence, or failure mode, or
+`CLEAR` when none is supported. Anticipation advises the possession; it does
+not transfer execution ownership or let the verifier grade work before it
+exists. After execution, normal independent verification still applies.
+
+```text
+PREVIEW (Codex move) -> ANTICIPATION (Claude risk/CLEAR) -> CLAIMED -> SHOT
+```
+
+**Recovery rule.** Every branch below is automatic. None of them is a question
+for Samuel.
+
+```text
+15 minutes, no evidence        shrink the shot or switch it
+two identical misses           bench the approach and reassign
+claim expired                  task returns to the queue
+agent failed                   route to another eligible CLI
+no queued task                 generate one small bounded shot
+information available locally  never make Samuel relay it
+```
+
+**The boundary V4 does not get to cross.** "No agent waits for Samuel when a
+safe queued shot exists" is a rule about *waiting*, never a rule about *taking*.
+The dirty-tree guard stays. It is what stopped the loop swallowing a human's
+uncommitted RouteError.tsx fix, and B-8 records the standing instruction not to
+add exclusions to it. An unattended player that commits work it did not write
+is not fast, it is the B-7 credit bug with more autonomy.
+
 ### Three courts
 
 | Court | What happens there | Tonight |

@@ -35,6 +35,9 @@
     "mission:asset-scout:gemini": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_asset_scout.py --nudge-gemini pet-classroom --json",
     "mission:asset-scout:mix": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_asset_scout.py --production-mix",
     "mission:asset-scout:write-missing": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/lib/sal0_asset_scout.py --write-missing",
+    "mission:broker": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/sal0-agent-broker.py",
+    "mission:broker:list": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/sal0-agent-broker.py list",
+    "mission:broker:dispatch": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/sal0-agent-broker.py dispatch",
     "mission:backlog": "python3 scripts/lib/sal0_backlog_sync.py",
     "mission:backlog:apply": "python3 scripts/lib/sal0_backlog_sync.py --apply",
     "mission:bball": "python3 scripts/lib/sal0_bball_assistant.py",
@@ -65,6 +68,9 @@
     "mission:next:json": "python3 scripts/lib/sal0_force_shot.py --json",
     "mission:nudge": "python3 scripts/sal0_nudge.py",
     "mission:nudge:dry": "python3 scripts/sal0_nudge.py --dry-run --max-cycles 1",
+    "mission:awake:start": "python3 scripts/sal0_awake.py start",
+    "mission:awake:status": "python3 scripts/sal0_awake.py status",
+    "mission:awake:stop": "python3 scripts/sal0_awake.py stop",
     "mission:packet": "python3 scripts/lib/sal0_court_packet.py",
     "mission:packet:json": "python3 scripts/lib/sal0_court_packet.py --json",
     "mission:points": "python3 scripts/lib/sal0_verify_points.py",
@@ -93,7 +99,9 @@
     "verify": "npm run lint && npm run typecheck && npm run test && npm run test:mission && npm run build",
     "verify:artifact": "node scripts/verify-deploy-artifact.mjs dist /SAL0MANder-Web/",
     "verify:deployed": "node scripts/verify-deployed-site.mjs",
-    "verify:pages": "npm run build:pages && npm run pages:fallback && npm run verify:artifact"
+    "verify:pages": "npm run build:pages && npm run pages:fallback && npm run verify:artifact",
+    "score": "node scripts/sal0-score.mjs",
+    "proof:web": "node scripts/sal0-web-proof.mjs"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",

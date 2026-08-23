@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -23,6 +23,11 @@ const GOOD_HTML =
 
 let dir
 const write = (name, body) => writeFileSync(join(dir, name), body)
+const writeAssets = () => {
+  mkdirSync(join(dir, 'assets'), { recursive: true })
+  write('assets/index-abc.js', 'console.log("fixture")')
+  write('assets/index-abc.css', 'body {}')
+}
 
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'sal0-artifact-'))
@@ -30,6 +35,7 @@ beforeEach(() => {
 afterEach(() => rmSync(dir, { recursive: true, force: true }))
 
 const completeArtifact = () => {
+  writeAssets()
   write('index.html', GOOD_HTML)
   write('404.html', GOOD_HTML)
   write('.nojekyll', '')
@@ -55,6 +61,27 @@ describe('the failures that ship silently', () => {
     write('.nojekyll', '')
     const problems = verifyArtifact(dir, BASE)
     expect(problems.join(' ')).toMatch(/outside the deploy base/)
+  })
+
+  it('catches relative asset references that break on deep SPA fallback URLs', () => {
+    writeAssets()
+    const relativeHtml = GOOD_HTML.replaceAll('/SAL0MANder-Web/assets/', 'assets/')
+    write('index.html', relativeHtml)
+    write('404.html', relativeHtml)
+    write('.nojekyll', '')
+    expect(verifyArtifact(dir, BASE).join(' ')).toMatch(/relative local reference/)
+  })
+
+  it('catches a referenced JavaScript file missing from the artifact', () => {
+    completeArtifact()
+    rmSync(join(dir, 'assets/index-abc.js'))
+    expect(verifyArtifact(dir, BASE).join(' ')).toMatch(/missing from the deploy artifact/)
+  })
+
+  it('catches a referenced stylesheet missing from the artifact', () => {
+    completeArtifact()
+    rmSync(join(dir, 'assets/index-abc.css'))
+    expect(verifyArtifact(dir, BASE).join(' ')).toMatch(/missing from the deploy artifact/)
   })
 
   it('catches a missing 404 fallback', () => {
@@ -87,6 +114,7 @@ describe('the failures that ship silently', () => {
 
 describe('references it must not judge', () => {
   it('ignores absolute URLs, so a working CDN is never flagged', () => {
+    writeAssets()
     write('index.html', GOOD_HTML.replace('</head>', '<script src="https://cdn.example.com/x.js"></script></head>'))
     write('404.html', GOOD_HTML.replace('</head>', '<script src="https://cdn.example.com/x.js"></script></head>'))
     write('.nojekyll', '')
@@ -97,16 +125,18 @@ describe('references it must not judge', () => {
     expect(localAssetRefs('<a href="//cdn/x">a</a><a href="#top">b</a>')).toEqual([])
   })
 
-  it('ignores page-relative references, which resolve correctly on their own', () => {
+  it('rejects page-relative references because deep fallback URLs change their target', () => {
+    writeAssets()
     write('index.html', GOOD_HTML.replace('</body>', '<img src="logo.png"></body>'))
     write('404.html', GOOD_HTML.replace('</body>', '<img src="logo.png"></body>'))
     write('.nojekyll', '')
-    expect(verifyArtifact(dir, BASE)).toEqual([])
+    expect(verifyArtifact(dir, BASE).join(' ')).toMatch(/relative local reference/)
   })
 })
 
 describe('at the root', () => {
   it('accepts a site served from a custom domain', () => {
+    writeAssets()
     const rootHtml = GOOD_HTML.replaceAll('/SAL0MANder-Web/assets', '/assets')
     write('index.html', rootHtml)
     write('404.html', rootHtml)

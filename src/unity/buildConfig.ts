@@ -60,11 +60,28 @@ export function resolveUnityBuildConfig(source: Env = env): UnityBuildConfig | n
   const base = resolveBuildBase(source.unity.buildBaseUrl)
   const name = source.unity.buildName
 
+  /*
+   * Compression suffix. Verified against a real build on 2026-08-22 rather than
+   * assumed: Unity emitted WebGL.data.br, WebGL.framework.js.br and
+   * WebGL.wasm.br, and its own generated index.html asks for exactly those
+   * names. Without this, three of the four requests 404 while the loader
+   * resolves fine — a game that half-loads and dies, which reads as a Unity
+   * fault rather than a URL one.
+   *
+   * The LOADER is never compressed. Unity ships it plain because it is the
+   * script that decides how to fetch everything else.
+   *
+   * Brotli is Unity's WebGL default, so it is the default here. An uncompressed
+   * or gzip build stays reachable by setting the variable — the alternative,
+   * hardcoding `.br`, would break those builds the same silent way.
+   */
+  const ext = source.unity.compression === 'none' ? '' : `.${source.unity.compression}`
+
   return {
     loaderUrl: `${base}/Build/${name}.loader.js`,
-    dataUrl: `${base}/Build/${name}.data`,
-    frameworkUrl: `${base}/Build/${name}.framework.js`,
-    codeUrl: `${base}/Build/${name}.wasm`,
+    dataUrl: `${base}/Build/${name}.data${ext}`,
+    frameworkUrl: `${base}/Build/${name}.framework.js${ext}`,
+    codeUrl: `${base}/Build/${name}.wasm${ext}`,
     streamingAssetsUrl: `${base}/StreamingAssets`,
     companyName: 'SAL0MANder',
     productName: source.appName,

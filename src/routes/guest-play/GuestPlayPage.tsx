@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { env } from '@config/env'
 import { buildPath, paths } from '@config/routes'
@@ -9,6 +9,9 @@ import { Button, LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
+import { QuizPanel, type QuizSubmission } from '@components/quiz/QuizPanel'
+import { readQuiz } from '@contracts/v1'
+import { isQuizFinished } from './quizDelivery'
 import { correlateAttempt, isUsableFinishedPayload, onUnityMessage } from '@unity/bridge'
 import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
 import { usePlaySession } from './usePlaySession'
@@ -76,7 +79,7 @@ function UndeliveredResult({
       <p className={styles.undeliveredBody}>
         {retryable
           ? 'You finished — nothing is lost yet. Saving it to your teacher did not go through, so try again when the connection is back. Keep this tab open until it saves.'
-          : "You finished — nothing is lost yet. Keep this tab open until it can be saved — closing or reloading it before then will lose the result."}
+          : 'You finished — nothing is lost yet. Keep this tab open until it can be saved — closing or reloading it before then will lose the result.'}
       </p>
       {retryable ? (
         <Button className={styles.retry} onClick={retry}>
@@ -230,6 +233,65 @@ export function GuestPlayPage() {
   const submitRef = useRef(session.submit)
   submitRef.current = session.submit
 
+  /*
+   * The web-playable lesson.
+   *
+   * Lifted from the otherwise-opaque payload through a schema (see
+   * contracts/v1/quiz.ts). Absent or malformed means "no web questions here",
+   * which is an ordinary state — plenty of activities will be puzzle-only.
+   */
+  const quiz = useMemo(() => (bundle ? readQuiz(bundle.version.payload.body) : null), [bundle])
+  const [quizDelivered, setQuizDelivered] = useState(false)
+  const [quizSubmitting, setQuizSubmitting] = useState(false)
+
+  /*
+   * Finished means the result is actually somewhere a teacher can reach, not
+   * that a promise resolved. `result-undeliverable` is explicitly NOT finished
+   * — it already has a retry surface, and overriding it with a checkmark would
+   * hide the one state the student needs to see.
+   */
+  const quizFinished = isQuizFinished(quizDelivered, session.status)
+
+  const finishQuiz = useCallback(
+    async (submission: QuizSubmission) => {
+      // Second guard behind the disabled button: `disabled` stops a pointer and
+      // nothing else. Without this a double event submits the lesson twice.
+      if (quizSubmitting || quizDelivered) return
+      setQuizSubmitting(true)
+      try {
+        await submitRef.current({
+          status: 'completed',
+          durationMs: submission.durationMs,
+          questionsAnswered: submission.questionsAnswered,
+          questionsCorrect: submission.questionsCorrect,
+          // Unity's numbers. A quiz-only attempt placed no pieces, and claiming
+          // otherwise would put fabricated progress in a teacher's record.
+          piecesPlaced: 0,
+          piecesTotal: 0,
+          completedAt: new Date().toISOString(),
+        })
+        /*
+         * AWAITING IS NOT DELIVERING. Rebounded by Codex, and it was right.
+         *
+         * `usePlaySession.deliver` catches a submitResult rejection, stores
+         * `result-undeliverable`, and RESOLVES. It also resolves when the
+         * session is idle, starting, or otherwise not active. So this await
+         * returning tells us the call finished, never that a teacher will see
+         * anything — and the previous version flipped straight to "Finished.
+         * Your teacher will see this" on a result that never left the device.
+         *
+         * The session state is the only honest signal, so it decides. A held,
+         * undeliverable result keeps its existing retry path; the quiz simply
+         * refuses to claim a delivery it cannot see.
+         */
+        setQuizDelivered(true)
+      } finally {
+        setQuizSubmitting(false)
+      }
+    },
+    [quizSubmitting, quizDelivered],
+  )
+
   /** Handed back to Unity so it can correlate what it later emits. */
   const sessionStarted = useMemo(
     () =>
@@ -270,7 +332,8 @@ export function GuestPlayPage() {
         { requireSession: correlationRef.current.sessionId !== undefined },
       )
       if (correlation !== 'match') {
-        if (!env.isProd) console.warn('[guest-play] session-finished dropped:', correlation, message)
+        if (!env.isProd)
+          console.warn('[guest-play] session-finished dropped:', correlation, message)
         return
       }
 
@@ -326,7 +389,9 @@ export function GuestPlayPage() {
               </p>
             ) : null}
 
-            {state.status === 'error' ? <LinkFailure error={state.error} retry={state.retry} /> : null}
+            {state.status === 'error' ? (
+              <LinkFailure error={state.error} retry={state.retry} />
+            ) : null}
 
             {session.status === 'result-undeliverable' ? (
               <UndeliveredResult
@@ -345,8 +410,28 @@ export function GuestPlayPage() {
                 <p className={styles.description}>{state.bundle.summary.description}</p>
                 {/* No `title` — the heading is directly above; repeating it
                     here would just be noise on this surface. */}
-                {activityId ? <SharePanel activityId={activityId} baseUrl={env.publicBaseUrl} /> : null}
+                {activityId ? (
+                  <SharePanel activityId={activityId} baseUrl={env.publicBaseUrl} />
+                ) : null}
               </>
+            ) : null}
+
+            {quiz && clientAttemptId ? (
+              <QuizPanel
+                /*
+                 * Keyed by attempt so a renewed attempt REMOUNTS. Without this
+                 * the answers state survives the attempt change and is written
+                 * straight back out under the new key — attempt B starting
+                 * pre-answered with attempt A's answers, and persisting the
+                 * contamination. Rebounded by Codex.
+                 */
+                key={clientAttemptId}
+                quiz={quiz}
+                attemptId={clientAttemptId}
+                onComplete={finishQuiz}
+                submitting={quizSubmitting}
+                submitted={quizFinished}
+              />
             ) : null}
 
             <PlaceholderNotice

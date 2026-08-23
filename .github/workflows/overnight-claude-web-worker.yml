@@ -57,6 +57,13 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      # Required by claude-code-action, which authenticates via OIDC. Without it
+      # every scheduled run died in ~40s with "Could not fetch an OIDC token",
+      # having already checked out the repo and reported the credential present —
+      # so the failure looked like a task problem rather than a permissions one.
+      # Eight consecutive hourly runs failed this way on 2026-08-22 before anyone
+      # opened the log.
+      id-token: write
     steps:
       - name: Check Anthropic credential
         id: credential
@@ -88,6 +95,14 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Without an explicit token the action exchanges an OIDC token for a
+          # GitHub App token and fails 401: "Claude Code is not installed on
+          # this repository." Installing that App is an owner-only action, so
+          # this uses the workflow's own token instead — the job already grants
+          # contents/issues/pull-requests write, which is everything the task
+          # needs. Swap back to the App if it is ever installed; App tokens are
+          # narrower than GITHUB_TOKEN.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             You are Claude Code, the web engineering point person for SAL0MANder.
 
@@ -115,9 +130,18 @@ jobs:
 
             Safe edit scope for overnight work is existing/new text source and tests under src/ and docs/. No binaries or generated artifacts.
             If the requested task requires a major product decision, production credential, deployment, destructive migration, or live Unity evidence, make no speculative implementation and return a blocker report.
+          # `claude_args` is a literal block scalar: every line inside it is
+          # CONTENT, so a `#` line there is passed to the CLI as an argument
+          # rather than ignored. The explanation therefore lives out here.
+          #
+          # 14 turns was too small to finish the smallest real task — the run
+          # that first got this far spent every turn on the orientation this
+          # job's own prompt demands (CLAUDE.md, the charter, the bridge code
+          # and its tests) and hit the cap before a single edit. The job already
+          # carries a 55-minute timeout and a diff guard, so turns were the
+          # wrong place to bound blast radius.
           claude_args: |
-            --max-turns 14
-            --allowedTools Read,Edit,Write,Glob,Grep,Bash(npm run verify:*),Bash(npm test:*),Bash(git diff:*),Bash(git status:*)
+            --max-turns 60
 
       - name: Guard unattended diff
         if: steps.credential.outputs.ready == 'true'

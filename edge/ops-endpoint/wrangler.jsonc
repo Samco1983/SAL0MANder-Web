@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sal0mander-ops",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-01",
+
+  // Which sites may call this endpoint. Not a security boundary on its own — a
+  // non-browser client sets any Origin it likes — but it stops the button being
+  // embedded on someone else's page and fired by their visitors.
+  "vars": {
+    "ALLOWED_ORIGINS": "https://samco1983.github.io,http://localhost:5173"
+  },
+
+  // Rate limiting and idempotency both live here. The worker FAILS CLOSED if
+  // this binding is missing or unreachable: a flood is exactly when KV is most
+  // likely to be struggling, so failing open would open the gate when it matters
+  // most. Create with:
+  //   npx wrangler kv namespace create OPS_KV
+  // then paste the returned id below.
+  "kv_namespaces": [{ "binding": "OPS_KV", "id": "f337226193be46219fad6199228130fe" }]
+
+  // MAKE_WEBHOOK_URL is a SECRET, never a var — a var lands in this file and
+  // this file is committed. Set it with:
+  //   npx wrangler secret put MAKE_WEBHOOK_URL
+}

@@ -48,6 +48,20 @@ jobs:
       - name: verify
         run: npm run verify
 
+      # THIS RUNS BEFORE THE DEPLOY BUILD BECAUSE IT RUNS ONE ITSELF.
+      #
+      # sal0_championship.py shells out to `npm run build` to answer "does the
+      # site build". With no VITE_BASE_PATH set, that build emits un-prefixed
+      # asset paths — and vite's emptyOutDir wipes dist first, taking 404.html
+      # with it. It used to run in the status-page step, i.e. AFTER every check
+      # below had passed, so it destroyed the verified artifact and the wreckage
+      # was what got uploaded. The live site was blank for three days and every
+      # single run reported success, because nothing re-checks dist after the
+      # last check. Reproduced exactly: 993 bytes prefixed with 404.html ->
+      # 918 bytes un-prefixed without it.
+      - name: championship snapshot (builds — must precede the deploy build)
+        run: python3 scripts/lib/sal0_championship.py --json > /tmp/champ.json || true
+
       - name: build for the deploy path
         env:
           # Project Pages serves at /<repo>/. Moving to a custom domain later
@@ -98,9 +112,23 @@ jobs:
       # the scorer rebuilds and re-verifies, so calling it from inside the build
       # is both recursive and slow.
       - name: status page
+        # ONLY writes status.html into dist. The championship snapshot is taken
+        # in an earlier step ON PURPOSE — see the comment there. Nothing after
+        # the deploy build may run a build, or it silently destroys the artifact
+        # every check above just certified.
+        run: node scripts/build-status-page.mjs dist /tmp/champ.json
+
+      # THE LAST WORD, immediately before upload. Every check above ran earlier
+      # than this point, so every one of them describes a dist that later steps
+      # were free to replace — which is exactly how a blank site shipped past a
+      # fully green pipeline for three days. This re-checks the bytes that are
+      # actually about to be published, and it is deliberately the final step.
+      - name: re-verify the exact bytes being uploaded
+        env:
+          VITE_BASE_PATH: /SAL0MANder-Web/
         run: |
-          python3 scripts/lib/sal0_championship.py --json > /tmp/champ.json || true
-          node scripts/build-status-page.mjs dist /tmp/champ.json
+          test -f dist/404.html || { echo "::error::404.html is gone — something rebuilt dist after the SPA fallback step; share links would 404"; exit 1; }
+          node scripts/verify-deploy-artifact.mjs dist "$VITE_BASE_PATH"
 
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -115,3 +143,14 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      # THE ONLY CHECK HERE THAT CAN FAIL FOR A REASON OUR REPO CANNOT SEE.
+      #
+      # Every other step inspects dist/ — our own output, on our own runner,
+      # before anything ships. That is a mirror. It reported success for three
+      # days while the published site was blank and every share link 404'd.
+      # This one asks the live URL, after deployment, over the public internet,
+      # and asserts on CONTENT rather than status: a 200 means a server
+      # answered, not that a student got a lesson.
+      - name: verify the PUBLISHED site, not our copy of it
+        run: node scripts/verify-live-site.mjs "${{ steps.deployment.outputs.page_url }}"

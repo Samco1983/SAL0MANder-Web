@@ -49,7 +49,15 @@ export const PlayModeSchema = z.enum(['learning-puzzle', 'classic-puzzle'])
 export type PlayMode = z.infer<typeof PlayModeSchema>
 
 export const PuzzleConfigSchema = z.object({
-  pieceCount: z.union(PIECE_COUNTS.map((n) => z.literal(n)) as [z.ZodLiteral<4>, z.ZodLiteral<6>, z.ZodLiteral<9>, z.ZodLiteral<12>, z.ZodLiteral<16>]),
+  pieceCount: z.union(
+    PIECE_COUNTS.map((n) => z.literal(n)) as [
+      z.ZodLiteral<4>,
+      z.ZodLiteral<6>,
+      z.ZodLiteral<9>,
+      z.ZodLiteral<12>,
+      z.ZodLiteral<16>,
+    ],
+  ),
   boardShape: z.string(),
   showBoardGuide: z.boolean().default(true),
   enableCameraZoomAndPan: z.boolean().default(false),
@@ -113,6 +121,7 @@ export const QuizSchema = z.object({
   releaseMode: z.string(),
   questions: z.array(QuestionSchema),
 })
+export type Quiz = z.infer<typeof QuizSchema>
 
 /**
  * What `GET /v1/play/{shareCode}` returns.

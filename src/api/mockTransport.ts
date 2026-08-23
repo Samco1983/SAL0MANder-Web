@@ -136,7 +136,21 @@ function demoBundle(activityId: string) {
       id: DEMO_VERSION_ID,
       activityId,
       versionNumber: 1,
-      payload: { schemaVersion: 1, body: { placeholder: true } },
+      payload: {
+        schemaVersion: 1,
+        /*
+         * Carries the same quiz `demoPlayBundle` serves, because a real
+         * activity payload carries one and this fixture claimed otherwise.
+         *
+         * NOT the mock fabrication that was rightly rebounded earlier today:
+         * that invented a SUCCESS — a queued item and a GitHub issue URL for
+         * something that never happened. This invents no outcome. It makes the
+         * fixture representative of the contract, so the web lesson can be
+         * built and exercised locally. Every result it produces still travels
+         * the real submit path and is still scored by the server.
+         */
+        body: { placeholder: true, quiz: demoPlayBundle(activityId).quiz },
+      },
       media: [],
       createdAt: now(),
     },
@@ -179,17 +193,35 @@ export function createMockTransport(): Transport {
       }
 
       const result = route(options, sessions)
-      if (options.idempotencyKey) {
-        idempotency.set(options.idempotencyKey, { fingerprint, response: result })
-      }
 
       const parsed = schema.safeParse(result)
+      /*
+       * RECORD ONLY AFTER VALIDATION. This used to record first, which burned
+       * the idempotency key on a response that then failed the contract — and
+       * because the retry is the SAME request, it matched the stored
+       * fingerprint and replayed the invalid response forever. The key was
+       * poisoned for the session and the correction could never land.
+       *
+       * RELATED TO vector 4, but NOT the same bug — the distinction matters and
+       * I originally got it wrong. Vector 4 is about an invalid REQUEST
+       * consuming its event id on the way IN. This was an invalid RESPONSE
+       * being cached under a key on the way OUT. Same family, opposite
+       * directions, different fix.
+       *
+       * So this ordering is a defensive improvement, NOT proof of vector 4.
+       * Vector 4 is unproven here and stays that way until the mock can emit a
+       * response that fails its own schema.
+       */
       if (!parsed.success) {
         throw new ApiError({
           code: 'contract_mismatch',
           message: `Mock transport produced a payload that fails the contract for ${options.path}`,
           details: { issues: parsed.error.issues },
         })
+      }
+
+      if (options.idempotencyKey) {
+        idempotency.set(options.idempotencyKey, { fingerprint, response: result })
       }
       return parsed.data
     },

@@ -208,6 +208,20 @@
      the game canvas is not framed by a bright halo. */
   --color-stage: var(--neutral-950);
   --color-on-stage: var(--neutral-200);
+  /*
+   * The stage needs more than one on-surface shade, and without these the only
+   * way to write a heading against a dark canvas was to reach for a primitive.
+   * UnityStage.module.css was the one file in the codebase doing that — six
+   * uses — which defeats the rule that a rebrand touches this file alone.
+   *
+   * Named by ROLE, not by lightness, so a rebrand can move them independently:
+   * a brand whose stage is not near-black still needs a strong title, a muted
+   * body, a faint diagnostic, and a raised track.
+   */
+  --color-on-stage-strong: var(--neutral-0);
+  --color-on-stage-muted: var(--neutral-400);
+  --color-on-stage-faint: var(--neutral-500);
+  --color-stage-raised: var(--neutral-800);
 
   color-scheme: light;
 }
