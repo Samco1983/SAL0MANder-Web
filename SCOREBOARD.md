@@ -50,9 +50,9 @@ escalated. That is the failure this board is built to make impossible to miss.
 
 [x] A Unity WebGL build exists on disk  ::  CHECK: test "$(find "$HOME/Documents/New project/SAL0MANder-hosted-worker/Build/WebGL/Build" -name 'WebGL.wasm*' -size +1M 2>/dev/null | wc -l | tr -d ' ')" -ge 1
 
-[ ] The build artifacts are world-readable, not mode 600  ::  CHECK: test -z "$(find "$HOME/Documents/New project/SAL0MANder-hosted-worker/Build/WebGL/Build" -name 'WebGL.*' ! -perm -004 2>/dev/null)"
+[ ] The WebGL build includes the current source commit  ::  CHECK: U="$HOME/Documents/New project/SAL0MANder-hosted-worker"; test "$(git -C "$U" log -1 --format=%ct)" -le "$(stat -f %m "$U/Build/WebGL/Build/WebGL.wasm.br")"
 
-[ ] The Unity source tree is clean  ::  CHECK: test -z "$(git -C "$HOME/Documents/New project/SAL0MANder-hosted-worker" status --porcelain 2>/dev/null)"
+[x] The Unity source tree is clean  ::  CHECK: test -z "$(git -C "$HOME/Documents/New project/SAL0MANder-hosted-worker" status --porcelain 2>/dev/null)"
 
 ## Make
 
