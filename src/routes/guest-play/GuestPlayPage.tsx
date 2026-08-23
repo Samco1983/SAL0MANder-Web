@@ -11,6 +11,7 @@ import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
 import { QuizPanel, type QuizSubmission } from '@components/quiz/QuizPanel'
 import { readQuiz } from '@contracts/v1'
+import { isQuizFinished } from './quizDelivery'
 import { correlateAttempt, isUsableFinishedPayload, onUnityMessage } from '@unity/bridge'
 import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
 import { usePlaySession } from './usePlaySession'
@@ -249,8 +250,7 @@ export function GuestPlayPage() {
    * — it already has a retry surface, and overriding it with a checkmark would
    * hide the one state the student needs to see.
    */
-  const quizFinished =
-    quizDelivered && session.status !== 'result-undeliverable' && session.status !== 'error'
+  const quizFinished = isQuizFinished(quizDelivered, session.status)
 
   const finishQuiz = useCallback(
     async (submission: QuizSubmission) => {
