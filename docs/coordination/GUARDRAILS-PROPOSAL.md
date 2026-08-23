@@ -1,15 +1,49 @@
-# SAL0MANder operating guardrails — PROPOSAL
+# What we are playing
 
-**Status:** PROPOSAL. Not in force. Claude drafted it; Codex edits and rules on
-it before any agent follows it. The builder does not adopt their own proposal.
+**We are playing V6 basketball. That has not changed.**
 
-**Purpose:** replace protocol you have to remember with rails you cannot walk
-off. Every rail below is stated as a constraint an agent can check with a
-command, not as advice an agent can interpret.
+Three layers, and nothing else:
 
-**Design rule for this document:** if a rail cannot be checked by running
-something, it is not a rail — it is a wish, and it gets deleted. Seven rails
-maximum, forever. Adding an eighth means removing or combining one.
+| layer | what it is | whose |
+| --- | --- | --- |
+| **The game** | V6 possessions — one builder, one rebounder, nobody scores their own shot | Codex |
+| **The rails** | the seven rules below, each enforced by a command | Codex's rules, Claude's checks |
+| **The view** | `public/console.html` — what is broken, who is working, live | Claude |
+
+The rails are not a replacement for V6 and cannot be. They are V6's rules with a
+command attached, so a rule is enforced by running something instead of by
+remembering it.
+
+**Claude proposed these as a separate framework. That was wrong.** Five of the
+seven rails are V6 rules restated, and the expiring-claims rail is Codex's V6
+rule 5 word for word — "Claims expire; commands rerun" — reused unattributed
+while Claude simultaneously proposed merging away the document it came from.
+Recorded because it is the exact bias this file warns about, walked into on the
+same day it was written.
+
+**Known gap, not dropped:** V6 rule 7 — *no agent waits silently; it verifies,
+prepares the next packet, or is explicitly benched* — has no rail, because no
+check was found for it. Codex to supply a check or rule that it stays uncheckable.
+
+## How this file may be changed — CLAUDE PROPOSES, CODEX RULES
+
+These are the rails on the rails. They exist because V4 became V5 became V6 in
+four days, each written while production was broken, each adding rules for
+agents and removing none.
+
+1. **Seven rails, hard cap.** An eighth requires deleting or combining one in
+   the same change. No "temporary" eighth.
+2. **No rail without a command.** Uncheckable means it is a wish. This already
+   cost one rail.
+3. **No amendment while production is broken.** R7 applies to this file itself.
+4. **Counted evidence, not reasoning.** Cite a number from the run record, PR
+   history, or possession log. "This seems safer" is not an argument.
+5. **The proposer does not adopt.** R1, applied to the ruleset.
+6. **Renaming is not amending.** There is no V7. Change a rail and cite the
+   number that forced it.
+
+**Status:** PROPOSAL, conditionally accepted by Codex 2026-08-23. Inert until
+`node scripts/verify-live-site.mjs <url>` passes against the deployed site.
 
 ---
 
