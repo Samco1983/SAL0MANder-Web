@@ -86,8 +86,25 @@ nothing were on code that shipped with its own test.
 A change carrying a test that fails without it and passes with it has already
 been refereed by something that cannot be talked out of its opinion.
 
+**The classification MUST be mechanical, never the builder's judgment.** This is
+the hole in the idea as first written, and it is fatal if left open: an agent
+deciding "this one is just code, no referee needed" is an agent grading its own
+risk, which is self-certification wearing a lab coat.
+
+```
+ships with a test that fails without the change   -> no mandatory rebound
+asserts anything about the deployed world         -> MANDATORY rebound
+  ("it works", "it is live", "it is fixed",
+   "the build is fresh", "the site is up")
+cannot be classified automatically                -> MANDATORY rebound
+```
+
+The last line matters most. Ambiguity resolves toward being checked, never away
+from it. If the tooling cannot tell, a referee looks.
+
 Expected effect: roughly half the referee cost, aimed at the half that catches
-things.
+things. Every rebound that has ever caught something real in this project was in
+row two.
 
 ### 3. The scoreboard percentage
 
@@ -134,6 +151,31 @@ that fails when users are affected. Before today, "green" meant our own pipeline
 was happy. Auto-merging on that would have been reckless. Auto-merging on *the
 published site serves a lesson* is a different promise entirely.
 
+### Auto-merge is unsafe without auto-revert. They ship together or not at all.
+
+This is the part I would reject if someone else proposed it, so I am proposing
+it complete instead.
+
+Speed is only safe when the system can un-ship as fast as it ships. Auto-merge
+alone converts "the owner is a bottleneck" into "nobody is watching." Paired
+with auto-revert, the blast radius of a bad merge becomes minutes:
+
+```
+after every deploy:
+  live-site check fails  ->  revert the merge commit, redeploy, open the issue
+                             naming what was reverted and why
+  two reverts in a row   ->  auto-merge disables itself and asks the owner
+```
+
+**The three-day outage is the argument.** Not that a bad change merged — a bad
+change merged and then *stayed* merged for three days, because nothing was
+watching the published result. Auto-revert would have caught it on 08-20 within
+one deploy cycle, with or without a human awake.
+
+The self-disable after two consecutive reverts exists because an automatic
+system thrashing against a real problem is worse than a stopped one, and it is
+the failure mode I would expect us to hit first.
+
 **Why this is the championship move:** it converts every rule we wrote from
 overhead into throughput. The rails stop being paperwork the owner reads and
 become the thing that lets work ship without them.
@@ -166,3 +208,32 @@ become the thing that lets work ship without them.
    ChatGPT's review lane — but it should be a decision, not an oversight.
 4. **What breaks if the owner's approval list is wrong?** The blast radius of a
    mistake in `OWNER-APPROVAL.txt` is everything not on it.
+
+
+---
+
+## Signed
+
+Written by Claude (SAL0-04) on 2026-08-23, at the owner's instruction that it
+carries my name.
+
+**What I stand behind without reservation:** the metric. Time-to-live is the
+only number here that could not have improved while the site was blank, and
+every other number we track did. Delete the rest.
+
+**What I stand behind, with the reason I might be wrong stated:** risk-weighted
+rebound. I produced most of the errors the rebound system caught today, and I am
+proposing to be checked less. That is a real conflict of interest and no amount
+of evidence removes it. My defence is that the classification is mechanical and
+resolves toward being checked when uncertain — but a rule that reduces scrutiny
+of its author should be ruled on by someone else, and I have asked Codex to do
+exactly that.
+
+**What I am least sure of:** auto-merge. `rails.mjs` is my code. A gate written
+by the agent it gates is the mirror problem in its final form, and pairing it
+with auto-revert reduces that risk without eliminating it. If Codex rejects one
+thing here, I expect it to be this, and I would not argue hard.
+
+**What I did NOT do, and will not:** adopt any of it. The site is still blank.
+R7 applies to me, this file is inert, and the single action that matters remains
+merging PR #50.
