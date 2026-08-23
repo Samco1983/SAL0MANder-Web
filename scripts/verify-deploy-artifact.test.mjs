@@ -72,6 +72,30 @@ describe('the failures that ship silently', () => {
     expect(verifyArtifact(dir, BASE).join(' ')).toMatch(/relative local reference/)
   })
 
+  it('catches an unquoted relative asset reference', () => {
+    writeAssets()
+    const html = GOOD_HTML.replace(
+      'src="/SAL0MANder-Web/assets/index-abc.js"',
+      'src=assets/index-abc.js',
+    )
+    write('index.html', html)
+    write('404.html', html)
+    write('.nojekyll', '')
+    expect(verifyArtifact(dir, BASE).join(' ')).toMatch(/relative local reference/)
+  })
+
+  it('catches an unquoted reference to a missing file', () => {
+    writeAssets()
+    const html = GOOD_HTML.replace(
+      'src="/SAL0MANder-Web/assets/index-abc.js"',
+      'src=/SAL0MANder-Web/assets/missing.js',
+    )
+    write('index.html', html)
+    write('404.html', html)
+    write('.nojekyll', '')
+    expect(verifyArtifact(dir, BASE).join(' ')).toMatch(/missing from the deploy artifact/)
+  })
+
   it('catches a referenced JavaScript file missing from the artifact', () => {
     completeArtifact()
     rmSync(join(dir, 'assets/index-abc.js'))

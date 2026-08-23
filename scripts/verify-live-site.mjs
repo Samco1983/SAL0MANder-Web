@@ -19,6 +19,8 @@
  *
  * Usage: node scripts/verify-live-site.mjs https://samco1983.github.io/SAL0MANder-Web/
  */
+import { localAssetRefs } from './verify-deploy-artifact.mjs'
+
 const base = (process.argv[2] ?? '').replace(/\/?$/, '/')
 if (!base.startsWith('http')) {
   console.error('usage: node scripts/verify-live-site.mjs <deployed-url>')
@@ -50,7 +52,7 @@ const home = await get('')
  *    exact defect that shipped: un-prefixed hrefs resolve to the domain root,
  *    every asset 404s, React never mounts, and the page renders blank while
  *    still answering 200. */
-const refs = [...home.body.matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1])
+const refs = localAssetRefs(home.body)
 const basePath = new URL(base).pathname
 const scripts = refs.filter((r) => r.endsWith('.js'))
 if (scripts.length === 0) {
@@ -82,7 +84,7 @@ const deep = await get('play/demo-activity')
  * meaning the same script references the homepage carries. Anything else is a
  * stranger's page wearing a 200.
  */
-const deepRefs = [...deep.body.matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1])
+const deepRefs = localAssetRefs(deep.body)
 const servesOurApp = scripts.length > 0 && scripts.some((s) => deepRefs.includes(s))
 if (!servesOurApp) {
   const whose = /GitHub Pages/i.test(deep.body) ? "GitHub's 404 page, not ours" : 'not the app'

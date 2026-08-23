@@ -22,10 +22,12 @@ import { join, relative, resolve } from 'node:path'
 /** Local references the browser must be able to fetch. Ignores external URLs. */
 export function localAssetRefs(html) {
   const refs = []
-  const pattern = /(?:src|href)\s*=\s*["']([^"']+)["']/gi
+  // HTML permits double-quoted, single-quoted, and unquoted attribute values.
+  // Ignoring the third form lets a broken reference bypass the deploy gate.
+  const pattern = /(?:src|href)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi
   let m
   while ((m = pattern.exec(html)) !== null) {
-    const ref = m[1]
+    const ref = m[1] ?? m[2] ?? m[3]
     // Anything with a scheme, protocol-relative, or a fragment is not ours to
     // resolve — prefixing or judging those would break working CDN links.
     if (/^[a-z][a-z0-9+.-]*:/i.test(ref) || ref.startsWith('//') || ref.startsWith('#')) continue
@@ -74,7 +76,7 @@ export function verifyArtifact(dir, basePath) {
     const artifactPath = resolve(dir, artifactRelativePath || '.')
     const artifactRoot = resolve(dir)
     const pathFromRoot = relative(artifactRoot, artifactPath)
-    if (pathFromRoot.startsWith('..') || pathFromRoot.startsWith('/')) {
+    if (pathFromRoot === '..' || pathFromRoot.startsWith('../') || pathFromRoot.startsWith('/')) {
       problems.push(`index.html local reference "${ref}" escapes the deploy artifact`)
       continue
     }
