@@ -143,3 +143,14 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      # THE ONLY CHECK HERE THAT CAN FAIL FOR A REASON OUR REPO CANNOT SEE.
+      #
+      # Every other step inspects dist/ — our own output, on our own runner,
+      # before anything ships. That is a mirror. It reported success for three
+      # days while the published site was blank and every share link 404'd.
+      # This one asks the live URL, after deployment, over the public internet,
+      # and asserts on CONTENT rather than status: a 200 means a server
+      # answered, not that a student got a lesson.
+      - name: verify the PUBLISHED site, not our copy of it
+        run: node scripts/verify-live-site.mjs "${{ steps.deployment.outputs.page_url }}"
