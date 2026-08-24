@@ -228,7 +228,7 @@ async function reconcilePossession(possession, env, storage, now) {
     operation: 'list_missions',
     source: 'owner_console',
   })
-  const log = current.ok ? normalizeMissionLog(current.body, possession.startedAt) : null
+  const log = current.ok ? normalizeMissionLog(current.body, now) : null
   if (!log) {
     return {
       ok: false,

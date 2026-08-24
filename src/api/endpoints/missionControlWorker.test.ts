@@ -377,18 +377,19 @@ describe('mission-control edge boundary', () => {
     expect(upstream).toHaveBeenCalledTimes(3)
   })
 
-  it('does not release an old possession from a stale mission log', async () => {
+  it('does not release an old possession from a cached post-dispatch mission log', async () => {
     const env = environment()
+    const startedAt = Date.now() - 301_000
     const possession = {
       idempotencyKey: 'existing-possession',
       missionId: 'mission-existing',
-      startedAt: Date.now() - 301_000,
+      startedAt,
     }
     await env._storage.put('possession', possession)
     const upstream = vi.fn().mockResolvedValue(
       response({
         missions: [],
-        fetchedAtUtc: '2020-01-01T00:00:00.000Z',
+        fetchedAtUtc: new Date(startedAt + 1_000).toISOString(),
         source: 'github',
       }),
     )
