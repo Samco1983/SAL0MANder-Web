@@ -53,6 +53,9 @@ const EnvSchema = z.object({
   VITE_API_CONTRACT_VERSION: z.string().optional().default('v1'),
   VITE_API_TIMEOUT_MS: numeric(15_000),
 
+  /** Public URL only. The dispatcher holds every secret server-side. */
+  VITE_OPS_API_BASE_URL: url,
+
   VITE_UNITY_BUILD_BASE_URL: url,
   VITE_UNITY_BUILD_NAME: z.string().optional().default('SAL0MANder'),
 
@@ -164,6 +167,11 @@ export function readEnv(source: unknown) {
       timeoutMs: raw.VITE_API_TIMEOUT_MS,
       /** No backend configured yet — the app runs against the mock transport. */
       isConfigured: raw.VITE_API_BASE_URL.length > 0,
+    },
+
+    ops: {
+      baseUrl: raw.VITE_OPS_API_BASE_URL,
+      isConfigured: raw.VITE_OPS_API_BASE_URL.length > 0,
     },
 
     unity: {

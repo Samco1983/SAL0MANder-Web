@@ -1,0 +1,18 @@
+name = "sal0mander-mission-control"
+main = "worker.js"
+compatibility_date = "2026-08-23"
+workers_dev = false
+
+# Bind OPS_KV after creating the namespace. Keep MAKE_WEBHOOK_URL out of this
+# file and add it with `wrangler secret put`. Protect the custom domain with
+# Cloudflare Access before deploying; browser owners and agent service tokens
+# both arrive with an Access JWT.
+[[kv_namespaces]]
+binding = "OPS_KV"
+id = "replace-with-kv-namespace-id"
+
+[vars]
+ALLOWED_ORIGINS = "https://samco1983.github.io"
+OWNER_EMAILS = "owner@example.com"
+ALLOW_SERVICE_TOKENS = "true"
+

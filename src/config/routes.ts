@@ -16,6 +16,8 @@ export const paths = {
   profile: '/profile',
   /** Bare Unity WebGL host, used for smoke-testing a build in isolation. */
   unity: '/unity',
+  /** Owner-facing V6 mission selector and its two bounded commands. */
+  console: '/console',
   notFound: '*',
 } as const
 

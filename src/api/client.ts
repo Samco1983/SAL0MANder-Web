@@ -4,6 +4,7 @@ import { createMockTransport } from './mockTransport'
 import { activitiesApi } from './endpoints/activities'
 import { playApi } from './endpoints/play'
 import { sessionsApi } from './endpoints/sessions'
+import { missionControlApi } from './endpoints/missionControl'
 
 /**
  * The app's single entry point to the backend.
@@ -11,13 +12,14 @@ import { sessionsApi } from './endpoints/sessions'
  * Feature code imports `api` and never constructs a transport, so which backend
  * is in play (mock today, a chosen provider later) is a one-line decision here.
  */
-export function createApiClient(transport: Transport) {
+export function createApiClient(transport: Transport, opsTransport: Transport | null = null) {
   return {
     transport,
     activities: activitiesApi(transport),
     /** Share-link resolution (draft; runs alongside `activities`). */
     play: playApi(transport),
     sessions: sessionsApi(transport),
+    missionControl: opsTransport ? missionControlApi(opsTransport) : null,
   }
 }
 
@@ -32,4 +34,14 @@ function defaultTransport(): Transport {
   })
 }
 
-export const api = createApiClient(defaultTransport())
+function defaultOpsTransport(): Transport | null {
+  if (!env.ops.isConfigured) return null
+  return createHttpTransport({
+    baseUrl: env.ops.baseUrl,
+    contractVersion: env.api.contractVersion,
+    timeoutMs: env.api.timeoutMs,
+    credentials: 'include',
+  })
+}
+
+export const api = createApiClient(defaultTransport(), defaultOpsTransport())

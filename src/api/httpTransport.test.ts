@@ -124,6 +124,21 @@ describe('retrying reads', () => {
   })
 })
 
+describe('authenticated browser boundary', () => {
+  it('includes an existing access session only when the transport asks for it', async () => {
+    const fetchMock = stubFetch(respond(200, { ok: true }))
+    const protectedTransport = createHttpTransport({
+      baseUrl: 'https://ops.example.com',
+      contractVersion: 'v1',
+      timeoutMs: 5_000,
+      credentials: 'include',
+    })
+
+    await protectedTransport.request({ path: '/ops/missions' }, OkSchema)
+    expect(callArgs(fetchMock).init?.credentials).toBe('include')
+  })
+})
+
 describe('retrying writes — the double-write guard', () => {
   it('never retries a POST without an idempotency key', async () => {
     // Retrying here could complete a student's session twice.
