@@ -1,3 +1,5 @@
+import { createRemoteJWKSet, jwtVerify } from 'jose'
+
 const ACTIONS = new Set(['fast_break', 'championship'])
 const STATUSES = new Set([
   'queued',
@@ -8,17 +10,26 @@ const STATUSES = new Set([
   'blocked',
 ])
 const ACTIVE_STATUSES = new Set(['queued', 'active', 'awaiting_verification'])
-const RATE_WINDOW_SECONDS = 300
+const RATE_WINDOW_MS = 300_000
 const RATE_MAX = 10
-const IDEMPOTENCY_TTL_SECONDS = 86_400
+const IDEMPOTENCY_TTL_MS = 86_400_000
+const PENDING_TTL_MS = 60_000
+const GATE_NAME = 'owner-mission-control'
+const jwksByDomain = new Map()
 
 export default { fetch: handleRequest }
 
-export async function handleRequest(request, env) {
+export async function handleRequest(request, env, dependencies = {}) {
   const cors = corsHeaders(request, env)
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
   if (!isAllowedOrigin(request, env)) return json({ error: 'origin_not_allowed' }, 403, cors)
-  if (!hasAccessIdentity(request, env)) return json({ error: 'authentication_required' }, 401, cors)
+
+  const identity = await authenticateAccess(
+    request,
+    env,
+    dependencies.verifyAccessToken ?? verifyAccessToken,
+  )
+  if (!identity) return json({ error: 'authentication_required' }, 401, cors)
 
   const url = new URL(request.url)
   if (request.method === 'GET' && url.pathname.endsWith('/ops/missions')) {
@@ -32,27 +43,127 @@ export async function handleRequest(request, env) {
     return json({ error: 'not_found' }, 404, cors)
   }
 
+  if (!env.MISSION_GATE) return json({ error: 'dispatcher_unavailable' }, 503, cors)
+  const gateId = env.MISSION_GATE.idFromName(GATE_NAME)
+  const gate = env.MISSION_GATE.get(gateId)
+  const headers = new Headers(request.headers)
+  headers.set('X-Verified-Owner', identity)
+  const gateResponse = await gate.fetch(
+    new Request('https://mission-gate.internal/actions', {
+      method: 'POST',
+      headers,
+      body: await request.text(),
+    }),
+  )
+  return withHeaders(gateResponse, cors)
+}
+
+export class MissionGate {
+  constructor(state, env) {
+    this.state = state
+    this.env = env
+  }
+
+  fetch(request) {
+    return handleGateRequest(request, this.env, this.state.storage)
+  }
+}
+
+export async function handleGateRequest(request, env, storage) {
+  if (request.method !== 'POST') return json({ error: 'not_found' }, 404)
   const payload = await request.json().catch(() => null)
   const action = normalizeAction(payload)
-  if (!action) return json({ error: 'invalid_action' }, 400, cors)
+  if (!action) return json({ error: 'invalid_action' }, 400)
 
+  const owner = request.headers.get('X-Verified-Owner')?.trim() ?? ''
   const idempotencyKey = request.headers.get('Idempotency-Key')?.trim() ?? ''
+  if (!owner || owner.length > 200) return json({ error: 'authentication_required' }, 401)
   if (!idempotencyKey || idempotencyKey.length > 300) {
-    return json({ error: 'invalid_idempotency_key' }, 400, cors)
+    return json({ error: 'invalid_idempotency_key' }, 400)
   }
 
   const fingerprint = await sha256(JSON.stringify(action))
-  const existing = await env.OPS_KV.get(`idem:${idempotencyKey}`, { type: 'json' })
-  if (existing) {
-    if (existing.fingerprint !== fingerprint) {
-      return json({ error: 'idempotency_conflict' }, 409, cors)
+  const now = Date.now()
+  const reservation = await storage.transaction(async (transaction) => {
+    const idempotencyStorageKey = `idem:${idempotencyKey}`
+    const existing = await transaction.get(idempotencyStorageKey)
+    if (existing && now - existing.createdAt < IDEMPOTENCY_TTL_MS) {
+      if (existing.fingerprint !== fingerprint) return { kind: 'conflict' }
+      if (existing.state === 'complete') return { kind: 'duplicate', result: existing.result }
+      return { kind: 'pending' }
     }
-    return json({ ...existing.result, outcome: 'duplicate' }, 200, cors)
+    if (existing) await transaction.delete(idempotencyStorageKey)
+
+    const rateKey = `rate:${owner}`
+    const rate = await transaction.get(rateKey)
+    const currentRate =
+      rate && now - rate.windowStartedAt < RATE_WINDOW_MS
+        ? rate
+        : { count: 0, windowStartedAt: now }
+    if (currentRate.count >= RATE_MAX) return { kind: 'rate_limited' }
+
+    const possession = await transaction.get('possession')
+    if (possession && now - possession.startedAt < PENDING_TTL_MS) {
+      return { kind: 'possession_in_progress' }
+    }
+    if (possession) await transaction.delete('possession')
+
+    await transaction.put(rateKey, {
+      count: currentRate.count + 1,
+      windowStartedAt: currentRate.windowStartedAt,
+    })
+    await transaction.put(idempotencyStorageKey, {
+      state: 'pending',
+      fingerprint,
+      createdAt: now,
+    })
+    await transaction.put('possession', { idempotencyKey, startedAt: now })
+    return { kind: 'reserved' }
+  })
+
+  if (reservation.kind === 'conflict') return json({ error: 'idempotency_conflict' }, 409)
+  if (reservation.kind === 'pending') return json({ error: 'request_in_progress' }, 409)
+  if (reservation.kind === 'rate_limited') return json({ error: 'rate_limited' }, 429)
+  if (reservation.kind === 'possession_in_progress') {
+    return json({ error: 'possession_in_progress' }, 409)
+  }
+  if (reservation.kind === 'duplicate') {
+    return json({ ...reservation.result, outcome: 'duplicate' }, 200)
   }
 
-  const limited = await rateLimited(request, env)
-  if (limited) return json({ error: 'rate_limited' }, 429, cors)
+  const cleanup = async () => {
+    await storage.transaction(async (transaction) => {
+      const possession = await transaction.get('possession')
+      if (possession?.idempotencyKey === idempotencyKey) {
+        await transaction.delete('possession')
+      }
+      await transaction.delete(`idem:${idempotencyKey}`)
+    })
+  }
 
+  const execution = await executeAction(action, idempotencyKey, env)
+  if (!execution.ok) {
+    await cleanup()
+    return json({ error: execution.error, ...(execution.details ?? {}) }, execution.status)
+  }
+
+  const result = execution.result
+  await storage.transaction(async (transaction) => {
+    await transaction.put(`idem:${idempotencyKey}`, {
+      state: 'complete',
+      fingerprint,
+      result,
+      createdAt: now,
+    })
+    const possession = await transaction.get('possession')
+    if (possession?.idempotencyKey === idempotencyKey) {
+      await transaction.delete('possession')
+    }
+  })
+  return json(result, 200)
+}
+
+async function executeAction(action, idempotencyKey, env) {
   let mission
   if (action.mission.kind === 'existing') {
     const current = await makeRequest(env, {
@@ -62,19 +173,19 @@ export async function handleRequest(request, env) {
     })
     mission = current.ok ? normalizeMission(current.body?.mission) : null
     if (!mission) {
-      return json(
-        { error: current.ok ? 'invalid_upstream_contract' : current.error },
-        current.ok ? 502 : current.status,
-        cors,
-      )
+      return {
+        ok: false,
+        error: current.ok ? 'invalid_upstream_contract' : current.error,
+        status: current.ok ? 502 : current.status,
+      }
     }
     if (mission.updatedAtUtc !== action.mission.revision) {
-      return json({ error: 'mission_changed' }, 409, cors)
+      return { ok: false, error: 'mission_changed', status: 409 }
     }
   }
 
   if (action.action === 'championship' && !championshipReady(mission)) {
-    return json({ error: 'verification_required' }, 409, cors)
+    return { ok: false, error: 'verification_required', status: 409 }
   }
 
   if (action.action === 'fast_break') {
@@ -84,15 +195,20 @@ export async function handleRequest(request, env) {
     })
     const log = current.ok ? normalizeMissionLog(current.body) : null
     if (!log) {
-      return json(
-        { error: current.ok ? 'invalid_upstream_contract' : current.error },
-        current.ok ? 502 : current.status,
-        cors,
-      )
+      return {
+        ok: false,
+        error: current.ok ? 'invalid_upstream_contract' : current.error,
+        status: current.ok ? 502 : current.status,
+      }
     }
     const active = log.missions.find((item) => ACTIVE_STATUSES.has(item.status))
     if (active && active.id !== mission?.id) {
-      return json({ error: 'possession_active', missionId: active.id }, 409, cors)
+      return {
+        ok: false,
+        error: 'possession_active',
+        status: 409,
+        details: { missionId: active.id },
+      }
     }
   }
 
@@ -110,23 +226,19 @@ export async function handleRequest(request, env) {
     requestedAtUtc,
     source: 'owner_console',
   })
-  if (!dispatched.ok) return json({ error: dispatched.error }, dispatched.status, cors)
+  if (!dispatched.ok) return { ok: false, error: dispatched.error, status: dispatched.status }
 
-  const receipt = normalizeReceipt(dispatched.body, action.action)
-  if (!receipt) return json({ error: 'invalid_upstream_receipt' }, 502, cors)
-
-  const result = {
-    outcome: 'queued',
-    action: action.action,
-    mission: receipt.mission,
-    receipt: receipt.receipt,
+  const receipt = normalizeReceipt(dispatched.body)
+  if (!receipt) return { ok: false, error: 'invalid_upstream_receipt', status: 502 }
+  return {
+    ok: true,
+    result: {
+      outcome: 'queued',
+      action: action.action,
+      mission: receipt.mission,
+      receipt: receipt.receipt,
+    },
   }
-  await env.OPS_KV.put(
-    `idem:${idempotencyKey}`,
-    JSON.stringify({ fingerprint, result }),
-    { expirationTtl: IDEMPOTENCY_TTL_SECONDS },
-  )
-  return json(result, 200, cors)
 }
 
 export function normalizeAction(payload) {
@@ -151,25 +263,31 @@ export function normalizeAction(payload) {
 }
 
 export function championshipReady(mission) {
+  const proof = mission?.proof
   return Boolean(
     mission?.status === 'verified' &&
-      mission.proof?.command &&
-      mission.proof?.artifact &&
-      mission.proof?.builder &&
-      mission.proof?.verifier &&
-      mission.proof.builder !== mission.proof.verifier,
+    proof?.command &&
+    proof?.artifact &&
+    proof?.builder &&
+    proof?.verifier &&
+    proof.builder !== proof.verifier &&
+    proof.missionRevision === mission.updatedAtUtc &&
+    Date.parse(proof.verifiedAtUtc) >= Date.parse(mission.updatedAtUtc),
   )
 }
 
 function normalizeMissionLog(body) {
-  if (!body || body.source !== 'github' || !Array.isArray(body.missions)) return null
+  if (
+    !body ||
+    body.source !== 'github' ||
+    !Array.isArray(body.missions) ||
+    !isIsoDate(body.fetchedAtUtc)
+  ) {
+    return null
+  }
   const missions = body.missions.map(normalizeMission)
   if (missions.some((mission) => mission === null)) return null
-  return {
-    missions,
-    fetchedAtUtc: isIsoDate(body.fetchedAtUtc) ? body.fetchedAtUtc : new Date().toISOString(),
-    source: 'github',
-  }
+  return { missions, fetchedAtUtc: body.fetchedAtUtc, source: 'github' }
 }
 
 function normalizeMission(value) {
@@ -211,15 +329,28 @@ function normalizeProof(value) {
     !builder ||
     !verifier ||
     builder === verifier ||
+    !isIsoDate(value.missionRevision) ||
     !isIsoDate(value.verifiedAtUtc)
   ) {
     return null
   }
-  return { command, artifact, builder, verifier, verifiedAtUtc: value.verifiedAtUtc }
+  return {
+    command,
+    artifact,
+    builder,
+    verifier,
+    missionRevision: value.missionRevision,
+    verifiedAtUtc: value.verifiedAtUtc,
+  }
 }
 
-function normalizeReceipt(body, action) {
-  if (!body?.accepted || !body.externalId || !isHttpUrl(body.externalUrl) || !isIsoDate(body.receivedAt)) {
+function normalizeReceipt(body) {
+  if (
+    body?.accepted !== true ||
+    !body.externalId ||
+    !isHttpUrl(body.externalUrl) ||
+    !isIsoDate(body.receivedAt)
+  ) {
     return null
   }
   const mission = normalizeMission(body.mission)
@@ -227,7 +358,6 @@ function normalizeReceipt(body, action) {
   return {
     mission: { id: mission.id, title: mission.title, status: mission.status },
     receipt: { id: body.externalId, url: body.externalUrl, receivedAtUtc: body.receivedAt },
-    action,
   }
 }
 
@@ -246,27 +376,50 @@ async function makeRequest(env, body) {
   }
 }
 
-async function rateLimited(request, env) {
-  const key = `rate:${request.headers.get('CF-Connecting-IP') ?? 'unknown'}`
+async function authenticateAccess(request, env, verifier) {
+  const token = request.headers.get('Cf-Access-Jwt-Assertion')
+  if (!token || !env.TEAM_DOMAIN || !env.POLICY_AUD) return null
   try {
-    const used = Number((await env.OPS_KV.get(key)) ?? '0')
-    if (used >= RATE_MAX) return true
-    await env.OPS_KV.put(key, String(used + 1), { expirationTtl: RATE_WINDOW_SECONDS })
-    return false
+    const claims = await verifier(token, env)
+    const email = typeof claims.email === 'string' ? claims.email.toLowerCase() : ''
+    const owners = (env.OWNER_EMAILS ?? '')
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean)
+    if (email && owners.includes(email)) return `user:${email}`
+    if (env.ALLOW_SERVICE_TOKENS === 'true' && !email) {
+      const serviceIdentity = boundedString(claims.common_name ?? claims.sub, 1, 160)
+      if (serviceIdentity) return `service:${serviceIdentity}`
+    }
   } catch {
-    return true
+    return null
   }
+  return null
 }
 
-function hasAccessIdentity(request, env) {
-  if (!request.headers.get('Cf-Access-Jwt-Assertion')) return false
-  const email = request.headers.get('Cf-Access-Authenticated-User-Email')?.toLowerCase()
-  const owners = (env.OWNER_EMAILS ?? '')
-    .split(',')
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean)
-  if (email) return owners.includes(email)
-  return env.ALLOW_SERVICE_TOKENS === 'true'
+async function verifyAccessToken(token, env) {
+  const teamDomain = normalizeTeamDomain(env.TEAM_DOMAIN)
+  if (!teamDomain) throw new Error('invalid team domain')
+  let jwks = jwksByDomain.get(teamDomain)
+  if (!jwks) {
+    jwks = createRemoteJWKSet(new URL(`${teamDomain}/cdn-cgi/access/certs`))
+    jwksByDomain.set(teamDomain, jwks)
+  }
+  const { payload } = await jwtVerify(token, jwks, {
+    issuer: teamDomain,
+    audience: env.POLICY_AUD,
+  })
+  return payload
+}
+
+function normalizeTeamDomain(value) {
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'https:' || !url.hostname.endsWith('.cloudflareaccess.com')) return null
+    return url.origin
+  } catch {
+    return null
+  }
 }
 
 function isAllowedOrigin(request, env) {
@@ -288,6 +441,19 @@ function corsHeaders(request, env) {
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   }
+}
+
+function withHeaders(response, additionalHeaders) {
+  const headers = new Headers(response.headers)
+  for (const [key, value] of Object.entries(additionalHeaders)) headers.set(key, value)
+  return new Response(response.body, { status: response.status, headers })
+}
+
+function json(body, status, headers = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...headers },
+  })
 }
 
 function isIsoDate(value) {
@@ -317,11 +483,4 @@ async function sha256(value) {
   const bytes = new TextEncoder().encode(value)
   const digest = await crypto.subtle.digest('SHA-256', bytes)
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
-}
-
-function json(body, status, headers) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...headers, 'Content-Type': 'application/json' },
-  })
 }

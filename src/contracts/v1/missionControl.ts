@@ -15,6 +15,7 @@ export const MissionProofSchema = z.object({
   artifact: z.string().trim().min(1).max(200),
   builder: z.string().trim().min(1).max(80),
   verifier: z.string().trim().min(1).max(80),
+  missionRevision: z.iso.datetime(),
   verifiedAtUtc: z.iso.datetime(),
 })
 export type MissionProof = z.infer<typeof MissionProofSchema>
@@ -41,6 +42,23 @@ export const MissionSchema = z
         code: 'custom',
         path: ['proof', 'verifier'],
         message: 'The builder cannot verify their own artifact',
+      })
+    }
+    if (mission.proof && mission.proof.missionRevision !== mission.updatedAtUtc) {
+      context.addIssue({
+        code: 'custom',
+        path: ['proof', 'missionRevision'],
+        message: 'Proof must name the exact mission revision it verified',
+      })
+    }
+    if (
+      mission.proof &&
+      Date.parse(mission.proof.verifiedAtUtc) < Date.parse(mission.updatedAtUtc)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['proof', 'verifiedAtUtc'],
+        message: 'Proof cannot predate the mission revision',
       })
     }
   })
@@ -91,4 +109,3 @@ export const MissionActionResultSchema = z.object({
   }),
 })
 export type MissionActionResult = z.infer<typeof MissionActionResultSchema>
-

@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type {
-  Mission,
-  MissionActionInput,
-  MissionActionResult,
-  MissionStatus,
-} from '@contracts/v1'
+import type { Mission, MissionActionInput, MissionActionResult, MissionStatus } from '@contracts/v1'
 import type { MissionControlApi } from '@api/endpoints/missionControl'
 import { api } from '@api/client'
 import { AppShell } from '@components/layout/AppShell'
@@ -68,9 +63,7 @@ export function ConsolePage({
   const isNew = selectedId === NEW_MISSION
   const working = actionState.kind === 'working'
   const hasTarget = isNew ? newTitle.trim().length >= 3 : Boolean(selectedMission)
-  const championshipReady = Boolean(
-    selectedMission?.status === 'verified' && selectedMission.proof,
-  )
+  const championshipReady = Boolean(selectedMission?.status === 'verified' && selectedMission.proof)
   const configured = Boolean(controller)
   const connected = configured && !loadFailure
 
@@ -112,11 +105,11 @@ export function ConsolePage({
     ? 'Connect the protected dispatcher first.'
     : loadFailure
       ? 'Mission Log is unavailable.'
-    : isNew
-      ? 'Create the mission with Fast Break first.'
-      : !championshipReady
-        ? 'Championship requires independent, rerunnable verification.'
-        : ''
+      : isNew
+        ? 'Create the mission with Fast Break first.'
+        : !championshipReady
+          ? 'Championship requires independent, rerunnable verification.'
+          : ''
 
   return (
     <AppShell>
@@ -125,25 +118,6 @@ export function ConsolePage({
           <p className={styles.eyebrow}>Owner console</p>
           <h1 id="console-title">Mission Control</h1>
         </header>
-
-        <div className={styles.actions} role="group" aria-label="Owner actions">
-          <Button
-            size="lg"
-            onClick={() => dispatch('fast_break')}
-            disabled={!connected || !hasTarget || working || loading}
-          >
-            Run Fast Break
-          </Button>
-          <Button
-            size="lg"
-            variant="secondary"
-            onClick={() => dispatch('championship')}
-            disabled={!championshipReady || !connected || working}
-            title={championshipReason || undefined}
-          >
-            Championship
-          </Button>
-        </div>
 
         <div className={styles.missionPanel}>
           <label className={styles.label} htmlFor="mission-select">
@@ -212,9 +186,28 @@ export function ConsolePage({
           {actionState.kind === 'failed' ? (
             <span className={styles.failed}>Failed: {actionState.message}</span>
           ) : null}
-          {actionState.kind === 'idle' && championshipReason && selectedMission ? (
+          {actionState.kind === 'idle' && championshipReason ? (
             <span>{championshipReason}</span>
           ) : null}
+        </div>
+
+        <div className={styles.actions} role="group" aria-label="Owner actions">
+          <Button
+            size="lg"
+            onClick={() => dispatch('fast_break')}
+            disabled={!connected || !hasTarget || working || loading}
+          >
+            Run Fast Break
+          </Button>
+          <Button
+            size="lg"
+            variant="secondary"
+            onClick={() => dispatch('championship')}
+            disabled={!championshipReady || !connected || working}
+            title={championshipReason || undefined}
+          >
+            Championship
+          </Button>
         </div>
       </section>
     </AppShell>

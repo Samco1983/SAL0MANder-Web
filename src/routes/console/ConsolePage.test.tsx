@@ -26,6 +26,7 @@ const verified: Mission = {
     artifact: 'd7b9956',
     builder: 'Claude',
     verifier: 'Codex',
+    missionRevision: '2026-08-23T19:31:00.000Z',
     verifiedAtUtc: '2026-08-23T19:32:00.000Z',
   },
 }
@@ -104,6 +105,7 @@ describe('V6 owner console', () => {
 
     await user.selectOptions(await screen.findByRole('combobox', { name: 'Mission' }), '__new__')
     await user.type(screen.getByRole('textbox', { name: 'Outcome' }), 'Student opens one lesson')
+    expect(screen.getByText(/create the mission with fast break first/i)).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Run Fast Break' }))
 
     expect(api.dispatch).toHaveBeenCalledWith({
@@ -111,6 +113,14 @@ describe('V6 owner console', () => {
       mission: { kind: 'new', title: 'Student opens one lesson' },
     })
     expect(screen.getByRole('button', { name: 'Championship' })).toBeDisabled()
+  })
+
+  it('places mission selection before commands in keyboard order', async () => {
+    renderPage(controller())
+
+    const select = await screen.findByRole('combobox', { name: 'Mission' })
+    const actions = screen.getByRole('group', { name: /owner actions/i })
+    expect(select.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('fails closed instead of fabricating a receipt when no dispatcher exists', () => {

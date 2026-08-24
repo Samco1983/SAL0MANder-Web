@@ -22,6 +22,7 @@ describe('MissionSchema verification gate', () => {
         artifact: 'd7b9956',
         builder: 'Codex',
         verifier: 'Codex',
+        missionRevision: base.updatedAtUtc,
         verifiedAtUtc: '2026-08-23T19:31:00.000Z',
       },
     })
@@ -37,11 +38,43 @@ describe('MissionSchema verification gate', () => {
         artifact: 'd7b9956',
         builder: 'Codex',
         verifier: 'Claude',
+        missionRevision: base.updatedAtUtc,
         verifiedAtUtc: '2026-08-23T19:31:00.000Z',
       },
     })
 
     expect(result.success).toBe(true)
   })
-})
 
+  it('rejects proof for an older mission revision', () => {
+    const result = MissionSchema.safeParse({
+      ...base,
+      proof: {
+        command: 'npm run verify:deployed',
+        artifact: 'd7b9956',
+        builder: 'Codex',
+        verifier: 'Claude',
+        missionRevision: '2026-08-23T19:29:00.000Z',
+        verifiedAtUtc: '2026-08-23T19:31:00.000Z',
+      },
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects proof recorded before the mission revision', () => {
+    const result = MissionSchema.safeParse({
+      ...base,
+      proof: {
+        command: 'npm run verify:deployed',
+        artifact: 'd7b9956',
+        builder: 'Codex',
+        verifier: 'Claude',
+        missionRevision: base.updatedAtUtc,
+        verifiedAtUtc: '2026-08-23T19:29:00.000Z',
+      },
+    })
+
+    expect(result.success).toBe(false)
+  })
+})

@@ -72,6 +72,10 @@ jobs:
           # to a CDN once Unity licensing is healthy enough for repeat builds.
           VITE_UNITY_BUILD_BASE_URL: /unity
           VITE_UNITY_BUILD_NAME: sal0-unity-webgl
+          # Public endpoint only; Cloudflare Access and the Worker hold auth,
+          # Make, and GitHub credentials. Configure this repository variable
+          # after the protected Worker has been deployed.
+          VITE_OPS_API_BASE_URL: ${{ vars.VITE_OPS_API_BASE_URL }}
         run: npm run build
 
       # Pages has no server-side rewrite, so a deep link like /play/SUN-42 —
