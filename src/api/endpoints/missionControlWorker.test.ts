@@ -55,6 +55,7 @@ function environment() {
     ALLOW_SERVICE_TOKENS: 'true',
     TEAM_DOMAIN: 'https://sal0.cloudflareaccess.com',
     POLICY_AUD: 'mission-control-audience',
+    PUBLIC_SITE_URL: 'https://samco1983.github.io/SAL0MANder-Web',
     _storage: storage,
     MISSION_GATE: {} as {
       idFromName(name: string): string
@@ -130,6 +131,78 @@ describe('mission-control edge boundary', () => {
 
     expect(result.status).toBe(204)
     expect(result.headers.get('Access-Control-Allow-Headers')).toContain('X-SAL0MANder-Contract')
+  })
+
+  it('serves a protected console route from the public app without weakening Access', async () => {
+    const fetchPublicApp = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><title>SAL0MANder</title>', {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      }),
+    )
+    const protectedConsole = request('/SAL0MANder-Web/console')
+    protectedConsole.headers.delete('Origin')
+
+    const result = await handleRequest(protectedConsole, environment(), {
+      ...verifiedAccess,
+      fetchPublicApp,
+    })
+
+    expect(result.status).toBe(200)
+    expect(await result.text()).toContain('<title>SAL0MANder</title>')
+    expect(result.headers.get('Cache-Control')).toBe('private, no-store')
+    expect(result.headers.get('X-Robots-Tag')).toBe('noindex, nofollow')
+    expect(String(fetchPublicApp.mock.calls[0]?.[0])).toBe(
+      'https://samco1983.github.io/SAL0MANder-Web/',
+    )
+  })
+
+  it('forwards a protected console asset by its exact public path', async () => {
+    const fetchPublicApp = vi.fn().mockResolvedValue(
+      new Response('console.log("loaded")', {
+        headers: { 'Content-Type': 'text/javascript' },
+      }),
+    )
+
+    const result = await handleRequest(
+      request('/SAL0MANder-Web/assets/index-current.js?v=1'),
+      environment(),
+      { ...verifiedAccess, fetchPublicApp },
+    )
+
+    expect(result.status).toBe(200)
+    expect(String(fetchPublicApp.mock.calls[0]?.[0])).toBe(
+      'https://samco1983.github.io/SAL0MANder-Web/assets/index-current.js?v=1',
+    )
+  })
+
+  it('still requires a Cloudflare Access JWT for the protected console', async () => {
+    const result = await handleRequest(
+      request('/SAL0MANder-Web/console', {}, false),
+      environment(),
+      { ...verifiedAccess, fetchPublicApp: vi.fn() },
+    )
+
+    expect(result.status).toBe(401)
+  })
+
+  it('allows authenticated same-origin API requests from the protected console', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        response({ missions: [], fetchedAtUtc: freshMissionLogTime(), source: 'github' }),
+      ),
+    )
+    const sameOriginRequest = new Request('https://ops.example.com/ops/missions', {
+      headers: {
+        Origin: 'https://ops.example.com',
+        'Cf-Access-Jwt-Assertion': 'signed-access-jwt',
+      },
+    })
+
+    const result = await run(sameOriginRequest)
+
+    expect(result.status).toBe(200)
+    expect(await result.json()).toMatchObject({ source: 'github', missions: [] })
   })
 
   it('requires a Cloudflare Access JWT', async () => {

@@ -5,6 +5,7 @@ export type MissionControlWorkerEnv = {
   ALLOW_SERVICE_TOKENS: string
   TEAM_DOMAIN: string
   POLICY_AUD: string
+  PUBLIC_SITE_URL?: string
   MISSION_GATE: {
     idFromName(name: string): unknown
     get(id: unknown): { fetch(request: Request): Promise<Response> }
@@ -19,6 +20,7 @@ export function handleRequest(
       token: string,
       env: MissionControlWorkerEnv,
     ) => Promise<Record<string, unknown>>
+    fetchPublicApp?: typeof fetch
   },
 ): Promise<Response>
 export class MissionGate {

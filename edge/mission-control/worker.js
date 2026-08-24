@@ -17,14 +17,19 @@ const PENDING_TTL_MS = 60_000
 const POSSESSION_PROPAGATION_GRACE_MS = 300_000
 const MISSION_LOG_CLOCK_SKEW_MS = 30_000
 const GATE_NAME = 'owner-mission-control'
+const DEFAULT_PUBLIC_SITE_URL = 'https://samco1983.github.io/SAL0MANder-Web'
 const jwksByDomain = new Map()
 
 export default { fetch: handleRequest }
 
 export async function handleRequest(request, env, dependencies = {}) {
+  const url = new URL(request.url)
+  const publicAppRequest = isPublicAppRequest(request, url, env)
   const cors = corsHeaders(request, env)
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
-  if (!isAllowedOrigin(request, env)) return json({ error: 'origin_not_allowed' }, 403, cors)
+  if (!publicAppRequest && !isAllowedOrigin(request, env)) {
+    return json({ error: 'origin_not_allowed' }, 403, cors)
+  }
 
   const identity = await authenticateAccess(
     request,
@@ -33,7 +38,10 @@ export async function handleRequest(request, env, dependencies = {}) {
   )
   if (!identity) return json({ error: 'authentication_required' }, 401, cors)
 
-  const url = new URL(request.url)
+  if (publicAppRequest) {
+    return servePublicApp(request, env, dependencies.fetchPublicApp ?? fetch)
+  }
+
   if (request.method === 'GET' && url.pathname.endsWith('/ops/missions')) {
     const upstream = await makeRequest(env, { operation: 'list_missions', source: 'owner_console' })
     if (!upstream.ok) return json({ error: upstream.error }, upstream.status, cors)
@@ -547,11 +555,66 @@ function normalizeTeamDomain(value) {
 
 function isAllowedOrigin(request, env) {
   const origin = request.headers.get('Origin') ?? ''
+  if (!origin) return request.method === 'GET'
+  if (origin === new URL(request.url).origin) return true
   return (env.ALLOWED_ORIGINS ?? '')
     .split(',')
     .map((value) => value.trim())
     .filter(Boolean)
     .includes(origin)
+}
+
+function isPublicAppRequest(request, url, env) {
+  if (request.method !== 'GET') return false
+  const publicSiteUrl = normalizePublicSiteUrl(env.PUBLIC_SITE_URL)
+  return Boolean(publicSiteUrl && url.pathname.startsWith(`${publicSiteUrl.pathname}/`))
+}
+
+async function servePublicApp(request, env, fetchPublicApp) {
+  const publicSiteUrl = normalizePublicSiteUrl(env.PUBLIC_SITE_URL)
+  if (!publicSiteUrl) return json({ error: 'console_unavailable' }, 503)
+
+  const requestUrl = new URL(request.url)
+  const lastSegment = requestUrl.pathname.split('/').pop() ?? ''
+  const isDocumentRoute = !lastSegment.includes('.')
+  const upstreamUrl = new URL(
+    isDocumentRoute ? `${publicSiteUrl.href}/` : `${publicSiteUrl.origin}${requestUrl.pathname}`,
+  )
+  if (!isDocumentRoute) upstreamUrl.search = requestUrl.search
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10_000)
+  let upstream
+  try {
+    upstream = await fetchPublicApp(upstreamUrl, {
+      headers: { Accept: request.headers.get('Accept') ?? '*/*' },
+      redirect: 'follow',
+      signal: controller.signal,
+    })
+  } catch {
+    return json({ error: 'console_unreachable' }, 504)
+  } finally {
+    clearTimeout(timeout)
+  }
+
+  const headers = new Headers(upstream.headers)
+  headers.delete('Set-Cookie')
+  headers.set('X-Robots-Tag', 'noindex, nofollow')
+  if (isDocumentRoute) headers.set('Cache-Control', 'private, no-store')
+  return new Response(upstream.body, { status: upstream.status, headers })
+}
+
+function normalizePublicSiteUrl(value) {
+  try {
+    const url = new URL(value || DEFAULT_PUBLIC_SITE_URL)
+    if (url.protocol !== 'https:') return null
+    url.hash = ''
+    url.search = ''
+    url.pathname = url.pathname.replace(/\/$/, '')
+    return url
+  } catch {
+    return null
+  }
 }
 
 function corsHeaders(request, env) {
