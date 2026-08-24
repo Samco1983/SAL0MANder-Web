@@ -15,6 +15,7 @@ const RATE_MAX = 10
 const IDEMPOTENCY_TTL_MS = 86_400_000
 const PENDING_TTL_MS = 60_000
 const POSSESSION_PROPAGATION_GRACE_MS = 300_000
+const MISSION_LOG_CLOCK_SKEW_MS = 30_000
 const GATE_NAME = 'owner-mission-control'
 const jwksByDomain = new Map()
 
@@ -90,6 +91,7 @@ export async function handleGateRequest(request, env, storage) {
     idempotencyKey,
     now,
     owner,
+    countRate: true,
   })
 
   if (reservation.kind === 'check_possession') {
@@ -117,6 +119,7 @@ export async function handleGateRequest(request, env, storage) {
       idempotencyKey,
       now: Date.now(),
       owner,
+      countRate: false,
     })
   }
 
@@ -146,7 +149,13 @@ export async function handleGateRequest(request, env, storage) {
     })
   }
 
-  const execution = await executeAction(action, idempotencyKey, env)
+  const execution = await executeAction(
+    action,
+    idempotencyKey,
+    fingerprint,
+    reservation.reservedAt,
+    env,
+  )
   if (!execution.ok) {
     await cleanup()
     return json({ error: execution.error, ...(execution.details ?? {}) }, execution.status)
@@ -170,7 +179,7 @@ export async function handleGateRequest(request, env, storage) {
   return json(result, 200)
 }
 
-async function reserveAction(storage, { fingerprint, idempotencyKey, now, owner }) {
+async function reserveAction(storage, { fingerprint, idempotencyKey, now, owner, countRate }) {
   return storage.transaction(async (transaction) => {
     const idempotencyStorageKey = `idem:${idempotencyKey}`
     const existing = await transaction.get(idempotencyStorageKey)
@@ -182,6 +191,20 @@ async function reserveAction(storage, { fingerprint, idempotencyKey, now, owner 
     }
     if (existing) await transaction.delete(idempotencyStorageKey)
 
+    const rateKey = `rate:${owner}`
+    const rate = await transaction.get(rateKey)
+    const currentRate =
+      rate && now - rate.windowStartedAt < RATE_WINDOW_MS
+        ? rate
+        : { count: 0, windowStartedAt: now }
+    if (countRate && currentRate.count >= RATE_MAX) return { kind: 'rate_limited' }
+    if (countRate) {
+      await transaction.put(rateKey, {
+        count: currentRate.count + 1,
+        windowStartedAt: currentRate.windowStartedAt,
+      })
+    }
+
     const possession = await transaction.get('possession')
     if (possession) {
       const abandonedReservation =
@@ -190,25 +213,13 @@ async function reserveAction(storage, { fingerprint, idempotencyKey, now, owner 
       else return { kind: 'check_possession', possession }
     }
 
-    const rateKey = `rate:${owner}`
-    const rate = await transaction.get(rateKey)
-    const currentRate =
-      rate && now - rate.windowStartedAt < RATE_WINDOW_MS
-        ? rate
-        : { count: 0, windowStartedAt: now }
-    if (currentRate.count >= RATE_MAX) return { kind: 'rate_limited' }
-
-    await transaction.put(rateKey, {
-      count: currentRate.count + 1,
-      windowStartedAt: currentRate.windowStartedAt,
-    })
     await transaction.put(idempotencyStorageKey, {
       state: 'pending',
       fingerprint,
       createdAt: now,
     })
     await transaction.put('possession', { idempotencyKey, startedAt: now })
-    return { kind: 'reserved' }
+    return { kind: 'reserved', reservedAt: now }
   })
 }
 
@@ -217,7 +228,7 @@ async function reconcilePossession(possession, env, storage, now) {
     operation: 'list_missions',
     source: 'owner_console',
   })
-  const log = current.ok ? normalizeMissionLog(current.body) : null
+  const log = current.ok ? normalizeMissionLog(current.body, possession.startedAt) : null
   if (!log) {
     return {
       ok: false,
@@ -249,7 +260,7 @@ async function reconcilePossession(possession, env, storage, now) {
   return { ok: true, cleared: true }
 }
 
-async function executeAction(action, idempotencyKey, env) {
+async function executeAction(action, idempotencyKey, requestFingerprint, reservedAt, env) {
   let mission
   if (action.mission.kind === 'existing') {
     const current = await makeRequest(env, {
@@ -279,7 +290,7 @@ async function executeAction(action, idempotencyKey, env) {
       operation: 'list_missions',
       source: 'owner_console',
     })
-    const log = current.ok ? normalizeMissionLog(current.body) : null
+    const log = current.ok ? normalizeMissionLog(current.body, reservedAt) : null
     if (!log) {
       return {
         ok: false,
@@ -308,13 +319,19 @@ async function executeAction(action, idempotencyKey, env) {
     action: action.action,
     mission: action.mission,
     idempotencyKey,
+    requestFingerprint,
     reason,
     requestedAtUtc,
     source: 'owner_console',
   })
   if (!dispatched.ok) return { ok: false, error: dispatched.error, status: dispatched.status }
 
-  const receipt = normalizeReceipt(dispatched.body, action)
+  const receipt = normalizeReceipt(dispatched.body, {
+    action,
+    currentMission: mission,
+    idempotencyKey,
+    requestFingerprint,
+  })
   if (!receipt) return { ok: false, error: 'invalid_upstream_receipt', status: 502 }
   return {
     ok: true,
@@ -362,13 +379,14 @@ export function championshipReady(mission) {
   )
 }
 
-function normalizeMissionLog(body) {
+function normalizeMissionLog(body, minimumFetchedAt = 0) {
   if (
     !body ||
     body.source !== 'github' ||
     !Array.isArray(body.missions) ||
     body.missions.length > 100 ||
-    !isIsoDate(body.fetchedAtUtc)
+    !isIsoDate(body.fetchedAtUtc) ||
+    Date.parse(body.fetchedAtUtc) < minimumFetchedAt - MISSION_LOG_CLOCK_SKEW_MS
   ) {
     return null
   }
@@ -431,10 +449,12 @@ function normalizeProof(value) {
   }
 }
 
-function normalizeReceipt(body, action) {
+function normalizeReceipt(body, { action, currentMission, idempotencyKey, requestFingerprint }) {
   const externalId = boundedString(body?.externalId, 1, 200)
   if (
     body?.accepted !== true ||
+    body?.idempotencyKey !== idempotencyKey ||
+    body?.requestFingerprint !== requestFingerprint ||
     !externalId ||
     !isHttpUrl(body.externalUrl) ||
     !isIsoDate(body.receivedAt)
@@ -446,8 +466,12 @@ function normalizeReceipt(body, action) {
   if (body.externalUrl !== mission.issueUrl) return null
   if (action.mission.kind === 'existing') {
     if (
+      !currentMission ||
       mission.id !== action.mission.id ||
-      Date.parse(mission.updatedAtUtc) < Date.parse(action.mission.revision)
+      mission.title !== currentMission.title ||
+      mission.issueUrl !== currentMission.issueUrl ||
+      action.mission.revision !== currentMission.updatedAtUtc ||
+      Date.parse(mission.updatedAtUtc) < Date.parse(currentMission.updatedAtUtc)
     ) {
       return null
     }

@@ -75,6 +75,17 @@ async function actionFingerprint(body: unknown) {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
+function freshMissionLogTime() {
+  return new Date(Date.now() + 1_000).toISOString()
+}
+
+function dispatchEcho(body: Record<string, unknown>) {
+  return {
+    idempotencyKey: body.idempotencyKey,
+    requestFingerprint: body.requestFingerprint,
+  }
+}
+
 function request(path: string, init: RequestInit = {}, authenticated = true) {
   const headers = new Headers(init.headers)
   headers.set('Origin', origin)
@@ -189,6 +200,7 @@ describe('mission-control edge boundary', () => {
       if (body.operation === 'get_mission') return response({ mission: verifiedMission })
       return response({
         accepted: true,
+        ...dispatchEcho(body),
         externalId: 'receipt-55',
         externalUrl: verifiedMission.issueUrl,
         receivedAt: '2026-08-23T19:34:00.000Z',
@@ -249,7 +261,7 @@ describe('mission-control edge boundary', () => {
       vi.fn().mockResolvedValue(
         response({
           missions: [active],
-          fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+          fetchedAtUtc: freshMissionLogTime(),
           source: 'github',
         }),
       ),
@@ -272,12 +284,13 @@ describe('mission-control edge boundary', () => {
       if (body.operation === 'list_missions') {
         return response({
           missions: [],
-          fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+          fetchedAtUtc: freshMissionLogTime(),
           source: 'github',
         })
       }
       return response({
         accepted: true,
+        ...dispatchEcho(body),
         externalId: 'receipt-new',
         externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
         receivedAt: '2026-08-23T19:34:00.000Z',
@@ -319,12 +332,13 @@ describe('mission-control edge boundary', () => {
       if (body.operation === 'list_missions') {
         return response({
           missions: [],
-          fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+          fetchedAtUtc: freshMissionLogTime(),
           source: 'github',
         })
       }
       return response({
         accepted: true,
+        ...dispatchEcho(body),
         externalId: 'receipt-first',
         externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
         receivedAt: '2026-08-23T19:34:00.000Z',
@@ -363,6 +377,37 @@ describe('mission-control edge boundary', () => {
     expect(upstream).toHaveBeenCalledTimes(3)
   })
 
+  it('does not release an old possession from a stale mission log', async () => {
+    const env = environment()
+    const possession = {
+      idempotencyKey: 'existing-possession',
+      missionId: 'mission-existing',
+      startedAt: Date.now() - 301_000,
+    }
+    await env._storage.put('possession', possession)
+    const upstream = vi.fn().mockResolvedValue(
+      response({
+        missions: [],
+        fetchedAtUtc: '2020-01-01T00:00:00.000Z',
+        source: 'github',
+      }),
+    )
+    vi.stubGlobal('fetch', upstream)
+
+    const result = await run(
+      actionRequest(
+        { action: 'fast_break', mission: { kind: 'new', title: 'Do not unlock from stale data' } },
+        'stale-log-lock',
+      ),
+      env,
+    )
+
+    expect(result.status).toBe(502)
+    expect(await result.json()).toEqual({ error: 'invalid_upstream_contract' })
+    expect(await env._storage.get('possession')).toEqual(possession)
+    expect(upstream).toHaveBeenCalledTimes(1)
+  })
+
   it('releases a possession only after GitHub reports it terminal', async () => {
     const env = environment()
     let firstDispatched = false
@@ -377,7 +422,7 @@ describe('mission-control edge boundary', () => {
       if (body.operation === 'list_missions') {
         return response({
           missions: firstDispatched ? [terminalFirst] : [],
-          fetchedAtUtc: '2026-08-23T19:35:00.000Z',
+          fetchedAtUtc: freshMissionLogTime(),
           source: 'github',
         })
       }
@@ -385,6 +430,7 @@ describe('mission-control edge boundary', () => {
         firstDispatched = true
         return response({
           accepted: true,
+          ...dispatchEcho(body),
           externalId: 'receipt-first',
           externalUrl: terminalFirst.issueUrl,
           receivedAt: '2026-08-23T19:34:00.000Z',
@@ -399,6 +445,7 @@ describe('mission-control edge boundary', () => {
       }
       return response({
         accepted: true,
+        ...dispatchEcho(body),
         externalId: 'receipt-second',
         externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/58',
         receivedAt: '2026-08-23T19:36:00.000Z',
@@ -459,12 +506,13 @@ describe('mission-control edge boundary', () => {
         if (upstreamBody.operation === 'list_missions') {
           return response({
             missions: [],
-            fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+            fetchedAtUtc: freshMissionLogTime(),
             source: 'github',
           })
         }
         return response({
           accepted: true,
+          ...dispatchEcho(upstreamBody),
           externalId: 'receipt-recovered',
           externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/59',
           receivedAt: '2026-08-23T19:34:00.000Z',
@@ -499,12 +547,13 @@ describe('mission-control edge boundary', () => {
         }
         return response({
           missions: [],
-          fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+          fetchedAtUtc: freshMissionLogTime(),
           source: 'github',
         })
       }
       return response({
         accepted: true,
+        ...dispatchEcho(body),
         externalId: 'receipt-new',
         externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
         receivedAt: '2026-08-23T19:34:00.000Z',
@@ -551,12 +600,13 @@ describe('mission-control edge boundary', () => {
         if (body.operation === 'list_missions') {
           return response({
             missions: [],
-            fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+            fetchedAtUtc: freshMissionLogTime(),
             source: 'github',
           })
         }
         return response({
           accepted: 'false',
+          ...dispatchEcho(body),
           externalId: 'not-a-receipt',
           externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
           receivedAt: '2026-08-23T19:34:00.000Z',
@@ -588,7 +638,7 @@ describe('mission-control edge boundary', () => {
       if (body.operation === 'list_missions') {
         return response({
           missions: [],
-          fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+          fetchedAtUtc: freshMissionLogTime(),
           source: 'github',
         })
       }
@@ -596,6 +646,7 @@ describe('mission-control edge boundary', () => {
       const id = wrongMission ? 'mission-wrong' : 'mission-right'
       return response({
         accepted: true,
+        ...dispatchEcho(body),
         externalId: `receipt-${id}`,
         externalUrl: `https://github.com/Samco1983/SAL0MANder-Web/issues/${id}`,
         receivedAt: '2026-08-23T19:34:00.000Z',
@@ -625,6 +676,97 @@ describe('mission-control edge boundary', () => {
     expect(upstream).toHaveBeenCalledTimes(4)
   })
 
+  it('binds an existing-mission receipt to the independently fetched title and issue', async () => {
+    const env = environment()
+    let mismatchedReceipt = true
+    const upstream = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body))
+      if (body.operation === 'get_mission') return response({ mission: verifiedMission })
+      const mission = mismatchedReceipt
+        ? {
+            ...verifiedMission,
+            title: 'Redirected mission',
+            issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/999',
+          }
+        : verifiedMission
+      return response({
+        accepted: true,
+        ...dispatchEcho(body),
+        externalId: mismatchedReceipt ? 'receipt-wrong' : 'receipt-right',
+        externalUrl: mission.issueUrl,
+        receivedAt: freshMissionLogTime(),
+        mission,
+      })
+    })
+    vi.stubGlobal('fetch', upstream)
+    const body = {
+      action: 'championship',
+      mission: {
+        kind: 'existing',
+        id: verifiedMission.id,
+        revision: verifiedMission.updatedAtUtc,
+      },
+    }
+
+    const rejected = await run(actionRequest(body, 'bind-existing-receipt'), env)
+    mismatchedReceipt = false
+    const retried = await run(actionRequest(body, 'bind-existing-receipt'), env)
+
+    expect(rejected.status).toBe(502)
+    expect(await rejected.json()).toEqual({ error: 'invalid_upstream_receipt' })
+    expect(retried.status).toBe(200)
+    expect(await retried.json()).toMatchObject({
+      mission: { id: verifiedMission.id, title: verifiedMission.title },
+      receipt: { id: 'receipt-right', url: verifiedMission.issueUrl },
+    })
+    expect(upstream).toHaveBeenCalledTimes(4)
+  })
+
+  it('rate-limits repeated reconciliation attempts before calling the upstream', async () => {
+    const env = environment()
+    const active = {
+      ...verifiedMission,
+      id: 'mission-active',
+      status: 'active',
+      proof: undefined,
+    }
+    await env._storage.put('possession', {
+      idempotencyKey: 'active-possession',
+      missionId: active.id,
+      startedAt: Date.now(),
+    })
+    const upstream = vi.fn().mockImplementation(async () =>
+      response({
+        missions: [active],
+        fetchedAtUtc: freshMissionLogTime(),
+        source: 'github',
+      }),
+    )
+    vi.stubGlobal('fetch', upstream)
+
+    const results = []
+    for (let index = 0; index < 11; index += 1) {
+      results.push(
+        await run(
+          actionRequest(
+            {
+              action: 'fast_break',
+              mission: { kind: 'new', title: `Blocked attempt ${index}` },
+            },
+            `blocked-reconciliation-${index}`,
+          ),
+          env,
+        ),
+      )
+    }
+
+    expect(results.slice(0, 10).map((result) => result.status)).toEqual(Array(10).fill(409))
+    const rateLimited = results.at(-1)
+    expect(rateLimited?.status).toBe(429)
+    expect(await rateLimited?.json()).toEqual({ error: 'rate_limited' })
+    expect(upstream).toHaveBeenCalledTimes(10)
+  })
+
   it('rejects a non-string upstream receipt identifier', async () => {
     vi.stubGlobal(
       'fetch',
@@ -633,12 +775,13 @@ describe('mission-control edge boundary', () => {
         if (body.operation === 'list_missions') {
           return response({
             missions: [],
-            fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+            fetchedAtUtc: freshMissionLogTime(),
             source: 'github',
           })
         }
         return response({
           accepted: true,
+          ...dispatchEcho(body),
           externalId: 57,
           externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
           receivedAt: '2026-08-23T19:34:00.000Z',
