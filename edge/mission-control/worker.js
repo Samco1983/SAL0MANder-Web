@@ -398,9 +398,19 @@ function normalizeMissionLog(body, minimumFetchedAt = 0) {
   ) {
     return null
   }
-  const missions = body.missions.map(normalizeMission)
+  const missionValues = body.missions.filter((mission) => !isEmptyRecord(mission))
+  const missions = missionValues.map(normalizeMission)
   if (missions.some((mission) => mission === null)) return null
   return { missions, fetchedAtUtc: body.fetchedAtUtc, source: 'github' }
+}
+
+function isEmptyRecord(value) {
+  return (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.keys(value).length === 0
+  )
 }
 
 function normalizeMission(value) {

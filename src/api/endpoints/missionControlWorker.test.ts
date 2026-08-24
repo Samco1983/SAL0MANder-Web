@@ -234,6 +234,42 @@ describe('mission-control edge boundary', () => {
     expect(await result.json()).toMatchObject({ source: 'github', missions: [verifiedMission] })
   })
 
+  it('treats Make\'s empty no-result bundle as an empty GitHub mission list', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        response({
+          missions: [{}],
+          fetchedAtUtc: freshMissionLogTime(),
+          source: 'github',
+        }),
+      ),
+    )
+
+    const result = await run(request('/ops/missions'))
+
+    expect(result.status).toBe(200)
+    expect(await result.json()).toMatchObject({ source: 'github', missions: [] })
+  })
+
+  it('still rejects a partially populated mission record', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        response({
+          missions: [{ id: 'mission-1' }],
+          fetchedAtUtc: freshMissionLogTime(),
+          source: 'github',
+        }),
+      ),
+    )
+
+    const result = await run(request('/ops/missions'))
+
+    expect(result.status).toBe(502)
+    expect(await result.json()).toEqual({ error: 'invalid_upstream_contract' })
+  })
+
   it('rejects a mission log whose claimed fetch time is malformed', async () => {
     vi.stubGlobal(
       'fetch',
