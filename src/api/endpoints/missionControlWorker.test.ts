@@ -99,6 +99,21 @@ function actionRequest(body: unknown, idempotencyKey = 'fast-break:new:1') {
 }
 
 describe('mission-control edge boundary', () => {
+  it('allows the browser transport contract header during preflight', async () => {
+    const result = await run(
+      request('/ops/actions', {
+        method: 'OPTIONS',
+        headers: {
+          'Access-Control-Request-Headers': 'content-type,idempotency-key,x-sal0mander-contract',
+          'Access-Control-Request-Method': 'POST',
+        },
+      }),
+    )
+
+    expect(result.status).toBe(204)
+    expect(result.headers.get('Access-Control-Allow-Headers')).toContain('X-SAL0MANder-Contract')
+  })
+
   it('requires a Cloudflare Access JWT', async () => {
     const result = await run(request('/ops/missions', {}, false))
     expect(result.status).toBe(401)
@@ -362,6 +377,43 @@ describe('mission-control edge boundary', () => {
       actionRequest({
         action: 'fast_break',
         mission: { kind: 'new', title: 'Reject malformed receipt' },
+      }),
+    )
+    expect(result.status).toBe(502)
+    expect(await result.json()).toEqual({ error: 'invalid_upstream_receipt' })
+  })
+
+  it('rejects a non-string upstream receipt identifier', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+        const body = JSON.parse(String(init.body))
+        if (body.operation === 'list_missions') {
+          return response({
+            missions: [],
+            fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+            source: 'github',
+          })
+        }
+        return response({
+          accepted: true,
+          externalId: 57,
+          externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
+          receivedAt: '2026-08-23T19:34:00.000Z',
+          mission: {
+            id: 'mission-57',
+            title: 'Reject malformed identifier',
+            status: 'queued',
+            updatedAtUtc: '2026-08-23T19:34:00.000Z',
+            issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
+          },
+        })
+      }),
+    )
+    const result = await run(
+      actionRequest({
+        action: 'fast_break',
+        mission: { kind: 'new', title: 'Reject malformed receipt identifier' },
       }),
     )
     expect(result.status).toBe(502)

@@ -345,9 +345,10 @@ function normalizeProof(value) {
 }
 
 function normalizeReceipt(body) {
+  const externalId = boundedString(body?.externalId, 1, 200)
   if (
     body?.accepted !== true ||
-    !body.externalId ||
+    !externalId ||
     !isHttpUrl(body.externalUrl) ||
     !isIsoDate(body.receivedAt)
   ) {
@@ -357,7 +358,7 @@ function normalizeReceipt(body) {
   if (!mission) return null
   return {
     mission: { id: mission.id, title: mission.title, status: mission.status },
-    receipt: { id: body.externalId, url: body.externalUrl, receivedAtUtc: body.receivedAt },
+    receipt: { id: externalId, url: body.externalUrl, receivedAtUtc: body.receivedAt },
   }
 }
 
@@ -437,7 +438,7 @@ function corsHeaders(request, env) {
     'Access-Control-Allow-Origin': isAllowedOrigin(request, env) ? origin : 'null',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Idempotency-Key',
+    'Access-Control-Allow-Headers': 'Content-Type, Idempotency-Key, X-SAL0MANder-Contract',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   }
