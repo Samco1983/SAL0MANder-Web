@@ -55,6 +55,7 @@ function environment() {
     ALLOW_SERVICE_TOKENS: 'true',
     TEAM_DOMAIN: 'https://sal0.cloudflareaccess.com',
     POLICY_AUD: 'mission-control-audience',
+    _storage: storage,
     MISSION_GATE: {} as {
       idFromName(name: string): string
       get(id: string): { fetch(request: Request): Promise<Response> }
@@ -66,6 +67,12 @@ function environment() {
     get: () => gate,
   }
   return env
+}
+
+async function actionFingerprint(body: unknown) {
+  const bytes = new TextEncoder().encode(JSON.stringify(body))
+  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 function request(path: string, init: RequestInit = {}, authenticated = true) {
@@ -151,6 +158,25 @@ describe('mission-control edge boundary', () => {
         .mockResolvedValue(
           response({ missions: [], fetchedAtUtc: 'not-a-date', source: 'github' }),
         ),
+    )
+    const result = await run(request('/ops/missions'))
+    expect(result.status).toBe(502)
+    expect(await result.json()).toEqual({ error: 'invalid_upstream_contract' })
+  })
+
+  it('rejects a mission log larger than the public contract permits', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        response({
+          missions: Array.from({ length: 101 }, (_, index) => ({
+            ...verifiedMission,
+            id: `mission-${index}`,
+          })),
+          fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+          source: 'github',
+        }),
+      ),
     )
     const result = await run(request('/ops/missions'))
     expect(result.status).toBe(502)
@@ -286,6 +312,177 @@ describe('mission-control edge boundary', () => {
     expect(upstream).toHaveBeenCalledTimes(2)
   })
 
+  it('keeps the possession locked while a queued mission has not reached GitHub yet', async () => {
+    const env = environment()
+    const upstream = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body))
+      if (body.operation === 'list_missions') {
+        return response({
+          missions: [],
+          fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+          source: 'github',
+        })
+      }
+      return response({
+        accepted: true,
+        externalId: 'receipt-first',
+        externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
+        receivedAt: '2026-08-23T19:34:00.000Z',
+        mission: {
+          id: 'mission-57',
+          title: 'First mission',
+          status: 'queued',
+          updatedAtUtc: '2026-08-23T19:34:00.000Z',
+          issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
+        },
+      })
+    })
+    vi.stubGlobal('fetch', upstream)
+
+    const first = await run(
+      actionRequest(
+        { action: 'fast_break', mission: { kind: 'new', title: 'First mission' } },
+        'first-sequential',
+      ),
+      env,
+    )
+    const second = await run(
+      actionRequest(
+        { action: 'fast_break', mission: { kind: 'new', title: 'Second mission' } },
+        'second-sequential',
+      ),
+      env,
+    )
+
+    expect(first.status).toBe(200)
+    expect(second.status).toBe(409)
+    expect(await second.json()).toEqual({
+      error: 'possession_in_progress',
+      missionId: 'mission-57',
+    })
+    expect(upstream).toHaveBeenCalledTimes(3)
+  })
+
+  it('releases a possession only after GitHub reports it terminal', async () => {
+    const env = environment()
+    let firstDispatched = false
+    const terminalFirst = {
+      ...verifiedMission,
+      id: 'mission-first',
+      title: 'First mission',
+      issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/57',
+    }
+    const upstream = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body))
+      if (body.operation === 'list_missions') {
+        return response({
+          missions: firstDispatched ? [terminalFirst] : [],
+          fetchedAtUtc: '2026-08-23T19:35:00.000Z',
+          source: 'github',
+        })
+      }
+      if (!firstDispatched) {
+        firstDispatched = true
+        return response({
+          accepted: true,
+          externalId: 'receipt-first',
+          externalUrl: terminalFirst.issueUrl,
+          receivedAt: '2026-08-23T19:34:00.000Z',
+          mission: {
+            id: terminalFirst.id,
+            title: terminalFirst.title,
+            status: 'queued',
+            updatedAtUtc: '2026-08-23T19:34:00.000Z',
+            issueUrl: terminalFirst.issueUrl,
+          },
+        })
+      }
+      return response({
+        accepted: true,
+        externalId: 'receipt-second',
+        externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/58',
+        receivedAt: '2026-08-23T19:36:00.000Z',
+        mission: {
+          id: 'mission-second',
+          title: 'Second mission',
+          status: 'queued',
+          updatedAtUtc: '2026-08-23T19:36:00.000Z',
+          issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/58',
+        },
+      })
+    })
+    vi.stubGlobal('fetch', upstream)
+
+    const first = await run(
+      actionRequest(
+        { action: 'fast_break', mission: { kind: 'new', title: 'First mission' } },
+        'first-terminal',
+      ),
+      env,
+    )
+    const second = await run(
+      actionRequest(
+        { action: 'fast_break', mission: { kind: 'new', title: 'Second mission' } },
+        'second-terminal',
+      ),
+      env,
+    )
+
+    expect(first.status).toBe(200)
+    expect(second.status).toBe(200)
+    expect(await second.json()).toMatchObject({
+      mission: { id: 'mission-second' },
+      receipt: { id: 'receipt-second' },
+    })
+    expect(upstream).toHaveBeenCalledTimes(5)
+  })
+
+  it('expires an abandoned pending idempotency reservation after one minute', async () => {
+    const env = environment()
+    const body = {
+      action: 'fast_break',
+      mission: { kind: 'new', title: 'Recover abandoned reservation' },
+    }
+    await env._storage.put('idem:abandoned', {
+      state: 'pending',
+      fingerprint: await actionFingerprint(body),
+      createdAt: Date.now() - 61_000,
+    })
+    await env._storage.put('possession', {
+      idempotencyKey: 'abandoned',
+      startedAt: Date.now() - 61_000,
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+        const upstreamBody = JSON.parse(String(init.body))
+        if (upstreamBody.operation === 'list_missions') {
+          return response({
+            missions: [],
+            fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+            source: 'github',
+          })
+        }
+        return response({
+          accepted: true,
+          externalId: 'receipt-recovered',
+          externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/59',
+          receivedAt: '2026-08-23T19:34:00.000Z',
+          mission: {
+            id: 'mission-recovered',
+            title: body.mission.title,
+            status: 'queued',
+            updatedAtUtc: '2026-08-23T19:34:00.000Z',
+            issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/59',
+          },
+        })
+      }),
+    )
+
+    const result = await run(actionRequest(body, 'abandoned'), env)
+    expect(result.status).toBe(200)
+  })
+
   it('serializes concurrent Fast Breaks before either can dispatch', async () => {
     const env = environment()
     let releaseFirst: (() => void) | undefined
@@ -381,6 +578,51 @@ describe('mission-control edge boundary', () => {
     )
     expect(result.status).toBe(502)
     expect(await result.json()).toEqual({ error: 'invalid_upstream_receipt' })
+  })
+
+  it('rejects and does not cache a receipt for a different mission', async () => {
+    const env = environment()
+    let wrongMission = true
+    const upstream = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body))
+      if (body.operation === 'list_missions') {
+        return response({
+          missions: [],
+          fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+          source: 'github',
+        })
+      }
+      const title = wrongMission ? 'Different mission' : 'Requested mission'
+      const id = wrongMission ? 'mission-wrong' : 'mission-right'
+      return response({
+        accepted: true,
+        externalId: `receipt-${id}`,
+        externalUrl: `https://github.com/Samco1983/SAL0MANder-Web/issues/${id}`,
+        receivedAt: '2026-08-23T19:34:00.000Z',
+        mission: {
+          id,
+          title,
+          status: 'queued',
+          updatedAtUtc: '2026-08-23T19:34:00.000Z',
+          issueUrl: `https://github.com/Samco1983/SAL0MANder-Web/issues/${id}`,
+        },
+      })
+    })
+    vi.stubGlobal('fetch', upstream)
+    const body = {
+      action: 'fast_break',
+      mission: { kind: 'new', title: 'Requested mission' },
+    }
+
+    const rejected = await run(actionRequest(body, 'bind-receipt'), env)
+    wrongMission = false
+    const retried = await run(actionRequest(body, 'bind-receipt'), env)
+
+    expect(rejected.status).toBe(502)
+    expect(await rejected.json()).toEqual({ error: 'invalid_upstream_receipt' })
+    expect(retried.status).toBe(200)
+    expect(await retried.json()).toMatchObject({ mission: { id: 'mission-right' } })
+    expect(upstream).toHaveBeenCalledTimes(4)
   })
 
   it('rejects a non-string upstream receipt identifier', async () => {

@@ -14,6 +14,7 @@ const RATE_WINDOW_MS = 300_000
 const RATE_MAX = 10
 const IDEMPOTENCY_TTL_MS = 86_400_000
 const PENDING_TTL_MS = 60_000
+const POSSESSION_PROPAGATION_GRACE_MS = 300_000
 const GATE_NAME = 'owner-mission-control'
 const jwksByDomain = new Map()
 
@@ -84,48 +85,52 @@ export async function handleGateRequest(request, env, storage) {
 
   const fingerprint = await sha256(JSON.stringify(action))
   const now = Date.now()
-  const reservation = await storage.transaction(async (transaction) => {
-    const idempotencyStorageKey = `idem:${idempotencyKey}`
-    const existing = await transaction.get(idempotencyStorageKey)
-    if (existing && now - existing.createdAt < IDEMPOTENCY_TTL_MS) {
-      if (existing.fingerprint !== fingerprint) return { kind: 'conflict' }
-      if (existing.state === 'complete') return { kind: 'duplicate', result: existing.result }
-      return { kind: 'pending' }
-    }
-    if (existing) await transaction.delete(idempotencyStorageKey)
-
-    const rateKey = `rate:${owner}`
-    const rate = await transaction.get(rateKey)
-    const currentRate =
-      rate && now - rate.windowStartedAt < RATE_WINDOW_MS
-        ? rate
-        : { count: 0, windowStartedAt: now }
-    if (currentRate.count >= RATE_MAX) return { kind: 'rate_limited' }
-
-    const possession = await transaction.get('possession')
-    if (possession && now - possession.startedAt < PENDING_TTL_MS) {
-      return { kind: 'possession_in_progress' }
-    }
-    if (possession) await transaction.delete('possession')
-
-    await transaction.put(rateKey, {
-      count: currentRate.count + 1,
-      windowStartedAt: currentRate.windowStartedAt,
-    })
-    await transaction.put(idempotencyStorageKey, {
-      state: 'pending',
-      fingerprint,
-      createdAt: now,
-    })
-    await transaction.put('possession', { idempotencyKey, startedAt: now })
-    return { kind: 'reserved' }
+  let reservation = await reserveAction(storage, {
+    fingerprint,
+    idempotencyKey,
+    now,
+    owner,
   })
+
+  if (reservation.kind === 'check_possession') {
+    if (!reservation.possession.missionId) {
+      return json({ error: 'possession_in_progress' }, 409)
+    }
+    const reconciliation = await reconcilePossession(reservation.possession, env, storage, now)
+    if (!reconciliation.ok) {
+      return json(
+        { error: reconciliation.error, ...(reconciliation.details ?? {}) },
+        reconciliation.status,
+      )
+    }
+    if (!reconciliation.cleared) {
+      return json(
+        {
+          error: 'possession_in_progress',
+          missionId: reservation.possession.missionId,
+        },
+        409,
+      )
+    }
+    reservation = await reserveAction(storage, {
+      fingerprint,
+      idempotencyKey,
+      now: Date.now(),
+      owner,
+    })
+  }
 
   if (reservation.kind === 'conflict') return json({ error: 'idempotency_conflict' }, 409)
   if (reservation.kind === 'pending') return json({ error: 'request_in_progress' }, 409)
   if (reservation.kind === 'rate_limited') return json({ error: 'rate_limited' }, 429)
-  if (reservation.kind === 'possession_in_progress') {
-    return json({ error: 'possession_in_progress' }, 409)
+  if (reservation.kind === 'check_possession') {
+    return json(
+      {
+        error: 'possession_in_progress',
+        missionId: reservation.possession.missionId,
+      },
+      409,
+    )
   }
   if (reservation.kind === 'duplicate') {
     return json({ ...reservation.result, outcome: 'duplicate' }, 200)
@@ -149,18 +154,99 @@ export async function handleGateRequest(request, env, storage) {
 
   const result = execution.result
   await storage.transaction(async (transaction) => {
+    const completedAt = Date.now()
     await transaction.put(`idem:${idempotencyKey}`, {
       state: 'complete',
       fingerprint,
       result,
+      createdAt: completedAt,
+    })
+    await transaction.put('possession', {
+      idempotencyKey,
+      missionId: result.mission.id,
+      startedAt: completedAt,
+    })
+  })
+  return json(result, 200)
+}
+
+async function reserveAction(storage, { fingerprint, idempotencyKey, now, owner }) {
+  return storage.transaction(async (transaction) => {
+    const idempotencyStorageKey = `idem:${idempotencyKey}`
+    const existing = await transaction.get(idempotencyStorageKey)
+    const existingTtl = existing?.state === 'pending' ? PENDING_TTL_MS : IDEMPOTENCY_TTL_MS
+    if (existing && now - existing.createdAt < existingTtl) {
+      if (existing.fingerprint !== fingerprint) return { kind: 'conflict' }
+      if (existing.state === 'complete') return { kind: 'duplicate', result: existing.result }
+      return { kind: 'pending' }
+    }
+    if (existing) await transaction.delete(idempotencyStorageKey)
+
+    const possession = await transaction.get('possession')
+    if (possession) {
+      const abandonedReservation =
+        !possession.missionId && now - possession.startedAt >= PENDING_TTL_MS
+      if (abandonedReservation) await transaction.delete('possession')
+      else return { kind: 'check_possession', possession }
+    }
+
+    const rateKey = `rate:${owner}`
+    const rate = await transaction.get(rateKey)
+    const currentRate =
+      rate && now - rate.windowStartedAt < RATE_WINDOW_MS
+        ? rate
+        : { count: 0, windowStartedAt: now }
+    if (currentRate.count >= RATE_MAX) return { kind: 'rate_limited' }
+
+    await transaction.put(rateKey, {
+      count: currentRate.count + 1,
+      windowStartedAt: currentRate.windowStartedAt,
+    })
+    await transaction.put(idempotencyStorageKey, {
+      state: 'pending',
+      fingerprint,
       createdAt: now,
     })
-    const possession = await transaction.get('possession')
-    if (possession?.idempotencyKey === idempotencyKey) {
+    await transaction.put('possession', { idempotencyKey, startedAt: now })
+    return { kind: 'reserved' }
+  })
+}
+
+async function reconcilePossession(possession, env, storage, now) {
+  const current = await makeRequest(env, {
+    operation: 'list_missions',
+    source: 'owner_console',
+  })
+  const log = current.ok ? normalizeMissionLog(current.body) : null
+  if (!log) {
+    return {
+      ok: false,
+      error: current.ok ? 'invalid_upstream_contract' : current.error,
+      status: current.ok ? 502 : current.status,
+    }
+  }
+
+  const active = log.missions.find((mission) => ACTIVE_STATUSES.has(mission.status))
+  const observed = log.missions.find((mission) => mission.id === possession.missionId)
+  const withinPropagationGrace = now - possession.startedAt < POSSESSION_PROPAGATION_GRACE_MS
+  if (active || (!observed && withinPropagationGrace)) {
+    return {
+      ok: true,
+      cleared: false,
+      details: { missionId: active?.id ?? possession.missionId },
+    }
+  }
+
+  await storage.transaction(async (transaction) => {
+    const latest = await transaction.get('possession')
+    if (
+      latest?.idempotencyKey === possession.idempotencyKey &&
+      latest?.missionId === possession.missionId
+    ) {
       await transaction.delete('possession')
     }
   })
-  return json(result, 200)
+  return { ok: true, cleared: true }
 }
 
 async function executeAction(action, idempotencyKey, env) {
@@ -228,7 +314,7 @@ async function executeAction(action, idempotencyKey, env) {
   })
   if (!dispatched.ok) return { ok: false, error: dispatched.error, status: dispatched.status }
 
-  const receipt = normalizeReceipt(dispatched.body)
+  const receipt = normalizeReceipt(dispatched.body, action)
   if (!receipt) return { ok: false, error: 'invalid_upstream_receipt', status: 502 }
   return {
     ok: true,
@@ -281,6 +367,7 @@ function normalizeMissionLog(body) {
     !body ||
     body.source !== 'github' ||
     !Array.isArray(body.missions) ||
+    body.missions.length > 100 ||
     !isIsoDate(body.fetchedAtUtc)
   ) {
     return null
@@ -344,7 +431,7 @@ function normalizeProof(value) {
   }
 }
 
-function normalizeReceipt(body) {
+function normalizeReceipt(body, action) {
   const externalId = boundedString(body?.externalId, 1, 200)
   if (
     body?.accepted !== true ||
@@ -356,6 +443,17 @@ function normalizeReceipt(body) {
   }
   const mission = normalizeMission(body.mission)
   if (!mission) return null
+  if (body.externalUrl !== mission.issueUrl) return null
+  if (action.mission.kind === 'existing') {
+    if (
+      mission.id !== action.mission.id ||
+      Date.parse(mission.updatedAtUtc) < Date.parse(action.mission.revision)
+    ) {
+      return null
+    }
+  } else if (mission.title !== action.mission.title) {
+    return null
+  }
   return {
     mission: { id: mission.id, title: mission.title, status: mission.status },
     receipt: { id: externalId, url: body.externalUrl, receivedAtUtc: body.receivedAt },
