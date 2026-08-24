@@ -16,14 +16,20 @@ describe('readEnv defaults', () => {
     const env = readEnv({})
     expect(env.api.isConfigured).toBe(false)
     expect(env.unity.isConfigured).toBe(false)
+    expect(env.ops.isConfigured).toBe(false)
     expect(env.api.contractVersion).toBe('v1')
     expect(env.api.timeoutMs).toBe(15_000)
   })
 
   it('strips trailing slashes so joined URLs never double up', () => {
-    const env = readEnv({ VITE_API_BASE_URL: 'https://api.example.com///' })
+    const env = readEnv({
+      VITE_API_BASE_URL: 'https://api.example.com///',
+      VITE_OPS_API_BASE_URL: 'https://ops.example.com///',
+    })
     expect(env.api.baseUrl).toBe('https://api.example.com')
     expect(env.api.isConfigured).toBe(true)
+    expect(env.ops.baseUrl).toBe('https://ops.example.com')
+    expect(env.ops.isConfigured).toBe(true)
   })
 
   it('treats only true/1 as an enabled flag', () => {

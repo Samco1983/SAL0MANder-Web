@@ -35,6 +35,17 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Local verification can put a disposable ops service behind Vite's
+    // origin. The target is server-only (not VITE_-prefixed) and is absent in
+    // normal development and production builds.
+    proxy: process.env.OPS_DEV_PROXY_TARGET
+      ? {
+          '/ops': {
+            target: process.env.OPS_DEV_PROXY_TARGET,
+            changeOrigin: false,
+          },
+        }
+      : undefined,
     // No COOP/COEP here on purpose.
     //
     // Cross-origin isolation is only *required* for SharedArrayBuffer, i.e. a

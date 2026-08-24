@@ -1,0 +1,22 @@
+name = "sal0mander-mission-control"
+main = "worker.js"
+compatibility_date = "2026-08-23"
+workers_dev = false
+
+# One SQLite-backed Durable Object serializes owner actions and persists
+# idempotency receipts. Keep MAKE_WEBHOOK_URL out of this file and add it with
+# `wrangler secret put`. Protect the custom domain with Cloudflare Access.
+[[durable_objects.bindings]]
+name = "MISSION_GATE"
+class_name = "MissionGate"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["MissionGate"]
+
+[vars]
+ALLOWED_ORIGINS = "https://samco1983.github.io"
+OWNER_EMAILS = "owner@example.com"
+ALLOW_SERVICE_TOKENS = "true"
+TEAM_DOMAIN = "https://replace-me.cloudflareaccess.com"
+POLICY_AUD = "replace-with-access-application-audience"

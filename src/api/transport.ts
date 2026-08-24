@@ -33,6 +33,8 @@ export type HttpTransportConfig = {
   timeoutMs: number
   /** Attempts for retryable failures, including the first. */
   maxAttempts?: number
+  /** Required for a cross-origin endpoint protected by an existing browser session. */
+  credentials?: RequestCredentials
 }
 
 const RETRY_BASE_DELAY_MS = 250
@@ -104,6 +106,7 @@ async function sendOnce(
       headers,
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
       signal: controller.signal,
+      ...(config.credentials ? { credentials: config.credentials } : {}),
     })
 
     if (!response.ok) {
