@@ -38,7 +38,18 @@ function findAutoBlocker() {
 function ghIssueList() {
   const result = spawnSync(
     'gh',
-    ['issue', 'list', '--repo', repoSlug, '--state', 'open', '--json', 'number,title,body,labels', '--limit', '100'],
+    [
+      'issue',
+      'list',
+      '--repo',
+      repoSlug,
+      '--state',
+      'open',
+      '--json',
+      'number,title,body,labels,author',
+      '--limit',
+      '100',
+    ],
     { cwd: repo, encoding: 'utf8', timeout: 20000 },
   )
 
