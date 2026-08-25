@@ -607,6 +607,7 @@ export async function githubMissionRequest(env, body, fetchGitHub = fetch) {
     requestFingerprint: body.requestFingerprint,
     requestedAtUtc: dispatchedAt,
     source: 'owner_console',
+    request: body.mission,
     mission: {
       title,
       status: 'queued',

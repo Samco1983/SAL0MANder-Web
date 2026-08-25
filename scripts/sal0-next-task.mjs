@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { selectNextIssue } from './lib/sal0-next-task-select.mjs'
 
 const repo = process.env.SAL0_REPO || '/Users/samuel_saldivar/Desktop/SAL0MANder-Web'
 const repoSlug = 'Samco1983/SAL0MANder-Web'
@@ -37,7 +38,18 @@ function findAutoBlocker() {
 function ghIssueList() {
   const result = spawnSync(
     'gh',
-    ['issue', 'list', '--repo', repoSlug, '--state', 'open', '--json', 'number,title,body,labels', '--limit', '100'],
+    [
+      'issue',
+      'list',
+      '--repo',
+      repoSlug,
+      '--state',
+      'open',
+      '--json',
+      'number,title,body,labels,author',
+      '--limit',
+      '100',
+    ],
     { cwd: repo, encoding: 'utf8', timeout: 20000 },
   )
 
@@ -51,16 +63,7 @@ function ghIssueList() {
 }
 
 function findIssue() {
-  const issues = ghIssueList()
-  return (
-    issues
-      .filter((issue) => issue.title.toUpperCase().includes('[WEB]'))
-      .filter((issue) => {
-        const labels = (issue.labels || []).map((label) => String(label.name || '').toLowerCase())
-        return !labels.includes('in-progress') && !labels.includes('blocked')
-      })
-      .sort((a, b) => a.number - b.number)[0] || null
-  )
+  return selectNextIssue(ghIssueList())
 }
 
 function atomicWrite(path, body) {
