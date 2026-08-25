@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   isQueuedMissionIssue,
+  missionRequestFingerprint,
   parseMissionEnvelope,
   selectNextIssue,
 } from './sal0-next-task-select.mjs'
@@ -21,7 +22,7 @@ const missionBody = (overrides = {}) => {
   const envelope = {
     action: 'fast_break',
     idempotencyKey: 'fast_break:new:2026-08-25T07:05:52a12c18',
-    requestFingerprint: 'f9470211b15218791dd01608e50d618b6ec5302498032ff54a2c7ed74ad70fbf',
+    requestFingerprint: '',
     requestedAtUtc,
     source: 'owner_console',
     mission: {
@@ -31,6 +32,9 @@ const missionBody = (overrides = {}) => {
       ...missionOverrides,
     },
     ...envelopeOverrides,
+  }
+  if (!Object.hasOwn(envelopeOverrides, 'requestFingerprint')) {
+    envelope.requestFingerprint = missionRequestFingerprint(envelope.mission.title)
   }
 
   return `## SAL0MANder mission
@@ -102,8 +106,12 @@ describe('selectNextIssue', () => {
       missionBody({ action: 'championship' }),
       missionBody({ source: 'browser_copy' }),
       missionBody({ idempotencyKey: '' }),
+      missionBody({ idempotencyKey: '   ' }),
       missionBody({ requestFingerprint: 'not-a-fingerprint' }),
+      missionBody({ requestFingerprint: 'f'.repeat(64) }),
       missionBody({ requestedAtUtc: 'not-a-date' }),
+      missionBody({ requestedAtUtc: '2026-08-25' }),
+      missionBody({ requestedAtUtc: '0' }),
       missionBody({ mission: { updatedAtUtc: '2026-08-25T07:06:30.144Z' } }),
     ]
     const selected = selectNextIssue([
@@ -130,6 +138,10 @@ describe('selectNextIssue', () => {
 describe('parseMissionEnvelope', () => {
   it('returns null instead of trusting malformed mission metadata', () => {
     expect(parseMissionEnvelope('<!-- sal0-mission-control:v1\n{\n-->')).toBeNull()
+  })
+
+  it('requires the exact marker syntax emitted by the Worker', () => {
+    expect(parseMissionEnvelope('<!--sal0-mission-control:v1\n{}\n-->')).toBeNull()
   })
 
   it('accepts the complete envelope emitted by the Mission Control worker', () => {

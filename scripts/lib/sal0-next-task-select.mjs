@@ -1,7 +1,11 @@
+import { createHash } from 'node:crypto'
+
 export const MISSION_MARKER = 'sal0-mission-control:v1'
 export const DEFAULT_TRUSTED_AUTHORS = ['Samco1983']
 
-const FINGERPRINT = /^[a-f0-9]{64}$/i
+const MISSION_MARKER_START = '<!-- sal0-mission-control:v1\n'
+const MISSION_MARKER_END = '\n-->'
+const STRICT_UTC_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/
 
 function labelsFor(issue) {
   return (issue.labels || []).map((label) => String(label.name || '').toLowerCase())
@@ -12,20 +16,31 @@ export function hasMissionMarker(body) {
 }
 
 export function parseMissionEnvelope(body) {
-  const match = String(body || '').match(
-    /<!--\s*sal0-mission-control:v1\s*\n([\s\S]*?)\n-->/,
-  )
-  if (!match) return null
+  const value = String(body || '')
+  const start = value.indexOf(MISSION_MARKER_START)
+  if (start < 0) return null
+  const contentStart = start + MISSION_MARKER_START.length
+  const end = value.indexOf(MISSION_MARKER_END, contentStart)
+  if (end < 0) return null
 
   try {
-    return JSON.parse(match[1])
+    return JSON.parse(value.slice(contentStart, end))
   } catch {
     return null
   }
 }
 
 function isIsoDate(value) {
-  return typeof value === 'string' && Number.isFinite(Date.parse(value))
+  return (
+    typeof value === 'string' &&
+    STRICT_UTC_DATE.test(value) &&
+    Number.isFinite(Date.parse(value))
+  )
+}
+
+export function missionRequestFingerprint(title) {
+  const action = { action: 'fast_break', mission: { kind: 'new', title } }
+  return createHash('sha256').update(JSON.stringify(action)).digest('hex')
 }
 
 function isTrustedIssueAuthor(issue, authors) {
@@ -41,14 +56,16 @@ export function isQueuedMissionIssue(issue) {
   const mission = envelope?.mission
   const title = typeof mission?.title === 'string' ? mission.title.trim() : ''
   const expectedTitle = `[OVERNIGHT][WEB] ${title}`
+  const idempotencyKey =
+    typeof envelope?.idempotencyKey === 'string' ? envelope.idempotencyKey.trim() : ''
 
   return Boolean(
     envelope &&
       envelope.action === 'fast_break' &&
-      typeof envelope.idempotencyKey === 'string' &&
-      envelope.idempotencyKey.length > 0 &&
-      envelope.idempotencyKey.length <= 300 &&
-      FINGERPRINT.test(envelope.requestFingerprint || '') &&
+      idempotencyKey.length > 0 &&
+      idempotencyKey.length <= 300 &&
+      envelope.idempotencyKey === idempotencyKey &&
+      envelope.requestFingerprint === missionRequestFingerprint(title) &&
       isIsoDate(envelope.requestedAtUtc) &&
       envelope.source === 'owner_console' &&
       mission &&
