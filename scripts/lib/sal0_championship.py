@@ -195,6 +195,31 @@ def operational() -> list[dict]:
                 recent = max(recent, t)
             except Exception:
                 pass
+
+    # NUDGES.jsonl is written by scripts/sal0_nudge.py and by nothing else, so
+    # reading only that file answers "did the nudger run recently", which is a
+    # narrower question than the one this check asks.
+    #
+    # The work loop is the other thing that drives possessions, and it leaves
+    # its own written trace: one docs/coordination/runs/logs/work-loop-*.log per
+    # run. On 2026-08-25 three loop possessions claimed issues, passed the gate,
+    # committed, and pushed while this check reported 5554 minutes of silence —
+    # reporting a live system dead, which is the same defect as reporting a dead
+    # one live and costs the same trust.
+    #
+    # A log file appears whether the run scored or refused, and that is correct
+    # here: this check asks whether anything is *driving*, not whether the last
+    # possession made its shot. "Refused for a stated reason" is a driver
+    # working; the possession checks above are what judge the outcome.
+    run_logs = os.path.join(REPO, "docs", "coordination", "runs", "logs")
+    if os.path.isdir(run_logs):
+        for entry in os.scandir(run_logs):
+            if not (entry.name.startswith("work-loop-") and entry.name.endswith(".log")):
+                continue
+            try:
+                recent = max(recent, entry.stat().st_mtime)
+            except OSError:
+                pass
     age = (dt.datetime.now().astimezone().timestamp() - recent) / 60 if recent else None
     driving = age is not None and age < DRIVER_STALE_MINUTES
     out.append({"name": "something is driving possessions right now", "ok": driving,
