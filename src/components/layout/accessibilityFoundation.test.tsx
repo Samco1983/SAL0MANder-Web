@@ -118,6 +118,7 @@ describe('touch targets', () => {
     resolve(__dirname, '../ui/Button.module.css'),
     'utf8',
   )
+  const shellCss = readFileSync(resolve(__dirname, './AppShell.module.css'), 'utf8')
 
   it('gives every button size a minimum height, including the small one', () => {
     const minHeights = [...buttonCss.matchAll(/min-height:\s*([\d.]+)rem/g)].map((m) =>
@@ -141,5 +142,19 @@ describe('touch targets', () => {
     const button = screen.getByRole('button', { name: /press me/i })
     await user.tab()
     expect(button).toHaveFocus()
+  })
+
+  it('floors the shell nav links at 44px on touch pointers', () => {
+    const coarse = shellCss.match(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/)
+    expect(coarse, 'the pointer: coarse block was removed').not.toBeNull()
+    expect(coarse?.[0]).toMatch(/\.navLink\b/)
+    const minHeight = coarse?.[0].match(/min-height:\s*(\d+)px/)
+    expect(Number(minHeight?.[1])).toBeGreaterThanOrEqual(44)
+  })
+
+  it('leaves the desktop header alone, so nothing fattens on a mouse', () => {
+    const outsideCoarse = shellCss.replace(/@media\s*\(pointer:\s*coarse\)\s*\{[\s\S]*?\n\}/, '')
+    const navLinkBase = outsideCoarse.match(/\.navLink\s*\{[\s\S]*?\}/)?.[0] ?? ''
+    expect(navLinkBase).not.toMatch(/min-height/)
   })
 })

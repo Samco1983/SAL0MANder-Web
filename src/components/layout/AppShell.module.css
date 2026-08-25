@@ -82,6 +82,14 @@
   color: var(--color-text);
 }
 
+@media (pointer: coarse) {
+  .navLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
 .navLinkActive {
   color: var(--color-text);
   background: var(--color-surface-sunken);
