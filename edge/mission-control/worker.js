@@ -21,6 +21,14 @@ const DEFAULT_PUBLIC_SITE_URL = 'https://samco1983.github.io/SAL0MANder-Web'
 const FORM_ACTION_PATH = '/ops/actions/form'
 const FORM_CSRF_COOKIE = 'sal0_mc_csrf'
 const FORM_TOKEN_PATTERN = /^[a-f0-9]{48}$/
+const DEFAULT_GITHUB_REPOSITORY = 'Samco1983/SAL0MANder-Web'
+const GITHUB_API_ROOT = 'https://api.github.com'
+const GITHUB_API_VERSION = '2022-11-28'
+const GITHUB_MAX_ISSUE_PAGES = 100
+const GITHUB_MAX_MISSIONS = GITHUB_MAX_ISSUE_PAGES * 100
+const MISSION_MARKER_PREFIX = '<!-- sal0-mission-control:v1'
+const MISSION_MARKER_START = '<!-- sal0-mission-control:v1\n'
+const MISSION_MARKER_END = '\n-->'
 const jwksByDomain = new Map()
 
 export default { fetch: handleRequest }
@@ -42,7 +50,12 @@ export async function handleRequest(request, env, dependencies = {}) {
   if (!identity) return json({ error: 'authentication_required' }, 401, cors)
 
   if (publicAppRequest) {
-    return servePublicApp(request, env, dependencies.fetchPublicApp ?? fetch)
+    return servePublicApp(
+      request,
+      env,
+      dependencies.fetchPublicApp ?? fetch,
+      dependencies.missionRequest ?? githubMissionRequest,
+    )
   }
 
   if (request.method === 'POST' && url.pathname.endsWith(FORM_ACTION_PATH)) {
@@ -50,7 +63,11 @@ export async function handleRequest(request, env, dependencies = {}) {
   }
 
   if (request.method === 'GET' && url.pathname.endsWith('/ops/missions')) {
-    const upstream = await makeRequest(env, { operation: 'list_missions', source: 'owner_console' })
+    const missionRequest = dependencies.missionRequest ?? githubMissionRequest
+    const upstream = await missionRequest(env, {
+      operation: 'list_missions',
+      source: 'owner_console',
+    })
     if (!upstream.ok) return json({ error: upstream.error }, upstream.status, cors)
     const log = normalizeMissionLog(upstream.body)
     return log ? json(log, 200, cors) : json({ error: 'invalid_upstream_contract' }, 502, cors)
@@ -191,17 +208,23 @@ function formError(message, status, env) {
 }
 
 export class MissionGate {
-  constructor(state, env) {
+  constructor(state, env, dependencies = {}) {
     this.state = state
     this.env = env
+    this.missionRequest = dependencies.missionRequest ?? githubMissionRequest
   }
 
   fetch(request) {
-    return handleGateRequest(request, this.env, this.state.storage)
+    return handleGateRequest(request, this.env, this.state.storage, this.missionRequest)
   }
 }
 
-export async function handleGateRequest(request, env, storage) {
+export async function handleGateRequest(
+  request,
+  env,
+  storage,
+  missionRequest = githubMissionRequest,
+) {
   if (request.method !== 'POST') return json({ error: 'not_found' }, 404)
   const payload = await request.json().catch(() => null)
   const action = normalizeAction(payload)
@@ -228,7 +251,13 @@ export async function handleGateRequest(request, env, storage) {
     if (!reservation.possession.missionId) {
       return json({ error: 'possession_in_progress' }, 409)
     }
-    const reconciliation = await reconcilePossession(reservation.possession, env, storage, now)
+    const reconciliation = await reconcilePossession(
+      reservation.possession,
+      env,
+      storage,
+      now,
+      missionRequest,
+    )
     if (!reconciliation.ok) {
       return json(
         { error: reconciliation.error, ...(reconciliation.details ?? {}) },
@@ -285,6 +314,7 @@ export async function handleGateRequest(request, env, storage) {
     fingerprint,
     reservation.reservedAt,
     env,
+    missionRequest,
   )
   if (!execution.ok) {
     await cleanup()
@@ -353,8 +383,8 @@ async function reserveAction(storage, { fingerprint, idempotencyKey, now, owner,
   })
 }
 
-async function reconcilePossession(possession, env, storage, now) {
-  const current = await makeRequest(env, {
+async function reconcilePossession(possession, env, storage, now, missionRequest) {
+  const current = await missionRequest(env, {
     operation: 'list_missions',
     source: 'owner_console',
   })
@@ -390,10 +420,17 @@ async function reconcilePossession(possession, env, storage, now) {
   return { ok: true, cleared: true }
 }
 
-async function executeAction(action, idempotencyKey, requestFingerprint, reservedAt, env) {
+async function executeAction(
+  action,
+  idempotencyKey,
+  requestFingerprint,
+  reservedAt,
+  env,
+  missionRequest,
+) {
   let mission
   if (action.mission.kind === 'existing') {
-    const current = await makeRequest(env, {
+    const current = await missionRequest(env, {
       operation: 'get_mission',
       missionId: action.mission.id,
       source: 'owner_console',
@@ -416,7 +453,7 @@ async function executeAction(action, idempotencyKey, requestFingerprint, reserve
   }
 
   if (action.action === 'fast_break') {
-    const current = await makeRequest(env, {
+    const current = await missionRequest(env, {
       operation: 'list_missions',
       source: 'owner_console',
     })
@@ -444,7 +481,7 @@ async function executeAction(action, idempotencyKey, requestFingerprint, reserve
     action.mission.kind === 'new'
       ? action.mission.title
       : `${action.action} for mission ${action.mission.id}`
-  const dispatched = await makeRequest(env, {
+  const dispatched = await missionRequest(env, {
     operation: 'dispatch',
     action: action.action,
     mission: action.mission,
@@ -514,7 +551,7 @@ function normalizeMissionLog(body, minimumFetchedAt = 0) {
     !body ||
     body.source !== 'github' ||
     !Array.isArray(body.missions) ||
-    body.missions.length > 100 ||
+    body.missions.length > GITHUB_MAX_MISSIONS ||
     !isIsoDate(body.fetchedAtUtc) ||
     Date.parse(body.fetchedAtUtc) < minimumFetchedAt - MISSION_LOG_CLOCK_SKEW_MS
   ) {
@@ -624,19 +661,280 @@ function normalizeReceipt(body, { action, currentMission, idempotencyKey, reques
   }
 }
 
-async function makeRequest(env, body) {
+export async function githubMissionRequest(env, body, fetchGitHub = fetch) {
+  const config = githubConfig(env)
+  if (!config) return { ok: false, status: 503, error: 'dispatcher_unavailable' }
+
+  if (body.operation === 'list_missions') {
+    const response = await listGithubIssues(config, fetchGitHub)
+    if (!response.ok) return response
+    const missions = []
+    for (const issue of response.body) {
+      if (issue?.pull_request || !hasMissionMarker(issue?.body)) continue
+      const mission = missionFromIssue(issue)
+      if (!mission) return { ok: false, status: 502, error: 'invalid_upstream_contract' }
+      missions.push(mission)
+    }
+    return {
+      ok: true,
+      status: 200,
+      body: { missions, fetchedAtUtc: new Date().toISOString(), source: 'github' },
+    }
+  }
+
+  if (body.operation === 'get_mission') {
+    const issueNumber = missionIssueNumber(body.missionId)
+    if (!issueNumber) return { ok: false, status: 404, error: 'mission_not_found' }
+    const response = await githubRequest(
+      config,
+      `/repos/${config.repository}/issues/${issueNumber}`,
+      {},
+      fetchGitHub,
+    )
+    if (!response.ok) return response
+    const mission = missionFromIssue(response.body)
+    return mission
+      ? { ok: true, status: 200, body: { mission } }
+      : { ok: false, status: 502, error: 'invalid_upstream_contract' }
+  }
+
+  if (body.operation !== 'dispatch') {
+    return { ok: false, status: 400, error: 'invalid_operation' }
+  }
+
+  const dispatchedAt = isIsoDate(body.requestedAtUtc)
+    ? body.requestedAtUtc
+    : new Date().toISOString()
+  let issueNumber = null
+  let currentMission = null
+  if (body.mission?.kind === 'existing') {
+    issueNumber = missionIssueNumber(body.mission.id)
+    if (!issueNumber) return { ok: false, status: 404, error: 'mission_not_found' }
+    const current = await githubRequest(
+      config,
+      `/repos/${config.repository}/issues/${issueNumber}`,
+      {},
+      fetchGitHub,
+    )
+    if (!current.ok) return current
+    currentMission = missionFromIssue(current.body)
+    if (!currentMission) {
+      return { ok: false, status: 502, error: 'invalid_upstream_contract' }
+    }
+    if (currentMission.updatedAtUtc !== body.mission.revision) {
+      return { ok: false, status: 409, error: 'mission_changed' }
+    }
+  }
+
+  const title = currentMission?.title ?? boundedString(body.mission?.title, 3, 160)
+  if (!title) return { ok: false, status: 400, error: 'invalid_mission' }
+  const envelope = {
+    action: body.action,
+    idempotencyKey: body.idempotencyKey,
+    requestFingerprint: body.requestFingerprint,
+    requestedAtUtc: dispatchedAt,
+    source: 'owner_console',
+    mission: {
+      title,
+      status: 'queued',
+      updatedAtUtc: dispatchedAt,
+    },
+  }
+  const issueInput = {
+    title: missionIssueTitle(body.action, title),
+    body: missionIssueBody(envelope),
+    ...(issueNumber ? { state: 'open' } : {}),
+  }
+  const response = await githubRequest(
+    config,
+    issueNumber
+      ? `/repos/${config.repository}/issues/${issueNumber}`
+      : `/repos/${config.repository}/issues`,
+    { method: issueNumber ? 'PATCH' : 'POST', body: JSON.stringify(issueInput) },
+    fetchGitHub,
+  )
+  if (!response.ok) return response
+  if (!Number.isSafeInteger(response.body?.id) || response.body.id < 1) {
+    return { ok: false, status: 502, error: 'invalid_upstream_contract' }
+  }
+  const mission = missionFromIssue(response.body)
+  if (!mission) return { ok: false, status: 502, error: 'invalid_upstream_contract' }
+  return {
+    ok: true,
+    status: 200,
+    body: {
+      accepted: true,
+      idempotencyKey: body.idempotencyKey,
+      requestFingerprint: body.requestFingerprint,
+      externalId: String(response.body.id),
+      externalUrl: mission.issueUrl,
+      receivedAt: dispatchedAt,
+      mission,
+    },
+  }
+}
+
+async function listGithubIssues(config, fetchGitHub) {
+  let path = `/repos/${config.repository}/issues?state=all&per_page=100&sort=updated&direction=desc`
+  const issues = []
+  for (let page = 0; page < GITHUB_MAX_ISSUE_PAGES; page += 1) {
+    const response = await githubRequest(config, path, {}, fetchGitHub)
+    if (!response.ok) return response
+    if (!Array.isArray(response.body)) {
+      return { ok: false, status: 502, error: 'invalid_upstream_contract' }
+    }
+    issues.push(...response.body)
+    const pagination = nextGithubIssuePage(
+      response.headers?.get('Link'),
+      config.repository,
+    )
+    if (pagination.kind === 'invalid') {
+      return { ok: false, status: 502, error: 'invalid_upstream_contract' }
+    }
+    if (pagination.kind === 'none') return { ok: true, status: 200, body: issues }
+    path = pagination.path
+  }
+  return { ok: false, status: 502, error: 'invalid_upstream_contract' }
+}
+
+function nextGithubIssuePage(linkHeader, repository) {
+  if (!linkHeader) return { kind: 'none' }
+  for (const part of linkHeader.split(',')) {
+    const match = /^\s*<([^>]+)>;\s*rel="([^"]+)"\s*$/.exec(part)
+    if (!match) return { kind: 'invalid' }
+    if (!match[2].split(/\s+/).includes('next')) continue
+    try {
+      const url = new URL(match[1])
+      if (
+        url.origin !== GITHUB_API_ROOT ||
+        url.pathname !== `/repos/${repository}/issues` ||
+        !url.searchParams.has('page')
+      ) {
+        return { kind: 'invalid' }
+      }
+      return { kind: 'next', path: `${url.pathname}${url.search}` }
+    } catch {
+      return { kind: 'invalid' }
+    }
+  }
+  return { kind: 'none' }
+}
+
+function githubConfig(env) {
+  const token = boundedString(env.GITHUB_TOKEN, 1, 500)
+  const repository = boundedString(
+    env.GITHUB_REPOSITORY || DEFAULT_GITHUB_REPOSITORY,
+    3,
+    200,
+  )
+  if (!token || !repository || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository)) {
+    return null
+  }
+  return { token, repository }
+}
+
+async function githubRequest(config, path, init, fetchGitHub) {
   try {
-    const response = await fetch(env.MAKE_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+    const headers = new Headers(init.headers)
+    headers.set('Accept', 'application/vnd.github+json')
+    headers.set('Authorization', `Bearer ${config.token}`)
+    headers.set('X-GitHub-Api-Version', GITHUB_API_VERSION)
+    headers.set('User-Agent', 'SAL0MANder-Mission-Control')
+    if (init.body) headers.set('Content-Type', 'application/json')
+    const response = await fetchGitHub(`${GITHUB_API_ROOT}${path}`, {
+      ...init,
+      headers,
       signal: AbortSignal.timeout(10_000),
     })
-    if (!response.ok) return { ok: false, status: 502, error: 'upstream_failed' }
-    return { ok: true, status: 200, body: await response.json() }
+    if (!response.ok) {
+      const status = response.status === 404 ? 404 : 502
+      return {
+        ok: false,
+        status,
+        error: response.status === 404 ? 'mission_not_found' : 'upstream_failed',
+      }
+    }
+    return { ok: true, status: 200, body: await response.json(), headers: response.headers }
   } catch {
     return { ok: false, status: 504, error: 'upstream_unreachable' }
   }
+}
+
+function hasMissionMarker(value) {
+  return typeof value === 'string' && value.includes(MISSION_MARKER_PREFIX)
+}
+
+function missionFromIssue(issue) {
+  if (
+    !issue ||
+    typeof issue !== 'object' ||
+    issue.pull_request ||
+    !Number.isInteger(issue.number) ||
+    issue.number < 1 ||
+    !isHttpUrl(issue.html_url)
+  ) {
+    return null
+  }
+  const envelope = missionEnvelope(issue.body)
+  if (!envelope?.mission) return null
+  const missionValue = {
+    id: `mission-${issue.number}`,
+    title: envelope.mission.title,
+    status:
+      issue.state === 'closed' && ['queued', 'active'].includes(envelope.mission.status)
+        ? 'awaiting_verification'
+        : envelope.mission.status,
+    updatedAtUtc:
+      issue.state === 'closed' && ['queued', 'active'].includes(envelope.mission.status)
+        ? issue.updated_at
+        : envelope.mission.updatedAtUtc,
+    issueUrl: issue.html_url,
+    ...(envelope.mission.proof ? { proof: envelope.mission.proof } : {}),
+  }
+  return normalizeMission(missionValue)
+}
+
+function missionEnvelope(value) {
+  if (typeof value !== 'string') return null
+  const start = value.indexOf(MISSION_MARKER_START)
+  if (start < 0) return null
+  const contentStart = start + MISSION_MARKER_START.length
+  const end = value.indexOf(MISSION_MARKER_END, contentStart)
+  if (end < 0) return null
+  try {
+    const envelope = JSON.parse(value.slice(contentStart, end))
+    return envelope && typeof envelope === 'object' ? envelope : null
+  } catch {
+    return null
+  }
+}
+
+function missionIssueBody(envelope) {
+  const actionLabel = envelope.action === 'championship' ? 'Championship' : 'Fast Break'
+  return [
+    '## SAL0MANder mission',
+    '',
+    `**Play:** ${actionLabel}`,
+    `**Outcome:** ${envelope.mission.title}`,
+    `**Status:** ${envelope.mission.status}`,
+    '',
+    'This issue is the durable mission ledger. The builder must leave rerunnable evidence,',
+    'and an independent verifier must confirm the exact artifact before Championship.',
+    '',
+    `${MISSION_MARKER_START}${JSON.stringify(envelope)}${MISSION_MARKER_END}`,
+  ].join('\n')
+}
+
+function missionIssueTitle(action, title) {
+  return action === 'championship'
+    ? `[CHAMPIONSHIP][WEB] ${title}`
+    : `[OVERNIGHT][WEB] ${title}`
+}
+
+function missionIssueNumber(missionId) {
+  const match = typeof missionId === 'string' ? /^mission-(\d+)$/.exec(missionId) : null
+  const number = match ? Number(match[1]) : 0
+  return Number.isSafeInteger(number) && number > 0 ? number : null
 }
 
 async function authenticateAccess(request, env, verifier) {
@@ -702,7 +1000,7 @@ function isPublicAppRequest(request, url, env) {
   return Boolean(publicSiteUrl && url.pathname.startsWith(`${publicSiteUrl.pathname}/`))
 }
 
-async function servePublicApp(request, env, fetchPublicApp) {
+async function servePublicApp(request, env, fetchPublicApp, missionRequest) {
   const publicSiteUrl = normalizePublicSiteUrl(env.PUBLIC_SITE_URL)
   if (!publicSiteUrl) return json({ error: 'console_unavailable' }, 503)
 
@@ -736,7 +1034,7 @@ async function servePublicApp(request, env, fetchPublicApp) {
   if (isDocumentRoute) headers.set('Cache-Control', 'private, no-store')
 
   if (isConsoleRoute && upstream.ok) {
-    const current = await makeRequest(env, {
+    const current = await missionRequest(env, {
       operation: 'list_missions',
       source: 'owner_console',
     })
