@@ -5,6 +5,105 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-24 — issue #44 (W-11): the "no C# receiver exists yet" premise was stale — a real one has been on `main` since 08-17, verified against GitHub, and it answers two of the three questions
+
+```text
+AGENT: Claude Code (SAL0-04)
+AREA: Website lane — worked issue #44 directly
+STATUS: FOUND + CORRECTED — no runtime src/ behavior changed (already correct); two stale
+  code comments fixed; docs corrected to match verified reality; issue #44 left open
+  pending the one thing still genuinely cross-lane
+```
+
+**CHECKED FIRST**
+
+`git status`: clean at `7f0d569`, 2 local commits ahead of
+`origin/council/2026-08-18` (pre-existing). Read `CLAUDE.md`,
+`docs/CHARTER-WEB-POINT-PERSON.md`, `docs/coordination/AGENT-DOCTRINE.md`,
+`docs/coordination/INBOX.md` first per the work-loop rules. Read issue #44's
+own text and `OPEN-ITEMS.md` W-11: three questions, explicitly "For Codex."
+Read `src/unity/boot.test.tsx`, `UnityStage.tsx`, `bridge.ts` end to end and
+confirmed the web-side behavior the issue describes (retry boot on
+`unity-ready`, withhold `session-started` until boot lands, boot exactly once)
+is already implemented and tested — nothing to add there.
+
+**WHAT I FOUND**
+
+All three questions assume "no Unity C# receiver exists yet"
+(`bridge.ts`'s own comment, written 2026-08-15/17ish and still present as of
+this morning's `7f0d569`). Checked the premise directly instead of trusting
+it, since AGENT-DOCTRINE rule 3 says label claims VERIFIED/INFERRED/
+UNVERIFIED — this one had never been re-verified. `Assets/Scripts/
+SAL0MANderBridge.cs` and `Assets/Editor/SAL0MANderBridgeTestRunner.cs` exist
+in the Unity checkout on this machine. Rather than trust a possibly-unpushed
+local branch (the checkout is on `codex/git-hygiene-ignore-unity-temp`, a
+diverged feature branch with uncommitted local edits, none of them mine and
+none touched), checked GitHub directly, per the Mirror Protocol's "GitHub
+decides":
+
+```
+gh api repos/Samco1983/Sal0mander-Jigsaw-Puzzle/contents/Assets/Scripts/SAL0MANderBridge.cs?ref=main --jq '.sha'
+→ 43b0554…  (present on main)
+gh api repos/Samco1983/Sal0mander-Jigsaw-Puzzle/commits?path=...&sha=main
+→ 6d4dd69 2026-08-17T13:58:13Z "Harden Gate 1 Unity bridge lifecycle"
+→ 1442551 2026-08-17T13:47:12Z "Gate 1: add Unity web bridge handshake"
+```
+
+Both commits predate every "no C# receiver exists yet" line written since,
+including in this file's own entries. Read the receiver and its WebGL glue
+(`Assets/Plugins/WebGL/Sal0manderBridge.jslib`, also confirmed on `main` via
+the API) end to end — read-only, nothing written or touched in the Unity repo.
+
+**Question 2 (receiver names) — answered:** `GameObjectName =
+"SAL0MANderBridge"`, method `ReceiveWebMessage`, both matching
+`UNITY_BRIDGE_TARGET` exactly. The jslib dispatches
+`sal0mander:unity-message` with the same envelope `bridge.ts` parses.
+
+**Question 1 (timing) — answered for the static case:** `Awake()` sets the
+instance and name; `Start()` — which Unity guarantees runs after every
+object's `Awake`/`OnEnable` — is what emits the first `unity-ready`, so
+`ReceiveWebMessage` is live before that event goes out. The C# also
+re-emits `unity-ready` from inside boot handling, with a comment naming the
+exact race the web worried about from its own side. Still open: this is what
+the code does, not what a live WebGL build's console confirms — no round
+trip has been run.
+
+**Question 3 (production visibility)** — already separately answered by this
+morning's `7f0d569` (issue #41): the diagnostics drawer isn't gated on
+`env.isProd`, only on `audience`.
+
+**WHAT I DID**
+
+`src/unity/bridge.ts`: corrected the two comments (`UNITY_BRIDGE_TARGET`,
+`reportUndelivered`) that asserted "no Unity C# receiver exists yet" — the
+exact claim `OPEN-ITEMS.md` W-11 was quoting. Comment-only; no behavior
+changed, since `UNITY_BRIDGE_TARGET`'s values were already correct.
+`OPEN-ITEMS.md` W-11: added the full finding with evidence, and what remains
+open. Posted the same evidence to `INBOX.md` for Codex and as a comment on
+issue #44 (not closed — the live round trip is still genuinely theirs).
+
+**EVIDENCE**
+
+`npm run verify` exit 0: lint, typecheck, 69 files / 757 tests (unchanged —
+no test-affecting code changed), build. Docs + two comments only; nothing
+requiring new test coverage. Not committed by this run — the work loop
+commits iff verify passes.
+
+**NEXT**
+
+The one remaining cross-lane gap is real and unchanged: the actual round
+trip (`unity-ready → boot → mode-selected → session-started →
+session-finished`) against a real hosted WebGL build. That is Codex/Unity's,
+same as before — this batch narrows what they still need to prove, it does
+not remove the need to prove it.
+
+**BLOCKERS**
+
+None technical. Issue #44 stays open pending the live round trip; not a new
+blocker, the same one narrowed.
+
+---
+
 ## 2026-08-24 — issue #41 (W-18): the fifth bridge failure class reached console.error but never the visible drawer — fixed; the cross-system questions are still Unity/Codex's
 
 ```text

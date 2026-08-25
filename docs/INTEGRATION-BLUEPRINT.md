@@ -235,13 +235,17 @@ independent of activity-resolution state (`GUEST-PLAY-WIREFRAME.md` §3.5).
   on each `ready`/`unity-ready` re-fires the send effects; the refs are what
   keep the sends themselves to exactly one each.
 
-**Confirmed by `bridge.ts`'s own comments, not by observation:** *"no Unity C#
-receiver exists yet, and Codex reports the legacy `.jslib` uses incompatible
-DOM event names and shapes"* (`bridge.ts:168-169`). Everything above is
-correct against the bridge's own type contract and has never been run against
-a real build — the single largest gap in this entire blueprint, restated
-because it is the fact every other IMPLEMENTED tag in this document is
-implicitly qualified by.
+**Updated 2026-08-24 (issue #44 / W-11):** the "no Unity C# receiver exists
+yet" premise this paragraph used to rest on is stale. `Assets/Scripts/
+SAL0MANderBridge.cs` and its WebGL glue exist on the Unity repo's `main`
+(verified via the GitHub API, commit `6d4dd69`, 2026-08-17), and the receiver
+GameObject name, method name, and event name all match `bridge.ts` exactly —
+see `OPEN-ITEMS.md` W-11 for the full evidence. Everything above is now
+correct against a real, committed receiver's static shape, **not just the
+bridge's own type contract** — but it has still never been run against a
+real build, which remains the single largest gap in this entire blueprint,
+restated because it is the fact every other IMPLEMENTED tag in this document
+is implicitly qualified by.
 
 ### Flow 6 — Unity-owned gameplay, coarse web lifecycle only
 

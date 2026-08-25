@@ -165,10 +165,17 @@ export const UNITY_EVENT_NAME = 'sal0mander:unity-message'
  * CANONICAL — approved by Codex 2026-08-15. Still overridable so a build that
  * relocates the receiver is a config change rather than a code change.
  *
- * Note: no Unity C# receiver exists yet, and Codex reports the legacy `.jslib`
- * uses incompatible DOM event names and shapes. Nothing here has been exercised
- * against a real build, which is exactly why a failed delivery has to be loud
- * (see `sendToUnity`).
+ * VERIFIED against `main` on the Unity repo (issue #44 / W-11, 2026-08-24):
+ * `Assets/Scripts/SAL0MANderBridge.cs` (`GameObjectName = "SAL0MANderBridge"`,
+ * method `ReceiveWebMessage`) matches these two constants exactly, and
+ * `Assets/Plugins/WebGL/Sal0manderBridge.jslib` dispatches the same
+ * `sal0mander:unity-message` event name this file uses (`UNITY_EVENT_NAME`)
+ * with the same envelope shape. Checked via the GitHub API against commit
+ * `6d4dd69` on `main`, not a possibly-unpushed local checkout. Still not
+ * proven interoperable — nothing has sent a real `SendMessage` into a real
+ * WebGL build — but the receiver exists and the names are no longer
+ * provisional. See `OPEN-ITEMS.md` W-11 for the full evidence and what is
+ * still open.
  */
 export const UNITY_BRIDGE_TARGET = {
   gameObject: 'SAL0MANderBridge',
@@ -224,11 +231,14 @@ export function sendToUnity(
  * An undelivered message is a silent failure by nature, so make it loud.
  *
  * Codex's ruling requires development/QA diagnostics for missing bridge
- * delivery, and the reason is concrete: no Unity C# receiver exists yet, and
- * the legacy `.jslib` uses incompatible event names. A wrong GameObject name
- * produces no error a student or a tester would ever see — boot simply never
- * arrives and the game sits on an empty board. The first person to notice
- * would be someone in a classroom.
+ * delivery. The reason was concrete when this was written — no Unity C#
+ * receiver existed, and the legacy `.jslib` used incompatible event names —
+ * and stays concrete even now that a receiver does exist (see
+ * `UNITY_BRIDGE_TARGET`'s doc comment): nothing has proven the running build
+ * actually has that receiver attached at the moment `SendMessage` fires. A
+ * wrong or not-yet-attached GameObject produces no error a student or a
+ * tester would ever see — boot simply never arrives and the game sits on an
+ * empty board. The first person to notice would be someone in a classroom.
  *
  * Loud in development, quiet in production: a teacher mid-lesson must not get
  * console noise, and gameplay continues regardless.

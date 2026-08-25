@@ -43,7 +43,7 @@ Student opens /play/<identifier>
 
 | Fact | Web can know | Web cannot know |
 | --- | --- | --- |
-| Loader script fetched | Yes, via script load/error and `createUnityInstance` promise. | Whether the C# bridge receiver exists yet. |
+| Loader script fetched | Yes, via script load/error and `createUnityInstance` promise. | Whether the C# bridge receiver is attached in *this* running instance yet — a real receiver exists on the Unity repo's `main` since 2026-08-17 (`OPEN-ITEMS.md` W-11), but that is a fact about the build's source, not about any one page load. |
 | `sendToUnity()` returned true | The JS `SendMessage` call did not throw. | Whether Unity applied the message, started the activity, or accepted the payload. |
 | Unity sent `ready` | A bridge receiver emitted a recognized ready event. | Whether gameplay assets are fully initialized. |
 | Unity sent `activity-loaded` | **Draft only.** Web can parse the event if emitted. | It is not currently used as the boot acknowledgement. |

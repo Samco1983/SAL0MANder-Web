@@ -623,6 +623,68 @@ The smallest thing that closes it is the single round trip named in `STATUS.md`:
 `unity-ready → boot → mode-selected → session-started → session-finished`
 against a real build.
 
+### 2026-08-24 — the premise above is stale: a real C# receiver exists on `main`, and it answers two of the three questions
+
+The three questions above were written against "no Unity C# receiver exists
+yet" (`bridge.ts`'s own comment, quoted verbatim in this section until this
+update). That premise is no longer true, and nobody in the web lane had
+re-checked it since it was first written. Found by chance while working issue
+#44 — `SAL0MANDER-Puzzle-Prototype/Assets/Scripts/SAL0MANderBridge.cs` exists,
+and it is not on some stray local branch: checked directly against the GitHub
+API, not the local checkout, per the Mirror Protocol's "GitHub decides."
+
+```
+gh api repos/Samco1983/Sal0mander-Jigsaw-Puzzle/contents/Assets/Scripts/SAL0MANderBridge.cs?ref=main --jq '.sha'
+→ 43b055496f68ae7c683c13d996451eb9178e7be6   (file exists on main)
+
+gh api repos/Samco1983/Sal0mander-Jigsaw-Puzzle/commits?path=Assets/Scripts/SAL0MANderBridge.cs&sha=main
+→ 6d4dd69  2026-08-17T13:58:13Z  "Harden Gate 1 Unity bridge lifecycle"
+→ 1442551  2026-08-17T13:47:12Z  "Gate 1: add Unity web bridge handshake"
+```
+
+Both commits predate every "no C# receiver exists yet" line written in this
+repo since, including in `7f0d569` (2026-08-24, this same day). The claim was
+never re-verified after it stopped being true.
+
+**Question 2 (receiver names) — answered, verified:**
+`SAL0MANderBridge.GameObjectName = "SAL0MANderBridge"`, method
+`ReceiveWebMessage(string json)`. Both match `UNITY_BRIDGE_TARGET` in
+`bridge.ts` exactly, character for character. The WebGL glue
+(`Assets/Plugins/WebGL/Sal0manderBridge.jslib`, also on `main`, read via the
+same API) dispatches `window.dispatchEvent(new CustomEvent('sal0mander:unity-message', { detail: payload }))`
+— the same `UNITY_EVENT_NAME` and the same envelope shape `bridge.ts` parses.
+Nothing here was invented; it was read, not asserted.
+
+**Question 1 (timing) — answered for the static case, not yet for a live
+build:** `SAL0MANderBridge.Awake()` sets `Instance = this` and the
+GameObject's name; `Start()` — which Unity always runs after every object's
+`Awake`/`OnEnable` in the scene — is what calls `Emit("unity-ready")`. So
+`ReceiveWebMessage` is a callable method on a live component by the time the
+first `unity-ready` goes out; the receiver is not still assembling itself when
+the web could first attempt a send. The C# also re-emits `unity-ready` a
+second time from inside `ReceiveBoot`, with a comment naming exactly the race
+the web was worried about: *"safe if the initial pre-boot ready event fired
+before the host listener."* Codex independently hardened the same seam from
+the other side. **Still open:** this is what the code does, not what a
+running WebGL build actually does — `RuntimeInitializeOnLoadMethod` ordering
+and `MonoBehaviour` lifecycle guarantees are being read correctly here, but
+nobody has watched a real build's console confirm it.
+
+**Question 3 (production visibility)** — separately and already answered by
+the #41 work later the same day (`7f0d569`): the bridge diagnostics drawer
+records `BridgeDeliveryFailure` regardless of `env.isProd`, gated only on
+`audience !== 'student'`. The dev-only `console.error` stays dev-only by
+design (a teacher mid-lesson must not get console noise); the drawer is the
+production answer.
+
+**What is genuinely still open, cross-lane:** the single round trip named
+above, against a real hosted WebGL build — this finding closes the "are the
+names and the static timing right" half, not the "does it actually work"
+half. Corrected the stale comments in `bridge.ts` that this section itself
+was quoting (`UNITY_BRIDGE_TARGET`, `reportUndelivered`) so the drift cannot
+propagate again from the code side. Posted to `INBOX.md` for Codex and as a
+comment on issue #44 with the same evidence.
+
 ---
 
 ## W-10 — ✅ RESOLVED — startup completion race buffered
