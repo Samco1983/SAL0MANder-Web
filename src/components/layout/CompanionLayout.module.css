@@ -100,4 +100,17 @@
     grid-column: 1;
     grid-row: 1;
   }
+
+  /* The stage's own content (e.g. the "not ready" status heading) is centered
+   * within the stage box via `place-items: center` in UnityStage.module.css.
+   * An absolutely-positioned toggle floats free of that layout and can land on
+   * top of centered content on short viewports — not a stacking bug, since
+   * raising z-index would still leave the two laid into the same box. Taking
+   * the toggle out of absolute positioning here reserves its own row above the
+   * stage content instead, so the two are never in the same box to begin with. */
+  .toggle {
+    position: static;
+    align-self: flex-start;
+    margin: var(--space-3);
+  }
 }
