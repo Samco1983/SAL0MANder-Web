@@ -65,7 +65,7 @@ export const MissionSchema = z
 export type Mission = z.infer<typeof MissionSchema>
 
 export const MissionLogSchema = z.object({
-  missions: z.array(MissionSchema).max(100),
+  missions: z.array(MissionSchema).max(10_000),
   fetchedAtUtc: z.iso.datetime(),
   source: z.literal('github'),
 })

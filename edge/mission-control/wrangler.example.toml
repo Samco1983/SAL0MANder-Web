@@ -4,8 +4,9 @@ compatibility_date = "2026-08-23"
 workers_dev = false
 
 # One SQLite-backed Durable Object serializes owner actions and persists
-# idempotency receipts. Keep MAKE_WEBHOOK_URL out of this file and add it with
-# `wrangler secret put`. Protect the custom domain with Cloudflare Access.
+# idempotency receipts. Add GITHUB_TOKEN with `wrangler secret put`; use a
+# fine-grained token limited to SAL0MANder-Web Issues read/write. Protect the
+# custom domain with Cloudflare Access.
 [[durable_objects.bindings]]
 name = "MISSION_GATE"
 class_name = "MissionGate"
@@ -21,3 +22,4 @@ ALLOW_SERVICE_TOKENS = "true"
 TEAM_DOMAIN = "https://replace-me.cloudflareaccess.com"
 POLICY_AUD = "replace-with-access-application-audience"
 PUBLIC_SITE_URL = "https://samco1983.github.io/SAL0MANder-Web"
+GITHUB_REPOSITORY = "Samco1983/SAL0MANder-Web"

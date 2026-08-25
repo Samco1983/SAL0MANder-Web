@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { MissionGate, handleRequest } from '../../../edge/mission-control/worker.js'
+import {
+  MissionGate,
+  githubMissionRequest,
+  handleRequest,
+} from '../../../edge/mission-control/worker.js'
 
 const origin = 'https://samco1983.github.io'
 const verifiedMission = {
@@ -49,7 +53,8 @@ class FakeStorage {
 function environment() {
   const storage = new FakeStorage()
   const env = {
-    MAKE_WEBHOOK_URL: 'https://hook.example.invalid/secret',
+    GITHUB_TOKEN: 'test-token',
+    GITHUB_REPOSITORY: 'Samco1983/SAL0MANder-Web',
     ALLOWED_ORIGINS: origin,
     OWNER_EMAILS: 'samuel@example.com',
     ALLOW_SERVICE_TOKENS: 'true',
@@ -62,7 +67,7 @@ function environment() {
       get(id: string): { fetch(request: Request): Promise<Response> }
     },
   }
-  const gate = new MissionGate({ storage }, env)
+  const gate = new MissionGate({ storage }, env, { missionRequest: testMissionRequest })
   env.MISSION_GATE = {
     idFromName: (name: string) => name,
     get: () => gate,
@@ -94,15 +99,29 @@ function request(path: string, init: RequestInit = {}, authenticated = true) {
   return new Request(`https://ops.example.com${path}`, { ...init, headers })
 }
 
-function response(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
+function response(body: unknown, status = 200, headersValue: HeadersInit = {}) {
+  const headers = new Headers(headersValue)
+  headers.set('Content-Type', 'application/json')
+  return new Response(JSON.stringify(body), { status, headers })
 }
 
 const verifiedAccess = {
   verifyAccessToken: vi.fn().mockResolvedValue({ email: 'samuel@example.com' }),
+  missionRequest: testMissionRequest,
+}
+
+async function testMissionRequest(_env: unknown, body: unknown) {
+  try {
+    const result = await fetch('https://mission-backend.test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (!result.ok) return { ok: false, status: 502, error: 'upstream_failed' }
+    return { ok: true, status: 200, body: await result.json() }
+  } catch {
+    return { ok: false, status: 504, error: 'upstream_unreachable' }
+  }
 }
 
 function run(requestValue: Request, env = environment()) {
@@ -234,7 +253,7 @@ describe('mission-control edge boundary', () => {
     expect(await result.json()).toMatchObject({ source: 'github', missions: [verifiedMission] })
   })
 
-  it('treats Make\'s empty no-result bundle as an empty GitHub mission list', async () => {
+  it('treats an empty backend record as an empty GitHub mission list', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
@@ -284,7 +303,7 @@ describe('mission-control edge boundary', () => {
     expect(await result.json()).toEqual({ error: 'invalid_upstream_contract' })
   })
 
-  it('rejects a mission log larger than the public contract permits', async () => {
+  it('accepts a mission log beyond one GitHub page', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
@@ -293,6 +312,22 @@ describe('mission-control edge boundary', () => {
             ...verifiedMission,
             id: `mission-${index}`,
           })),
+          fetchedAtUtc: '2026-08-23T19:33:00.000Z',
+          source: 'github',
+        }),
+      ),
+    )
+    const result = await run(request('/ops/missions'))
+    expect(result.status).toBe(200)
+    expect((await result.json()).missions).toHaveLength(101)
+  })
+
+  it('rejects a mission log larger than the bounded GitHub scan permits', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        response({
+          missions: Array.from({ length: 10_001 }, () => ({})),
           fetchedAtUtc: '2026-08-23T19:33:00.000Z',
           source: 'github',
         }),
@@ -914,4 +949,234 @@ describe('mission-control edge boundary', () => {
     expect(result.status).toBe(502)
     expect(await result.json()).toEqual({ error: 'invalid_upstream_receipt' })
   })
+
+  it('reads only marked mission issues through the scoped GitHub API', async () => {
+    const issue = githubIssue(verifiedMission, 55)
+    const fetchGitHub = vi.fn().mockResolvedValue(
+      response([
+        issue,
+        { ...issue, number: 56, body: 'ordinary issue' },
+        { ...issue, number: 57, pull_request: { url: 'https://api.github.com/pulls/57' } },
+      ]),
+    )
+
+    const result = await githubMissionRequest(
+      environment(),
+      { operation: 'list_missions', source: 'owner_console' },
+      fetchGitHub,
+    )
+
+    expect(result).toMatchObject({
+      ok: true,
+      body: { source: 'github', missions: [verifiedMission] },
+    })
+    expect(fetchGitHub).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchGitHub.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe(
+      'https://api.github.com/repos/Samco1983/SAL0MANder-Web/issues?state=all&per_page=100&sort=updated&direction=desc',
+    )
+    const headers = new Headers(init.headers)
+    expect(headers.get('Authorization')).toBe('Bearer test-token')
+    expect(headers.get('X-GitHub-Api-Version')).toBe('2022-11-28')
+  })
+
+  it('follows GitHub pagination before deciding whether an active mission exists', async () => {
+    const terminalIssues = Array.from({ length: 100 }, (_, index) => ({
+      id: index + 1,
+      number: index + 1,
+      body: 'ordinary issue',
+    }))
+    const activeMission = { ...verifiedMission, status: 'active' }
+    const fetchGitHub = vi
+      .fn()
+      .mockResolvedValueOnce(
+        response(terminalIssues, 200, {
+          Link: '<https://api.github.com/repos/Samco1983/SAL0MANder-Web/issues?state=all&per_page=100&page=2>; rel="next"',
+        }),
+      )
+      .mockResolvedValueOnce(response([githubIssue(activeMission, 155)]))
+
+    const result = await githubMissionRequest(
+      environment(),
+      { operation: 'list_missions', source: 'owner_console' },
+      fetchGitHub,
+    )
+
+    expect(result).toMatchObject({
+      ok: true,
+      body: { missions: [{ id: 'mission-155', status: 'active' }] },
+    })
+    expect(fetchGitHub).toHaveBeenCalledTimes(2)
+    expect(fetchGitHub.mock.calls[1]?.[0]).toContain('page=2')
+  })
+
+  it('fails closed when GitHub pagination points outside the scoped repository', async () => {
+    const fetchGitHub = vi.fn().mockResolvedValue(
+      response([], 200, {
+        Link: '<https://evil.example/repos/Samco1983/SAL0MANder-Web/issues?page=2>; rel="next"',
+      }),
+    )
+
+    const result = await githubMissionRequest(
+      environment(),
+      { operation: 'list_missions', source: 'owner_console' },
+      fetchGitHub,
+    )
+
+    expect(result).toEqual({ ok: false, status: 502, error: 'invalid_upstream_contract' })
+    expect(fetchGitHub).toHaveBeenCalledTimes(1)
+  })
+
+  it('fails closed when a marked mission issue has a malformed envelope', async () => {
+    const fetchGitHub = vi.fn().mockResolvedValue(
+      response([
+        {
+          id: 9123,
+          number: 92,
+          body: '<!-- sal0-mission-control:v1\n{"mission":',
+          state: 'open',
+          updated_at: '2026-08-24T05:00:00.000Z',
+          html_url: 'https://github.com/Samco1983/SAL0MANder-Web/issues/92',
+        },
+      ]),
+    )
+
+    const result = await githubMissionRequest(
+      environment(),
+      { operation: 'list_missions', source: 'owner_console' },
+      fetchGitHub,
+    )
+
+    expect(result).toEqual({ ok: false, status: 502, error: 'invalid_upstream_contract' })
+  })
+
+  it('rejects an existing-mission dispatch when its GitHub revision changed', async () => {
+    const newerMission = {
+      ...verifiedMission,
+      updatedAtUtc: '2026-08-24T05:01:00.000Z',
+      proof: {
+        ...verifiedMission.proof,
+        missionRevision: '2026-08-24T05:01:00.000Z',
+        verifiedAtUtc: '2026-08-24T05:01:01.000Z',
+      },
+    }
+    const fetchGitHub = vi.fn().mockResolvedValue(response(githubIssue(newerMission, 55)))
+
+    const result = await githubMissionRequest(
+      environment(),
+      {
+        operation: 'dispatch',
+        action: 'championship',
+        mission: { kind: 'existing', id: 'mission-55', revision: verifiedMission.updatedAtUtc },
+        idempotencyKey: 'championship:55:proof',
+        requestFingerprint: 'changed',
+        requestedAtUtc: '2026-08-24T05:02:00.000Z',
+        source: 'owner_console',
+      },
+      fetchGitHub,
+    )
+
+    expect(result).toEqual({ ok: false, status: 409, error: 'mission_changed' })
+    expect(fetchGitHub).toHaveBeenCalledTimes(1)
+    expect(fetchGitHub.mock.calls[0]?.[1]?.method).toBeUndefined()
+  })
+
+  it('creates one bounded Fast Break issue and returns its GitHub receipt', async () => {
+    const fetchGitHub = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      const input = JSON.parse(String(init.body))
+      return response({
+        id: 99123,
+        number: 91,
+        title: input.title,
+        body: input.body,
+        state: 'open',
+        updated_at: '2026-08-24T05:00:00.000Z',
+        html_url: 'https://github.com/Samco1983/SAL0MANder-Web/issues/91',
+      })
+    })
+    const requestedAtUtc = '2026-08-24T05:00:00.000Z'
+
+    const result = await githubMissionRequest(
+      environment(),
+      {
+        operation: 'dispatch',
+        action: 'fast_break',
+        mission: { kind: 'new', title: 'Student can launch one lesson' },
+        idempotencyKey: 'fast-break:new:proof',
+        requestFingerprint: 'abc123',
+        requestedAtUtc,
+        source: 'owner_console',
+      },
+      fetchGitHub,
+    )
+
+    expect(result).toEqual({
+      ok: true,
+      status: 200,
+      body: {
+        accepted: true,
+        idempotencyKey: 'fast-break:new:proof',
+        requestFingerprint: 'abc123',
+        externalId: '99123',
+        externalUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/91',
+        receivedAt: requestedAtUtc,
+        mission: {
+          id: 'mission-91',
+          title: 'Student can launch one lesson',
+          status: 'queued',
+          updatedAtUtc: requestedAtUtc,
+          issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/91',
+        },
+      },
+    })
+    expect(fetchGitHub).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchGitHub.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe('https://api.github.com/repos/Samco1983/SAL0MANder-Web/issues')
+    expect(init.method).toBe('POST')
+    const issueInput = JSON.parse(String(init.body))
+    expect(issueInput.title).toBe('[OVERNIGHT][WEB] Student can launch one lesson')
+    expect(issueInput.body).toContain('<!-- sal0-mission-control:v1')
+    expect(issueInput.body).toContain('"idempotencyKey":"fast-break:new:proof"')
+    expect(issueInput.body).not.toContain('test-token')
+  })
+
+  it('fails closed when the scoped GitHub token is absent', async () => {
+    const env = environment()
+    env.GITHUB_TOKEN = ''
+    const fetchGitHub = vi.fn()
+
+    const result = await githubMissionRequest(
+      env,
+      { operation: 'list_missions', source: 'owner_console' },
+      fetchGitHub,
+    )
+
+    expect(result).toEqual({ ok: false, status: 503, error: 'dispatcher_unavailable' })
+    expect(fetchGitHub).not.toHaveBeenCalled()
+  })
 })
+
+function githubIssue(mission: typeof verifiedMission, number: number) {
+  const envelope = {
+    action: 'fast_break',
+    idempotencyKey: 'test-key',
+    requestFingerprint: 'test-fingerprint',
+    requestedAtUtc: mission.updatedAtUtc,
+    source: 'owner_console',
+    mission: {
+      title: mission.title,
+      status: mission.status,
+      updatedAtUtc: mission.updatedAtUtc,
+      proof: mission.proof,
+    },
+  }
+  return {
+    id: 9000 + number,
+    number,
+    title: `[OVERNIGHT][WEB] ${mission.title}`,
+    body: `Mission\n\n<!-- sal0-mission-control:v1\n${JSON.stringify(envelope)}\n-->`,
+    state: 'open',
+    updated_at: mission.updatedAtUtc,
+    html_url: mission.issueUrl,
+  }
+}
