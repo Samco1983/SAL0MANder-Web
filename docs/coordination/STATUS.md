@@ -5,6 +5,77 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-25 — issue #46: closed as already fulfilled by #51, not by filing a duplicate
+
+```text
+AGENT: Claude Code (SAL0-04)
+AREA: Website lane — worked issue #46 directly (issue-tracker bookkeeping, no src/ change)
+STATUS: CLOSED #46 — its own success check ("a new WEB product issue exists with
+  one lane, one clock, one falsifiable success check") was already met by #51,
+  filed 2026-08-22 by this same lane; #51 itself stays open on its own merits
+```
+
+**CHECKED FIRST**
+
+`git status`: clean at `b63a2aa`. Read `CLAUDE.md`,
+`docs/CHARTER-WEB-POINT-PERSON.md`, `docs/coordination/AGENT-DOCTRINE.md`,
+`docs/coordination/INBOX.md` first per the work-loop rules.
+`node scripts/check-upstream.mjs`: no upstream Unity-docs changes.
+`gh issue list --repo Samco1983/SAL0MANder-Web --state open`: #46 (filed
+2026-08-20T12:23:39Z, "shot bank exhausted... split the next smallest shot")
+alongside #51 (filed 2026-08-22T15:13:53Z, "Companion toggle overlaps the
+status heading on a 375px phone").
+
+**WHAT I FOUND**
+
+#46's entire deliverable is meta: file a new WEB/PRODUCT issue with one lane,
+one clock, one falsifiable success check. #51 already is exactly that —
+filed after #46, by this same agent lane (`Sal0-From: SAL0-04`), with a
+falsifiable check (`getBoundingClientRect()` zero-overlap at 375×812 plus
+`npm run verify` exit 0). Filing a fresh synthesized issue here would have
+duplicated #51 rather than answered the shot — the same failure class this
+repo already caught once (#46/#47 duplicate "shot bank exhausted" issues,
+fixed in `8f0a222`, 2026-08-20). Closed #46 instead, citing #51 as the
+fulfilling artifact.
+
+While reading the code to confirm #51 was still real (not stale), found its
+underlying bug is already fixed on this branch: `28dbe7b` ("web: the
+companion toggle was covering the status heading — issue #51") published a
+`--companion-toggle-reserve` custom property from `CompanionLayout.module.css`
+that `UnityStage.module.css:44` uses to pad the empty-state heading clear of
+the toggle. That fix is real, already on `HEAD`, already exercised by the
+existing suite. **Not closing #51 from this batch** — its own success check
+explicitly demands real-browser `getBoundingClientRect()` measurement, "not
+only by unit test," which hasn't happened. Also noted, not touched: an
+unmerged owner branch `origin/fix/issue-51-companion-overlap` (`cc82625`)
+touches the same CSS further and isn't part of this branch's history.
+
+**WHAT I DID**
+
+Posted the finding as a comment on #46
+([issuecomment-5410539513](https://github.com/Samco1983/SAL0MANder-Web/issues/46#issuecomment-5410539513))
+and closed #46 as not planned. No `src/` change — this batch is issue-tracker
+bookkeeping, which is what #46's own success check asked for.
+
+**EVIDENCE**
+
+`npm run verify` exit 0: lint, typecheck, 69 files / 757 tests (unchanged —
+no test-affecting code touched), build.
+
+**NEXT**
+
+#51 is the real, open, falsifiable follow-on: a shipped CSS fix that has
+never been measured against a real browser at 375×812. Whoever next picks up
+the companion-toggle overlap should run that measurement (or use the `run`
+skill) before closing #51, and should reconcile the unmerged owner branch
+`cc82625` against `28dbe7b` rather than assume either supersedes the other.
+
+**BLOCKERS**
+
+None.
+
+---
+
 ## 2026-08-24 — issue #44 (W-11): the "no C# receiver exists yet" premise was stale — a real one has been on `main` since 08-17, verified against GitHub, and it answers two of the three questions
 
 ```text
