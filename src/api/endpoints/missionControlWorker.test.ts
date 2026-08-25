@@ -18,7 +18,10 @@ const verifiedMission = {
   },
 }
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.useRealTimers()
+})
 
 class FakeStorage {
   private readonly values = new Map<string, unknown>()
@@ -134,8 +137,16 @@ describe('mission-control edge boundary', () => {
   })
 
   it('serves a protected console route from the public app without weakening Access', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          response({ missions: [], fetchedAtUtc: freshMissionLogTime(), source: 'github' }),
+        ),
+    )
     const fetchPublicApp = vi.fn().mockResolvedValue(
-      new Response('<!doctype html><title>SAL0MANder</title>', {
+      new Response('<!doctype html><title>SAL0MANder</title><body></body>', {
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       }),
     )
@@ -148,12 +159,167 @@ describe('mission-control edge boundary', () => {
     })
 
     expect(result.status).toBe(200)
-    expect(await result.text()).toContain('<title>SAL0MANder</title>')
+    const body = await result.text()
+    expect(body).toContain('<title>SAL0MANder</title>')
+    expect(body).toContain('sal0-mission-control-native')
+    expect(body).toContain('sal0-mission-control-bootstrap')
+    expect(body).not.toContain('&quot;')
+    expect(body).toMatch(/name="idempotencyKey" value="[a-f0-9]{48}"/)
     expect(result.headers.get('Cache-Control')).toBe('private, no-store')
     expect(result.headers.get('X-Robots-Tag')).toBe('noindex, nofollow')
+    expect(result.headers.get('Set-Cookie')).toMatch(
+      /^sal0_mc_csrf=[a-f0-9]{48}; Path=\/ops\/actions\/form;/,
+    )
+    expect(result.headers.get('Set-Cookie')).toContain('HttpOnly')
+    expect(result.headers.get('Set-Cookie')).toContain('SameSite=Strict')
     expect(String(fetchPublicApp.mock.calls[0]?.[0])).toBe(
       'https://samco1983.github.io/SAL0MANder-Web/',
     )
+  })
+
+  it('escapes mission data before rendering the no-JavaScript controls', async () => {
+    const unsafeMission = {
+      ...verifiedMission,
+      title: 'Ship <img src=x onerror=alert(1)>',
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        response({
+          missions: [unsafeMission],
+          fetchedAtUtc: freshMissionLogTime(),
+          source: 'github',
+        }),
+      ),
+    )
+    const fetchPublicApp = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><body></body>', {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      }),
+    )
+    const protectedConsole = request('/SAL0MANder-Web/console')
+    protectedConsole.headers.delete('Origin')
+
+    const result = await handleRequest(protectedConsole, environment(), {
+      ...verifiedAccess,
+      fetchPublicApp,
+    })
+    const body = await result.text()
+
+    expect(body).not.toContain('<img src=x')
+    expect(body).toContain('Ship &lt;img src=x onerror=alert(1)&gt;')
+    expect(body).toContain('Ship \\u003cimg src=x onerror=alert(1)>')
+    expect(body.match(/name="action"/g)).toHaveLength(2)
+  })
+
+  it('launches through the same gate when a device filter requires a native form', async () => {
+    const token = 'a'.repeat(48)
+    const idempotencyKey = 'b'.repeat(48)
+    const launchedMission = {
+      id: 'mission-form',
+      title: 'Student opens one lesson',
+      status: 'queued',
+      updatedAtUtc: freshMissionLogTime(),
+      issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/60',
+    }
+    const upstream = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body))
+      if (body.operation === 'list_missions') {
+        return response({ missions: [], fetchedAtUtc: freshMissionLogTime(), source: 'github' })
+      }
+      return response({
+        accepted: true,
+        ...dispatchEcho(body),
+        externalId: 'receipt-form',
+        externalUrl: launchedMission.issueUrl,
+        receivedAt: freshMissionLogTime(),
+        mission: launchedMission,
+      })
+    })
+    vi.stubGlobal('fetch', upstream)
+    const formRequest = () =>
+      new Request('https://ops.example.com/ops/actions/form', {
+        method: 'POST',
+        headers: {
+          Origin: 'https://ops.example.com',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Cookie: `sal0_mc_csrf=${token}`,
+          'Cf-Access-Jwt-Assertion': 'signed-access-jwt',
+        },
+        body: new URLSearchParams({
+          csrf: token,
+          idempotencyKey,
+          action: 'fast_break',
+          missionKind: 'new',
+          title: launchedMission.title,
+        }),
+      })
+    const env = environment()
+    vi.useFakeTimers()
+    vi.setSystemTime('2026-08-24T19:59:59.900Z')
+    const result = await run(formRequest(), env)
+    vi.setSystemTime('2026-08-24T20:00:00.100Z')
+    const resubmitted = await run(formRequest(), env)
+
+    expect(result.status).toBe(303)
+    expect(result.headers.get('Location')).toBe(launchedMission.issueUrl)
+    expect(resubmitted.status).toBe(303)
+    expect(resubmitted.headers.get('Location')).toBe(launchedMission.issueUrl)
+    expect(upstream).toHaveBeenCalledTimes(2)
+  })
+
+  it('rejects a filtered-browser form without a matching CSRF token', async () => {
+    const upstream = vi.fn()
+    vi.stubGlobal('fetch', upstream)
+    const result = await run(
+      new Request('https://ops.example.com/ops/actions/form', {
+        method: 'POST',
+        headers: {
+          Origin: 'https://ops.example.com',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Cookie: `sal0_mc_csrf=${'a'.repeat(48)}`,
+          'Cf-Access-Jwt-Assertion': 'signed-access-jwt',
+        },
+        body: new URLSearchParams({
+          csrf: 'b'.repeat(48),
+          idempotencyKey: 'c'.repeat(48),
+          action: 'fast_break',
+          missionKind: 'new',
+          title: 'Student opens one lesson',
+        }),
+      }),
+    )
+
+    expect(result.status).toBe(403)
+    expect(await result.text()).toContain('Mission not launched')
+    expect(upstream).not.toHaveBeenCalled()
+  })
+
+  it('rejects a native form posted from outside the protected origin', async () => {
+    const upstream = vi.fn()
+    vi.stubGlobal('fetch', upstream)
+    const result = await run(
+      new Request('https://ops.example.com/ops/actions/form', {
+        method: 'POST',
+        headers: {
+          Origin: 'https://attacker.invalid',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Cookie: `sal0_mc_csrf=${'a'.repeat(48)}`,
+          'Cf-Access-Jwt-Assertion': 'signed-access-jwt',
+        },
+        body: new URLSearchParams({
+          csrf: 'a'.repeat(48),
+          idempotencyKey: 'b'.repeat(48),
+          action: 'fast_break',
+          missionKind: 'new',
+          title: 'Student opens one lesson',
+        }),
+      }),
+    )
+
+    expect(result.status).toBe(403)
+    expect(await result.json()).toEqual({ error: 'origin_not_allowed' })
+    expect(upstream).not.toHaveBeenCalled()
   })
 
   it('forwards a protected console asset by its exact public path', async () => {

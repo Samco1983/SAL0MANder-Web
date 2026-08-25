@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Mission, MissionActionInput, MissionActionResult, MissionStatus } from '@contracts/v1'
 import type { MissionControlApi } from '@api/endpoints/missionControl'
+import {
+  readMissionControlBootstrap,
+  type MissionControlBootstrap,
+} from '@api/missionControlBootstrap'
 import { api } from '@api/client'
 import { AppShell } from '@components/layout/AppShell'
 import { Button } from '@components/ui/Button'
@@ -25,18 +29,26 @@ const STATUS_LABEL: Record<MissionStatus, string> = {
 
 export function ConsolePage({
   controller = api.missionControl,
+  bootstrap = readMissionControlBootstrap(),
 }: {
   controller?: MissionControlApi | null
+  bootstrap?: MissionControlBootstrap | null
 }) {
-  const [missions, setMissions] = useState<Mission[]>([])
-  const [selectedId, setSelectedId] = useState(NEW_MISSION)
+  const [missions, setMissions] = useState<Mission[]>(bootstrap?.missionLog.missions ?? [])
+  const [selectedId, setSelectedId] = useState(bootstrap?.missionLog.missions[0]?.id ?? NEW_MISSION)
   const [newTitle, setNewTitle] = useState('')
-  const [loading, setLoading] = useState(Boolean(controller))
+  const [loading, setLoading] = useState(Boolean(controller) && !bootstrap)
   const [loadFailure, setLoadFailure] = useState('')
   const [actionState, setActionState] = useState<ActionState>({ kind: 'idle' })
 
   useEffect(() => {
-    if (!controller) return
+    if (!bootstrap) return
+    const nativeFallback = document.getElementById('sal0-mission-control-native')
+    if (nativeFallback) nativeFallback.hidden = true
+  }, [bootstrap])
+
+  useEffect(() => {
+    if (!controller || bootstrap) return
 
     const abort = new AbortController()
     controller
@@ -54,7 +66,7 @@ export function ConsolePage({
       })
 
     return () => abort.abort()
-  }, [controller])
+  }, [bootstrap, controller])
 
   const selectedMission = useMemo(
     () => missions.find((mission) => mission.id === selectedId),
@@ -64,8 +76,9 @@ export function ConsolePage({
   const working = actionState.kind === 'working'
   const hasTarget = isNew ? newTitle.trim().length >= 3 : Boolean(selectedMission)
   const championshipReady = Boolean(selectedMission?.status === 'verified' && selectedMission.proof)
-  const configured = Boolean(controller)
+  const configured = Boolean(controller || bootstrap)
   const connected = configured && !loadFailure
+  const actionForm = bootstrap?.actionForm
 
   async function dispatch(action: MissionActionInput['action']) {
     if (!controller || working || loading || loadFailure || !hasTarget) return
@@ -191,10 +204,27 @@ export function ConsolePage({
           ) : null}
         </div>
 
-        <div className={styles.actions} role="group" aria-label="Owner actions">
+        <form
+          className={styles.actions}
+          role="group"
+          aria-label="Owner actions"
+          {...(actionForm ? { action: actionForm.url, method: 'post' } : {})}
+        >
+          {actionForm ? (
+            <>
+              <input type="hidden" name="csrf" value={actionForm.csrf} />
+              <input type="hidden" name="idempotencyKey" value={actionForm.idempotencyKey} />
+              <input type="hidden" name="missionKind" value={isNew ? 'new' : 'existing'} />
+              <input type="hidden" name="title" value={isNew ? newTitle.trim() : ''} />
+              <input type="hidden" name="id" value={selectedMission?.id ?? ''} />
+              <input type="hidden" name="revision" value={selectedMission?.updatedAtUtc ?? ''} />
+            </>
+          ) : null}
           <Button
             size="lg"
-            onClick={() => dispatch('fast_break')}
+            {...(actionForm
+              ? { type: 'submit', name: 'action', value: 'fast_break' }
+              : { type: 'button', onClick: () => dispatch('fast_break') })}
             disabled={!connected || !hasTarget || working || loading}
           >
             Run Fast Break
@@ -202,13 +232,15 @@ export function ConsolePage({
           <Button
             size="lg"
             variant="secondary"
-            onClick={() => dispatch('championship')}
+            {...(actionForm
+              ? { type: 'submit', name: 'action', value: 'championship' }
+              : { type: 'button', onClick: () => dispatch('championship') })}
             disabled={!championshipReady || !connected || working}
             title={championshipReason || undefined}
           >
             Championship
           </Button>
-        </div>
+        </form>
       </section>
     </AppShell>
   )
