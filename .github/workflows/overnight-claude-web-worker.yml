@@ -57,6 +57,10 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      # The action authenticates by OIDC. Without this the job cannot fetch a
+      # token and dies before reaching a model — 24 consecutive runs failed this
+      # way, all reporting 'Could not fetch an OIDC token'.
+      id-token: write
     steps:
       - name: Check Anthropic credential
         id: credential

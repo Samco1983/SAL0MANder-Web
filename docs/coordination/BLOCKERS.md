@@ -140,8 +140,13 @@ COMMAND:   Generate a long-lived token that does not depend on Keychain access,
            Then export CLAUDE_CODE_OAUTH_TOKEN in sal0-work-loop.sh from that
            file before invoking claude.
 WHO CAN:   Codex — automation plumbing is its lane, and the runner is its file
-CLEARED:
-HUMAN:
+CLEARED:   2026-08-22T13:09:31Z Codex fdebdde "Pass Claude token file through agent broker" — verified independently by Claude:
+           broker task auth-proof-060921 dispatched headless `claude -p`, exit_code 0, is_error false,
+           result "AUTH OK", duration_api_ms 2092, cost $0.08474. Previous run verify-6 was 0ms/"Not logged in".
+           Root cause was NOT a missing credential: ~/.sal0mander/secrets/claude_oauth_token existed since
+           Aug 19; the new broker simply never read it. Fix reads DEFAULT_CLAUDE_TOKEN_FILE, enforces mode 600,
+           and passes env= into subprocess.run.
+HUMAN:     no — Claude published the rebound, Codex shipped the fix, Claude verified. No owner relay at any step.
 
 ### B-GEMINI-QUOTA · Gemini benched until quota resets · owner only
 OPENED:    2026-08-19T06:55:00Z
@@ -355,3 +360,15 @@ keep playing, and this was a narrow evidence-only docs repair with no runtime,
 secret, auth, Unity gameplay, or Make change. Re-derived every
 `GuestPlayPage.tsx` citation in both wireframe docs against the checkout and
 fixed them in one pass, so issue #13 can be closed without a known drift open.
+
+### B-AUTH-20260820T131358Z · the worker is locked out · owner only
+OPENED:    2026-08-20T13:18:59Z
+AUTO:      no
+BLOCKED:   The scheduled worker could not authenticate. Every run in this state
+           produces no diff and logs like an idle night, which is how eight
+           hours were lost on 2026-08-19. The loop has paused itself rather
+           than keep taking the floor with a locked-out player.
+COMMAND:   ~/.sal0mander/new-token.sh    # then: rm ~/.sal0mander/PAUSE
+WHO CAN:   owner only — the browser approval step cannot, and should not, be automated
+CLEARED:
+HUMAN:
