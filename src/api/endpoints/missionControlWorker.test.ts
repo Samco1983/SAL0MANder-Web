@@ -1137,6 +1137,9 @@ describe('mission-control edge boundary', () => {
     expect(issueInput.title).toBe('[OVERNIGHT][WEB] Student can launch one lesson')
     expect(issueInput.body).toContain('<!-- sal0-mission-control:v1')
     expect(issueInput.body).toContain('"idempotencyKey":"fast-break:new:proof"')
+    expect(issueInput.body).toContain(
+      '"request":{"kind":"new","title":"Student can launch one lesson"}',
+    )
     expect(issueInput.body).not.toContain('test-token')
   })
 

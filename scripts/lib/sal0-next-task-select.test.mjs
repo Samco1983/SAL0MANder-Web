@@ -18,23 +18,30 @@ const issue = (number, overrides = {}) => ({
 
 const missionBody = (overrides = {}) => {
   const requestedAtUtc = overrides.requestedAtUtc || '2026-08-25T07:05:30.144Z'
-  const { mission: missionOverrides, ...envelopeOverrides } = overrides
+  const { mission: missionOverrides, request: requestOverride, ...envelopeOverrides } = overrides
+  const mission = {
+    title: 'owner mission',
+    status: 'queued',
+    updatedAtUtc: requestedAtUtc,
+    ...missionOverrides,
+  }
+  const request = Object.hasOwn(overrides, 'request')
+    ? requestOverride
+    : { kind: 'new', title: mission.title }
   const envelope = {
     action: 'fast_break',
     idempotencyKey: 'fast_break:new:2026-08-25T07:05:52a12c18',
     requestFingerprint: '',
     requestedAtUtc,
     source: 'owner_console',
-    mission: {
-      title: 'owner mission',
-      status: 'queued',
-      updatedAtUtc: requestedAtUtc,
-      ...missionOverrides,
-    },
+    mission,
+    ...(request === undefined ? {} : { request }),
     ...envelopeOverrides,
   }
   if (!Object.hasOwn(envelopeOverrides, 'requestFingerprint')) {
-    envelope.requestFingerprint = missionRequestFingerprint(envelope.mission.title)
+    envelope.requestFingerprint = missionRequestFingerprint(
+      request ?? { kind: 'new', title: envelope.mission.title },
+    )
   }
 
   return `## SAL0MANder mission
@@ -70,6 +77,35 @@ describe('selectNextIssue', () => {
     ])
 
     expect(selected?.number).toBe(64)
+  })
+
+  it('accepts an existing-mission Fast Break bound to the same GitHub issue', () => {
+    const selected = selectNextIssue([
+      issue(41),
+      issue(64, {
+        title: '[OVERNIGHT][WEB] owner mission',
+        body: missionBody({
+          request: {
+            kind: 'existing',
+            id: 'mission-64',
+            revision: '2026-08-25T06:55:30.144Z',
+          },
+        }),
+      }),
+    ])
+
+    expect(selected?.number).toBe(64)
+  })
+
+  it('keeps accepting a legacy new-mission envelope from the deployed Worker', () => {
+    expect(
+      isQueuedMissionIssue(
+        issue(64, {
+          title: '[OVERNIGHT][WEB] owner mission',
+          body: missionBody({ request: undefined }),
+        }),
+      ),
+    ).toBe(true)
   })
 
   it('does not rerun active or malformed Mission Control envelopes as generic issues', () => {
@@ -113,6 +149,21 @@ describe('selectNextIssue', () => {
       missionBody({ requestedAtUtc: '2026-08-25' }),
       missionBody({ requestedAtUtc: '0' }),
       missionBody({ mission: { updatedAtUtc: '2026-08-25T07:06:30.144Z' } }),
+      missionBody({ request: { kind: 'new', title: 'different mission' } }),
+      missionBody({
+        request: {
+          kind: 'existing',
+          id: 'mission-999',
+          revision: '2026-08-25T06:55:30.144Z',
+        },
+      }),
+      missionBody({
+        request: {
+          kind: 'existing',
+          id: 'mission-64',
+          revision: '2026-08-25T07:15:30.144Z',
+        },
+      }),
     ]
     const selected = selectNextIssue([
       ...invalidMissions.map((body, index) =>

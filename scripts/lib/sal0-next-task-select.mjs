@@ -38,9 +38,41 @@ function isIsoDate(value) {
   )
 }
 
-export function missionRequestFingerprint(title) {
-  const action = { action: 'fast_break', mission: { kind: 'new', title } }
+export function missionRequestFingerprint(mission) {
+  const action = { action: 'fast_break', mission }
   return createHash('sha256').update(JSON.stringify(action)).digest('hex')
+}
+
+function missionRequestForEnvelope(issue, envelope, title) {
+  if (!Object.hasOwn(envelope, 'request')) {
+    return { kind: 'new', title }
+  }
+
+  const request = envelope.request
+  if (!request || typeof request !== 'object' || Array.isArray(request)) return null
+
+  if (request.kind === 'new') {
+    if (
+      Object.keys(request).length !== 2 ||
+      typeof request.title !== 'string' ||
+      request.title !== title
+    ) {
+      return null
+    }
+    return { kind: 'new', title }
+  }
+
+  const expectedId = Number.isSafeInteger(issue?.number) ? `mission-${issue.number}` : ''
+  if (
+    request.kind !== 'existing' ||
+    Object.keys(request).length !== 3 ||
+    request.id !== expectedId ||
+    !isIsoDate(request.revision) ||
+    Date.parse(request.revision) > Date.parse(envelope.requestedAtUtc)
+  ) {
+    return null
+  }
+  return { kind: 'existing', id: request.id, revision: request.revision }
 }
 
 function isTrustedIssueAuthor(issue, authors) {
@@ -58,6 +90,7 @@ export function isQueuedMissionIssue(issue) {
   const expectedTitle = `[OVERNIGHT][WEB] ${title}`
   const idempotencyKey =
     typeof envelope?.idempotencyKey === 'string' ? envelope.idempotencyKey.trim() : ''
+  const request = envelope ? missionRequestForEnvelope(issue, envelope, title) : null
 
   return Boolean(
     envelope &&
@@ -65,7 +98,8 @@ export function isQueuedMissionIssue(issue) {
       idempotencyKey.length > 0 &&
       idempotencyKey.length <= 300 &&
       envelope.idempotencyKey === idempotencyKey &&
-      envelope.requestFingerprint === missionRequestFingerprint(title) &&
+      request &&
+      envelope.requestFingerprint === missionRequestFingerprint(request) &&
       isIsoDate(envelope.requestedAtUtc) &&
       envelope.source === 'owner_console' &&
       mission &&
