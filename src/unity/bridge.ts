@@ -193,9 +193,10 @@ export function sendToUnity(
   instance: UnityMessageTarget | null | undefined,
   message: WebToUnityMessage,
   target: { gameObject: string; method: string } = UNITY_BRIDGE_TARGET,
+  onUndelivered?: (failure: BridgeDeliveryFailure) => void,
 ): boolean {
   if (!instance?.SendMessage) {
-    reportUndelivered(message, 'no Unity instance is attached')
+    reportUndelivered(message, 'no Unity instance is attached', undefined, onUndelivered)
     return false
   }
   try {
@@ -213,6 +214,7 @@ export function sendToUnity(
       message,
       `SendMessage threw — is GameObject "${target.gameObject}" present with method "${target.method}"?`,
       error,
+      onUndelivered,
     )
     return false
   }
@@ -231,13 +233,28 @@ export function sendToUnity(
  * Loud in development, quiet in production: a teacher mid-lesson must not get
  * console noise, and gameplay continues regardless.
  */
-function reportUndelivered(message: WebToUnityMessage, reason: string, error?: unknown): void {
-  if (env.isProd) return
-  console.error(
-    `[unity-bridge] "${message.type}" was NOT delivered to Unity: ${reason}. ` +
-      `Gameplay continues, but Unity never received this message.`,
-    error ?? '',
-  )
+function reportUndelivered(
+  message: WebToUnityMessage,
+  reason: string,
+  error: unknown,
+  onUndelivered: ((failure: BridgeDeliveryFailure) => void) | undefined,
+): void {
+  if (!env.isProd) {
+    console.error(
+      `[unity-bridge] "${message.type}" was NOT delivered to Unity: ${reason}. ` +
+        `Gameplay continues, but Unity never received this message.`,
+      error ?? '',
+    )
+  }
+  // Unlike the console line above, the diagnostics callback fires in every
+  // environment — the same drawer already shows inbound mismatches
+  // regardless of env.isProd, gated on `audience`, not on build mode.
+  if (!onUndelivered) return
+  try {
+    onUndelivered({ reason: 'undelivered', type: message.type, detail: reason })
+  } catch (callbackError) {
+    console.error('[unity-bridge] onUndelivered threw; ignoring', callbackError)
+  }
 }
 
 /** Message types this bridge version understands. Anything else is ignored. */
@@ -380,6 +397,25 @@ export function summarizeBridgeMismatch(mismatch: BridgeMismatch): BridgeMismatc
       return { reason: 'wrong-direction', type: mismatch.type }
   }
 }
+
+/**
+ * Privacy-safe shape for the fifth bridge failure class named in issue #41:
+ * a Web → Unity send that never arrived because the instance, GameObject, or
+ * method was missing.
+ *
+ * Deliberately carries only the message `type` and a static reason string —
+ * never `message` itself, which for `boot`/`session-started` includes
+ * `activityId`, `activityVersionId`, and an opaque `playBundle`. Same
+ * paste-into-a-ticket contract as {@link BridgeMismatchSummary}.
+ */
+export type BridgeDeliveryFailure = {
+  reason: 'undelivered'
+  type: WebToUnityMessage['type']
+  detail: string
+}
+
+/** Everything {@link UnityStage}'s diagnostics drawer can show — both directions. */
+export type BridgeDiagnostic = BridgeMismatchSummary | BridgeDeliveryFailure
 
 export type UnityMessageOptions = {
   /** Injectable so the dedupe window is testable and shareable if ever needed. */

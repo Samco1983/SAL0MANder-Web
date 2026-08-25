@@ -5,6 +5,105 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+## 2026-08-24 — issue #41 (W-18): the fifth bridge failure class reached console.error but never the visible drawer — fixed; the cross-system questions are still Unity/Codex's
+
+```text
+AGENT: Claude Code
+AREA: Website lane — worked issue #41 directly
+STATUS: SHIPPED — verify green, mutation-verified; the issue's five Unity-confirmation questions are unchanged and still not web-actionable
+```
+
+**CHECKED FIRST**
+
+`git status`: clean at `d5b0e87`, 1 local commit ahead of
+`origin/council/2026-08-18` (pre-existing, not from this run).
+`node scripts/check-upstream.mjs`: no upstream Unity-docs changes. Read
+`docs/coordination/INBOX.md` first, per the work-loop rules: Codex's
+2026-08-20T11:54Z `HANDOFF`, addressed to me by name, is explicit — "Web
+cannot prove the real C# receiver GameObject/method names or real
+`unity-ready` timing from jsdom... Claude: do not call #41 closed from
+Web-only diagnostics." Read as binding: the five "Still needs Codex / Unity
+confirmation" questions in `OPEN-ITEMS.md`'s W-18 section stay exactly where
+they were: unanswerable from this repo, unattempted this run.
+
+**WHAT I FOUND**
+
+Issue #41's own body lists five bridge failure classes the web is supposed to
+distinguish and safely summarize. Four are inbound and already reach
+`UnityStage`'s visible `bridgeDiagnostics` drawer via `onUnityMessage`'s
+`onMismatch` callback. The fifth — "Web → Unity delivery failure when the
+Unity instance, GameObject, or method is missing" — is handled correctly at
+the `sendToUnity`/`reportUndelivered` level in `bridge.ts`, but only ever
+reached `console.error`, gated `!env.isProd`. It never reached the same
+drawer a QA reader looking at the page would actually see. A missing receiver
+GameObject — exactly the failure mode the issue is worried about, since "no
+Unity C# receiver exists yet" per `bridge.ts`'s own comment on
+`UNITY_BRIDGE_TARGET` — would be invisible to anyone not watching devtools.
+
+This is real web-side work squarely inside #41's own scope (the issue's
+closing line: "the next safe shot is... a browser-visible QA diagnostic that
+uses `BridgeMismatchSummary` only") and requires no Unity/Codex input to
+build or verify — unlike the five listed questions, which do.
+
+**WHAT I DID**
+
+`src/unity/bridge.ts`: added `BridgeDeliveryFailure` (`{ reason:
+'undelivered', type, detail }`, privacy-scoped identically to
+`BridgeMismatchSummary` — never carries `activityId`/`activityVersionId`/
+`playBundle`) and `BridgeDiagnostic` (the union `UnityStage` now consumes).
+`sendToUnity` takes an optional 4th `onUndelivered` callback, invoked from
+both existing failure branches (no instance / `SendMessage` threw) alongside
+the unchanged `console.error`. The callback is wrapped in its own try/catch —
+a broken diagnostic handler must not break message delivery, same contract
+`onMismatch` already had.
+
+`src/unity/UnityStage.tsx`: both `sendToUnity` call sites (`boot`,
+`session-started`) now pass a shared `recordBridgeDiagnostic` that appends
+into the same `bridgeDiagnostics` state the inbound-mismatch listener already
+uses, so all five failure classes now render in one drawer, still gated
+`audience !== 'student'` — no change to that gate, no change to what a
+student ever sees.
+
+**Mutation-verified before writing this up:** temporarily forced `if
+(!onUndelivered) return` to `if (true) return` in `bridge.ts` — the three new
+assertions on the callback failed as expected (`toHaveBeenCalledWith`,
+`toHaveBeenCalledTimes(1)`, the payload-leak check on an `undefined` call
+argument). Reverted, `git diff src/unity/bridge.ts` confirmed clean before
+finalizing.
+
+Scope check: `src/unity/` only, no DTO frozen or renamed, no non-negotiable
+touched, Guest Play's `audience="student"` path unchanged and covered by a
+dedicated test (`'keeps an undelivered boot off the student surface'`).
+
+**EVIDENCE**
+
+`npm run verify` exit 0: lint (same pre-existing script `no-console` warnings
+as every prior entry, plus one pre-existing `UnityStage.tsx` exhaustive-deps
+warning on the unrelated `config` loader effect — confirmed pre-existing by
+diffing lint output against `git stash`, not new), typecheck clean, **69
+files / 757 tests** (756 passing + 1 pre-existing `it.fails` in
+`idempotencyContract.test.ts`, unrelated), 72 Python mission tests, build.
+New tests: 6 in `sendContainment.test.ts`, 2 in `UnityStage.test.tsx`.
+`docs/coordination/OPEN-ITEMS.md` W-18 section updated with the same
+evidence. Not committed by this run — the work loop commits iff verify
+passes.
+
+**NEXT**
+
+The five Codex/Unity-confirmation questions in W-18 are unchanged and remain
+the actual blocker on closing #41. Per Codex's HANDOFF, not attempting them
+from web again. Whoever next touches this: the drawer is now feature-complete
+against the issue's own five-class list; the only thing left is Unity's
+receiver-contract evidence.
+
+**BLOCKERS**
+
+None technical for this batch. #41 itself stays open pending Unity/Codex
+receiver-contract confirmation — same cross-system hold Codex named
+2026-08-20T11:54Z, unaffected by this fix.
+
+---
+
 ## 2026-08-20 — fixed the bball V3 picker filing duplicate "shot bank exhausted" issues; W-10…W-16 HOLD still stands, nothing new to answer on the hub
 
 ```text

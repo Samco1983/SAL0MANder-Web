@@ -248,6 +248,43 @@ describe('bridge diagnostics', () => {
     expect(screen.queryByText(/future-message/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/SUN-42/i)).not.toBeInTheDocument()
   })
+
+  it('shows a Web -> Unity delivery failure alongside inbound mismatches (issue #41)', async () => {
+    // The stub instance's `Quit`-only shape has no SendMessage, so once ready
+    // the boot effect's sendToUnity call fails exactly the way a build missing
+    // its receiver GameObject would — the case issue #41 names as the fifth
+    // bridge failure class.
+    const unity = stubUnityFactory()
+    render(
+      <UnityStage
+        activityId="demo"
+        boot={{ activityId: 'demo', activityVersionId: 'ver-1', clientAttemptId: 'attempt-1' }}
+      />,
+    )
+    fireLoad()
+    await unity.ready()
+
+    const diagnostics = screen.getByRole('status', { name: /unity bridge diagnostics/i })
+    expect(diagnostics).toHaveTextContent('"reason":"undelivered"')
+    expect(diagnostics).toHaveTextContent('"type":"boot"')
+    expect(diagnostics).not.toHaveTextContent('ver-1')
+    expect(diagnostics).not.toHaveTextContent('attempt-1')
+  })
+
+  it('keeps an undelivered boot off the student surface', async () => {
+    const unity = stubUnityFactory()
+    render(
+      <UnityStage
+        activityId="demo"
+        audience="student"
+        boot={{ activityId: 'demo', activityVersionId: 'ver-1', clientAttemptId: 'attempt-1' }}
+      />,
+    )
+    fireLoad()
+    await unity.ready()
+
+    expect(screen.queryByRole('status', { name: /unity bridge diagnostics/i })).not.toBeInTheDocument()
+  })
 })
 
 describe('teardown', () => {

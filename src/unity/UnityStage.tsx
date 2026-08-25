@@ -6,7 +6,7 @@ import {
   onUnityMessage,
   sendToUnity,
   summarizeBridgeMismatch,
-  type BridgeMismatchSummary,
+  type BridgeDiagnostic,
   type UnityMessageTarget,
   type WebToUnityMessage,
 } from './bridge'
@@ -96,7 +96,16 @@ export function UnityStage({
   const [retryToken, setRetryToken] = useState(0)
   const instanceRef = useRef<UnityMessageTarget | null>(null)
   const bootedRef = useRef(false)
-  const [bridgeDiagnostics, setBridgeDiagnostics] = useState<BridgeMismatchSummary[]>([])
+  const [bridgeDiagnostics, setBridgeDiagnostics] = useState<BridgeDiagnostic[]>([])
+
+  /**
+   * Shared by the inbound-mismatch listener and every `sendToUnity` call, so
+   * the fifth failure class named in issue #41 — a Web → Unity send that
+   * never arrived — lands in the same drawer as the four inbound classes,
+   * instead of only `console.error`.
+   */
+  const recordBridgeDiagnostic = (diagnostic: BridgeDiagnostic) =>
+    setBridgeDiagnostics((current) => [...current, diagnostic].slice(-3))
 
   /**
    * How many times Unity has announced, from inside the build, that its bridge
@@ -123,12 +132,13 @@ export function UnityStage({
         setHandshakes((n) => n + 1)
       },
       {
-        onMismatch: (mismatch) => {
-          const summary = summarizeBridgeMismatch(mismatch)
-          setBridgeDiagnostics((current) => [...current, summary].slice(-3))
-        },
+        onMismatch: (mismatch) => recordBridgeDiagnostic(summarizeBridgeMismatch(mismatch)),
       },
     )
+    // recordBridgeDiagnostic only wraps setBridgeDiagnostics, which React
+    // guarantees is stable — re-subscribing the listener on every render
+    // would not change behavior, only churn the effect.
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [])
 
   /**
@@ -145,12 +155,18 @@ export function UnityStage({
    */
   useEffect(() => {
     if (!boot || bootedRef.current || state.status !== 'ready') return
-    const sent = sendToUnity(instanceRef.current, {
-      type: 'boot',
-      version: BRIDGE_VERSION,
-      ...boot,
-    })
+    const sent = sendToUnity(
+      instanceRef.current,
+      {
+        type: 'boot',
+        version: BRIDGE_VERSION,
+        ...boot,
+      },
+      undefined,
+      recordBridgeDiagnostic,
+    )
     if (sent) bootedRef.current = true
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [boot, state.status, handshakes])
 
   /**
@@ -169,12 +185,18 @@ export function UnityStage({
   useEffect(() => {
     if (!sessionStarted || state.status !== 'ready' || !bootedRef.current) return
     if (sentSessionRef.current === sessionStarted.sessionId) return
-    const sent = sendToUnity(instanceRef.current, {
-      type: 'session-started',
-      version: BRIDGE_VERSION,
-      ...sessionStarted,
-    })
+    const sent = sendToUnity(
+      instanceRef.current,
+      {
+        type: 'session-started',
+        version: BRIDGE_VERSION,
+        ...sessionStarted,
+      },
+      undefined,
+      recordBridgeDiagnostic,
+    )
     if (sent) sentSessionRef.current = sessionStarted.sessionId
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [sessionStarted, state.status, handshakes])
 
   useEffect(() => {

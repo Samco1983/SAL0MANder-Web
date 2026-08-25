@@ -144,3 +144,63 @@ describe('web state is isolated from a bridge failure', () => {
     expect(BOOT).not.toHaveProperty('contractVersion')
   })
 })
+
+describe('the onUndelivered diagnostic — issue #41 fifth bridge failure class', () => {
+  // The other four bridge failure classes (malformed, version skew,
+  // unknown-type, wrong-direction) already reach a caller via
+  // onUnityMessage's onMismatch. Web -> Unity delivery failure previously
+  // only reached console.error, invisible to anything reading diagnostics
+  // programmatically.
+
+  it('reports undelivered with no instance attached', () => {
+    const onUndelivered = vi.fn()
+    sendToUnity(null, BOOT, undefined, onUndelivered)
+    expect(onUndelivered).toHaveBeenCalledWith({
+      reason: 'undelivered',
+      type: 'boot',
+      detail: expect.stringContaining('no Unity instance'),
+    })
+  })
+
+  it('reports undelivered when SendMessage throws', () => {
+    const onUndelivered = vi.fn()
+    const thrower = target(() => {
+      throw new Error('GameObject not found')
+    })
+    sendToUnity(thrower, BOOT, undefined, onUndelivered)
+    expect(onUndelivered).toHaveBeenCalledTimes(1)
+    expect(onUndelivered.mock.calls[0]?.[0].reason).toBe('undelivered')
+    expect(onUndelivered.mock.calls[0]?.[0].type).toBe('boot')
+  })
+
+  it('never fires on a successful send', () => {
+    const onUndelivered = vi.fn()
+    sendToUnity(target(() => {}), BOOT, undefined, onUndelivered)
+    expect(onUndelivered).not.toHaveBeenCalled()
+  })
+
+  it('never carries the message payload — only type and a static reason', () => {
+    // BOOT has activityId/activityVersionId/clientAttemptId. The privacy
+    // contract that already applies to summarizeBridgeMismatch must hold here
+    // too: a value pasteable into a ticket, never the payload itself.
+    const onUndelivered = vi.fn()
+    sendToUnity(null, BOOT, undefined, onUndelivered)
+    const failure = onUndelivered.mock.calls[0]?.[0]
+    expect(JSON.stringify(failure)).not.toContain('act-1')
+    expect(JSON.stringify(failure)).not.toContain('ver-1')
+    expect(JSON.stringify(failure)).not.toContain('attempt-1')
+  })
+
+  it('is optional — omitting it preserves the original silent-callback behavior', () => {
+    expect(() => sendToUnity(null, BOOT)).not.toThrow()
+  })
+
+  it('does not let a throwing callback take down the send path', () => {
+    const send = vi.fn()
+    const onUndelivered = vi.fn(() => {
+      throw new Error('diagnostic handler is broken')
+    })
+    expect(() => sendToUnity(null, BOOT, undefined, onUndelivered)).not.toThrow()
+    expect(sendToUnity(target(send), BOOT, undefined, onUndelivered)).toBe(true)
+  })
+})

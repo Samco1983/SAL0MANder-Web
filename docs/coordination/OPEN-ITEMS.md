@@ -17,7 +17,29 @@ confirmed at `GuestPlayPage.tsx:315`) — so this answers question 4 below
 / #41 remains open for the cross-system questions, which still need Codex/Unity,
 not more web-side surfacing.**
 
-Web now distinguishes and can safely summarize these bridge failure classes:
+**2026-08-24 (SAL0-04):** the drawer only ever showed four of the five
+failure classes below. The fifth — Web → Unity delivery failure — reached
+`console.error` (`reportUndelivered` in `bridge.ts`) but never the same
+`bridgeDiagnostics` array a QA reader actually sees, so a missing receiver
+GameObject was invisible to anyone reading the drawer instead of devtools.
+Closed the gap without touching any DTO or asking Unity anything:
+`sendToUnity` now takes an optional `onUndelivered` callback
+(`BridgeDeliveryFailure`, privacy-scoped the same way as
+`BridgeMismatchSummary` — message `type` and a static reason string only,
+never `activityId`/`activityVersionId`/`playBundle`), and `UnityStage` wires
+both its `sendToUnity` call sites into the same drawer the inbound mismatches
+already use. This is bounded QA-diagnostic surfacing per this section's own
+"next safe shot" note below — not an attempt to answer the cross-system
+questions, which still need Codex/Unity confirmation and are unchanged.
+Evidence: `src/unity/bridge.ts`, `src/unity/UnityStage.tsx`,
+`src/unity/sendContainment.test.ts`, `src/unity/UnityStage.test.tsx`;
+`npm run verify` green (69 files / 757 tests incl. 1 pre-existing expected
+fail, 72 mission tests, build); both new call sites mutation-verified
+(no-op'd the `onUndelivered` invocation, the three new assertions on it
+failed as expected, reverted).
+
+Web now distinguishes and can safely summarize these bridge failure classes,
+**and all five now reach the same visible diagnostics drawer**:
 
 - malformed bridge traffic;
 - contract-version skew;
@@ -29,7 +51,8 @@ Web now distinguishes and can safely summarize these bridge failure classes:
 The privacy boundary is explicit: `BridgeMismatch.detail` may still exist for
 in-process debugging, but `summarizeBridgeMismatch()` is the shape to paste into
 logs, issues, screenshots, or support notes. It does not carry share codes,
-activity payloads, URLs, result metrics, or user-entered values.
+activity payloads, URLs, result metrics, or user-entered values. The new
+`BridgeDeliveryFailure` follows the same rule.
 
 ### Still needs Codex / Unity confirmation
 
