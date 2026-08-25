@@ -62,7 +62,28 @@ def reachable(url: str, timeout: int = 15) -> tuple[bool, str]:
         status = int(raw) if code == 0 and raw.isdigit() else 0
         if 200 <= status < 400:
             return True, f"HTTP {status}"
-        return False, f"{type(e).__name__}{f' / HTTP {status}' if status else ''}"
+
+        # Both paths failed. Say WHICH failure this was, because "the site is
+        # down" and "this machine cannot verify certificates" are different
+        # problems with different owners, and the old message called both of
+        # them a dead site.
+        #
+        # Observed 2026-08-25: this returned URLError for the GitHub Pages URL
+        # while the site answered HTTP 200. Python and curl both refused the
+        # same valid Let's Encrypt certificate — "unable to get local issuer
+        # certificate" — under a session with HTTPS_PROXY set. The site was
+        # never down. Reporting it down sends someone to debug a deploy that
+        # is working.
+        #
+        # Verification is deliberately NOT disabled to make this green. A
+        # scorer that trusts an unverified endpoint cannot tell a healthy site
+        # from an intercepted one, which is a worse failure than an
+        # inconclusive line on a board.
+        detail = f"{type(e).__name__}"
+        if "CERTIFICATE_VERIFY_FAILED" in str(e) or "certificate" in str(e).lower():
+            detail = ("certificate could not be verified on THIS machine — the site may be "
+                      "up; check with `curl -I " + url + "` from a shell without a proxy")
+        return False, f"{detail}{f' / HTTP {status}' if status else ''}"
 
 
 # --- the three things -------------------------------------------------------
