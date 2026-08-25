@@ -378,6 +378,7 @@ if [ "$WORKER_HEAD" != "$BEFORE" ]; then
   fi
 
   ISSUE="$(grep -m1 'Work GitHub issue #' "$SKILL" 2>/dev/null | grep -o '[0-9]\+' | head -1 || true)"
+  COMMENT_ERR="$(mktemp -t sal0-issue-comment)"
   if [ -n "${ISSUE:-}" ] && command -v gh >/dev/null 2>&1; then
     if gh issue comment "$ISSUE" --repo Samco1983/SAL0MANder-Web --body "Automated work loop \`$STAMP\`
 
@@ -388,12 +389,13 @@ Files touched:
 $(printf '%s\n' "$COMMITTED_FILES" | head -20)
 \`\`\`
 
-https://github.com/Samco1983/SAL0MANder-Web/commit/$WORKER_HEAD" >/dev/null 2>&1; then
+https://github.com/Samco1983/SAL0MANder-Web/commit/$WORKER_HEAD" >/dev/null 2>"$COMMENT_ERR"; then
       echo "commented on issue #$ISSUE"
     else
-      echo "issue comment failed"
+      echo "issue comment failed: $(tr '\n' ' ' < "$COMMENT_ERR" | head -c 400)"
     fi
   fi
+  rm -f "$COMMENT_ERR"
 
   if command -v osascript >/dev/null 2>&1; then
     osascript -e "display notification \"$FILES file(s) committed ${WORKER_HEAD:0:8}\" with title \"SAL0MANder work loop\"" >/dev/null 2>&1 || true
@@ -547,6 +549,7 @@ fi
 # channel every agent reads without a human relaying it, and a queue nobody
 # reports into is a queue nobody can trust.
 ISSUE="$(grep -m1 'Work GitHub issue #' "$SKILL" 2>/dev/null | grep -o '[0-9]\+' | head -1 || true)"
+COMMENT_ERR="$(mktemp -t sal0-issue-comment)"
 if [ -n "${ISSUE:-}" ] && command -v gh >/dev/null 2>&1; then
   if gh issue comment "$ISSUE" --repo Samco1983/SAL0MANder-Web --body "Automated work loop \`$STAMP\`
 
@@ -557,12 +560,13 @@ Files touched:
 $(echo "$DIRTY" | head -20)
 \`\`\`
 
-https://github.com/Samco1983/SAL0MANder-Web/commit/$AFTER" >/dev/null 2>&1; then
+https://github.com/Samco1983/SAL0MANder-Web/commit/$AFTER" >/dev/null 2>"$COMMENT_ERR"; then
     echo "commented on issue #$ISSUE"
   else
-    echo "issue comment failed"
+    echo "issue comment failed: $(tr '\n' ' ' < "$COMMENT_ERR" | head -c 400)"
   fi
 fi
+rm -f "$COMMENT_ERR"
 
 # Reaches a screen without anyone opening a terminal.
 if command -v osascript >/dev/null 2>&1; then
