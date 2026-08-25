@@ -4,11 +4,21 @@
   "main": "worker.js",
   "compatibility_date": "2026-08-01",
 
-  // Which sites may call this endpoint. Not a security boundary on its own — a
-  // non-browser client sets any Origin it likes — but it stops the button being
-  // embedded on someone else's page and fired by their visitors.
   "vars": {
-    "ALLOWED_ORIGINS": "https://samco1983.github.io,http://localhost:5173"
+    // Which sites may call this endpoint. Not a security boundary on its own —
+    // a non-browser client sets any Origin it likes — but it stops the button
+    // being embedded on someone else's page and fired by their visitors.
+    "ALLOWED_ORIGINS": "https://samco1983.github.io,http://localhost:5173",
+
+    // Where the durable record lands. A var, not a secret: the repository name
+    // is not confidential, and having it visible in this file is what lets a
+    // reviewer see at a glance which ledger the public button writes into.
+    "GITHUB_REPO": "Samco1983/SAL0MANder-Web",
+
+    // Optional, comma-separated. GitHub creates a label that does not exist
+    // yet, so a typo here quietly invents a label rather than failing. Leave
+    // empty to file with no labels at all.
+    "GITHUB_LABELS": "ops"
   },
 
   // Rate limiting and idempotency both live here. The worker FAILS CLOSED if
@@ -19,7 +29,17 @@
   // then paste the returned id below.
   "kv_namespaces": [{ "binding": "OPS_KV", "id": "f337226193be46219fad6199228130fe" }]
 
-  // MAKE_WEBHOOK_URL is a SECRET, never a var — a var lands in this file and
-  // this file is committed. Set it with:
-  //   npx wrangler secret put MAKE_WEBHOOK_URL
+  // GITHUB_TOKEN is a SECRET, never a var — a var lands in this file and this
+  // file is committed. Set it with:
+  //   npx wrangler secret put GITHUB_TOKEN
+  //
+  // Use a FINE-GRAINED personal access token scoped to the single repository
+  // named in GITHUB_REPO above, with one permission: Issues -> Read and write.
+  // A classic `repo` token would also let this public endpoint push code, and
+  // the endpoint has no business doing that.
+  //
+  // MAKE_WEBHOOK_URL was the previous secret here and is no longer read. Remove
+  // it from the deployed worker so a future reader does not take its presence
+  // as evidence that Make is still in the path:
+  //   npx wrangler secret delete MAKE_WEBHOOK_URL
 }

@@ -125,10 +125,40 @@ def operational() -> list[dict]:
                 "blocker": "" if code == 0 else "npm run verify fails"})
 
     # Scheduler parity: what a launchd job sees, not what a terminal sees.
+    #
+    # Presence is not authorization. This check read WON for four days straight
+    # while the work loop was locked out of GitHub: the token file existed and
+    # had stopped working, and os.path.exists() cannot tell those two apart.
+    #
+    # The loop itself could. It hit the auth failure, wrote the reason into the
+    # PAUSE file, and stopped — on 2026-08-20, while this line kept reporting a
+    # win. Trusting an inode over the scheduler's own report of its own
+    # credential is how a board stays green straight through an outage, which is
+    # the one failure this whole file exists to make impossible.
+    #
+    # So: read the verdict, not the inode. PAUSE lives outside the repo so no
+    # git operation can clear it, which also makes it the same fact for everyone
+    # who can read the disk.
     token = os.path.expanduser("~/.sal0mander/secrets/claude_oauth_token")
     has_token = os.path.exists(token)
-    out.append({"name": "the worker can authenticate unattended", "ok": has_token,
-                "blocker": "" if has_token else "no token file — a scheduled run cannot log in"})
+    pause_reason = ""
+    pause_path = os.path.expanduser("~/.sal0mander/PAUSE")
+    if os.path.exists(pause_path):
+        with open(pause_path, encoding="utf-8", errors="replace") as fh:
+            pause_reason = fh.read().strip()
+    # Only an auth-flavoured pause invalidates THIS check. An owner calling
+    # TIMEOUT is a deliberate stop, not a broken credential, and it is already
+    # caught by the possession-heartbeat check further down.
+    locked_out = "auth" in pause_reason.lower()
+    can_auth = has_token and not locked_out
+    if not has_token:
+        auth_blocker = "no token file — a scheduled run cannot log in"
+    elif locked_out:
+        auth_blocker = f"token file present but the loop reported a lockout — {pause_reason}"
+    else:
+        auth_blocker = ""
+    out.append({"name": "the worker can authenticate unattended", "ok": can_auth,
+                "blocker": auth_blocker})
 
     code, raw = sh(["gh", "issue", "list", "--repo", SLUG, "--state", "open",
                     "--json", "number", "--jq", "length"], 90)

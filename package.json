@@ -101,7 +101,8 @@
     "verify:deployed": "node scripts/verify-deployed-site.mjs",
     "verify:pages": "npm run build:pages && npm run pages:fallback && npm run verify:artifact",
     "score": "node scripts/sal0-score.mjs",
-    "proof:web": "node scripts/sal0-web-proof.mjs"
+    "proof:web": "node scripts/sal0-web-proof.mjs",
+    "mission:buttons": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/sal0-desk-buttons.py"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
@@ -127,7 +128,7 @@
     "vite": "^8.2.0",
     "vitest": "^4.1.10"
   },
-  "description": "SAL0MANder cloud companion platform \u2014 web application.",
+  "description": "SAL0MANder cloud companion platform — web application.",
   "engines": {
     "node": ">=24"
   }
