@@ -18,7 +18,7 @@ false reading today.
 | Championship | **9 of 12** | `OPERATIONAL` 5/5, all independently checkable |
 | Fast Break / Championship (terminal + Desktop app) | **Working** | run repeatedly today |
 | Web console buttons | **Not working** | Worker still calls Make; Codex's fix not merged/deployed |
-| `samco1983.github.io/SAL0MANder-Web/` | **UP — HTTP 200** | `curl` returned 200; the board's red line is a local certificate failure, not a dead site |
+| `samco1983.github.io/SAL0MANder-Web/` | **UP — HTTP 200, check passes** | proven: with `HTTPS_PROXY` set the cert fails; with it unset, `HTTP 200`. WEBSITE DONE is 5/5 |
 | Brake | **ON**, deliberately | `owner pause: school Wi-Fi; resume on trusted network` |
 
 **The token was never the problem.** The PAUSE file said "auth failure" for four
@@ -50,10 +50,18 @@ Then check one thing that today's network could not settle:
 curl -I https://samco1983.github.io/SAL0MANder-Web/
 ```
 
-Today this failed with `unable to get local issuer certificate` under
-`HTTPS_PROXY=relay.lsaccess.me`, while the site itself answered 200. On a clean
-network this should return `HTTP/2 200`, and Championship should read **10 of
-12**. If it does, that condition was never actually failing.
+**Settled 2026-08-25.** The certificate failure was never the network and never
+the site. It was the agent session's own proxy:
+
+```text
+with    HTTPS_PROXY=relay.lsaccess.me  ->  unable to get local issuer certificate
+without HTTPS_PROXY                    ->  HTTP 200
+```
+
+Run from a plain terminal, WEBSITE DONE reads **5/5**. Nothing to fix here.
+The lesson is narrower and more useful than "school Wi-Fi is bad": **a tool
+failure observed inside an agent's sandbox is not evidence about the user's
+machine.** Re-test outside the sandbox before filing it as a defect.
 
 ---
 
@@ -114,17 +122,17 @@ Nothing to do here but let it run and review what it commits.
 
 ---
 
-## 4. Do not debug these on school Wi-Fi
+## 4. Network-shaped false readings
 
-Every one produced a false reading today:
+Two different causes got blamed on one thing today. Keep them apart:
 
-- **Certificates.** `curl` and Python both refused a valid Let's Encrypt cert.
-  The site was up.
-- **`workers.dev` / Cloudflare Access.** Blocked outright on the school network.
-- **Make webhooks.** Same.
+- **Certificates — the agent's sandbox proxy, not any Wi-Fi.** Proven above.
+  Re-test outside the sandbox before believing it.
+- **`workers.dev` / Cloudflare Access / Make — genuinely blocked on the school
+  network.** Real, and a real reason not to diagnose the console from school.
 
-Diagnosing any of these here costs hours and teaches you about the network, not
-the system.
+The habit that covers both: before calling a remote thing broken, establish
+*from where* it looked broken.
 
 ---
 
@@ -174,8 +182,8 @@ the picker re-selects it, and the run returns `NOTHING CHANGED` with `exit 0` �
 a green log with no progress. That happened to #41. Both #41 and #44 are now
 labeled `blocked` with written reasons.
 
-**Whether Championship's site check passes off-proxy.** Every run today was from
-one proxied session. Untested from a plain terminal.
+~~Whether Championship's site check passes off-proxy.~~ **Closed 2026-08-25:**
+it passes. `HTTP 200` with the proxy unset. WEBSITE DONE is 5/5.
 
 ---
 
