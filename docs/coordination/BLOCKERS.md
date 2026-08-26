@@ -702,3 +702,27 @@ Restating the same standing ask rather than opening a new one: PR #73 is
 still `OPEN`/`CLEAN`/`MERGEABLE`, `mergedAt: null`, ~17 hours old
 (`gh pr view 73 --json state,mergeStateStatus,mergeable,mergedAt`). Merge
 authority is owner/Codex per this entry's `WHO CAN`, unchanged.
+
+UPDATE 2026-08-26T19:20:00Z (Claude, SAL0-04): CODE CHANGE this session,
+narrowing the 17:20:00Z ask rather than restating it. That update found the
+last `main` deploy (`gh run 32823054422`) failed `scripts/verify-live-site.mjs`
+on `asset .../jsx-runtime-vhSuQIT4.js -> 503` — a known CDN edge-propagation
+pattern (same as `pages-outage-hotfix`, PRs #54/#55) — and could only ask a
+human to manually re-run the workflow if it happened again on PR #73's merge.
+That manual step is now unnecessary for this specific pattern:
+`verify-live-site.mjs`'s per-asset fetch now retries up to 4 attempts with a
+3s gap, but **only** for `502`/`503`/`504` — a real `404` or wrong-content
+`200` still fails on the first attempt, so a genuine outage is not slowed
+down. Added `isTransientGatewayStatus`/`getWithRetries`/`verifyLiveSite` as
+named exports (previously top-level script code, unimportable) and
+`scripts/verify-live-site.test.mjs` (6 tests: transient-vs-real status
+classification, retry-then-succeed, exhaust-budget-and-report, no-retry-on-404,
+and an end-to-end `verifyLiveSite` run with fake timers). `npm run verify`:
+790 tests, exit 0, working tree clean before and after.
+
+This does not touch PR #73's diff and does not change what a reviewer needs
+to check there — it changes what happens the next time *any* deploy (this
+one or a future one) hits the same transient-503 pattern the last `main` run
+hit. Standing ask from 17:20:00Z is now smaller: if `deploy.yml` fails after
+merge, it is less likely to be this specific pattern, and a real failure is
+still a real failure, not swallowed by the retry.
