@@ -237,6 +237,43 @@ unreadable question is a broken question.
 **3. Content that overflows should scroll.** When text does not fit its slot it
 is simply cut off. It should scroll instead of clipping.
 
+**4. It is not just the question text — it is the whole UI.** "Display correct",
+"Reset", and the "quiz review" header are all undersized too. Findings 2 and 4
+are one root cause, not two bugs.
+
+### Root cause found, with the exact fix
+
+`Assets/Scenes/SampleScene.unity` line 2726:
+
+```text
+m_UiScaleMode: 1                       # Scale With Screen Size - correct mode
+m_ReferenceResolution: {x: 1920, y: 1080}
+m_ScreenMatchMode: 0                   # Match Width Or Height
+m_MatchWidthOrHeight: 0.5
+```
+
+The UI is authored against 1920x1080. A phone canvas is a fraction of that, so
+with a 0.5 match every element renders at roughly half its design size. That is
+the text, the buttons, and the header in one setting.
+
+**Change the reference resolution to 1280x720.** With match 0.5 the scale
+multiplies by:
+
+```text
+sqrt(1920/1280) * sqrt(1080/720) = 1.2247 * 1.2247 = 1.50
+```
+
+Exactly the 1.5x the owner estimated by eye — and because it is a ratio it is
+1.5x on every screen, not only the phone it was measured on. One line, uniform,
+no per-element retuning.
+
+Alternatives if 1280x720 overshoots on desktop: `m_ScreenMatchMode: 1` (Expand)
+prevents shrinking below the reference on either axis. Prefer the reference
+resolution change first — it is one number and its effect is exactly predictable.
+
+**Owner's estimate and the arithmetic agree to two decimal places.** Trust the
+person holding the phone.
+
 These are the first observations from the real product on real hardware. They
 outrank everything else in the queue: Fast Break asked for one user-visible
 PRODUCT shot, and a real student hitting a real wall is exactly that.
