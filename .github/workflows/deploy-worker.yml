@@ -1,0 +1,135 @@
+# Deploy the Mission Control Worker.
+#
+# Written because merging the Worker fix to main did nothing. On 2026-08-25 the
+# direct-GitHub rewrite was merged, reviewed, and fully gate-green while
+# Cloudflare kept running the previous build — the one calling a Make webhook
+# whose secret did not exist. The console stayed broken and every status said the
+# work was done.
+#
+# No workflow deployed it. There was nothing to deploy it WITH: the repo carries
+# only wrangler.example.toml, full of placeholders, so the real config lived on
+# one person's laptop. A Worker the business depends on could only be updated by
+# whoever deployed it last.
+#
+# This file ends both problems. The config is generated here from the example
+# plus repository variables, so nothing secret is committed and no laptop is
+# required.
+#
+# It does NOT manage secrets. GITHUB_TOKEN on the Worker stays an owner action
+# via `wrangler secret put` — a deploy pipeline that can mint credentials is a
+# bigger risk than a manual step.
+name: Deploy Mission Control Worker
+
+on:
+  push:
+    branches: [main]
+    # Only when the Worker actually changes. A website commit must not
+    # redeploy an edge service.
+    paths:
+      - 'edge/mission-control/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Two deploys racing to the same Worker leaves whichever finished last, which
+  # may not be whichever was newest.
+  group: deploy-mission-control-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Fail loudly and by name when configuration is absent.
+      #
+      # The alternative — skipping quietly when a secret is missing — is the
+      # exact defect this repository has now found in five places: a step that
+      # reports success while doing nothing. A deploy that silently does not
+      # deploy is worse than a red build, because a red build gets fixed.
+      - name: refuse to pretend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
+          POLICY_AUD: ${{ vars.CF_ACCESS_POLICY_AUD }}
+          OWNER_EMAILS: ${{ secrets.OWNER_EMAILS }}
+        run: |
+          missing=""
+          [ -z "${CLOUDFLARE_API_TOKEN:-}" ] && missing="$missing CLOUDFLARE_API_TOKEN(secret)"
+          [ -z "${TEAM_DOMAIN:-}" ]          && missing="$missing CF_ACCESS_TEAM_DOMAIN(variable)"
+          [ -z "${POLICY_AUD:-}" ]           && missing="$missing CF_ACCESS_POLICY_AUD(variable)"
+          [ -z "${OWNER_EMAILS:-}" ]         && missing="$missing OWNER_EMAILS(secret)"
+          if [ -n "$missing" ]; then
+            echo "::error::cannot deploy — not configured:$missing"
+            echo "Add these under Settings -> Secrets and variables -> Actions."
+            echo "Nothing was deployed. The running Worker is unchanged."
+            exit 1
+          fi
+          echo "configuration present"
+
+      # Built from the example so the committed template stays the single
+      # description of the Worker's shape, and drift between them is impossible.
+      # Only environment-specific values are injected.
+      - name: build wrangler.toml from the committed example
+        working-directory: edge/mission-control
+        env:
+          TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
+          POLICY_AUD: ${{ vars.CF_ACCESS_POLICY_AUD }}
+          OWNER_EMAILS: ${{ secrets.OWNER_EMAILS }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re, sys
+          src = pathlib.Path('wrangler.example.toml')
+          toml = src.read_text()
+          for key in ('TEAM_DOMAIN', 'POLICY_AUD', 'OWNER_EMAILS'):
+              value = os.environ[key]
+              toml, n = re.subn(rf'(?m)^{key}\s*=\s*".*"$', f'{key} = "{value}"', toml)
+              if n != 1:
+                  # The example changed shape and this substitution silently
+                  # missed. Deploying now would ship a placeholder into an auth
+                  # check, which fails open or shut in ways nobody predicted.
+                  sys.exit(f'::error::expected exactly one {key} line in wrangler.example.toml, found {n}')
+          leftover = [m for m in re.findall(r'"(replace[^"]*|owner@example\.com)"', toml)]
+          if leftover:
+              sys.exit(f'::error::placeholders survived substitution: {leftover}')
+          pathlib.Path('wrangler.toml').write_text(toml)
+          print('wrangler.toml written; no placeholders remain')
+          PY
+
+      - name: deploy
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@latest deploy 2>&1 | tee /tmp/deploy.txt
+
+      # What this proves and what it does not.
+      #
+      # A 302 to Cloudflare Access means the route is live and protected — the
+      # Worker is answering. It does NOT prove the console works: the Worker's
+      # own GITHUB_TOKEN secret is set separately by the owner, and a missing one
+      # only shows up on a real request from behind Access.
+      #
+      # Saying so explicitly, because claiming more than was measured is how the
+      # last outage lasted four days.
+      - name: confirm the route answers
+        run: |
+          CODE=$(curl -sS -o /tmp/probe.txt -w '%{http_code}' -m 25 \
+            "https://sal0mander-mission-control.samco1983.workers.dev/ops/missions" || echo 000)
+          echo "GET /ops/missions -> $CODE"
+          case "$CODE" in
+            302|401|403) echo "route is live and protected by Access — expected" ;;
+            000) echo "::warning::probe could not reach the Worker; deploy reported success" ;;
+            *) echo "::warning::unexpected status $CODE — deploy reported success, check manually" ;;
+          esac
+          echo
+          echo "NOT verified here: that the Worker's GITHUB_TOKEN secret is set."
+          echo "That is an owner action: npx wrangler secret put GITHUB_TOKEN"
+          echo "Until it is, a signed-in request returns endpoint_misconfigured."

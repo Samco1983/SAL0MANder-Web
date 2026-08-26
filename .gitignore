@@ -62,3 +62,10 @@ __pycache__/
 # settled. Provenance lives in a .json beside each image.
 generated-art/
 PROMPTS.txt
+
+# Generated at deploy time from wrangler.example.toml, and locally by anyone
+# deploying an edge Worker by hand. It carries environment-specific values —
+# the Cloudflare Access team domain, the policy audience, owner emails — that
+# have no business in a public repository. The .example file stays committed as
+# the single description of the Worker's shape.
+edge/**/wrangler.toml
