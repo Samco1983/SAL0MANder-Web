@@ -148,3 +148,83 @@ before building any paid tier.
 - What are TPT's Seller Guidelines? — article 360042626591
 - Is it ok to include hyperlinks or QR codes to other websites in my resources? — article 360043004671
 - Can I offer resources that are hosted on a third party site? — article 360042199032
+
+---
+
+## Addendum — subscriptions, verified 2026-08-25
+
+Read directly, because a second opinion asserted it and it is load-bearing:
+
+> "No, subscriptions to external websites are not permitted. We're also not able
+> to support a recurring subscription payment model. All resources posted on TPT
+> must fall within the TPT Content Guidelines."
+
+— *Can I sell subscriptions to my website on TPT?*, TPT help centre
+
+This closes the question of whether a paid SAL0MANder tier could ever be sold
+through TPT. It cannot, in either direction: not as a subscription product, and
+not as a link to one.
+
+It also sharpens the trap named above. The separation between the two businesses
+is not a preference — it is the only configuration TPT permits.
+
+## The two-storefront model — adopted
+
+Not "TPT feeding a funnel to SAL0MANder", but two product lines under one brand:
+
+```text
+                  SAL0MANder Studios
+                          |
+          +---------------+---------------+
+          |                               |
+        TPT                        SAL0MANder Web
+   printable classroom            interactive activities
+   resources, worksheets,         Guest Play, Teacher Studio,
+   lesson packets, keys           progress, results
+```
+
+Same brand, same educational philosophy, same content pipeline — different
+products, different channels. The bridge is brand recognition, not a checkout
+link.
+
+This is stronger commercially than any workaround, because it does not depend on
+a rule staying favorable. It is also the only shape compatible with the
+subscription prohibition above.
+
+**The consequence for content:** a verified question set can feed both lines, so
+one human QA investment supports two businesses. That makes an extraction and
+verification pipeline commercially load-bearing rather than housekeeping, and it
+needs two gates, not one:
+
+1. **Academic QA** — is the question correct, is there exactly one defensible
+   answer, are the distractors legitimate.
+2. **Rights QA** — may SAL0MANder distribute this commercially at all.
+
+TPT requires Sellers to own or license everything they sell. Building a large
+verified library and discovering most of it cannot legally ship is a failure that
+only shows up after the work is done, which is the class of failure this repo
+keeps finding. Classify every source before extracting from it.
+
+**The metric worth measuring first:** how many human minutes it takes to turn one
+real nine-question lesson into a ship-ready verified activity. Measure that on
+one lesson before building hundreds of listings on either side.
+
+## What a second opinion missed, and it is the one with teeth
+
+An outside analysis of this plan covered links, sales channels, third-party
+hosting, price consistency, and rights — and did not mention the uptime clause at
+all.
+
+That is the rule that can actually cost listings:
+
+> "it will be up to you to make sure that your linked resources are current and
+> accessible. If the links are outdated or the content has been removed... we may
+> have to issue a refund to Buyers and deactivate your product."
+
+For a **free** resource the refund half has little bite — there are no buyers to
+refund. **Deactivation still applies.**
+
+Nothing in this repo monitors whether the play URL resolves. The checks that
+claim to were wrong in both directions inside 24 hours on 2026-08-24: the board
+reported a live site dead, and reported a locked-out worker healthy for four
+days. Uptime signals have to be trustworthy before they can protect a listing.
