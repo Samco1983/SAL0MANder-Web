@@ -55,45 +55,26 @@ jobs:
           fi
 
       - name: render deployment config
-        working-directory: edge/mission-control
         env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
           POLICY_AUD: ${{ vars.CF_ACCESS_POLICY_AUD }}
           OWNER_EMAILS: ${{ secrets.OWNER_EMAILS }}
+        run: >-
+          python3 scripts/lib/sal0_worker_deploy.py
+          edge/mission-control/wrangler.example.toml
+          edge/mission-control/wrangler.toml
+
+      - name: require runtime GitHub secret
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          python3 - <<'PY'
-          import json
-          import os
-          import pathlib
-          import re
-          import sys
-          import tomllib
-
-          source = pathlib.Path('wrangler.example.toml')
-          output = pathlib.Path('wrangler.toml')
-          config = source.read_text()
-
-          for key in ('TEAM_DOMAIN', 'POLICY_AUD', 'OWNER_EMAILS'):
-              value = os.environ[key]
-              replacement = f'{key} = {json.dumps(value)}'
-              config, count = re.subn(
-                  rf'(?m)^{key}\s*=\s*".*"$',
-                  lambda _match, replacement=replacement: replacement,
-                  config,
-              )
-              if count != 1:
-                  sys.exit(f'::error::expected one {key} line in {source}, found {count}')
-
-          if re.search(r'replace-me|replace-with|owner@example\.com', config):
-              sys.exit('::error::a placeholder survived deployment config rendering')
-
-          parsed = tomllib.loads(config)
-          if parsed.get('workers_dev') is not True:
-              sys.exit('::error::workers_dev must stay true because the web app calls that route')
-
-          output.write_text(config)
-          print('wrangler.toml rendered and parsed; no placeholders remain')
-          PY
+          set -euo pipefail
+          npx --yes wrangler@4.126.0 secret list --format json > /tmp/mission-control-secrets.json
+          node ../../scripts/verify-mission-control-deployment.mjs \
+            --secrets /tmp/mission-control-secrets.json
 
       - name: deploy exact checked-out Worker
         working-directory: edge/mission-control
@@ -101,27 +82,32 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          set -o pipefail
+          set -euo pipefail
           echo "Deploying commit $GITHUB_SHA with Wrangler 4.126.0"
-          npx --yes wrangler@4.126.0 deploy 2>&1 | tee /tmp/mission-control-deploy.txt
+          npx --yes wrangler@4.126.0 deploy --strict \
+            --tag "github-${GITHUB_SHA}" \
+            --message "github:${GITHUB_SHA}" \
+            2>&1 | tee /tmp/mission-control-deploy.txt
 
-      # This proves the deployed route answers behind Access. The authenticated
-      # create/read flow is checked separately because it requires an owner
-      # session and the Worker's encrypted GITHUB_TOKEN secret.
-      - name: require protected route to answer
+      - name: prove exact production version and bindings
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          code="$(curl -sS -o /tmp/mission-control-probe.txt -w '%{http_code}' -m 25 \
-            'https://sal0mander-mission-control.samco1983.workers.dev/ops/missions' || true)"
-          [ -n "$code" ] || code=000
-          echo "GET /ops/missions -> $code"
-          case "$code" in
-            302|401|403)
-              echo "Mission Control route is live and protected by Cloudflare Access."
-              ;;
-            *)
-              echo "::error::deployed route returned unexpected HTTP $code"
-              exit 1
-              ;;
-          esac
-          echo "Not proven here: authenticated GitHub issue read/write."
-          echo "The Worker must already have its encrypted GITHUB_TOKEN secret."
+          set -euo pipefail
+          npx --yes wrangler@4.126.0 deployments status --json \
+            > /tmp/mission-control-deployment.json
+          version_id="$(node -e \
+            "const d=require('/tmp/mission-control-deployment.json'); \
+             if (!Array.isArray(d.versions) || d.versions.length !== 1 || \
+                 d.versions[0].percentage !== 100 || !d.versions[0].version_id) process.exit(1); \
+             process.stdout.write(d.versions[0].version_id)")"
+          npx --yes wrangler@4.126.0 versions view "$version_id" --json \
+            > /tmp/mission-control-version.json
+          node ../../scripts/verify-mission-control-deployment.mjs \
+            /tmp/mission-control-deployment.json \
+            /tmp/mission-control-version.json \
+            /tmp/mission-control-secrets.json \
+            "$GITHUB_SHA"
+          echo "Not proven here: an authenticated owner request creating a real GitHub issue."
