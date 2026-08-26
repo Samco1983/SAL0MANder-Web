@@ -585,3 +585,65 @@ speculative fix for a case that can't occur.
 No code change this session — there is no further code-side fix available for
 #70; the only open item is landing PR #73, already scoped to owner/Codex, and
 restating that ask a further time would be padding, not progress.
+
+UPDATE 2026-08-26T17:20:00Z (Claude, SAL0-04): CORRECTION to the 16:20:00Z
+entry above, plus a new finding neither this thread nor any prior #70 session
+had surfaced. First, the correction: this session's sandbox is not fully
+disconnected. `curl -v https://samco1983.github.io/` gets past DNS and TCP
+connect, then fails at the TLS handshake (`Recv failure: Socket is not
+connected`) — a specific egress block on that host, not a dead socket. `gh`,
+`curl -sI https://api.github.com`, and `curl -sI
+https://raw.githubusercontent.com` all succeed (HTTP 200/301) from the same
+shell. So this sandbox can reach `github.com`/`api.github.com` but not
+`*.github.io` — narrower and more useful to know than "no network at all",
+because it means GitHub's own API (Actions runs, PR state, issue state) is a
+channel every future session in this sandbox class can still use even when
+the student-facing site itself is unreachable.
+
+Using that channel: `gh run list --workflow=deploy.yml --branch main --limit
+5` shows the **most recent deploy to `main` (run `32823054422`, triggered by
+merging #65 at 2026-08-25T07:44:20Z) is `completed failure`** — and no push to
+`main` has happened since (matches PR #73's base staying at `478e6a1`
+unmoved). `gh run view 32823054422 --log-failed` shows why: the Pages
+deployment step itself reported success, then this repo's own
+`verify-live-site.mjs` ran against the real published URL and failed:
+
+```
+live: https://samco1983.github.io/SAL0MANder-Web/
+  FAIL  asset /SAL0MANder-Web/assets/jsx-runtime-vhSuQIT4.js -> 503, 54887 bytes — referenced but not served
+LIVE SITE BROKEN — 1 fault(s)
+```
+
+This is independent of everything B-12/B-13 already found — it is not the
+banner, not the nav, not the canvas-id crash, and not PR #73's diff at all.
+It is the *current production deploy of `main`*, the one still live right
+now regardless of whether #73 merges, failing this repo's own strictest
+gate (`scripts/verify-live-site.mjs`'s own header names exactly this failure
+mode: a real 500-class asset error would blank the page for a real visitor).
+A 503 on a single hashed JS chunk ~13 seconds after a fresh Pages deployment
+is a known CDN-propagation pattern and has previously self-resolved (see the
+`pages-outage-hotfix` PRs #54/#55 in this same file's history) — so this is
+likely, not certainly, stale by now, and I have no way to confirm either way
+from this sandbox (`*.github.io` unreachable, per the correction above).
+
+Net effect on #70: merging PR #73 alone is not sufficient evidence the site
+is healthy, because the last authoritative signal on `main` — GitHub's own
+Actions run, not a screenshot — says the previously-deployed build already
+failed live verification for an unrelated reason. Narrowing the ask already
+open above:
+
+ASK: whoever merges PR #73 (owner or Codex, per B-13) should watch the
+resulting `deploy.yml` run to completion (`gh run watch` or `gh run list
+--workflow=deploy.yml --branch main --limit 1`) and confirm it is `success`,
+not just that the merge went in — a green merge with a red deploy would leave
+#70 exactly as unverifiable as it is today. If it fails again on the same
+asset-503 pattern, re-run it once (`gh workflow run deploy.yml` or `gh run
+rerun <id>`) before treating it as a real regression, per the propagation
+pattern above.
+AUTO: no — re-running a workflow that deploys straight to the production
+Pages site is the same class of action B-13 already scoped to owner/Codex,
+not this lane.
+
+`npm run verify` this session: 784 tests, exit 0. Working tree clean before
+and after. No code change — this is a monitoring/evidence finding, not a bug
+in this branch's own diff.
