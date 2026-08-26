@@ -44,6 +44,40 @@ All formats derive from the same immutable published activity version:
 
 Each delivery reports `Ready`, `Generating`, or `Failed` with a retry action.
 
+## TPT funnel lane
+
+Status: queued product lane. It does not run concurrently with another active
+possession.
+
+The funnel is one versioned path:
+
+`TPT printable -> QR or short code -> matching demo -> activity completion`
+
+Every package must contain:
+
+1. Student printable PDF and separate answer key.
+2. Accurate preview pages, title, description, credits, and usage terms.
+3. High-error-correction QR plus a short typed fallback.
+4. A package manifest naming the immutable activity version and demo URL.
+5. A downloadable or printable fallback when the school network blocks play.
+6. A test receipt with device, browser, network, scan result, and first usable
+   screen time. Never include student names.
+
+The package is `Ready` only when the QR and fallback code open the exact
+activity represented by the printable, the first question is readable without
+zoom, and one question-to-piece interaction succeeds. A generated PDF or HTTP
+200 alone is not funnel proof.
+
+### TPT Fast Breaks
+
+| Order | User-visible shot | Rerunnable proof | Status |
+| --- | --- | --- | --- |
+| T1 | Define one package manifest linking printable, answer key, preview, activity version, and demo URL | Manifest schema test rejects mismatched or missing artifacts | Queued |
+| T2 | Export a print-ready package with QR and short fallback code | PDF render check, QR decode, link resolution, and answer-key page count | Queued |
+| T3 | Open the package's exact demo on phone, iPad, and a managed school device | Recorded device matrix and successful first question-to-piece interaction | Queued |
+| T4 | Offer download/print recovery when live play is filtered | Blocked-network test exposes a working fallback without a student account | Queued |
+| T5 | Measure which package reaches the demo without collecting student identity | Aggregate package code receipt; no student PII in payload or logs | Queued |
+
 ## Fast Breaks
 
 | Order | User-visible shot | Rerunnable proof | Status |
