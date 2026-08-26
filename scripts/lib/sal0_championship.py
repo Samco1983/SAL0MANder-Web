@@ -21,6 +21,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.error
@@ -148,21 +149,73 @@ def website() -> list[dict]:
 
 
 def game() -> list[dict]:
-    out = []
-    env_files = [os.path.join(REPO, n) for n in (".env", ".env.local", ".env.production")]
-    configured = ""
-    for f in env_files:
-        if os.path.exists(f):
-            for line in open(f, encoding="utf-8", errors="replace"):
-                if line.startswith("VITE_UNITY_BUILD_BASE_URL="):
-                    configured = line.split("=", 1)[1].strip()
-    out.append({"name": "a Unity build location is configured", "ok": bool(configured),
-                "blocker": "" if configured else "VITE_UNITY_BUILD_BASE_URL is unset — the stage shows 'game isn't ready'"})
+    """
+    Ask the deployed site whether a student gets a game — not this laptop.
 
-    ok = False
-    detail = "no build URL to check"
-    if configured.startswith("http"):
-        ok, detail = reachable(configured.rstrip("/") + "/Build/SAL0MANder.loader.js")
+    Rewritten 2026-08-25 after reporting GAME DONE 0/2 while every byte of the
+    build was live: loader, framework, data, and wasm all HTTP 200, about 90 MB,
+    served from the same origin as the site. It sent two agents hunting for a
+    build URL that had been configured all along, and it was the most expensive
+    wrong reading of the night.
+
+    Three separate defects, and together they made this section impossible to
+    pass under any configuration:
+
+    1. It read only local .env files. The value ships from CI — deploy.yml sets
+       VITE_UNITY_BUILD_BASE_URL at build time — so a correctly deployed site
+       always looked unconfigured. The board was asking the wrong machine.
+    2. It skipped the fetch unless the value started with "http". The real value
+       is "/unity", a same-origin relative path, so the loader was never checked
+       even when it was sitting there being served.
+    3. It looked for "SAL0MANder.loader.js". Unity emits the file named by
+       VITE_UNITY_BUILD_NAME, which is "sal0-unity-webgl.loader.js". Wrong name,
+       guaranteed 404, even had 1 and 2 been right.
+
+    Any one of these would have been a bug. All three meant the condition could
+    never be met, so its red told you nothing at all.
+    """
+    out = []
+
+    # deploy.yml is what actually ships, so it is the truth about what a visitor
+    # gets. A local .env only ever changes what THIS machine sees at dev time.
+    deploy_yml = os.path.join(REPO, ".github", "workflows", "deploy.yml")
+    base, name, source = "", "", ""
+    if os.path.exists(deploy_yml):
+        text = open(deploy_yml, encoding="utf-8", errors="replace").read()
+        m = re.search(r"VITE_UNITY_BUILD_BASE_URL:\s*(\S+)", text)
+        n = re.search(r"VITE_UNITY_BUILD_NAME:\s*(\S+)", text)
+        if m:
+            base, source = m.group(1).strip().strip("'\""), "deploy.yml"
+        if n:
+            name = n.group(1).strip().strip("'\"")
+
+    if not base:
+        for filename in (".env", ".env.local", ".env.production"):
+            path = os.path.join(REPO, filename)
+            if not os.path.exists(path):
+                continue
+            for line in open(path, encoding="utf-8", errors="replace"):
+                if line.startswith("VITE_UNITY_BUILD_BASE_URL="):
+                    base, source = line.split("=", 1)[1].strip(), filename
+                elif line.startswith("VITE_UNITY_BUILD_NAME="):
+                    name = line.split("=", 1)[1].strip()
+
+    name = name or "sal0-unity-webgl"
+    out.append({"name": "a Unity build location is configured", "ok": bool(base),
+                "blocker": "" if base else
+                "VITE_UNITY_BUILD_BASE_URL is set nowhere — not in deploy.yml, not in .env. "
+                "The stage will show 'game isn't ready'"})
+
+    # A relative base is the normal case: the build ships inside the site. Resolve
+    # it against the live URL, because the question is whether a STUDENT can fetch
+    # the loader, not whether a path looks plausible.
+    if not base:
+        ok, detail = False, "no build location configured"
+    else:
+        loader = (base.rstrip("/") if base.startswith("http")
+                  else SITE.rstrip("/") + "/" + base.strip("/")) + f"/Build/{name}.loader.js"
+        ok, detail = reachable(loader)
+        detail = f"{detail} — {loader} (from {source})"
     out.append({"name": "the WebGL loader is fetchable", "ok": ok,
                 "blocker": "" if ok else f"loader not reachable ({detail})"})
     return out
