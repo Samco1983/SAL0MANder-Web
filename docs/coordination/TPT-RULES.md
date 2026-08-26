@@ -118,9 +118,25 @@ three years or TPT can refund and deactivate. Prefer a stable custom domain over
 `samco1983.github.io/SAL0MANder-Web/...`, which is tied to one GitHub account and
 one repository name.
 
-**Uptime monitoring is now a business requirement.** Something must notice within
-hours if the play URL stops resolving. Nothing in this repo does that today, and
-the checks that claim to have been wrong in both directions.
+**Uptime monitoring is now a business requirement — and it already exists.**
+`.github/workflows/watchdog.yml` runs hourly (`cron: '17 * * * *'`), calls
+`scripts/verify-live-site.mjs` against the real published URL, and asserts on
+*content, never status* — because "a proxy answered every request with an empty
+200 and turned a whole scoreboard green". On failure it opens or updates exactly
+one labelled issue, and comments "Recovered" when the site comes back. One issue
+on purpose, "so the signal cannot be buried by its own noise".
+
+That is the detection half of the TPT obligation, already built and already
+running. **The gap is the notification half:** the watchdog writes to a GitHub
+issue, and nothing carries that to the owner. A listing can be at risk for hours
+while the alarm sits in a tab nobody has open.
+
+This is exactly the job `DESKTOP-MAKE-AUTOMATION.md` assigns to Make — SAL0-09
+Signal, "the outside edge, not the coach": notifications and a daily heartbeat
+proving the notifier itself is alive. Make was mis-placed on the critical path
+between a button and the ledger, where it took the buttons down with it. Its
+correct job was vacant the whole time, and it is now a compliance requirement,
+not a nicety.
 
 ---
 
