@@ -256,23 +256,42 @@ The UI is authored against 1920x1080. A phone canvas is a fraction of that, so
 with a 0.5 match every element renders at roughly half its design size. That is
 the text, the buttons, and the header in one setting.
 
-**Change the reference resolution to 1280x720.** With match 0.5 the scale
-multiplies by:
+**Change the reference resolution.** For a 16:9 reference with match 0.5 the
+whole thing collapses to one term:
 
 ```text
-sqrt(1920/1280) * sqrt(1080/720) = 1.2247 * 1.2247 = 1.50
+scale multiplier = 1920 / referenceWidth
 ```
 
-Exactly the 1.5x the owner estimated by eye — and because it is a ratio it is
-1.5x on every screen, not only the phone it was measured on. One line, uniform,
-no per-element retuning.
+| Reference resolution | UI gets |
+| --- | --- |
+| 1920x1080 (current) | 1.0x |
+| 1280x720 | 1.5x |
+| **768x432** | **2.5x** |
 
-Alternatives if 1280x720 overshoots on desktop: `m_ScreenMatchMode: 1` (Expand)
-prevents shrinking below the reference on either axis. Prefer the reference
-resolution change first — it is one number and its effect is exactly predictable.
+**Owner's revised call after holding the phone: at least 2.5x.** That is
+`768 x 432`. Check: sqrt(1920/768) * sqrt(1080/432) = 1.5811 * 1.5811 = 2.50.
 
-**Owner's estimate and the arithmetic agree to two decimal places.** Trust the
-person holding the phone.
+Because it is a ratio it applies uniformly on every screen. One number, no
+per-element retuning.
+
+### The tradeoff to check before shipping it
+
+That 2.5x is uniform, which means **desktop grows 2.5x too.** On a 1920x1080
+laptop the UI would be two and a half times its current size, which will very
+likely be too large.
+
+Do not let that block the phone fix — an unreadable question on the device
+students actually use is a real defect, and desktop looking chunky is not. But
+verify desktop after changing it. If it is unacceptable, the options are:
+
+- `m_ScreenMatchMode: 1` (Expand) — scales to fit, never shrinks below reference
+- a runtime CanvasScaler adjustment keyed on screen size, phone vs desktop
+
+Prefer the single number first. Measure, then decide.
+
+**The owner's eyeball estimate and the arithmetic landed on the same values
+twice.** Trust the person holding the phone.
 
 These are the first observations from the real product on real hardware. They
 outrank everything else in the queue: Fast Break asked for one user-visible
