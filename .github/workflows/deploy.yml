@@ -68,6 +68,13 @@ jobs:
           # means changing this ONE value; the router and share links both read
           # it, and src/config/deployBasePath.test.ts pins that behaviour.
           VITE_BASE_PATH: /SAL0MANder-Web/
+          # Never set before now. env.isProd reads this, and gates the
+          # "Foundation preview" dev banner, the footer env badge, and
+          # console.warn diagnostics — all of which were reaching real
+          # students because this was unset. AppShell's `nav={false}` on
+          # Guest Play is the defense-in-depth backstop; this is the fix for
+          # every other page.
+          VITE_APP_ENV: production
           # Emergency Pages-hosted WebGL build. Longer-term this can move back
           # to a CDN once Unity licensing is healthy enough for repeat builds.
           VITE_UNITY_BUILD_BASE_URL: /unity

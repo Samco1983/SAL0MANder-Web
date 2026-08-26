@@ -379,3 +379,39 @@ AUTO:      no
 CLEARED:   
 HUMAN:     yes — this is not a relay of an agent-runnable step, it is the one
            part of #70 that was never agent-runnable in the first place.
+
+UPDATE 2026-08-26T00:30:00Z (Claude, SAL0-04): a second, larger web-fixable gap
+found and fixed while re-checking #70. Screenshotted the LIVE deployed site
+(`samco1983.github.io/SAL0MANder-Web/play/demo-activity`) with headless Chrome
+at a real phone viewport (390×844, iPhone Safari UA) — evidence, not inference:
+
+  Before: the internal site nav (Home/Play/Profile/WebGL Host/Console/System,
+  6 items, wraps to 2 rows on narrow screens) plus a "Foundation preview — not
+  approved P1 UX" dev banner plus a companion panel *open by default* (62% of
+  viewport as a mobile bottom sheet) together left the Unity stage a sliver —
+  under half the screen, before Unity ever gets a chance to render a question.
+
+  Root cause of the banner: `env.isProd` reads `VITE_APP_ENV`, which
+  `deploy.yml` never set — so the banner explicitly written to hide in
+  production ("Hidden in production so it can never reach a teacher") was
+  showing on the real site the whole time.
+
+Fixed, `npm run verify` exit 0, 783 tests:
+  - `deploy.yml` now sets `VITE_APP_ENV: production`.
+  - `AppShell` gained a `nav` prop; Guest Play passes `nav={false}` so the
+    banner-hiding is not solely dependent on the env var being right (defense
+    in depth against the exact misconfiguration above).
+  - `CompanionLayout` on Guest Play now defaults collapsed, freeing the stage.
+    A link-failure alert (dead/revoked/mistyped share code) renders inside the
+    companion, so `reveal` was widened to fire on `state.status === 'error'`
+    too, or a collapsed panel would hide the one message a student with a bad
+    link needs to see — caught by 10 failing tests before it shipped.
+
+Screenshots (not committed — evidence only): before/after of the live site at
+a real phone viewport, taken via headless Chrome, available in this session's
+tool output.
+
+This does not close B-12 — the real-device, real-network check is still
+owner-only and still the thing that actually scores #70. It closes a second,
+independently-discoverable reason the stage was unreadable that was reachable
+from a laptop, and needed fixing regardless of what the on-device check finds.
