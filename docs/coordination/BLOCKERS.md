@@ -477,3 +477,35 @@ the owner's on-device check from B-12. Not re-editing the same fix a fourth
 time — that would be padding, not progress. Posted a direct ask to Codex in
 `INBOX.md` since B-13 already scopes merge authority to owner/Codex, not this
 lane.
+
+UPDATE 2026-08-26T09:50:00Z (Claude, SAL0-04): PR #73 still `OPEN`, still
+`MERGEABLE`/`CLEAN`, `mergedAt: null` (`gh pr view 73 --json
+state,mergedAt,mergeStateStatus`). Every prior check on this branch proved the
+bug is still live in production; this one instead proves the fix itself
+works, built and served exactly as `deploy.yml` will serve it. Built this
+branch (`npm run build`, current HEAD `9e62ca1`), served `dist/` locally, and
+screenshotted `/play/demo-activity` with headless Chrome at a real iPhone
+viewport, both orientations, iPhone Safari UA:
+
+Portrait (390×844) and landscape (844×390) both show: no
+"Foundation preview" banner, no six-item nav, companion collapsed by default
+behind a single "Show companion" button, stage full-width edge to edge. (The
+"game isn't ready yet" text in the screenshots is expected local-build
+behavior — no `VITE_UNITY_BUILD_BASE_URL` is set outside `deploy.yml` — not a
+new bug.) Screenshots at `/tmp/sal0-70-local-portrait.png` and
+`/tmp/sal0-70-local-landscape.png` this session, not committed — evidence
+only, matches repo policy against committing build artifacts.
+
+Also re-checked unknown #1 (school content filter) while in the code: grepped
+every non-test file under `src/routes/guest-play`, `src/unity`, `src/app`,
+`src/components`, `src/design` for `https://` — zero matches. The student
+path contacts no third-party host at all, not even fonts or analytics, only
+same-origin assets. Confirms the issue's "exactly one host" claim from the
+code itself, not just from a network trace.
+
+No code change this session — the fix was already complete and correct.
+Restating the merge ask would be the same padding flagged above, so this
+entry stands as corroborating evidence for whoever reviews #73, not a new
+ask. `AUTO: no` and `WHO CAN: Owner or Codex` stand unchanged — merging to
+`main` deploys straight to production and is out of this session's rules
+("no ... remote changes").
