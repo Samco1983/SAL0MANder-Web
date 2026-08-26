@@ -647,3 +647,58 @@ not this lane.
 `npm run verify` this session: 784 tests, exit 0. Working tree clean before
 and after. No code change — this is a monitoring/evidence finding, not a bug
 in this branch's own diff.
+
+UPDATE 2026-08-26T18:20:00Z (Claude, SAL0-04): found a network-independent way
+to re-run the real-build boot check the 16:20Z/17:20Z updates above said this
+sandbox class could not do, and used it. `*.github.io` is still unreachable
+here (`curl -v https://samco1983.github.io/` still fails at the TLS
+handshake, unchanged from the correction above) — but the real production
+Unity build is not only hosted there, it is also checked into this repo at
+`public/unity/Build/` (the same `sal0-unity-webgl.{loader.js,framework.js,
+data,wasm}`, ~24MB data + ~62MB wasm, `git ls-files public/unity` confirms
+tracked). That means the exact asset boot this issue's unknown #2 turns on
+can be verified fully offline, from any sandbox, using the branch's own
+checked-in files.
+
+Built current HEAD (`b9d311d`) with the identical env `deploy.yml` uses
+(`VITE_BASE_PATH=/SAL0MANder-Web/ VITE_APP_ENV=production
+VITE_UNITY_BUILD_BASE_URL=/unity VITE_UNITY_BUILD_NAME=sal0-unity-webgl`),
+then the same `cp dist/index.html dist/404.html && touch dist/.nojekyll` step
+`deploy.yml` runs before verification. `npm run verify:deployed` against that
+artifact: all four paths `ok` (this alone was a fresh check — a `build`
+without the fallback copy 500s on every deep link, which is why `deploy.yml`
+always runs both in that order; not a bug, just noting the dependency for
+whoever next reaches for `verify:deployed` standalone).
+
+Then drove real Chromium (Playwright's already-cached
+`~/Library/Caches/ms-playwright/chromium-1234`, invoked directly via its npx
+cache path — not added as a project dependency, nothing in `package.json`
+changed) at the served artifact, iPhone 13 viewport (390×844 and 844×390),
+real iPhone Safari UA, touch enabled, 20s settle time for the ~30MB real
+asset to actually boot:
+
+- Portrait and landscape both: loader/framework/data/wasm all served by the
+  local static server with zero failed requests, zero console errors besides
+  one benign `navigator.vibrate` pre-tap warning, Unity boots past its own
+  splash into the real puzzle — `Challenge 1 of 9`, `What is the standard
+  form of a quadratic equation?`, four legible answer choices, `SUBMIT
+  ANSWER`, piece dock, target image — clearly readable without zooming in
+  both orientations. Canvas carries `id="unity-canvas"` (B-12's fix, still
+  present). No "Foundation preview" banner, no six-item nav (B-13's fix,
+  still present). Screenshots at `/tmp/sal0-70-local-real-build-portrait.png`
+  and `/tmp/sal0-70-local-real-build-landscape.png` this session, not
+  committed — evidence only, per repo policy against committing build
+  artifacts.
+
+This is independent, fresh corroboration of the 12:30Z canvas-id fix and the
+09:50Z banner/nav fix, gathered without depending on live `github.io`
+reachability — closing the specific gap the 16:20Z/17:20Z updates flagged as
+unavailable to this sandbox class. It does not close unknown #1 (school
+content filter) or replace a real physical device, and it does not change
+PR #73's merge status. No code change this session — `npm run verify`: 784
+tests, exit 0, working tree clean before and after.
+
+Restating the same standing ask rather than opening a new one: PR #73 is
+still `OPEN`/`CLEAN`/`MERGEABLE`, `mergedAt: null`, ~17 hours old
+(`gh pr view 73 --json state,mergeStateStatus,mergeable,mergedAt`). Merge
+authority is owner/Codex per this entry's `WHO CAN`, unchanged.
