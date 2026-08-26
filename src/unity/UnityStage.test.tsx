@@ -4,7 +4,11 @@ import { UnityStage } from './UnityStage'
 import { BRIDGE_VERSION, UNITY_EVENT_NAME } from './bridge'
 import { resolveUnityBuildConfig } from './buildConfig'
 
-vi.mock('./buildConfig', () => ({ resolveUnityBuildConfig: vi.fn() }))
+vi.mock('./buildConfig', () => ({
+  resolveUnityBuildConfig: vi.fn(),
+  clampDevicePixelRatio: (ratio: number) =>
+    Number.isFinite(ratio) && ratio > 0 ? Math.min(ratio, 2) : 1,
+}))
 
 const resolveConfig = vi.mocked(resolveUnityBuildConfig)
 
@@ -107,6 +111,17 @@ describe('booting a configured build', () => {
 
     expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
     expect(unity.createUnityInstance.mock.calls[0]?.[0]).toBe(canvas())
+  })
+
+  it('tells Unity the real device pixel ratio, capped, so phone text is not upscaled and blurry', () => {
+    vi.stubGlobal('devicePixelRatio', 3)
+    const unity = stubUnityFactory()
+    render(<UnityStage activityId="demo" />)
+    fireLoad()
+
+    expect(unity.createUnityInstance.mock.calls[0]?.[1]).toMatchObject({
+      devicePixelRatio: 2,
+    })
   })
 
   it('reports load progress', async () => {

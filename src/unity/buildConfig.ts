@@ -52,6 +52,26 @@ function readDeployBase(): string {
   return ((import.meta.env?.BASE_URL as string | undefined) ?? '/') || '/'
 }
 
+/**
+ * The Unity WebGL loader defaults `devicePixelRatio` to 1 unless a build
+ * config sets it explicitly — the loader has no way to read the browser's
+ * real ratio itself. Left at 1, the canvas backing store renders at CSS
+ * pixel resolution and gets upscaled by the browser, so the pixel-art puzzle
+ * text goes soft on every phone with a Retina-class screen (2x–3x is the
+ * common range), which is exactly the "readable without zooming" bar this
+ * host has to clear.
+ *
+ * Capped at 2: fill-rate and framebuffer memory scale with the *square* of
+ * this value, and a 3x canvas on a mid-range classroom Android phone risks
+ * trading blur for stutter. 2x already removes visible softness; the marginal
+ * sharpness from 3x is not worth the frame cost on the devices most likely to
+ * need it.
+ */
+export function clampDevicePixelRatio(ratio: number): number {
+  if (!Number.isFinite(ratio) || ratio <= 0) return 1
+  return Math.min(ratio, 2)
+}
+
 /** `source` is injectable so the URL layout is testable without a real build. */
 export function resolveUnityBuildConfig(source: Env = env): UnityBuildConfig | null {
   if (!source.unity.isConfigured) return null

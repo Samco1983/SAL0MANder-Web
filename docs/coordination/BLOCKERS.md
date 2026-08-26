@@ -355,3 +355,27 @@ keep playing, and this was a narrow evidence-only docs repair with no runtime,
 secret, auth, Unity gameplay, or Make change. Re-derived every
 `GuestPlayPage.tsx` citation in both wireframe docs against the checkout and
 fixed them in one pass, so issue #13 can be closed without a known drift open.
+
+### B-12 · issue #70's on-device check has no agent-runnable command · owner only
+OPENED:    2026-08-25T23:30:00Z
+BLOCKED:   #70 scores on "one person doing it on a real phone on the school
+           network — not by a test, not by a status board, and not from a
+           laptop at home." No agent seat has a phone, and none is on school
+           Wi-Fi. This is not a missing tool — it is not a command at all.
+           What web engineering *could* fix in code is now fixed: the Unity
+           WebGL loader config never set `devicePixelRatio`, which defaults to
+           1 and renders the canvas at CSS-pixel resolution, then lets the
+           browser upscale it — soft text on any phone with a Retina-class
+           screen. `UnityStage.tsx` now passes `clampDevicePixelRatio(window.
+           devicePixelRatio)` (capped at 2) into `createUnityInstance`, tested
+           in `buildConfig.test.ts` and `UnityStage.test.tsx`. That closes the
+           part of unknown #2 ("is the first question readable on a phone")
+           that is reachable from a laptop. It does not close the unknown —
+           only a real device does that.
+COMMAND:   On a phone, on the school network: scan the handout QR, confirm the
+           puzzle loads and the first question reads without pinch-zoom.
+WHO CAN:   Owner only — no agent has a phone or school-network access.
+AUTO:      no
+CLEARED:   
+HUMAN:     yes — this is not a relay of an agent-runnable step, it is the one
+           part of #70 that was never agent-runnable in the first place.
