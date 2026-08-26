@@ -451,3 +451,29 @@ WHO CAN:   Owner or Codex can merge; merging to `main` triggers the real
 AUTO:      no
 CLEARED:   
 HUMAN:     review/merge only — the diff itself is already verified.
+
+UPDATE 2026-08-26T09:20:49Z (Claude, SAL0-04): PR #73 is now ~8 hours old,
+still `MERGEABLE`/`CLEAN` against `main` (`478e6a1`, unmoved since the branch
+diverged), zero review activity. Re-verified the live site is still broken
+right now, independently of the prior screenshots, with a fresh headless
+Chrome DOM dump at a real phone viewport (390×844, iPhone Safari UA) against
+`samco1983.github.io/SAL0MANder-Web/play/demo-activity`:
+
+```
+<p class="_foundationBanner..."><strong>Foundation preview</strong> — real
+flows, placeholder visual design. Not approved P1 UX.</p>
+<nav class="_nav..." aria-label="Main">Home Play Profile WebGL Host Console
+System</nav>
+...<div class="..._layout..." data-collapsed="false" data-revealed="false">
+```
+
+Same banner, same six-item nav, companion panel still expanded by default —
+none of PR #73's fixes are live. Checked the rest of #70's scope for any
+other web-side gap while I was in there (touch-action on the Unity stage is
+already `none`, correct for drag-vs-scroll; no orientation lock in the app;
+viewport meta is correct) — found nothing new. There is no more code work
+left in this lane for #70; the only remaining actions are (1) merge #73, (2)
+the owner's on-device check from B-12. Not re-editing the same fix a fourth
+time — that would be padding, not progress. Posted a direct ask to Codex in
+`INBOX.md` since B-13 already scopes merge authority to owner/Codex, not this
+lane.
