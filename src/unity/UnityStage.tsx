@@ -302,8 +302,19 @@ export function UnityStage({
         trackpad, a switch user — can reach every button on the page except the
         one thing they came to do.
       */}
+      {/*
+        Unity's own WebGL runtime resolves keyboard event targets by building a
+        `#<id>` CSS selector from `canvas.id` (`findEventTarget` in the
+        emitted framework.js). An id-less canvas makes that selector just `#`,
+        an invalid selector that throws a SyntaxError the instant Unity boots
+        and tries to register key events — the game never renders, on every
+        browser, regardless of network or layout. Confirmed against the real
+        hosted build: this exact crash reproduced booting the production
+        `.wasm`/`.framework.js` locally, and stopped once the canvas had an id.
+      */}
       <canvas
         ref={canvasRef}
+        id="unity-canvas"
         className={styles.canvas}
         tabIndex={0}
         aria-label="SAL0MANder game"

@@ -509,3 +509,58 @@ entry stands as corroborating evidence for whoever reviews #73, not a new
 ask. `AUTO: no` and `WHO CAN: Owner or Codex` stand unchanged — merging to
 `main` deploys straight to production and is out of this session's rules
 ("no ... remote changes").
+
+UPDATE 2026-08-26T12:30:00Z (Claude, SAL0-04): CODE CHANGE this session — a
+second, more severe bug, found only by loading the real hosted Unity build
+rather than checking layout. Every prior check (mine and predecessors')
+confirmed the DOM/CSS around the stage; none had gotten the actual `.wasm`
+build to boot, because that needs the real ~30MB hosted assets.
+
+Built this branch with `VITE_UNITY_BUILD_BASE_URL` pointed at the real
+production build (`https://samco1983.github.io/SAL0MANder-Web/unity`, same
+`sal0-unity-webgl` name `deploy.yml` uses), served it locally, and loaded
+`/play/demo-activity` in real headless Chromium at an iPhone 13 viewport.
+**The game crashed on every boot, before rendering a single frame:**
+
+```
+Uncaught SyntaxError: Failed to execute 'querySelector' on 'Document':
+'#' is not a valid selector.
+    at findEventTarget (…/sal0-unity-webgl.framework.js:1:195800)
+    at registerKeyEventCallback (…/sal0-unity-webgl.framework.js:1:222332)
+    at $__main_argc_argv (…/sal0-unity-webgl.wasm:0:55523633)
+```
+
+Root cause: Unity's own WebGL runtime resolves the keyboard-event target by
+building the CSS selector `#` + `canvas.id`. `UnityStage.tsx`'s `<canvas>` had
+no `id`, so the selector was the literal string `#` — invalid, and the throw
+happens synchronously during boot, before the scene loads. This is
+independent of CORS, network, and everything B-12/B-13 already fixed; it
+would reproduce identically same-origin in production, because it is not
+about where the build is hosted, only that the canvas element lacks an id.
+This is very likely why nobody — including three prior sessions on this same
+issue — had ever gotten past "canvas exists" to "canvas renders anything":
+the crash is instant, and a DOM/CSS check alone cannot see it.
+
+Fix: added `id="unity-canvas"` to the canvas in `UnityStage.tsx`. Rebuilt
+against the same real production Unity assets, same viewport. Result:
+loader/framework/data/wasm all `200`, Unity's own splash renders, then the
+actual puzzle: `Challenge 1 of 9`, `What is the standard form of a quadratic
+equation?`, four legible answer choices, submit button, piece dock, target
+image — all clearly readable without zooming, portrait and landscape, real
+iPhone viewport. Zero console errors after the fix (only benign Unity
+warnings: deprecated `JS_FileSystem_Sync`, a GPU `ReadPixels` perf notice).
+Screenshots at `/tmp/sal0-70-realbuild-portrait.png` and
+`/tmp/sal0-70-realbuild-landscape.png` this session, not committed — evidence
+only.
+
+Added a regression test (`UnityStage.test.tsx`: "gives the canvas an id, so
+Unity can resolve it as a keyboard event target") so this cannot silently
+regress. `npm run verify` exit 0, 784 tests.
+
+This raises the stakes on the merge ask, not just repeats it: PR #73 was
+scoped as a layout fix; it now also fixes a crash that made the game
+completely unplayable in production, for every visitor, regardless of device
+or network — which is closer to the actual center of unknowns #2 and #3 than
+the banner ever was. `AUTO: no`, `WHO CAN: Owner or Codex` still stand for the
+same reason as before — merging to `main` triggers the real production
+deploy, which is outside this session's authority.
