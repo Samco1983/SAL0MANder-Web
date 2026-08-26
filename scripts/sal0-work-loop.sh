@@ -150,6 +150,8 @@ run_worker_with_clock() {
   echo "worker clock: ${WORKER_CLOCK_SECONDS}s; heartbeat: ${WORKER_HEARTBEAT_SECONDS}s"
 
   "$CLAUDE" -p "$PROMPT" \
+    --setting-sources user \
+    --tools "Read,Edit,Write,Bash,Glob,Grep" \
     --permission-mode acceptEdits \
     --allowedTools "Read,Edit,Write,Bash,Glob,Grep" \
     --output-format json > "$output_file" &

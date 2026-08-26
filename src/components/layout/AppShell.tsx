@@ -22,15 +22,26 @@ const NAV: NavItem[] = [
  * `fill` switches the shell from a scrolling document to a fixed-viewport
  * layout. Unity-hosting routes need the second mode: the WebGL canvas must own
  * a stable box rather than sit inside a growing page.
+ *
+ * `nav` hides the internal site navigation and dev banner. A student who
+ * scanned a handout QR has no use for "Profile" or "Console" — on a real
+ * phone the wrapped nav (two rows, 44px touch targets) plus the dev banner
+ * consumed most of a 390×844 viewport, squeezing the Unity stage to a sliver.
+ * Gating the banner on the same prop (not only `env.isProd`) means a
+ * misconfigured deploy env can never leak internal chrome to a student again
+ * — that exact misconfiguration is what left the banner showing in
+ * production.
  */
 export function AppShell({
   children,
   fill = false,
   contained = true,
+  nav = true,
 }: {
   children: ReactNode
   fill?: boolean
   contained?: boolean
+  nav?: boolean
 }) {
   return (
     <div className={styles.shell} data-fill={fill}>
@@ -44,7 +55,7 @@ export function AppShell({
         (X-005), so anyone reviewing the app should judge the flows, not the
         look. Hidden in production so it can never reach a teacher.
       */}
-      {env.isProd ? null : (
+      {env.isProd || !nav ? null : (
         <p className={styles.foundationBanner}>
           <strong>Foundation preview</strong> — real flows, placeholder visual design. Not approved
           P1 UX.
@@ -56,21 +67,23 @@ export function AppShell({
           <Wordmark />
         </Link>
 
-        <nav className={styles.nav} aria-label="Main">
-          {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === paths.home}
-              className={({ isActive }) =>
-                isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-          <ThemeToggle />
-        </nav>
+        {nav ? (
+          <nav className={styles.nav} aria-label="Main">
+            {NAV.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === paths.home}
+                className={({ isActive }) =>
+                  isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+            <ThemeToggle />
+          </nav>
+        ) : null}
       </header>
 
       <main id="main" className={styles.main} data-contained={contained && !fill}>

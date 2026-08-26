@@ -4,7 +4,7 @@ import { UnityStage, type BootPayload } from './UnityStage'
 import { resolveUnityBuildConfig } from './buildConfig'
 import { BRIDGE_VERSION, sendToUnity, UNITY_BRIDGE_TARGET, UNITY_EVENT_NAME } from './bridge'
 
-vi.mock('./buildConfig', () => ({ resolveUnityBuildConfig: vi.fn() }))
+vi.mock('./buildConfig', () => ({ resolveUnityBuildConfig: vi.fn(), clampDevicePixelRatio: vi.fn(() => 1) }))
 const resolveConfig = vi.mocked(resolveUnityBuildConfig)
 
 const CONFIG = {

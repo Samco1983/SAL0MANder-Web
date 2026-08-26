@@ -294,9 +294,18 @@ export function GuestPlayPage() {
   }, [])
 
   return (
-    <AppShell fill contained={false}>
+    <AppShell fill contained={false} nav={false}>
       <CompanionLayout
         companionLabel="Activity context"
+        /*
+         * Collapsed on first visit only (a stored preference always wins —
+         * see CompanionLayout's readCollapsed). Nothing in the panel is
+         * required to play, and on a real 390×844 phone the panel's mobile
+         * bottom-sheet default (62% of the viewport) left the Unity stage,
+         * and the puzzle's first question, under half the screen. A student
+         * arriving from a handout QR should see the game first.
+         */
+        defaultCollapsed
         /*
          * A student who collapsed the panel would otherwise never learn their
          * result failed to save — the notice would render into a hidden region
@@ -308,8 +317,14 @@ export function GuestPlayPage() {
          * Keyed on `resultHeld`, not the status: a retry leaves
          * `result-undeliverable` while it is in flight, so watching the status
          * would close the panel and re-open it on every failed retry.
+         *
+         * `state.status === 'error'` reveals it too. The Unity stage always
+         * renders — a dead, revoked, or mistyped link is a companion-only
+         * concern — but a student who scanned a QR to a link that doesn't
+         * resolve needs to see why, not stare at an idle "game isn't ready"
+         * stage with the explanation hidden in a collapsed panel below it.
          */
-        reveal={session.resultHeld}
+        reveal={session.resultHeld || state.status === 'error'}
         stage={
           <UnityStage
             audience="student"

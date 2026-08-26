@@ -4,7 +4,11 @@ import { UnityStage } from './UnityStage'
 import { BRIDGE_VERSION, UNITY_EVENT_NAME } from './bridge'
 import { resolveUnityBuildConfig } from './buildConfig'
 
-vi.mock('./buildConfig', () => ({ resolveUnityBuildConfig: vi.fn() }))
+vi.mock('./buildConfig', () => ({
+  resolveUnityBuildConfig: vi.fn(),
+  clampDevicePixelRatio: (ratio: number) =>
+    Number.isFinite(ratio) && ratio > 0 ? Math.min(ratio, 2) : 1,
+}))
 
 const resolveConfig = vi.mocked(resolveUnityBuildConfig)
 
@@ -107,6 +111,26 @@ describe('booting a configured build', () => {
 
     expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
     expect(unity.createUnityInstance.mock.calls[0]?.[0]).toBe(canvas())
+  })
+
+  // Confirmed against the real hosted build: an id-less canvas makes Unity's
+  // own `findEventTarget` build the CSS selector `#` (from `#` + `canvas.id`)
+  // when registering keyboard events on boot, which is invalid and throws —
+  // the game never renders, on every browser, before a single pixel draws.
+  it('gives the canvas an id, so Unity can resolve it as a keyboard event target', () => {
+    render(<UnityStage activityId="demo" />)
+    expect(canvas()?.id).toBe('unity-canvas')
+  })
+
+  it('tells Unity the real device pixel ratio, capped, so phone text is not upscaled and blurry', () => {
+    vi.stubGlobal('devicePixelRatio', 3)
+    const unity = stubUnityFactory()
+    render(<UnityStage activityId="demo" />)
+    fireLoad()
+
+    expect(unity.createUnityInstance.mock.calls[0]?.[1]).toMatchObject({
+      devicePixelRatio: 2,
+    })
   })
 
   it('reports load progress', async () => {

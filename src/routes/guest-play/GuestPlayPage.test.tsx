@@ -28,6 +28,18 @@ describe('Guest Play', () => {
     expect(await screen.findByText(/Sample SAL0MANder Activity/i)).toBeInTheDocument()
   })
 
+  it('shows the stage first, not the internal site nav or an optional-context panel', async () => {
+    // A student who scanned a handout QR should see gameplay immediately. The
+    // internal nav (Home/Profile/Console/...) has nothing for them, and on a
+    // real phone it — plus a companion panel open by default — left the Unity
+    // stage under half the viewport.
+    renderAt(`/play/${MOCK_DEMO_ACTIVITY_ID}`)
+
+    expect(screen.queryByRole('navigation', { name: 'Main' })).not.toBeInTheDocument()
+    const companion = await screen.findByLabelText(/activity context/i)
+    expect(companion).toHaveAttribute('aria-hidden', 'true')
+  })
+
   it('still renders the stage when the activity fails to load', async () => {
     renderAt('/play/does-not-exist')
     expect(await screen.findByRole('alert')).toBeInTheDocument()

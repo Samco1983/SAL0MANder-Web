@@ -60,6 +60,7 @@
     "mission:fit": "python3 scripts/lib/sal0_fit.py",
     "mission:fit:json": "python3 scripts/lib/sal0_fit.py --json",
     "mission:inbox": "sed -n '1,180p' docs/coordination/INBOX.md",
+    "mission:live-proof": "node scripts/sal0-mission-control-live-proof.mjs",
     "mission:next": "python3 scripts/lib/sal0_force_shot.py",
     "mission:next-task": "bash scripts/sal0-next-task.sh",
     "mission:next:json": "python3 scripts/lib/sal0_force_shot.py --json",
