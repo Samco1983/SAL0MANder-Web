@@ -46,6 +46,16 @@ export async function handleRequest(request, env, dependencies = {}) {
   )
   if (!identity) return json({ error: 'authentication_required' }, 401, cors)
 
+  if (request.method === 'POST' && url.pathname.endsWith('/ops/deployment-proof')) {
+    if (!identity.startsWith('service:')) return json({ error: 'forbidden' }, 403, cors)
+    const payload = await request.json().catch(() => null)
+    const proofRequest = dependencies.deploymentProofRequest ?? githubDeploymentProof
+    const upstream = await proofRequest(env, payload)
+    return upstream.ok
+      ? json(upstream.body, 200, cors)
+      : json({ error: upstream.error }, upstream.status, cors)
+  }
+
   if (publicAppRequest) {
     return servePublicApp(request, env, dependencies.fetchPublicApp ?? fetch)
   }
@@ -648,6 +658,68 @@ export async function githubMissionRequest(env, body, fetchGitHub = fetch) {
   }
 }
 
+export async function githubDeploymentProof(env, body, fetchGitHub = fetch) {
+  const config = githubConfig(env)
+  if (!config) return { ok: false, status: 503, error: 'dispatcher_unavailable' }
+
+  const expectedGitSha = boundedString(body?.expectedGitSha, 40, 40)
+  const deployedGitSha = boundedString(env.DEPLOYED_GIT_SHA, 40, 40)
+  const canaryIssue = Number(env.DEPLOYMENT_CANARY_ISSUE)
+  if (
+    !expectedGitSha ||
+    !/^[a-f0-9]{40}$/.test(expectedGitSha) ||
+    !deployedGitSha ||
+    expectedGitSha !== deployedGitSha ||
+    !Number.isSafeInteger(canaryIssue) ||
+    canaryIssue < 1
+  ) {
+    return { ok: false, status: 409, error: 'deployment_mismatch' }
+  }
+
+  const comment = await githubRequest(
+    config,
+    `/repos/${config.repository}/issues/${canaryIssue}/comments`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        body: `Mission Control deployment proof for ${deployedGitSha}. This temporary comment is removed immediately.`,
+      }),
+    },
+    fetchGitHub,
+  )
+  const commentId = comment.ok && Number.isSafeInteger(comment.body?.id) ? comment.body.id : 0
+  if (!comment.ok || commentId < 1 || !isHttpUrl(comment.body?.html_url)) {
+    return {
+      ok: false,
+      status: comment.ok ? 502 : comment.status,
+      error: comment.ok ? 'invalid_upstream_contract' : comment.error,
+    }
+  }
+
+  const cleanup = await githubRequest(
+    config,
+    `/repos/${config.repository}/issues/comments/${commentId}`,
+    { method: 'DELETE' },
+    fetchGitHub,
+  )
+  if (!cleanup.ok) {
+    return { ok: false, status: cleanup.status, error: 'canary_cleanup_failed' }
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    body: {
+      deployedGitSha,
+      repository: config.repository,
+      canaryIssue,
+      issueUrl: `https://github.com/${config.repository}/issues/${canaryIssue}`,
+      commentCreated: true,
+      commentDeleted: true,
+    },
+  }
+}
+
 async function listGithubIssues(config, fetchGitHub) {
   let path = `/repos/${config.repository}/issues?state=all&per_page=100&sort=updated&direction=desc`
   const issues = []
@@ -728,7 +800,8 @@ async function githubRequest(config, path, init, fetchGitHub) {
         error: response.status === 404 ? 'mission_not_found' : 'upstream_failed',
       }
     }
-    return { ok: true, status: 200, body: await response.json(), headers: response.headers }
+    const body = response.status === 204 ? null : await response.json()
+    return { ok: true, status: 200, body, headers: response.headers }
   } catch {
     return { ok: false, status: 504, error: 'upstream_unreachable' }
   }

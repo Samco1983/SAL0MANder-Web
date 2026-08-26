@@ -18,6 +18,8 @@ const REQUIRED_BINDINGS = [
   { name: 'POLICY_AUD', type: 'plain_text' },
   { name: 'PUBLIC_SITE_URL', type: 'plain_text' },
   { name: 'GITHUB_REPOSITORY', type: 'plain_text' },
+  { name: 'DEPLOYED_GIT_SHA', type: 'plain_text' },
+  { name: 'DEPLOYMENT_CANARY_ISSUE', type: 'plain_text' },
 ]
 
 const deployment = () => ({

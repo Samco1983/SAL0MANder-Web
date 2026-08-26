@@ -10,6 +10,7 @@ VALID_ENV = {
     "TEAM_DOMAIN": "https://samco.cloudflareaccess.com",
     "POLICY_AUD": "audience_0123456789abcdef",
     "OWNER_EMAILS": "samuel@example.com, second@example.org",
+    "DEPLOYED_GIT_SHA": "a" * 40,
 }
 
 
@@ -46,6 +47,10 @@ class WorkerDeployConfigTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "valid email"):
             validated_values({**VALID_ENV, "OWNER_EMAILS": "owner.example.com"})
 
+    def test_rejects_short_git_sha(self):
+        with self.assertRaisesRegex(ValueError, "full lowercase 40-character Git SHA"):
+            validated_values({**VALID_ENV, "DEPLOYED_GIT_SHA": "abc123"})
+
     def test_renders_each_value_once_and_preserves_workers_dev(self):
         source_text = """\
 name = "worker"
@@ -54,6 +59,7 @@ workers_dev = true
 TEAM_DOMAIN = "https://replace-me.cloudflareaccess.com"
 POLICY_AUD = "replace-with-access-application-audience"
 OWNER_EMAILS = "owner@example.com"
+DEPLOYED_GIT_SHA = "replace-with-git-sha"
 """
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "wrangler.example.toml"
@@ -66,6 +72,7 @@ OWNER_EMAILS = "owner@example.com"
             self.assertIn('TEAM_DOMAIN = "https://samco.cloudflareaccess.com"', rendered)
             self.assertIn('POLICY_AUD = "audience_0123456789abcdef"', rendered)
             self.assertIn('OWNER_EMAILS = "samuel@example.com,second@example.org"', rendered)
+            self.assertIn(f'DEPLOYED_GIT_SHA = "{"a" * 40}"', rendered)
             self.assertNotIn("replace-", rendered)
 
 

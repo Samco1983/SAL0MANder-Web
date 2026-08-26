@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 ACCOUNT_ID_PATTERN = re.compile(r"^[a-fA-F0-9]{32}$")
 AUDIENCE_PATTERN = re.compile(r"^[A-Za-z0-9_-]{20,128}$")
 EMAIL_PATTERN = re.compile(r"^[^@\s,]+@[^@\s,]+\.[^@\s,]+$")
+GIT_SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
 TEAM_HOST_PATTERN = re.compile(
     r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.cloudflareaccess\.com$"
 )
@@ -49,10 +50,15 @@ def validated_values(environment: dict[str, str]) -> dict[str, str]:
     if not owners or any(not EMAIL_PATTERN.fullmatch(owner) for owner in owners):
         raise ValueError("OWNER_EMAILS must be a comma-separated list of valid email addresses")
 
+    deployed_git_sha = environment.get("DEPLOYED_GIT_SHA", "").strip()
+    if not GIT_SHA_PATTERN.fullmatch(deployed_git_sha):
+        raise ValueError("DEPLOYED_GIT_SHA must be a full lowercase 40-character Git SHA")
+
     return {
         "TEAM_DOMAIN": team_domain,
         "POLICY_AUD": policy_aud,
         "OWNER_EMAILS": ",".join(owners),
+        "DEPLOYED_GIT_SHA": deployed_git_sha,
     }
 
 

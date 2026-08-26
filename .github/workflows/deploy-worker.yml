@@ -40,6 +40,8 @@ jobs:
           TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
           POLICY_AUD: ${{ vars.CF_ACCESS_POLICY_AUD }}
           OWNER_EMAILS: ${{ secrets.OWNER_EMAILS }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: |
           missing=""
           [ -z "${CLOUDFLARE_API_TOKEN:-}" ] && missing="$missing CLOUDFLARE_API_TOKEN(secret)"
@@ -47,6 +49,8 @@ jobs:
           [ -z "${TEAM_DOMAIN:-}" ] && missing="$missing CF_ACCESS_TEAM_DOMAIN(variable)"
           [ -z "${POLICY_AUD:-}" ] && missing="$missing CF_ACCESS_POLICY_AUD(variable)"
           [ -z "${OWNER_EMAILS:-}" ] && missing="$missing OWNER_EMAILS(secret)"
+          [ -z "${CF_ACCESS_CLIENT_ID:-}" ] && missing="$missing CF_ACCESS_CLIENT_ID(secret)"
+          [ -z "${CF_ACCESS_CLIENT_SECRET:-}" ] && missing="$missing CF_ACCESS_CLIENT_SECRET(secret)"
           if [ -n "$missing" ]; then
             echo "::error::Mission Control deploy is not configured:$missing"
             echo "Add the named values under Settings -> Secrets and variables -> Actions."
@@ -60,6 +64,7 @@ jobs:
           TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
           POLICY_AUD: ${{ vars.CF_ACCESS_POLICY_AUD }}
           OWNER_EMAILS: ${{ secrets.OWNER_EMAILS }}
+          DEPLOYED_GIT_SHA: ${{ github.sha }}
         run: >-
           python3 scripts/lib/sal0_worker_deploy.py
           edge/mission-control/wrangler.example.toml
@@ -110,4 +115,9 @@ jobs:
             /tmp/mission-control-version.json \
             /tmp/mission-control-secrets.json \
             "$GITHUB_SHA"
-          echo "Not proven here: an authenticated owner request creating a real GitHub issue."
+
+      - name: prove known live route and GitHub write capability
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: node scripts/prove-live-mission-control.mjs "$GITHUB_SHA" 72

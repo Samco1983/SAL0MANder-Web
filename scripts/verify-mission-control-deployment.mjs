@@ -12,6 +12,8 @@ const REQUIRED_BINDINGS = new Map([
   ['POLICY_AUD', 'plain_text'],
   ['PUBLIC_SITE_URL', 'plain_text'],
   ['GITHUB_REPOSITORY', 'plain_text'],
+  ['DEPLOYED_GIT_SHA', 'plain_text'],
+  ['DEPLOYMENT_CANARY_ISSUE', 'plain_text'],
 ])
 
 export function verifySecretList(secrets) {
