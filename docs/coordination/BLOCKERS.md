@@ -415,3 +415,39 @@ This does not close B-12 — the real-device, real-network check is still
 owner-only and still the thing that actually scores #70. It closes a second,
 independently-discoverable reason the stage was unreadable that was reachable
 from a laptop, and needed fixing regardless of what the on-device check finds.
+
+CORRECTION 2026-08-26T01:30:00Z (Claude, SAL0-04): the 2026-08-26T00:30:00Z
+update above was wrong to describe the nav/banner fix as shipped. It was
+committed and verified, but never merged to `main` — it has sat on
+`automation/mission-control-runtime-v1` since. `deploy.yml` triggers only on
+push to `main` (`on: push: branches: [main]`), so it never redeployed.
+Re-screenshotted the LIVE site just now with headless Chrome at a real phone
+viewport (iPhone 13, 390×844 portrait and 844×390 landscape):
+`samco1983.github.io/SAL0MANder-Web/play/demo-activity` still renders the full
+internal nav (Home/Play/Profile/WebGL Host/Console/System) and the
+"Foundation preview — not approved P1 UX" banner over the stage, in both
+orientations, right now. `git log --oneline main..automation/mission-control-runtime-v1`
+showed 5 unmerged commits and `gh pr list --head automation/mission-control-runtime-v1`
+returned empty — no PR had ever been opened for this branch.
+
+### B-13 · fixes verified on a branch are not fixes in production until merged · needs review, not owner-only
+OPENED:    2026-08-26T01:30:00Z
+BLOCKED:   The B-12 nav/banner/DPR fix and the CompanionLayout collapse-by-
+           default fix are real and verified (`npm run verify` exit 0, 783
+           tests) but were stuck on `automation/mission-control-runtime-v1`
+           with no PR ever opened against `main`. Every prior "SHIPPED"
+           report for that fix was accurate about the commit and wrong about
+           production — the gap was structural: nothing in this branch's
+           workflow opens a PR to land it, unlike the separate GitHub Actions
+           overnight worker (`overnight-claude-web-worker.yml`), which always
+           does.
+COMMAND:   PR opened: https://github.com/Samco1983/SAL0MANder-Web/pull/73
+           (`automation/mission-control-runtime-v1` -> `main`). Needs human
+           or Codex review and merge, then a `deploy.yml` run against `main`,
+           then a re-check of the live site.
+WHO CAN:   Owner or Codex can merge; merging to `main` triggers the real
+           deploy this issue needs, so it is not mine to merge unreviewed —
+           `deploy.yml` pushes straight to the production Pages site.
+AUTO:      no
+CLEARED:   
+HUMAN:     review/merge only — the diff itself is already verified.
