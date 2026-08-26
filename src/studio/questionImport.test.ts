@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseQuestionImport } from './questionImport'
+import { parseQuestionImport, validateQuestionRows } from './questionImport'
 
 const validNine = Array.from(
   { length: 9 },
@@ -30,5 +30,20 @@ describe('question bulk import', () => {
     expect(duplicate.flaggedCount).toBe(2)
 
     expect(parseQuestionImport('Missing answer').rows[0]?.issue).toMatch(/separator/i)
+  })
+
+  it('revalidates repaired and reordered rows against the same piece contract', () => {
+    const imported = parseQuestionImport('Same? | 1\nSame? | 2\nThird? | 3')
+    const repaired = validateQuestionRows(
+      imported.rows.map((row) => (row.line === 2 ? { ...row, prompt: 'Different?' } : row)),
+    )
+
+    expect(repaired.flaggedCount).toBe(0)
+    expect(repaired.questions.map((question) => question.prompt)).toEqual([
+      'Same?',
+      'Different?',
+      'Third?',
+    ])
+    expect(repaired.questions.map((question) => question.pieceIndex)).toEqual([0, 1, 2])
   })
 })

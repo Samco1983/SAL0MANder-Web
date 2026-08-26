@@ -83,7 +83,7 @@ zoom, and one question-to-piece interaction succeeds. A generated PDF or HTTP
 | Order | User-visible shot | Rerunnable proof | Status |
 | --- | --- | --- | --- |
 | 1 | Paste/import nine questions and map one to each 3 x 3 piece | `npx vitest run src/routes/studio/TeacherStudioPage.test.tsx src/studio/questionImport.test.ts src/contracts/authoring/v1/activityDraft.test.ts` | Local pass |
-| 2 | Review and repair only flagged imported rows, including keyboard reorder and undo | Focused Studio tests + 375px browser pass | Queued |
+| 2 | Review and repair only flagged imported rows, including keyboard reorder and undo | Focused Studio tests + 375px browser pass | Local pass |
 | 3 | Select puzzle media and expose privacy/share eligibility before upload | Contract tests; custom media cannot mint an anonymous share code | Queued |
 | 4 | Test through an isolated preview identity against the real Unity runtime | Share route loads; question, unlock, drag, snap, restart, and completion pass | Queued |
 | 5 | Publish an immutable snapshot while edits continue in a new draft | Multi-tab revision-conflict and snapshot tests | Queued |

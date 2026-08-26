@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { AppShell } from '@components/layout/AppShell'
 import { Button } from '@components/ui/Button'
 import {
@@ -8,7 +8,11 @@ import {
   type ActivityDraft,
 } from '@contracts/authoring'
 import { LocalActivityDraftRepository } from '../../studio/draftRepository'
-import { parseQuestionImport, type ImportedQuestionRow } from '../../studio/questionImport'
+import {
+  parseQuestionImport,
+  validateQuestionRows,
+  type ImportedQuestionRow,
+} from '../../studio/questionImport'
 import styles from './TeacherStudioPage.module.css'
 
 const repository = new LocalActivityDraftRepository()
@@ -36,7 +40,20 @@ function saveDraft(draft: ActivityDraft): ActivityDraft {
   return saved
 }
 
-function QuestionReview({ rows }: { rows: ImportedQuestionRow[] }) {
+type ReviewSnapshot = {
+  draft: ActivityDraft
+  rows: ImportedQuestionRow[]
+}
+
+type QuestionReviewProps = {
+  rows: ImportedQuestionRow[]
+  onChange: (id: string, field: 'prompt' | 'answer', value: string) => void
+  onEditStart: () => void
+  onCommit: () => void
+  onMove: (id: string, direction: -1 | 1) => void
+}
+
+function QuestionReview({ rows, onChange, onEditStart, onCommit, onMove }: QuestionReviewProps) {
   if (rows.length === 0) {
     return <p className={styles.empty}>No questions imported.</p>
   }
@@ -44,15 +61,51 @@ function QuestionReview({ rows }: { rows: ImportedQuestionRow[] }) {
   return (
     <ol className={styles.reviewList} aria-label="Imported question review">
       {rows.map((row) => (
-        <li
-          key={`${row.line}-${row.prompt}`}
-          className={styles.reviewRow}
-          data-flagged={Boolean(row.issue)}
-        >
+        <li key={row.id} className={styles.reviewRow} data-flagged={Boolean(row.issue)}>
           <span className={styles.pieceNumber}>{row.line}</span>
-          <span className={styles.questionText}>{row.prompt || 'Empty question'}</span>
-          <span className={styles.answerText}>{row.answer || 'No answer'}</span>
+          <label className={styles.reviewField}>
+            <span>Question {row.line}</span>
+            <input
+              value={row.prompt}
+              maxLength={240}
+              aria-invalid={Boolean(row.issue)}
+              onFocus={onEditStart}
+              onChange={(event) => onChange(row.id, 'prompt', event.target.value)}
+              onBlur={onCommit}
+            />
+          </label>
+          <label className={styles.reviewField}>
+            <span>Answer {row.line}</span>
+            <input
+              value={row.answer}
+              maxLength={120}
+              aria-invalid={Boolean(row.issue)}
+              onFocus={onEditStart}
+              onChange={(event) => onChange(row.id, 'answer', event.target.value)}
+              onBlur={onCommit}
+            />
+          </label>
           <span className={styles.rowStatus}>{row.issue ?? 'Ready'}</span>
+          <span className={styles.rowActions} aria-label={`Reorder question ${row.line}`}>
+            <button
+              type="button"
+              title="Move question up"
+              aria-label={`Move question ${row.line} up`}
+              disabled={row.line === 1}
+              onClick={() => onMove(row.id, -1)}
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              title="Move question down"
+              aria-label={`Move question ${row.line} down`}
+              disabled={row.line === rows.length}
+              onClick={() => onMove(row.id, 1)}
+            >
+              ↓
+            </button>
+          </span>
         </li>
       ))}
     </ol>
@@ -64,12 +117,14 @@ export function TeacherStudioPage() {
   const [importText, setImportText] = useState('')
   const [reviewRows, setReviewRows] = useState<ImportedQuestionRow[]>(() =>
     draft.questions.map((question, index) => ({
+      id: question.id,
       line: index + 1,
       prompt: question.prompt,
       answer: question.answer,
     })),
   )
-  const [previousDraft, setPreviousDraft] = useState<ActivityDraft | null>(null)
+  const [history, setHistory] = useState<ReviewSnapshot[]>([])
+  const editSnapshot = useRef<ReviewSnapshot | null>(null)
   const [activeView, setActiveView] = useState<'import' | 'review'>('import')
   const [saveError, setSaveError] = useState<string | null>(null)
 
@@ -90,23 +145,57 @@ export function TeacherStudioPage() {
 
   function importQuestions() {
     const result = parseQuestionImport(importText)
-    setPreviousDraft(draft)
+    setHistory((current) => [...current.slice(-9), { draft, rows: reviewRows }])
     setReviewRows(result.rows)
     persist({ ...draft, questions: result.questions })
     setActiveView('review')
   }
 
-  function undoImport() {
-    if (!previousDraft) return
-    persist({ ...previousDraft, revision: draft.revision })
-    setReviewRows(
-      previousDraft.questions.map((question, index) => ({
-        line: index + 1,
-        prompt: question.prompt,
-        answer: question.answer,
-      })),
-    )
-    setPreviousDraft(null)
+  function updateReviewRow(id: string, field: 'prompt' | 'answer', value: string) {
+    setReviewRows((rows) => rows.map((row) => (row.id === id ? { ...row, [field]: value } : row)))
+  }
+
+  function beginReviewEdit() {
+    editSnapshot.current ??= { draft, rows: reviewRows }
+  }
+
+  function commitReviewRows() {
+    const result = validateQuestionRows(reviewRows)
+    const unchanged = JSON.stringify(result.questions) === JSON.stringify(draft.questions)
+    if (unchanged) {
+      editSnapshot.current = null
+      return
+    }
+
+    const snapshot = editSnapshot.current ?? { draft, rows: reviewRows }
+    setHistory((current) => [...current.slice(-9), snapshot])
+    setReviewRows(result.rows)
+    persist({ ...draft, questions: result.questions })
+    editSnapshot.current = null
+  }
+
+  function moveReviewRow(id: string, direction: -1 | 1) {
+    const sourceIndex = reviewRows.findIndex((row) => row.id === id)
+    const targetIndex = sourceIndex + direction
+    if (sourceIndex < 0 || targetIndex < 0 || targetIndex >= reviewRows.length) return
+
+    const reordered = [...reviewRows]
+    const [moved] = reordered.splice(sourceIndex, 1)
+    if (!moved) return
+    reordered.splice(targetIndex, 0, moved)
+    const result = validateQuestionRows(reordered)
+
+    setHistory((current) => [...current.slice(-9), { draft, rows: reviewRows }])
+    setReviewRows(result.rows)
+    persist({ ...draft, questions: result.questions })
+  }
+
+  function undoLastChange() {
+    const previous = history.at(-1)
+    if (!previous) return
+    persist({ ...previous.draft, revision: draft.revision })
+    setReviewRows(previous.rows)
+    setHistory((current) => current.slice(0, -1))
   }
 
   return (
@@ -190,15 +279,21 @@ export function TeacherStudioPage() {
                   <span>{flaggedCount} flagged</span>
                   <span>{remaining} missing</span>
                 </div>
-                <QuestionReview rows={reviewRows} />
+                <QuestionReview
+                  rows={reviewRows}
+                  onChange={updateReviewRow}
+                  onEditStart={beginReviewEdit}
+                  onCommit={commitReviewRows}
+                  onMove={moveReviewRow}
+                />
                 <div className={styles.reviewActions}>
                   <Button
                     type="button"
                     variant="secondary"
-                    onClick={undoImport}
-                    disabled={!previousDraft}
+                    onClick={undoLastChange}
+                    disabled={history.length === 0}
                   >
-                    Undo import
+                    Undo last change
                   </Button>
                   <Button type="button" onClick={() => setActiveView('import')}>
                     Replace import
