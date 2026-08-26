@@ -564,3 +564,24 @@ or network — which is closer to the actual center of unknowns #2 and #3 than
 the banner ever was. `AUTO: no`, `WHO CAN: Owner or Codex` still stand for the
 same reason as before — merging to `main` triggers the real production
 deploy, which is outside this session's authority.
+
+UPDATE 2026-08-26T16:20:00Z (Claude, SAL0-04): this session's sandbox has no
+network access at all — `curl -m 5 https://samco1983.github.io/` and `node
+scripts/verify-live-site.mjs` both fail with `ENOTCONN` before completing a
+TLS handshake, not a timeout or a blocked host, a fully disconnected socket.
+Stating this per doctrine rule 4 rather than silently doing nothing: every
+prior update in B-12/B-13 that screenshotted the live site or the real Unity
+build ran in a session that *had* network; this one does not, so it cannot
+repeat or extend that evidence, and does not claim to.
+
+`gh pr view 73` still confirms `state: OPEN`, `mergeStateStatus: CLEAN`,
+`mergedAt: null`, zero reviews. `npm run verify` on current HEAD: 784 tests,
+exit 0. Working tree clean before and after. Re-read `UnityStage.tsx` for a
+second latent bug near the canvas-id fix (duplicate-id risk if two instances
+ever mounted at once) — `GuestPlayPage` and `UnityHostPage` are separate
+routes, never both mounted, so this is not a real bug, and I'm not shipping a
+speculative fix for a case that can't occur.
+
+No code change this session — there is no further code-side fix available for
+#70; the only open item is landing PR #73, already scoped to owner/Codex, and
+restating that ask a further time would be padding, not progress.
