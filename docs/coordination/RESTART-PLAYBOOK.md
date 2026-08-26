@@ -229,11 +229,56 @@ indication it should be turned. A student's first experience is a game that
 looks broken until they guess to rotate. Needs an explicit portrait prompt
 ("Turn your phone sideways to play") rather than silence.
 
-**2.** *(second finding pending — owner was mid-sentence)*
+**2. Text is too small to read.** The question and answer text does not fill the
+slot it sits in. Owner's estimate: **about 1.5x larger, across the board.** On a
+phone it is hard to read, which for a learning puzzle is not cosmetic — an
+unreadable question is a broken question.
+
+**3. Content that overflows should scroll.** When text does not fit its slot it
+is simply cut off. It should scroll instead of clipping.
 
 These are the first observations from the real product on real hardware. They
 outrank everything else in the queue: Fast Break asked for one user-visible
 PRODUCT shot, and a real student hitting a real wall is exactly that.
+
+### Lane: all three are Codex's
+
+`CLAUDE.md` assigns drag/rotate/reset/audio/**UI scale** to the Unity repo.
+Text size, overflow scrolling, and the orientation the board is designed for are
+all Unity UI. Web cannot fix any of them, and checked rather than assumed:
+
+- `src/unity/UnityStage.module.css` sizes the canvas `width: 100%; height: 100%`
+  and explicitly defers DPI to Unity — *"Unity handles its own DPI scaling;
+  never let CSS smooth the canvas."*
+- Nothing in `src/unity/` touches `devicePixelRatio` or sets canvas width/height.
+
+Web is not shrinking the text. Do not "fix" this on the web side by scaling the
+canvas; that would blur the render and hide the real defect.
+
+### Orientation — do NOT lock landscape yet
+
+`ProjectSettings.asset` in the Unity repo says:
+
+```text
+defaultScreenOrientation: 4            # AutoRotation
+allowedAutorotateToPortrait: 1         # all four orientations allowed
+allowedAutorotateToLandscapeRight: 1
+defaultScreenWidthWeb: 960             # landscape canvas, 8:5
+defaultScreenHeightWeb: 600
+```
+
+The game auto-rotates; it is not locked. But the default web canvas is
+landscape-shaped. The owner's concern — that the board is played vertically and
+landscape would clip it — cannot be settled from ProjectSettings. It depends on
+the camera and canvas scaler in the scene.
+
+**A web-side landscape lock was scoped and deliberately not built.** If the board
+is vertical, forcing landscape ships exactly the clipping bug the owner
+predicted. Settle the shape first, then steer students toward it.
+
+Also worth knowing before anyone tries: **orientation cannot be locked on iOS
+Safari.** `screen.orientation.lock()` is unsupported there. The only portable
+mechanism is a blocking overlay that hides the game until the phone is turned.
 
 ### Known, not yet a defect
 
