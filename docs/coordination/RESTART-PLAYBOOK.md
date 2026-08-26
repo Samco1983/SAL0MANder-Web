@@ -1,11 +1,12 @@
 # Restart Playbook — 2026-08-25
 
-Paused on school Wi-Fi. Written so the next session starts from **verified
-state**, not from today's network symptoms.
+Paused by owner. Written so the next session starts from **verified state**,
+not from a network symptom.
 
-School Wi-Fi is the worst possible place to diagnose certificates, Cloudflare,
-or `workers.dev`. Everything in the "do not debug here" list below produced a
-false reading today.
+The pause was called on the belief that school Wi-Fi was corrupting the
+readings. Half right: Cloudflare Access and Make genuinely are blocked there.
+But the certificate failure — the one that made the board call a live site dead
+— was the agent session's own proxy, and reproduces on any network. See §2.
 
 ---
 
@@ -15,7 +16,7 @@ false reading today.
 | --- | --- | --- |
 | Unattended work loop | **Alive** | 3 possessions on 2026-08-25; `b63a2aa`, `bae033c` committed and pushed by the loop itself |
 | The Aug 20 jam | **Cleared** | runtime clone was 2 commits diverged from 138; reset to origin, backup on branch `wedged-20260820` |
-| Championship | **9 of 12** | `OPERATIONAL` 5/5, all independently checkable |
+| Championship | **9 of 12; 10 once the loop resumes** | WEBSITE 5/5, OPERATIONAL 4/5 — the only red there is "something is driving possessions", which is true while the brake is on |
 | Fast Break / Championship (terminal + Desktop app) | **Working** | run repeatedly today |
 | Web console buttons | **Not working** | Worker still calls Make; Codex's fix not merged/deployed |
 | `samco1983.github.io/SAL0MANder-Web/` | **UP — HTTP 200, check passes** | proven: with `HTTPS_PROXY` set the cert fails; with it unset, `HTTP 200`. WEBSITE DONE is 5/5 |
@@ -33,9 +34,10 @@ days. The real error, in the log underneath it the whole time, was
 cd ~/Desktop/SAL0MANder-Web
 git status -sb                       # expect: 3 commits ahead of origin
 git push origin council/2026-08-18   # DO THIS FIRST - see the warning below
-npm run mission:championship         # baseline: expect 9/12, maybe 10/12
+npm run mission:championship         # baseline: expect 9/12 (WEBSITE 5/5)
 npm run mission:desktop:resume       # takes the brake off
 npm run mission:desktop:status       # confirm: pause off
+npm run mission:championship         # now expect 10/12 — OPERATIONAL back to 5/5
 ```
 
 > **Push before resuming.** Three commits sit local-only on this Mac. The
@@ -44,7 +46,7 @@ npm run mission:desktop:status       # confirm: pause off
 > them. Local-only commits on a branch two copies both track is exactly the
 > shape that jammed the loop on 2026-08-20 and cost four days. Push first.
 
-Then check one thing that today's network could not settle:
+### The site was never down
 
 ```bash
 curl -I https://samco1983.github.io/SAL0MANder-Web/
