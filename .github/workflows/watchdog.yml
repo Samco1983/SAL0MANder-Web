@@ -55,18 +55,96 @@ jobs:
         continue-on-error: true
 
       - name: keep one issue honest
+        id: issue
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           BODY=$(printf 'Updated automatically each hour. This issue is opened and closed by the watchdog — it reflects the live site and the agent record right now, not a past claim.\n\n## The published site\n```\n%s\n```\n\n## Agent lanes\n```\n%s\n```\n' "$(cat /tmp/site.txt)" "$(cat /tmp/agents.txt 2>/dev/null || echo 'not checked')")
           NUM=$(gh issue list --label watchdog --state open --limit 1 --json number --jq '.[0].number // empty')
+          # `transition` is the EDGE, not the level. An outage that lasts three
+          # days is one event, not seventy-two — the same reason this job keeps
+          # one issue instead of opening one an hour. A notifier that repeats
+          # itself hourly gets muted by its reader, and a muted alarm is an
+          # absent alarm.
           if [ "${{ steps.site.outputs.ok }}" = "false" ]; then
             if [ -n "$NUM" ]; then
               gh issue edit "$NUM" --body "$BODY"
+              echo "transition=none" >> "$GITHUB_OUTPUT"
             else
               gh issue create --label watchdog --title "The published site is not serving a lesson" --body "$BODY"
+              echo "transition=down" >> "$GITHUB_OUTPUT"
             fi
           elif [ -n "$NUM" ]; then
             gh issue comment "$NUM" --body "Recovered — the live site is serving a lesson again."
             gh issue close "$NUM"
+            echo "transition=recovered" >> "$GITHUB_OUTPUT"
+          else
+            echo "transition=none" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The issue above is written where nobody is looking. A GitHub issue is a
+      # durable record, not an alert — a listing can sit at risk for hours while
+      # it waits in an unopened tab.
+      #
+      # This is the job DESKTOP-MAKE-AUTOMATION.md assigns to Make: SAL0-09
+      # Signal, "the outside edge, not the coach". Make was mis-placed on the
+      # critical path between a button and the ledger, where a missing secret
+      # took the buttons down with it. Its actual job sat vacant the whole time.
+      #
+      # It now carries a compliance obligation, not a convenience. TPT can
+      # deactivate a product whose linked resource stops being accessible, so
+      # "the published site is down" is a business event with a clock on it.
+      # See docs/coordination/TPT-RULES.md.
+      #
+      # Silent until the secret exists. Never fails the watchdog: a broken
+      # notifier must not take down the thing that detects breakage, which is
+      # exactly the coupling that made Make dangerous the first time.
+      - name: tell someone outside GitHub
+        continue-on-error: true
+        env:
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
+          TRANSITION: ${{ steps.issue.outputs.transition }}
+          SITE_OK: ${{ steps.site.outputs.ok }}
+        run: |
+          if [ -z "${MAKE_WEBHOOK_URL:-}" ]; then
+            echo "no MAKE_WEBHOOK_URL secret — nothing to notify, not an error"
+            exit 0
+          fi
+
+          # A heartbeat on an otherwise quiet day is not noise, it is the only
+          # proof the notifier itself is alive. A silent notifier and a quiet
+          # night are indistinguishable from the outside, and that ambiguity is
+          # the failure class this whole file was written to end.
+          #
+          # The hour is read here rather than added as a second cron entry: two
+          # expressions matching the same minute fire this workflow twice, and
+          # both copies would race to create the issue above.
+          EVENT="${TRANSITION}"
+          if [ "$EVENT" = "none" ]; then
+            if [ "$(date -u +%H)" = "13" ]; then
+              EVENT="heartbeat"
+            else
+              echo "nothing changed and not the heartbeat hour — staying quiet"
+              exit 0
+            fi
+          fi
+
+          jq -n \
+            --arg event "$EVENT" \
+            --arg siteOk "${SITE_OK}" \
+            --arg detail "$(head -c 900 /tmp/site.txt)" \
+            --arg runUrl "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            '{source:"watchdog", event:$event, siteOk:$siteOk, detail:$detail, runUrl:$runUrl}' \
+            > /tmp/notify.json
+
+          # Bounded, and its failure is reported rather than swallowed — the
+          # defect this repo has now found in four separate places.
+          if curl -sS --fail --max-time 20 -X POST \
+               -H 'Content-Type: application/json' \
+               --data @/tmp/notify.json \
+               "$MAKE_WEBHOOK_URL" > /tmp/notify.out 2>/tmp/notify.err; then
+            echo "notified: $EVENT"
+          else
+            echo "NOTIFY FAILED ($EVENT): $(head -c 400 /tmp/notify.err)"
+            echo "The watchdog itself is unaffected; the issue above is still authoritative."
           fi
