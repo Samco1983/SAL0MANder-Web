@@ -341,3 +341,62 @@ mechanism is a blocking overlay that hides the game until the phone is turned.
 The build is ~90 MB (65 MB wasm + 25 MB data). On school Wi-Fi or phone data
 that is a long wait. Real for classroom use. Not worth solving until the
 experience above it is right.
+
+---
+
+## School Wi-Fi — what the student link actually needs
+
+Owner requirement: the share link has to work on school Wi-Fi. Traced rather
+than assumed.
+
+### The student path touches ONE host
+
+`https://samco1983.github.io/SAL0MANder-Web/play`
+
+- The deploy sets no `VITE_API_BASE_URL`, so `isConfigured` is false and the app
+  runs on the in-memory mock transport.
+- No `fetch`, `WebSocket`, or `XMLHttpRequest` anywhere in `src/routes/guest-play/`
+  or `src/api/mockTransport.ts`.
+- The Unity build is served from the same origin (`/unity`), not a CDN.
+
+**No `workers.dev`. No Make. No Cloudflare Access.** The one `workers.dev`
+reference in the deployed bundle belongs to the owner console at `/console`,
+which no student visits.
+
+This matters: the three things known to be blocked at school are all on the
+owner path, not the student path.
+
+### Download size: ~30 MB, not 90
+
+GitHub Pages gzips on the fly:
+
+```text
+sal0-unity-webgl.wasm   65,522,692 on disk  ->  16,722,520 over the wire
+sal0-unity-webgl.data   24,938,655 on disk  ->  13,432,310 over the wire
+```
+
+Roughly 30 MB total, once per device, then browser-cached. A class of 30 on
+first load is still ~900 MB across a shared network — real, but survivable, and
+only on day one.
+
+### The one unknown, and it is one test
+
+**Does the school's content filter allow `samco1983.github.io`?** That cannot be
+answered from home. Everything else about the student path is now known-good.
+
+The test takes thirty seconds on site:
+
+```text
+Open https://samco1983.github.io/SAL0MANder-Web/play on school Wi-Fi.
+  loads + puzzle appears  -> the link works for students. Done.
+  blocked / filter page    -> github.io is filtered; needs a custom domain
+                              on an allowed host, or an IT allowlist request.
+  loads but never finishes -> size or throughput, not blocking. Different fix.
+```
+
+Those three outcomes have three different owners and three different fixes. Do
+not guess between them — the page will say which one it is.
+
+**Do not diagnose anything else on school Wi-Fi.** Cloudflare Access, Make, and
+`workers.dev` are genuinely blocked there and will produce false readings, as
+they did all through 2026-08-24.
