@@ -12,6 +12,7 @@ const NAV: NavItem[] = [
   { to: paths.home, label: 'Home' },
   { to: paths.guestPlayIndex, label: 'Play' },
   { to: paths.profile, label: 'Profile' },
+  { to: paths.studio, label: 'Studio' },
   { to: paths.unity, label: 'WebGL Host' },
   { to: paths.console, label: 'Console' },
 ]

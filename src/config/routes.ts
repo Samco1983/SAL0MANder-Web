@@ -14,6 +14,8 @@ export const paths = {
   /** Guest Play with no activity yet (demo / picker). */
   guestPlayIndex: '/play',
   profile: '/profile',
+  /** Teacher-facing activity authoring and distribution workflow. */
+  studio: '/studio',
   /** Bare Unity WebGL host, used for smoke-testing a build in isolation. */
   unity: '/unity',
   /** Owner-facing V6 mission selector and its two bounded commands. */

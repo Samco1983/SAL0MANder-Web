@@ -27,6 +27,9 @@ const GuestPlayIndexPage = lazy(() =>
 const ProfilePage = lazy(() =>
   import('@routes/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })),
 )
+const TeacherStudioPage = lazy(() =>
+  import('@routes/studio/TeacherStudioPage').then((m) => ({ default: m.TeacherStudioPage })),
+)
 const UnityHostPage = lazy(() =>
   import('@routes/unity/UnityHostPage').then((m) => ({ default: m.UnityHostPage })),
 )
@@ -60,6 +63,7 @@ export const routes: RouteObject[] = [
   },
   { path: paths.guestPlay, element: split(<GuestPlayPage />), errorElement: <RouteError /> },
   { path: paths.profile, element: split(<ProfilePage />), errorElement: <RouteError /> },
+  { path: paths.studio, element: split(<TeacherStudioPage />), errorElement: <RouteError /> },
   { path: paths.unity, element: split(<UnityHostPage />), errorElement: <RouteError /> },
   { path: paths.console, element: split(<ConsolePage />), errorElement: <RouteError /> },
   // The catch-all needs a boundary too: without one, a throw inside

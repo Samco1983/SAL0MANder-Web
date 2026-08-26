@@ -38,6 +38,10 @@ and exactly one place both sides read from.
 | `media.ts`   | Media descriptors and upload intents                        |
 | `errors.ts`  | Canonical API error shape                                   |
 
+Authoring is versioned separately under `authoring/`. A working teacher draft
+can be incomplete; its publishable schema enforces the question-to-piece rule.
+This keeps editor evolution out of the frozen student runtime contract.
+
 ## Open questions for Codex / product
 
 - Does Unity consume this contract as JSON over HTTP, or should we generate C#

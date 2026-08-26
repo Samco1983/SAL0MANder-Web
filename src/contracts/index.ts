@@ -6,4 +6,5 @@
  */
 export * as v1 from './v1'
 export * as current from './v1'
+export * as authoring from './authoring'
 export { CONTRACT_VERSION as CURRENT_CONTRACT_VERSION } from './v1/common'
