@@ -99,11 +99,41 @@ def website() -> list[dict]:
     out.append({"name": "a deploy pipeline exists", "ok": os.path.exists(wf),
                 "blocker": "" if os.path.exists(wf) else "no deploy workflow"})
 
+    # `gh` failing to answer is not evidence about GitHub Pages.
+    #
+    # This used to collapse the two: a non-zero exit set lines to empty, which
+    # read as "Pages is off". A network blip, a timeout, or a rate limit all
+    # became a confident claim about the repository's settings. On 2026-08-25 it
+    # reported Pages off while the API said has_pages=true, visibility=public,
+    # and the site was serving HTTP 200 — in the same run where the line below
+    # correctly reported the site answering.
+    #
+    # The blocker text was worse than the wrong verdict: it asserted a CAUSE
+    # this function never measured — "repo is private, so this needs Pro" —
+    # while `.visibility` sat unused in the very query that fetched it. A board
+    # that invents a diagnosis can send an owner to buy a plan they already
+    # do not need.
+    #
+    # So: report what was measured, say so when nothing could be measured, and
+    # read the field that is already on hand before naming a cause.
     code, raw = sh(["gh", "api", f"repos/{SLUG}", "--jq", ".has_pages,.default_branch,.visibility"], 90)
-    lines = raw.split("\n") if code == 0 else []
-    pages = len(lines) > 0 and lines[0].strip() == "true"
-    out.append({"name": "hosting is switched on", "ok": pages,
-                "blocker": "" if pages else "GitHub Pages is off — owner must enable it (repo is private, so this needs Pro or a public repo)"})
+    lines = [line.strip() for line in raw.split("\n")] if code == 0 else []
+    if code != 0 or len(lines) < 3:
+        pages_ok = False
+        pages_blocker = (f"could not ask GitHub about Pages (gh exited {code}) — "
+                         "this says nothing about whether Pages is on")
+    else:
+        has_pages, _default_branch, visibility = lines[0], lines[1], lines[2]
+        pages_ok = has_pages == "true"
+        if pages_ok:
+            pages_blocker = ""
+        elif visibility != "public":
+            pages_blocker = (f"GitHub Pages is off and the repo is {visibility} — "
+                             "Pages on a non-public repo needs a paid plan")
+        else:
+            pages_blocker = ("GitHub Pages is off — enable it in Settings -> Pages "
+                             "(the repo is public, so no paid plan is required)")
+    out.append({"name": "hosting is switched on", "ok": pages_ok, "blocker": pages_blocker})
 
     code, raw = sh(["gh", "api", f"repos/{SLUG}/contents/.github/workflows/deploy.yml?ref=main",
                     "--jq", ".size"], 90)
