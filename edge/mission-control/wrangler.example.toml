@@ -1,7 +1,9 @@
 name = "sal0mander-mission-control"
 main = "worker.js"
 compatibility_date = "2026-08-23"
-workers_dev = false
+# Mission Control is called at the workers.dev URL baked into the web app.
+# Setting this false disables that route on the next Wrangler deployment.
+workers_dev = true
 
 # One SQLite-backed Durable Object serializes owner actions and persists
 # idempotency receipts. Add GITHUB_TOKEN with `wrangler secret put`; use a

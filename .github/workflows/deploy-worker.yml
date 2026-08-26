@@ -1,0 +1,127 @@
+name: Deploy Mission Control Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'edge/mission-control/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-mission-control-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: verify Worker contract
+        run: npm test -- src/api/endpoints/missionControlWorker.test.ts
+
+      # A missing deployment setting must fail visibly. Quietly skipping a
+      # deploy recreates the original outage: merged source with stale runtime.
+      - name: require deployment configuration
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
+          POLICY_AUD: ${{ vars.CF_ACCESS_POLICY_AUD }}
+          OWNER_EMAILS: ${{ secrets.OWNER_EMAILS }}
+        run: |
+          missing=""
+          [ -z "${CLOUDFLARE_API_TOKEN:-}" ] && missing="$missing CLOUDFLARE_API_TOKEN(secret)"
+          [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID(variable)"
+          [ -z "${TEAM_DOMAIN:-}" ] && missing="$missing CF_ACCESS_TEAM_DOMAIN(variable)"
+          [ -z "${POLICY_AUD:-}" ] && missing="$missing CF_ACCESS_POLICY_AUD(variable)"
+          [ -z "${OWNER_EMAILS:-}" ] && missing="$missing OWNER_EMAILS(secret)"
+          if [ -n "$missing" ]; then
+            echo "::error::Mission Control deploy is not configured:$missing"
+            echo "Add the named values under Settings -> Secrets and variables -> Actions."
+            echo "Nothing was deployed; the running Worker is unchanged."
+            exit 1
+          fi
+
+      - name: render deployment config
+        working-directory: edge/mission-control
+        env:
+          TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
+          POLICY_AUD: ${{ vars.CF_ACCESS_POLICY_AUD }}
+          OWNER_EMAILS: ${{ secrets.OWNER_EMAILS }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import re
+          import sys
+          import tomllib
+
+          source = pathlib.Path('wrangler.example.toml')
+          output = pathlib.Path('wrangler.toml')
+          config = source.read_text()
+
+          for key in ('TEAM_DOMAIN', 'POLICY_AUD', 'OWNER_EMAILS'):
+              value = os.environ[key]
+              replacement = f'{key} = {json.dumps(value)}'
+              config, count = re.subn(
+                  rf'(?m)^{key}\s*=\s*".*"$',
+                  lambda _match, replacement=replacement: replacement,
+                  config,
+              )
+              if count != 1:
+                  sys.exit(f'::error::expected one {key} line in {source}, found {count}')
+
+          if re.search(r'replace-me|replace-with|owner@example\.com', config):
+              sys.exit('::error::a placeholder survived deployment config rendering')
+
+          parsed = tomllib.loads(config)
+          if parsed.get('workers_dev') is not True:
+              sys.exit('::error::workers_dev must stay true because the web app calls that route')
+
+          output.write_text(config)
+          print('wrangler.toml rendered and parsed; no placeholders remain')
+          PY
+
+      - name: deploy exact checked-out Worker
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -o pipefail
+          echo "Deploying commit $GITHUB_SHA with Wrangler 4.126.0"
+          npx --yes wrangler@4.126.0 deploy 2>&1 | tee /tmp/mission-control-deploy.txt
+
+      # This proves the deployed route answers behind Access. The authenticated
+      # create/read flow is checked separately because it requires an owner
+      # session and the Worker's encrypted GITHUB_TOKEN secret.
+      - name: require protected route to answer
+        run: |
+          code="$(curl -sS -o /tmp/mission-control-probe.txt -w '%{http_code}' -m 25 \
+            'https://sal0mander-mission-control.samco1983.workers.dev/ops/missions' || true)"
+          [ -n "$code" ] || code=000
+          echo "GET /ops/missions -> $code"
+          case "$code" in
+            302|401|403)
+              echo "Mission Control route is live and protected by Cloudflare Access."
+              ;;
+            *)
+              echo "::error::deployed route returned unexpected HTTP $code"
+              exit 1
+              ;;
+          esac
+          echo "Not proven here: authenticated GitHub issue read/write."
+          echo "The Worker must already have its encrypted GITHUB_TOKEN secret."
