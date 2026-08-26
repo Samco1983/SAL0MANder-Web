@@ -196,3 +196,47 @@ cd ~/Desktop/SAL0MANder-Web && git push origin council/2026-08-18 && npm run mis
 ```
 
 Then go find the Unity build URL. That is the game.
+
+---
+
+## PROVEN 2026-08-25 — the game loads on a real phone
+
+The owner opened the live site on a phone and **the Unity puzzle rendered.**
+
+This retires the entire "Priority 1" section above. `GAME DONE 0/2` was false.
+The build was committed, deployed, and live the whole time:
+
+```text
+loader       HTTP 200      26,982 bytes
+framework.js HTTP 200     434,325 bytes
+data         HTTP 200  24,938,655 bytes
+wasm         HTTP 200  65,522,692 bytes
+```
+
+`.github/workflows/deploy.yml` already sets `VITE_UNITY_BUILD_BASE_URL: /unity`
+and `VITE_UNITY_BUILD_NAME: sal0-unity-webgl` at build time. Championship reads
+local `.env` files, sees nothing, and reports the game missing. **Sixth false
+signal of the night, and the most expensive** — it sent two agents hunting for a
+build URL that was already configured and serving 90 MB.
+
+**The lesson, again, sharper:** the board is not the system. Before hunting for
+a missing thing, fetch the thing.
+
+### First real user findings — from a phone, not a test
+
+**1. Orientation.** The puzzle needs landscape. Held upright, the phone gives no
+indication it should be turned. A student's first experience is a game that
+looks broken until they guess to rotate. Needs an explicit portrait prompt
+("Turn your phone sideways to play") rather than silence.
+
+**2.** *(second finding pending — owner was mid-sentence)*
+
+These are the first observations from the real product on real hardware. They
+outrank everything else in the queue: Fast Break asked for one user-visible
+PRODUCT shot, and a real student hitting a real wall is exactly that.
+
+### Known, not yet a defect
+
+The build is ~90 MB (65 MB wasm + 25 MB data). On school Wi-Fi or phone data
+that is a long wait. Real for classroom use. Not worth solving until the
+experience above it is right.
