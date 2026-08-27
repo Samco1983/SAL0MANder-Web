@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readEnv } from '@config/env'
-import { resolveUnityBuildConfig } from './buildConfig'
+import { clampDevicePixelRatio, resolveUnityBuildConfig } from './buildConfig'
 
 describe('resolveUnityBuildConfig', () => {
   it('returns null when no build is configured, so the host can show a placeholder', () => {
@@ -53,5 +53,22 @@ describe('resolveUnityBuildConfig', () => {
       }),
     )
     expect(config?.productName).toBe('SAL0MANder Staging')
+  })
+})
+
+describe('clampDevicePixelRatio', () => {
+  it('passes through an ordinary desktop ratio', () => {
+    expect(clampDevicePixelRatio(1)).toBe(1)
+  })
+
+  it('caps a phone-class ratio at two', () => {
+    expect(clampDevicePixelRatio(3)).toBe(2)
+    expect(clampDevicePixelRatio(2)).toBe(2)
+  })
+
+  it('falls back to one for invalid ratios', () => {
+    expect(clampDevicePixelRatio(0)).toBe(1)
+    expect(clampDevicePixelRatio(Number.NaN)).toBe(1)
+    expect(clampDevicePixelRatio(-1)).toBe(1)
   })
 })

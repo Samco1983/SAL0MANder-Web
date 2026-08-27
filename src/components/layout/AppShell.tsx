@@ -27,10 +27,12 @@ export function AppShell({
   children,
   fill = false,
   contained = true,
+  nav = true,
 }: {
   children: ReactNode
   fill?: boolean
   contained?: boolean
+  nav?: boolean
 }) {
   return (
     <div className={styles.shell} data-fill={fill}>
@@ -44,7 +46,7 @@ export function AppShell({
         (X-005), so anyone reviewing the app should judge the flows, not the
         look. Hidden in production so it can never reach a teacher.
       */}
-      {env.isProd ? null : (
+      {env.isProd || !nav ? null : (
         <p className={styles.foundationBanner}>
           <strong>Foundation preview</strong> — real flows, placeholder visual design. Not approved
           P1 UX.
@@ -56,21 +58,23 @@ export function AppShell({
           <Wordmark />
         </Link>
 
-        <nav className={styles.nav} aria-label="Main">
-          {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === paths.home}
-              className={({ isActive }) =>
-                isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-          <ThemeToggle />
-        </nav>
+        {nav ? (
+          <nav className={styles.nav} aria-label="Main">
+            {NAV.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === paths.home}
+                className={({ isActive }) =>
+                  isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+            <ThemeToggle />
+          </nav>
+        ) : null}
       </header>
 
       <main id="main" className={styles.main} data-contained={contained && !fill}>

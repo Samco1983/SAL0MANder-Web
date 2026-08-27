@@ -68,6 +68,9 @@ jobs:
           # means changing this ONE value; the router and share links both read
           # it, and src/config/deployBasePath.test.ts pins that behaviour.
           VITE_BASE_PATH: /SAL0MANder-Web/
+          # Keep development-only chrome and diagnostics off the published
+          # student path. Guest Play also suppresses its nav explicitly.
+          VITE_APP_ENV: production
           # Emergency Pages-hosted WebGL build. Longer-term this can move back
           # to a CDN once Unity licensing is healthy enough for repeat builds.
           VITE_UNITY_BUILD_BASE_URL: /unity

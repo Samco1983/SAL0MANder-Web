@@ -294,9 +294,10 @@ export function GuestPlayPage() {
   }, [])
 
   return (
-    <AppShell fill contained={false}>
+    <AppShell fill contained={false} nav={!env.isProd}>
       <CompanionLayout
         companionLabel="Activity context"
+        defaultCollapsed
         /*
          * A student who collapsed the panel would otherwise never learn their
          * result failed to save — the notice would render into a hidden region
@@ -309,7 +310,7 @@ export function GuestPlayPage() {
          * `result-undeliverable` while it is in flight, so watching the status
          * would close the panel and re-open it on every failed retry.
          */
-        reveal={session.resultHeld}
+        reveal={session.resultHeld || state.status === 'error'}
         stage={
           <UnityStage
             audience="student"
