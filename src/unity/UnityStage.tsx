@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@components/ui/Button'
-import { resolveUnityBuildConfig } from './buildConfig'
+import { clampDevicePixelRatio, resolveUnityBuildConfig } from './buildConfig'
 import {
   BRIDGE_VERSION,
   onUnityMessage,
@@ -205,9 +205,13 @@ export function UnityStage({
         return
       }
 
-      createUnityInstance(canvasRef.current, { ...config }, (progress) => {
-        if (!cancelled) setState({ status: 'loading', progress })
-      })
+      createUnityInstance(
+        canvasRef.current,
+        { ...config, devicePixelRatio: clampDevicePixelRatio(window.devicePixelRatio) },
+        (progress) => {
+          if (!cancelled) setState({ status: 'loading', progress })
+        },
+      )
         .then((created) => {
           if (cancelled) {
             void created.Quit()
@@ -300,6 +304,7 @@ export function UnityStage({
       */}
       <canvas
         ref={canvasRef}
+        id="unity-canvas"
         className={styles.canvas}
         tabIndex={0}
         aria-label="SAL0MANder game"

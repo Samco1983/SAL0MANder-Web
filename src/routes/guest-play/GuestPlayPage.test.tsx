@@ -28,6 +28,14 @@ describe('Guest Play', () => {
     expect(await screen.findByText(/Sample SAL0MANder Activity/i)).toBeInTheDocument()
   })
 
+  it('shows the stage first with development chrome and a collapsed context panel', async () => {
+    renderAt(`/play/${MOCK_DEMO_ACTIVITY_ID}`)
+
+    expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument()
+    const companion = await screen.findByLabelText(/activity context/i)
+    expect(companion).toHaveAttribute('aria-hidden', 'true')
+  })
+
   it('still renders the stage when the activity fails to load', async () => {
     renderAt('/play/does-not-exist')
     expect(await screen.findByRole('alert')).toBeInTheDocument()

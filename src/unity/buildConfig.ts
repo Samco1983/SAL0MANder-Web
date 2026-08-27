@@ -52,6 +52,12 @@ function readDeployBase(): string {
   return ((import.meta.env?.BASE_URL as string | undefined) ?? '/') || '/'
 }
 
+/** Keep phone rendering sharp without the 3x framebuffer cost on classroom devices. */
+export function clampDevicePixelRatio(ratio: number): number {
+  if (!Number.isFinite(ratio) || ratio <= 0) return 1
+  return Math.min(ratio, 2)
+}
+
 /** `source` is injectable so the URL layout is testable without a real build. */
 export function resolveUnityBuildConfig(source: Env = env): UnityBuildConfig | null {
   if (!source.unity.isConfigured) return null

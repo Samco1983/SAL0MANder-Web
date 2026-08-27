@@ -19,7 +19,7 @@ import { resolveUnityBuildConfig } from './buildConfig'
  * the way a browser would.
  */
 
-vi.mock('./buildConfig', () => ({ resolveUnityBuildConfig: vi.fn() }))
+vi.mock('./buildConfig', () => ({ resolveUnityBuildConfig: vi.fn(), clampDevicePixelRatio: vi.fn(() => 1) }))
 const resolveConfig = vi.mocked(resolveUnityBuildConfig)
 
 const CONFIG = {
