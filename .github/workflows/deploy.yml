@@ -64,10 +64,10 @@ jobs:
 
       - name: build for the deploy path
         env:
-          # Project Pages serves at /<repo>/. Moving to a custom domain later
-          # means changing this ONE value; the router and share links both read
-          # it, and src/config/deployBasePath.test.ts pins that behaviour.
-          VITE_BASE_PATH: /SAL0MANder-Web/
+          # The production site is served from the root of salomandermath.com.
+          # The router, asset URLs, Unity build path, and share links all read
+          # this value; src/config/deployBasePath.test.ts pins that behaviour.
+          VITE_BASE_PATH: /
           # Emergency Pages-hosted WebGL build. Longer-term this can move back
           # to a CDN once Unity licensing is healthy enough for repeat builds.
           VITE_UNITY_BUILD_BASE_URL: /unity
@@ -98,7 +98,7 @@ jobs:
       # shipping the failure.
       - name: verify the artifact is servable from the deploy path
         env:
-          VITE_BASE_PATH: /SAL0MANder-Web/
+          VITE_BASE_PATH: /
         run: node scripts/verify-deploy-artifact.mjs dist "$VITE_BASE_PATH"
 
       # Walk the built site the way a visitor does, before it can be published.
@@ -129,7 +129,7 @@ jobs:
       # actually about to be published, and it is deliberately the final step.
       - name: re-verify the exact bytes being uploaded
         env:
-          VITE_BASE_PATH: /SAL0MANder-Web/
+          VITE_BASE_PATH: /
         run: |
           test -f dist/404.html || { echo "::error::404.html is gone — something rebuilt dist after the SPA fallback step; share links would 404"; exit 1; }
           node scripts/verify-deploy-artifact.mjs dist "$VITE_BASE_PATH"
