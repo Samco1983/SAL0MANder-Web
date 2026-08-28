@@ -64,6 +64,25 @@ A draft PR must remain for daytime/human review. Changes that affect Unity-facin
 
 The workflows do nothing when no trusted queue issue or eligible draft PR exists. Anthropic and Gemini API usage is therefore task-driven rather than an open-ended autonomous loop.
 
+## Durable lane status
+
+Claude's model job requires `id-token: write` because the Claude Code action
+requests GitHub OIDC before starting the model. That job has read-only repository
+permissions and no persisted checkout credential. A separate publisher receives
+only the guarded patch and owns the write permissions needed to create a draft
+branch and pull request. A model, guard, or publisher failure updates one marked
+comment on the selected queue issue instead of posting hourly duplicates.
+
+Gemini reviews only eligible Claude draft pull requests. Its action and CLI are
+both immutable/exact-version pinned. A failed review updates one marked blocker
+comment on that exact pull request. A picker-only run with no eligible draft is
+an idle success, not evidence that Gemini authenticated or reviewed anything.
+
+Unity AI is a live-Editor evidence surface, not an unattended GitHub runner.
+GitHub issues/comments can hold an exact Unity AI assignment and its expected
+evidence, but automatic pickup is not claimed until an authenticated Editor/MCP
+worker can acknowledge and report that assignment without a human courier.
+
 ## Live/production boundary
 
 The overnight web shift is source-code automation only. Production deployment, backend/cloud resource creation, secrets rotation, billing changes, and live Unity Editor work remain outside the unattended workflow.

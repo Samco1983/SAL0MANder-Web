@@ -54,9 +54,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     permissions:
-      contents: write
-      issues: write
-      pull-requests: write
+      contents: read
+      id-token: write
+    outputs:
+      has_changes: ${{ steps.guard.outputs.has_changes }}
     steps:
       - name: Check Anthropic credential
         id: credential
@@ -68,15 +69,17 @@ jobs:
             echo 'ready=true' >> "$GITHUB_OUTPUT"
           else
             echo 'ready=false' >> "$GITHUB_OUTPUT"
-            echo 'ANTHROPIC_API_KEY is not configured; worker is inert.'
+            echo 'ANTHROPIC_API_KEY is not configured; worker cannot run.'
+            exit 1
           fi
 
       - name: Checkout main
         if: steps.credential.outputs.ready == 'true'
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: main
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Install dependencies
         if: steps.credential.outputs.ready == 'true'
@@ -85,7 +88,7 @@ jobs:
       - name: Run bounded Claude web task
         if: steps.credential.outputs.ready == 'true'
         id: claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@a60f3e1db3edbceed2b1e6c6a9d34c36b8a15eba # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
@@ -153,8 +156,46 @@ jobs:
           npm run verify
           echo 'has_changes=true' >> "$GITHUB_OUTPUT"
 
-      - name: Publish guarded change as draft PR
+      - name: Package guarded change
         if: steps.credential.outputs.ready == 'true' && steps.guard.outputs.has_changes == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- src docs
+          git diff --cached --binary > /tmp/claude-guarded.patch
+          test -s /tmp/claude-guarded.patch
+
+      - name: Upload guarded change
+        if: steps.credential.outputs.ready == 'true' && steps.guard.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: claude-guarded-change
+          path: /tmp/claude-guarded.patch
+          retention-days: 1
+          if-no-files-found: error
+
+  publish-claude-draft:
+    needs: [pick-task, claude]
+    if: needs.claude.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout main for publication
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download guarded change
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: claude-guarded-change
+          path: /tmp/claude-guarded-change
+
+      - name: Publish guarded change as draft PR
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ needs.pick-task.outputs.issue_number }}
@@ -167,7 +208,7 @@ jobs:
           git config user.name 'sal0mander-web-overnight[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git checkout -b "$branch"
-          git add -- src docs
+          git apply --index /tmp/claude-guarded-change/claude-guarded.patch
           git commit -m "agent: Claude web overnight task #${ISSUE_NUMBER}"
           git push origin "$branch"
 
@@ -191,11 +232,46 @@ jobs:
           gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Claude overnight worker produced a guarded **draft PR**: $pr_url\n\nNo automatic merge or deployment was performed."
           gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --reason completed
 
+  report-claude-result:
+    needs: [pick-task, claude, publish-claude-draft]
+    if: ${{ always() && needs.pick-task.outputs.has_task == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
       - name: Report no-edit result
-        if: steps.credential.outputs.ready == 'true' && steps.guard.outputs.has_changes == 'false'
+        if: needs.claude.result == 'success' && needs.claude.outputs.has_changes == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ needs.pick-task.outputs.issue_number }}
         shell: bash
         run: |
           gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "Claude overnight worker completed its pass but produced no guarded file changes. The issue remains open for daytime review/re-scoping."
+
+      - name: Report Claude worker blocker
+        if: needs.claude.result == 'failure' || needs.publish-claude-draft.result == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ needs.pick-task.outputs.issue_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='<!-- sal0mander-claude-worker-blocker -->'
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          body="${marker}
+          Claude overnight worker is **BLOCKED** before completing its guarded result.
+
+          Latest failed run: ${run_url}
+          Commit: \`${GITHUB_SHA}\`
+
+          Publication may have stopped after creating a branch or draft checkpoint. This single
+          comment is updated on later failures; no automatic merge or deployment occurred."
+          comment_id="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER/comments" \
+            --jq ".[] | select(.body | contains(\"$marker\")) | .id" | tail -n 1)"
+          if [[ -n "$comment_id" ]]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" \
+              -f body="$body" >/dev/null
+          else
+            gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
+          fi
