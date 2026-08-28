@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 
 const REQUIRED_BINDINGS = new Map([
   ['GITHUB_TOKEN', 'secret_text'],
@@ -30,6 +30,30 @@ export function productionVersionId(deployment) {
     return null
   }
   return typeof versions[0].version_id === 'string' ? versions[0].version_id : null
+}
+
+export function captureRollbackTarget(deployment) {
+  const versionId = productionVersionId(deployment)
+  if (!versionId) return null
+  return { versionId, percentage: 100 }
+}
+
+export function rollbackVersionAfterProof(target, proofSucceeded) {
+  if (proofSucceeded || typeof target?.versionId !== 'string' || target.percentage !== 100) {
+    return null
+  }
+  return target.versionId
+}
+
+export function verifyRollbackRestored(deployment, target) {
+  const restoredVersionId = productionVersionId(deployment)
+  if (!restoredVersionId) {
+    return ['rollback must restore exactly one Worker version at 100% traffic']
+  }
+  if (restoredVersionId !== target?.versionId) {
+    return ['rollback did not restore the captured pre-deploy Worker version']
+  }
+  return []
 }
 
 export function verifyMissionControlDeployment(deployment, version, expectedSha) {
@@ -85,6 +109,54 @@ function report(problems, success) {
 
 const isMain = process.argv[1]?.endsWith('verify-mission-control-deployment.mjs')
 if (isMain) {
+  if (process.argv[2] === '--capture-rollback') {
+    if (process.argv.length !== 5) {
+      console.error(
+        'usage: verify-mission-control-deployment.mjs --capture-rollback DEPLOYMENT_JSON TARGET_JSON',
+      )
+      process.exit(2)
+    }
+    const target = captureRollbackTarget(readJson(process.argv[3]))
+    if (!target) {
+      console.error(
+        '::error::pre-deploy state must route 100% of traffic to exactly one Worker version',
+      )
+      process.exit(1)
+    }
+    writeFileSync(process.argv[4], `${JSON.stringify(target)}\n`, { mode: 0o600 })
+    process.stdout.write(`Captured rollback target ${target.versionId} at 100% traffic\n`)
+    process.exit(0)
+  }
+
+  if (process.argv[2] === '--rollback-version') {
+    if (process.argv.length !== 4) {
+      console.error('usage: verify-mission-control-deployment.mjs --rollback-version TARGET_JSON')
+      process.exit(2)
+    }
+    const versionId = rollbackVersionAfterProof(readJson(process.argv[3]), false)
+    if (!versionId) {
+      console.error('::error::rollback target is invalid')
+      process.exit(1)
+    }
+    process.stdout.write(versionId)
+    process.exit(0)
+  }
+
+  if (process.argv[2] === '--verify-rollback') {
+    if (process.argv.length !== 5) {
+      console.error(
+        'usage: verify-mission-control-deployment.mjs --verify-rollback DEPLOYMENT_JSON TARGET_JSON',
+      )
+      process.exit(2)
+    }
+    process.exit(
+      report(
+        verifyRollbackRestored(readJson(process.argv[3]), readJson(process.argv[4])),
+        'Captured pre-deploy Worker version restored at 100% traffic',
+      ),
+    )
+  }
+
   if (process.argv[2] === '--secrets') {
     if (process.argv.length !== 4) {
       console.error('usage: verify-mission-control-deployment.mjs --secrets SECRETS_JSON')

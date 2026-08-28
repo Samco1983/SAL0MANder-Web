@@ -19,9 +19,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
@@ -81,7 +81,22 @@ jobs:
           node ../../scripts/verify-mission-control-deployment.mjs \
             --secrets /tmp/mission-control-secrets.json
 
+      - name: capture active version before deploy
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.126.0 deployments status --json \
+            > /tmp/mission-control-pre-deploy.json
+          node ../../scripts/verify-mission-control-deployment.mjs \
+            --capture-rollback \
+            /tmp/mission-control-pre-deploy.json \
+            /tmp/mission-control-rollback-target.json
+
       - name: deploy exact checked-out Worker
+        id: deploy
         working-directory: edge/mission-control
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -121,3 +136,22 @@ jobs:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         run: node scripts/prove-live-mission-control.mjs "$GITHUB_SHA" 72
+
+      - name: restore prior Worker after post-deploy failure
+        if: ${{ failure() && steps.deploy.outcome == 'success' }}
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          version_id="$(node ../../scripts/verify-mission-control-deployment.mjs \
+            --rollback-version /tmp/mission-control-rollback-target.json)"
+          npx --yes wrangler@4.126.0 rollback "$version_id" --yes \
+            --message "github:${GITHUB_SHA}:post-deploy-proof-failed"
+          npx --yes wrangler@4.126.0 deployments status --json \
+            > /tmp/mission-control-restored-deployment.json
+          node ../../scripts/verify-mission-control-deployment.mjs \
+            --verify-rollback \
+            /tmp/mission-control-restored-deployment.json \
+            /tmp/mission-control-rollback-target.json
