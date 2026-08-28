@@ -88,12 +88,13 @@ jobs:
             echo 'ready=true' >> "$GITHUB_OUTPUT"
           else
             echo 'ready=false' >> "$GITHUB_OUTPUT"
-            echo 'GEMINI_API_KEY is not configured; reviewer is inert.'
+            echo 'GEMINI_API_KEY is not configured; reviewer cannot run.'
+            exit 1
           fi
 
       - name: Checkout draft PR branch
         if: steps.credential.outputs.ready == 'true'
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ needs.pick-pr.outputs.head_ref }}
           fetch-depth: 0
@@ -102,10 +103,10 @@ jobs:
       - name: Run read-only Gemini review
         if: steps.credential.outputs.ready == 'true'
         id: gemini
-        uses: google-github-actions/run-gemini-cli@v0
+        uses: google-github-actions/run-gemini-cli@f77273f4c914e4bf38440cf36a0369cb64a37489 # v0
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          gemini_cli_version: latest
+          gemini_cli_version: 0.57.0
           settings: |
             {
               "tools": {
@@ -152,7 +153,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
     steps:
       - name: Post Gemini review to draft PR
         env:
@@ -170,3 +170,36 @@ jobs:
             printf '%s\n' "$GEMINI_REVIEW"
           } > "$body_file"
           gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$body_file"
+
+  report-review-blocker:
+    needs: [pick-pr, review]
+    if: ${{ always() && needs.pick-pr.outputs.has_pr == 'true' && needs.review.result == 'failure' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Post or update Gemini blocker
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.pick-pr.outputs.pr_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='<!-- sal0mander-gemini-web-overnight-blocker -->'
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          body="${marker}
+          ## Gemini overnight review blocked
+
+          Gemini did not produce a review for this exact workflow run: ${run_url}
+          Workflow commit: \`${GITHUB_SHA}\`
+
+          This single checkpoint is updated on later failures. No files, merge, or deployment were changed."
+          comment_id="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --jq ".[] | select(.body | contains(\"$marker\")) | .id" | tail -n 1)"
+          if [[ -n "$comment_id" ]]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" \
+              -f body="$body" >/dev/null
+          else
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
+          fi
