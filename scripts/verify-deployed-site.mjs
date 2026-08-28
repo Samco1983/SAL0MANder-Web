@@ -16,7 +16,7 @@
  *   /SAL0MANder-Web/unknown         a mistyped or retired link
  *   /SAL0MANder-Web/                the site root
  *
- *   node scripts/verify-deployed-site.mjs [dist-dir]
+ *   VITE_BASE_PATH=/ node scripts/verify-deployed-site.mjs [dist-dir]
  */
 
 import { createServer } from 'node:http'
@@ -24,7 +24,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs'
 import { join, extname } from 'node:path'
 
 const DIST = process.argv[2] ?? 'dist'
-const BASE = '/SAL0MANder-Web'
+const BASE = (process.env.VITE_BASE_PATH ?? '/SAL0MANder-Web/').replace(/\/$/, '')
 const PORT = 4322
 
 const TYPES = {
