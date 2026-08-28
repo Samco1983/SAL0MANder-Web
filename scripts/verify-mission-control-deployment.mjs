@@ -38,10 +38,11 @@ export function captureRollbackTarget(deployment) {
   return { versionId, percentage: 100 }
 }
 
-export function rollbackVersionAfterProof(target, proofSucceeded) {
-  if (proofSucceeded || typeof target?.versionId !== 'string' || target.percentage !== 100) {
+export function rollbackVersionAfterFailure(deployment, target) {
+  if (typeof target?.versionId !== 'string' || target.percentage !== 100) {
     return null
   }
+  if (productionVersionId(deployment) === target.versionId) return 'already-restored'
   return target.versionId
 }
 
@@ -129,11 +130,16 @@ if (isMain) {
   }
 
   if (process.argv[2] === '--rollback-version') {
-    if (process.argv.length !== 4) {
-      console.error('usage: verify-mission-control-deployment.mjs --rollback-version TARGET_JSON')
+    if (process.argv.length !== 5) {
+      console.error(
+        'usage: verify-mission-control-deployment.mjs --rollback-version DEPLOYMENT_JSON TARGET_JSON',
+      )
       process.exit(2)
     }
-    const versionId = rollbackVersionAfterProof(readJson(process.argv[3]), false)
+    const versionId = rollbackVersionAfterFailure(
+      readJson(process.argv[3]),
+      readJson(process.argv[4]),
+    )
     if (!versionId) {
       console.error('::error::rollback target is invalid')
       process.exit(1)

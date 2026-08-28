@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import {
   captureRollbackTarget,
   productionVersionId,
-  rollbackVersionAfterProof,
+  rollbackVersionAfterFailure,
   verifyMissionControlDeployment,
   verifyRollbackRestored,
   verifySecretList,
@@ -108,10 +108,13 @@ describe('Mission Control rollback safety', () => {
     expect(captureRollbackTarget({ versions: [] })).toBeNull()
   })
 
-  it('selects the exact captured version after a forced proof failure', () => {
+  it('selects the exact captured version after a forced post-capture failure', () => {
     const target = captureRollbackTarget(deployment())
-    expect(rollbackVersionAfterProof(target, false)).toBe(VERSION_ID)
-    expect(rollbackVersionAfterProof(target, true)).toBeNull()
+    const candidate = deployment()
+    candidate.versions[0].version_id = 'candidate'
+    expect(rollbackVersionAfterFailure(candidate, target)).toBe(VERSION_ID)
+    expect(rollbackVersionAfterFailure(deployment(), target)).toBe('already-restored')
+    expect(rollbackVersionAfterFailure(candidate, null)).toBeNull()
   })
 
   it('proves rollback restored the captured version and 100% traffic', () => {
@@ -141,13 +144,14 @@ describe('Mission Control rollback safety', () => {
   it('wires capture before deploy and rollback verification after a failed proof', () => {
     const capture = WORKFLOW.indexOf('--capture-rollback')
     const deploy = WORKFLOW.indexOf('id: deploy')
-    const rollback = WORKFLOW.indexOf("steps.deploy.outcome == 'success'")
+    const rollback = WORKFLOW.indexOf("steps.capture.outcome == 'success'")
     const verify = WORKFLOW.indexOf('--verify-rollback')
 
     expect(capture).toBeGreaterThan(-1)
     expect(deploy).toBeGreaterThan(capture)
     expect(rollback).toBeGreaterThan(deploy)
     expect(verify).toBeGreaterThan(rollback)
+    expect(WORKFLOW).toContain('wrangler@4.126.0 deployments status --json')
     expect(WORKFLOW).toContain('wrangler@4.126.0 rollback "$version_id" --yes')
   })
 

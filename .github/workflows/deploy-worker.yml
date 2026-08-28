@@ -82,6 +82,7 @@ jobs:
             --secrets /tmp/mission-control-secrets.json
 
       - name: capture active version before deploy
+        id: capture
         working-directory: edge/mission-control
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -138,17 +139,23 @@ jobs:
         run: node scripts/prove-live-mission-control.mjs "$GITHUB_SHA" 72
 
       - name: restore prior Worker after post-deploy failure
-        if: ${{ failure() && steps.deploy.outcome == 'success' }}
+        if: ${{ failure() && steps.capture.outcome == 'success' }}
         working-directory: edge/mission-control
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
+          npx --yes wrangler@4.126.0 deployments status --json \
+            > /tmp/mission-control-failed-deployment.json
           version_id="$(node ../../scripts/verify-mission-control-deployment.mjs \
-            --rollback-version /tmp/mission-control-rollback-target.json)"
-          npx --yes wrangler@4.126.0 rollback "$version_id" --yes \
-            --message "github:${GITHUB_SHA}:post-deploy-proof-failed"
+            --rollback-version \
+            /tmp/mission-control-failed-deployment.json \
+            /tmp/mission-control-rollback-target.json)"
+          if [ "$version_id" != "already-restored" ]; then
+            npx --yes wrangler@4.126.0 rollback "$version_id" --yes \
+              --message "github:${GITHUB_SHA}:post-deploy-proof-failed"
+          fi
           npx --yes wrangler@4.126.0 deployments status --json \
             > /tmp/mission-control-restored-deployment.json
           node ../../scripts/verify-mission-control-deployment.mjs \
