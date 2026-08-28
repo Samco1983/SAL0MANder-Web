@@ -64,7 +64,7 @@ jobs:
 
       - name: build for the deploy path
         env:
-          # The production site is served from the root of salomandermath.com.
+          # The production site is served from the root of sal0mander.com.
           # The router, asset URLs, Unity build path, and share links all read
           # this value; src/config/deployBasePath.test.ts pins that behaviour.
           VITE_BASE_PATH: /
@@ -106,6 +106,8 @@ jobs:
       # works — Pages has no rewrite, so every share link on a hard load is
       # answered with 404.html and the router has to recover the path itself.
       - name: walk every visitor path against the deploy shape
+        env:
+          VITE_BASE_PATH: /
         run: node scripts/verify-deployed-site.mjs dist
 
       # A status page that ships with the site.
