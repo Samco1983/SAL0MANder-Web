@@ -299,6 +299,7 @@ export function UnityStage({
         one thing they came to do.
       */}
       <canvas
+        id="unity-canvas"
         ref={canvasRef}
         className={styles.canvas}
         tabIndex={0}

@@ -136,6 +136,17 @@
   }
 }
 
+/* Short landscape screens are the game surface, not a website tour. Keeping
+   the shell chrome here steals a quarter of a phone's playable height and
+   clips Unity's enlarged controls. Browser back remains the exit; the
+   companion disclosure remains available inside the stage. */
+@media (orientation: landscape) and (max-height: 32rem) {
+  .shell[data-fill='true'] .foundationBanner,
+  .shell[data-fill='true'] .header {
+    display: none;
+  }
+}
+
 /* Deliberately plain and unmissable: it must not read as part of the design. */
 .foundationBanner {
   padding: var(--space-2) var(--space-4);
