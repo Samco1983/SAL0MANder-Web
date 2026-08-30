@@ -22,6 +22,10 @@ describe('Guest Play', () => {
     renderAt(`/play/${MOCK_DEMO_ACTIVITY_ID}`)
 
     expect(screen.getByRole('region', { name: /game stage/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /show companion/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
     expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /sign in|log in|create account/i })).toBeNull()
 

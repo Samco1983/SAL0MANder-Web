@@ -101,3 +101,36 @@
     grid-row: 1;
   }
 }
+
+/* On phones and tablets, keep the optional companion control off the game's
+   title, timer, and touch targets. The accessible name remains "Show/Hide
+   companion"; the compact visual preserves the playable canvas. */
+@media (max-width: 75rem) {
+  .toggle {
+    top: var(--space-2);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .toggle button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+    overflow: hidden;
+    font-size: 0;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 72%);
+    color: white;
+  }
+
+  .toggle button::before {
+    content: 'i';
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .toggle button[aria-expanded='true']::before {
+    content: 'X';
+  }
+}

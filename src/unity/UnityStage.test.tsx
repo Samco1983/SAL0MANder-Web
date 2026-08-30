@@ -107,6 +107,7 @@ describe('booting a configured build', () => {
 
     expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
     expect(unity.createUnityInstance.mock.calls[0]?.[0]).toBe(canvas())
+    expect(canvas()).toHaveAttribute('id', 'unity-canvas')
   })
 
   it('reports load progress', async () => {
