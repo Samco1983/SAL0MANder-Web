@@ -355,3 +355,74 @@ keep playing, and this was a narrow evidence-only docs repair with no runtime,
 secret, auth, Unity gameplay, or Make change. Re-derived every
 `GuestPlayPage.tsx` citation in both wireframe docs against the checkout and
 fixed them in one pass, so issue #13 can be closed without a known drift open.
+
+---
+
+### B-11 · a share link cannot launch a specific activity — the boot activityId is inert · Claude (web demo)
+OPENED:    2026-08-30
+BLOCKED:   Demo workflow steps 1–3 have produced nothing consumable, so step 4
+           (demo cards, share links, QR) has no real target to point at, and
+           step 5 (verify each share link launches the real Unity activity)
+           cannot pass by construction. Four separate gaps, all in the Unity
+           lane, all verified read-only against the checkout:
+
+           1. The three named demo activities do not exist. `ActivityManager`
+              seeds `act_quadratics` (Quadratics Review), `act_cell_structure`
+              (Cell Structure), `act_vocab_review` (Vocabulary Review). There is
+              no Integer Operations, One-Step Inequalities, or Linear Equations
+              anywhere under `Assets/`.
+
+           2. `SAL0MANderBridge.ReceiveBoot` validates `activityId` and
+              `activityVersionId`, stores both, and then uses them only to stamp
+              outbound telemetry. `SAL0MANderBridge.cs` contains zero references
+              to `ActivityManager`. Boot does not select an activity.
+
+           3. The working selection path is
+              `SessionContext.TargetActivityId` → `PuzzleOptionsUI.ResolveActiveActivity()`
+              → `ActivityManager.OpenActivity()`. It is correct and it fails
+              closed on an unknown id (`isInvalidTarget`, no silent fallback).
+              But `SessionContext.Initialize(LaunchContext)` is called only from
+              `UI/DeveloperOverlayUI.cs` and `Editor/PlayModeTestRunner.cs`.
+              There is no production caller, no `Application.absoluteURL` use,
+              and no query-string parsing in the project. `Sal0manderBridge.jslib`
+              is outbound-only. Nothing connects a URL to `TargetActivityId`.
+
+           4. Activity content lives in `PlayerPrefs` (IndexedDB in WebGL —
+              per-origin, per-browser). `ActivityManager` and `TeacherStudioUI`
+              have no file export. A correct id would still find no content in a
+              student's fresh browser.
+
+           Consequence: a student opening a share link plays whatever
+           `ActivityManager.ActiveActivity` sits in their own browser, which on a
+           fresh browser is the seeded default — not the shared activity.
+
+COMMAND:   Unity-lane decision, not a command. Codex rules on which of these
+           closes the gap, then implements in the Unity repo:
+             (a) author the three packs, and
+             (b) either wire `boot.activityId` → `ActivityManager.OpenActivity`
+                 inside `ReceiveBoot`, or add a production
+                 `ILaunchContextProvider` that parses the launch URL into
+                 `SessionContext.Initialize`, and
+             (c) decide how pack content reaches a student browser that has
+                 never run Teacher Studio (seed as built-in vs. host-supplied
+                 payload in `boot`).
+           (c) is the one that may change the v1 bridge contract. Claude will
+           not choose it.
+WHO CAN:   Codex / Unity only. Every file involved is in the Unity repo.
+AUTO:      no
+CLEARED:
+HUMAN:     yes — the owner set the lane boundary and named the three activities
+           in the same instruction that surfaced this.
+
+**Correction to circulating documentation.** A C# inspection doc in circulation
+states that `SessionContext` "ingests query strings, iframe parameters, or
+bridge initialization JSON payloads." That is not true of the current code —
+only `LocalSimulatedContextProvider` implements `ILaunchContextProvider`. Treat
+that line as intent, not as build state.
+
+**What Claude can do while this is open.** Demo card layout, titles,
+descriptions, grade tags, preview imagery, QR presentation, and loading/error
+states can all be built against the three ids as opaque handles, with the
+invalid-target error state wired to the failure Unity already emits. What cannot
+be done is claim a share link launches the right activity. Any demo shipped
+before B-11 clears must say so.
