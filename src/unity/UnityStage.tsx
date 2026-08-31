@@ -55,6 +55,13 @@ type LoadState =
  * Re-rendering the surrounding layout — including collapsing the 42% companion
  * panel — must never tear down a running game.
  */
+/**
+ * Unity's framework looks the canvas up by id, so it must have one and it must
+ * be stable. Exported so a test can assert its presence rather than trusting
+ * the attribute to survive a refactor.
+ */
+export const UNITY_CANVAS_ID = 'unity-canvas'
+
 export function UnityStage({
   activityId,
   boot,
@@ -331,6 +338,14 @@ export function UnityStage({
       */}
       <canvas
         ref={canvasRef}
+        /*
+          Unity's framework re-finds the canvas by id — it builds a selector as
+          '#' + canvas.id. With no id that is the string '#', which throws
+          `'#' is not a valid selector` from inside framework.js and the game
+          dies after loading 100%. The failure names querySelector, not the
+          canvas, so it reads as a Unity bug rather than a missing attribute.
+        */
+        id={UNITY_CANVAS_ID}
         className={styles.canvas}
         tabIndex={0}
         aria-label="SAL0MANder game"

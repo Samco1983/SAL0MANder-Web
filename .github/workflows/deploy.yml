@@ -72,6 +72,14 @@ jobs:
           # to a CDN once Unity licensing is healthy enough for repeat builds.
           VITE_UNITY_BUILD_BASE_URL: /unity
           VITE_UNITY_BUILD_NAME: sal0-unity-webgl
+          # The build committed under public/unity is UNCOMPRESSED —
+          # sal0-unity-webgl.{data,framework.js,wasm} with no .br suffix.
+          # env.ts defaults this to 'br' because that is Unity's own default,
+          # so leaving it unset made the app request three files that are not
+          # there. The loader resolved, the bar reached 100%, and the game died
+          # with "The game didn't load" — on every deploy, for every student.
+          # Nothing failed: build green, deploy green, site broken.
+          VITE_UNITY_BUILD_COMPRESSION: none
         run: npm run build
 
       # Pages has no server-side rewrite, so a deep link like /play/SUN-42 —
@@ -79,6 +87,39 @@ jobs:
       # index.html as the 404 page hands the URL to the client router instead.
       # Without this, share links work in-app and break when pasted, which is
       # the one way they are actually used.
+      # The check that would have caught the above. Asserts the four files the
+      # app will actually request exist in dist, using the same env vars the
+      # build just used — so a compression, name, or path change that makes the
+      # game unreachable fails here instead of on a student's screen.
+      - name: verify the Unity build the app will request is present
+        env:
+          VITE_UNITY_BUILD_NAME: sal0-unity-webgl
+          VITE_UNITY_BUILD_COMPRESSION: none
+        run: |
+          node -e '
+            const fs = require("fs");
+            const name = process.env.VITE_UNITY_BUILD_NAME;
+            const c = process.env.VITE_UNITY_BUILD_COMPRESSION;
+            const ext = c === "none" ? "" : "." + c;
+            // The loader is never compressed; Unity ships it plain because it
+            // is the script that decides how to fetch everything else.
+            const wanted = [
+              `dist/unity/Build/${name}.loader.js`,
+              `dist/unity/Build/${name}.data${ext}`,
+              `dist/unity/Build/${name}.framework.js${ext}`,
+              `dist/unity/Build/${name}.wasm${ext}`,
+            ];
+            const missing = wanted.filter((f) => !fs.existsSync(f));
+            if (missing.length) {
+              console.error("Unity files the app will request are missing:");
+              for (const f of missing) console.error("  " + f);
+              console.error("Present in dist/unity/Build:");
+              for (const f of fs.readdirSync("dist/unity/Build")) console.error("  " + f);
+              process.exit(1);
+            }
+            console.log("Unity build present: " + wanted.length + " files.");
+          '
+
       - name: SPA fallback for share links
         run: cp dist/index.html dist/404.html
 

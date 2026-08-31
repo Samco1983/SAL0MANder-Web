@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, render, screen } from '@testing-library/react'
-import { UnityStage } from './UnityStage'
+import { UNITY_CANVAS_ID, UnityStage } from './UnityStage'
 import { BRIDGE_VERSION, UNITY_EVENT_NAME } from './bridge'
 import { resolveUnityBuildConfig } from './buildConfig'
 
@@ -98,6 +98,24 @@ describe('booting a configured build', () => {
     const script = loaderScript()
     expect(script).not.toBeNull()
     expect(script?.async).toBe(true)
+  })
+
+  /**
+   * Regression: the canvas shipped with no `id`.
+   *
+   * Unity's framework re-finds it by building the selector `'#' + canvas.id`.
+   * With no id that is the string `'#'`, which throws `'#' is not a valid
+   * selector` from inside framework.js — after the loader resolved and the
+   * progress bar reached 100%. The student saw "The game didn't load", and the
+   * console blamed querySelector, so it read as a Unity fault rather than a
+   * missing attribute on our side.
+   */
+  it('gives the canvas an id, because Unity looks it up by one', () => {
+    const { container } = render(<UnityStage activityId="demo" />)
+    const canvas = container.querySelector('canvas')
+    expect(canvas).not.toBeNull()
+    expect(canvas?.id).toBe(UNITY_CANVAS_ID)
+    expect(canvas?.id).not.toBe('')
   })
 
   it('creates the instance against the canvas once the loader registers', async () => {
