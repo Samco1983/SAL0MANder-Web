@@ -10,6 +10,7 @@ import {
   type UnityMessageTarget,
   type WebToUnityMessage,
 } from './bridge'
+import { useFullscreen } from './useFullscreen'
 import styles from './UnityStage.module.css'
 
 /**
@@ -79,6 +80,14 @@ export function UnityStage({
   sessionStarted?: SessionStartedPayload
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  /*
+    Fullscreen is applied to THIS element, which already exists in the tree.
+    Promoting the live container is what keeps the canvas mounted: rendering a
+    separate overlay when fullscreen would reparent the canvas and restart the
+    student's game.
+  */
+  const stageRef = useRef<HTMLDivElement | null>(null)
+  const fullscreen = useFullscreen(stageRef)
   const [state, setState] = useState<LoadState>({ status: 'unconfigured' })
   const config = resolveUnityBuildConfig()
 
@@ -312,7 +321,7 @@ export function UnityStage({
   }
 
   return (
-    <div className={styles.stage}>
+    <div className={styles.stage} ref={stageRef} data-fullscreen={fullscreen.isFullscreen}>
       {/*
         tabIndex 0, not -1: the canvas IS the game. Unity WebGL takes keyboard
         input through the focused canvas, so removing it from the tab order
@@ -326,6 +335,32 @@ export function UnityStage({
         tabIndex={0}
         aria-label="SAL0MANder game"
       />
+      {/*
+        Hidden entirely where element fullscreen does not exist — iPhone Safari
+        being the case that matters, since a button that silently does nothing
+        is worse than no button on the device a student is most likely holding.
+
+        Offered only once the game is actually running: going fullscreen on a
+        loading spinner or an error message hides the browser chrome around a
+        screen that has nothing to show.
+      */}
+      {fullscreen.isSupported && state.status === 'ready' ? (
+        <div className={styles.fullscreenControl}>
+          <Button variant="secondary" size="sm" onClick={fullscreen.toggle}>
+            {fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}
+          </Button>
+          {/*
+            A refusal is silent otherwise: an iframe without allow="fullscreen"
+            or a managed-device policy rejects the request and the button just
+            appears dead. Say what happened instead.
+          */}
+          {fullscreen.didFail ? (
+            <p className={styles.fullscreenFailed} role="alert">
+              This browser would not allow full screen.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       {state.status === 'loading' ? (
         <div className={styles.empty} role="status">
           <h2 className={styles.emptyTitle}>Loading SAL0MANder…</h2>
