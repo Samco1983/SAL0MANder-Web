@@ -21,6 +21,9 @@ import { RouteFallback } from './RouteFallback'
 const GuestPlayPage = lazy(() =>
   import('@routes/guest-play/GuestPlayPage').then((m) => ({ default: m.GuestPlayPage })),
 )
+const PrivacyPage = lazy(() =>
+  import('@routes/privacy/PrivacyPage').then((m) => ({ default: m.PrivacyPage })),
+)
 const GuestPlayIndexPage = lazy(() =>
   import('@routes/guest-play/GuestPlayPage').then((m) => ({ default: m.GuestPlayIndexPage })),
 )
@@ -59,6 +62,7 @@ export const routes: RouteObject[] = [
     errorElement: <RouteError />,
   },
   { path: paths.guestPlay, element: split(<GuestPlayPage />), errorElement: <RouteError /> },
+  { path: paths.privacy, element: split(<PrivacyPage />), errorElement: <RouteError /> },
   { path: paths.profile, element: split(<ProfilePage />), errorElement: <RouteError /> },
   { path: paths.unity, element: split(<UnityHostPage />), errorElement: <RouteError /> },
   { path: paths.console, element: split(<ConsolePage />), errorElement: <RouteError /> },
