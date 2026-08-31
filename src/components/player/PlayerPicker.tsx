@@ -169,9 +169,23 @@ export function PlayerPicker({ onChange }: { onChange?: (profile: PlayerProfile)
         </p>
       ) : null}
 
+      {/*
+        Deliberately does NOT say "never sent anywhere".
+
+        That was true only because no backend is configured yet.
+        `SessionIdentitySchema` already carries an optional `displayName`
+        (src/contracts/v1/session.ts), so the first real backend would send the
+        handle with every session and silently turn a privacy promise into a
+        false one — the worst kind of claim, because nobody would notice it
+        expiring.
+
+        "We never ask for a real name" is true today and stays true whatever the
+        backend does, because it is a statement about what this form collects
+        rather than about where the value travels.
+      */}
       <p className={styles.note}>
-        Names stay on this device and are never sent anywhere. A nickname works better than a real
-        name.
+        A nickname is all we need — we never ask for a real name. Your pick is remembered on this
+        device so you can come back to your own progress.
       </p>
     </section>
   )

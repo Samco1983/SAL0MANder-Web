@@ -30,7 +30,17 @@ Shown once, at signup, near the finish button:
 
 Then a quieter line beneath:
 
-> Names stay on the student's own device. We never see them.
+> We never ask students for their real name.
+
+**Not** "names stay on the student's device" or "we never see them", however
+tempting. `SessionIdentitySchema` (`src/contracts/v1/session.ts`) already
+carries an optional `displayName`, so the first real backend will send the
+handle with every session. Copy of that kind is true only until the day a
+backend is wired, and it expires without anyone noticing — a privacy promise
+that quietly became false is worse than never having made it.
+
+The wording above is a statement about what the product *asks for*, which stays
+true whatever the backend does.
 
 ## Why it is worded this way
 
@@ -48,11 +58,12 @@ safety" — the product genuinely does not use a real name for anything. Saying 
 plainly is more persuasive than a policy citation, and it is true, which matters
 if a district ever asks.
 
-**"Names stay on the student's own device"** is the strongest sentence available
-and it is currently accurate — handles live in `localStorage` and never leave.
-It must be deleted the moment that stops being true. Shipping it while sending
-handles to a backend would be a false privacy claim, which is worse than saying
-nothing.
+**It claims nothing about transmission.** The strongest-sounding sentence
+available was "names stay on the student's own device" — accurate today, since
+handles live in `localStorage` and there is no backend. It was cut anyway:
+`SessionIdentitySchema` already has an optional `displayName` field, so that
+sentence has a built-in expiry date and no alarm attached to it. A claim about
+what is *collected* cannot expire the same way.
 
 ## Where else this belongs
 

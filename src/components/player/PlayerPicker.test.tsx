@@ -81,10 +81,26 @@ describe('player picker', () => {
     expect(screen.queryByLabelText('Or make one up')).not.toBeInTheDocument()
   })
 
-  it('tells the reader where the name lives, without alarming a child', () => {
+  it('tells the reader what is asked for, without alarming a child', () => {
     render(<PlayerPicker />)
-    expect(screen.getByText(/stay on this device and are never sent anywhere/i)).toBeInTheDocument()
-    expect(screen.getByText(/nickname works better than a real name/i)).toBeInTheDocument()
+    expect(screen.getByText(/we never ask for a real name/i)).toBeInTheDocument()
+    expect(screen.getByText(/remembered on this device/i)).toBeInTheDocument()
+  })
+
+  /**
+   * Guard on a privacy claim that would expire silently.
+   *
+   * `SessionIdentitySchema` already carries an optional `displayName`, so the
+   * first real backend sends the handle with every session. Any copy promising
+   * the name goes nowhere is true only until that day, and nobody would notice
+   * it becoming false.
+   */
+  it('never promises the name is not transmitted', () => {
+    const { container } = render(<PlayerPicker />)
+    const text = container.textContent ?? ''
+    expect(text).not.toMatch(/never sent/i)
+    expect(text).not.toMatch(/stays? on this device and/i)
+    expect(text).not.toMatch(/we never see/i)
   })
 
   it('reports the chosen player to the caller', async () => {
