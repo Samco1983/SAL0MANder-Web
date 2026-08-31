@@ -4,6 +4,7 @@ import { env } from '@config/env'
 import { buildPath, paths } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
 import { AppShell } from '@components/layout/AppShell'
+import { PlayerPicker } from '@components/player/PlayerPicker'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
 import { Button, LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
@@ -349,6 +350,14 @@ export function GuestPlayPage() {
                 {activityId ? <SharePanel activityId={activityId} baseUrl={env.publicBaseUrl} /> : null}
               </>
             ) : null}
+
+            {/*
+              In the optional companion, never before the stage. A picker on the
+              path from share link to playing is a name prompt however gently it
+              is worded, and CLAUDE.md non-negotiable 3 forbids exactly that.
+              The panel is collapsible and the game runs without it.
+            */}
+            <PlayerPicker />
 
             <PlaceholderNotice
               label="Companion panel"
