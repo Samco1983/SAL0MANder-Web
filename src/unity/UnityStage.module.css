@@ -147,6 +147,19 @@
   .fullscreenControl:focus-within {
     opacity: 1;
   }
+
+  /*
+   * Never faded while fullscreen. On an iPad there is no Esc key, so this
+   * button is the ONLY way out of a game filling the entire screen — a 55%
+   * grey control in the corner is not good enough for a student who wants to
+   * leave and cannot.
+   *
+   * Cheap to make obvious, too: leaving fullscreen does not remount the
+   * canvas, so an accidental press costs no progress.
+   */
+  .stage[data-fullscreen='true'] .fullscreenControl {
+    opacity: 1;
+  }
 }
 
 .fullscreenFailed {
