@@ -31,6 +31,7 @@
       "@app/*": ["./src/app/*"],
       "@routes/*": ["./src/routes/*"],
       "@components/*": ["./src/components/*"],
+      "@demo/*": ["./src/demo/*"],
       "@design/*": ["./src/design/*"],
       "@api/*": ["./src/api/*"],
       "@contracts/*": ["./src/contracts/*"],

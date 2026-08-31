@@ -1,0 +1,149 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+/*
+  Abstract, generated from the activity's accent — see the component comment
+  for why this is not a gameplay screenshot. Fixed aspect so a row of cards
+  aligns regardless of how long each blurb runs.
+*/
+.preview {
+  position: relative;
+  aspect-ratio: 16 / 7;
+  background:
+    radial-gradient(
+      circle at 30% 30%,
+      color-mix(in srgb, var(--card-accent) 34%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card-accent) 18%, var(--color-surface-sunken)),
+      var(--color-surface-sunken)
+    );
+  border-bottom: 1px solid var(--color-border);
+}
+
+.previewGlyph {
+  position: absolute;
+  inset: 22% 32%;
+  border-radius: var(--radius-md);
+  border: 2px solid color-mix(in srgb, var(--card-accent) 55%, transparent);
+  /* Two interlocking squares: a puzzle, without claiming to be a screenshot. */
+  box-shadow: 12px 12px 0 -2px color-mix(in srgb, var(--card-accent) 28%, transparent);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+}
+
+.eyebrow {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.title {
+  font-size: var(--text-lg);
+  color: var(--color-text);
+}
+
+.blurb {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.gradeTag {
+  align-self: flex-start;
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+/*
+  The badge that stops a card from overstating itself. Tone is data-driven so
+  a new verdict cannot silently inherit the "verified" styling by default.
+*/
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-xs);
+}
+
+.status[data-tone='verified'] {
+  background: var(--color-success-soft);
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+}
+
+.status[data-tone='pending'] {
+  background: var(--color-warning-soft);
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+}
+
+.status[data-tone='broken'] {
+  background: var(--color-danger-soft);
+  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+}
+
+/*
+  Colour is not the only carrier: the label states the verdict in words, so
+  the badge still reads correctly in monochrome or with colour vision
+  deficiency. WCAG 1.4.1.
+*/
+.statusLabel {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.statusDetail {
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.unavailable {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.share {
+  margin-top: var(--space-4);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .card {
+    transition:
+      box-shadow var(--transition-smooth),
+      border-color var(--transition-smooth);
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-2);
+    border-color: var(--color-border-strong);
+  }
+}

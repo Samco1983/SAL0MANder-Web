@@ -11,6 +11,7 @@ type NavItem = { to: string; label: string }
 const NAV: NavItem[] = [
   { to: paths.home, label: 'Home' },
   { to: paths.guestPlayIndex, label: 'Play' },
+  { to: paths.demo, label: 'Activities' },
   { to: paths.profile, label: 'Profile' },
   { to: paths.unity, label: 'WebGL Host' },
   { to: paths.system, label: 'Console' },

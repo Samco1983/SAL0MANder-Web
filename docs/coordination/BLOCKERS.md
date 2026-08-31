@@ -420,6 +420,20 @@ bridge initialization JSON payloads." That is not true of the current code —
 only `LocalSimulatedContextProvider` implements `ILaunchContextProvider`. Treat
 that line as intent, not as build state.
 
+**Web side is built and waiting (2026-08-30).** `/demo` ships the three cards
+with titles, blurbs, grade tags, generated preview art, share links and QR.
+Every card reads "Not yet verified" and offers no Play button, because
+`launchStatus` is `'never-measured'` for all three and `isPlayable()` refuses
+anything that is not `confirmed` or `unverifiable`. Verified in a real browser:
+single column at 375px with no horizontal overflow, and WCAG AA contrast in both
+themes (light low 5.57, dark low 7.52). Clearing B-11 flips those badges; nothing
+on the page needs redesigning to accept the answer.
+
+The activity ids used there (`act_integer_ops`, `act_one_step_inequalities`,
+`act_linear_equations`) are PROVISIONAL placeholders following the existing
+`act_*` convention. Codex assigns the real ones when authoring the packs; the
+rename is a one-line edit in `src/demo/demoActivities.ts`.
+
 **What Claude can do while this is open.** Demo card layout, titles,
 descriptions, grade tags, preview imagery, QR presentation, and loading/error
 states can all be built against the three ids as opaque handles, with the

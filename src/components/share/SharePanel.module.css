@@ -26,7 +26,14 @@
 }
 
 .linkInput {
-  flex: 1 1 16ch;
+  /*
+    Basis wide enough that a narrow row wraps the Copy button onto its own
+    line rather than squeezing the link. At 16ch the two fit side by side on a
+    375px phone and the link is left ~132px — about twenty characters of a URL.
+    That matters because the raw link IS the manual fallback for when the
+    clipboard is unavailable, and a phone is where that happens most.
+  */
+  flex: 1 1 24ch;
   min-width: 0;
   padding: var(--space-2) var(--space-3);
   font-family: var(--font-mono);

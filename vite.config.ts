@@ -14,6 +14,7 @@ export default defineConfig({
       '@app': r('./src/app'),
       '@routes': r('./src/routes'),
       '@components': r('./src/components'),
+      '@demo': r('./src/demo'),
       '@design': r('./src/design'),
       '@api': r('./src/api'),
       '@contracts': r('./src/contracts'),

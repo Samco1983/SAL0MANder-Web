@@ -21,6 +21,9 @@ import { RouteFallback } from './RouteFallback'
 const GuestPlayPage = lazy(() =>
   import('@routes/guest-play/GuestPlayPage').then((m) => ({ default: m.GuestPlayPage })),
 )
+const DemoGalleryPage = lazy(() =>
+  import('@routes/demo/DemoGalleryPage').then((m) => ({ default: m.DemoGalleryPage })),
+)
 const GuestPlayIndexPage = lazy(() =>
   import('@routes/guest-play/GuestPlayPage').then((m) => ({ default: m.GuestPlayIndexPage })),
 )
@@ -53,6 +56,7 @@ function split(element: ReactNode) {
  */
 export const routes: RouteObject[] = [
   { path: paths.home, element: <HomePage />, errorElement: <RouteError /> },
+  { path: paths.demo, element: split(<DemoGalleryPage />), errorElement: <RouteError /> },
   {
     path: paths.guestPlayIndex,
     element: split(<GuestPlayIndexPage />),
