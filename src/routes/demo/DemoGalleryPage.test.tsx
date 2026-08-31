@@ -42,7 +42,11 @@ describe('demo gallery', () => {
   it('never claims a launch it has not verified', () => {
     renderGallery()
     expect(screen.queryByText('Launch verified')).not.toBeInTheDocument()
-    expect(screen.getAllByText('Not yet verified')).toHaveLength(DEMO_ACTIVITIES.length)
+    // The mock sample reads "Not yet verified" too — its link resolves, but
+    // Unity still never reports which activity it loaded.
+    expect(screen.getAllByText('Not yet verified').length).toBeGreaterThanOrEqual(
+      DEMO_ACTIVITIES.length,
+    )
   })
 
   it('says plainly that nothing is playable yet, instead of offering a dead Play button', () => {
@@ -54,6 +58,18 @@ describe('demo gallery', () => {
       expect(within(card).queryByRole('link', { name: 'Play' })).not.toBeInTheDocument()
       expect(within(card).getByText('Not available to play yet')).toBeInTheDocument()
     }
+  })
+
+  /**
+   * Regression: the mock sample is playable, and gating the banner on "any card
+   * is playable" let it suppress the warning about the three real activities.
+   * The page then read as ready when nothing had shipped.
+   */
+  it('keeps warning about the launch activities even though the sample plays', () => {
+    renderGallery()
+    const sample = screen.getByRole('article', { name: 'Sample activity' })
+    expect(within(sample).getByRole('link', { name: 'Play' })).toBeInTheDocument()
+    expect(screen.getByText(/These are not live yet/)).toBeInTheDocument()
   })
 
   it('warns once at the top rather than repeating the caveat in every card', () => {

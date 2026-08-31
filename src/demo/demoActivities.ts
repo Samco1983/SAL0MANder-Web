@@ -19,6 +19,7 @@
  * *presentation*, it belongs in the Unity payload, not here.
  */
 
+import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
 import type { ActivityResolutionVerdict } from '@unity/activityResolution'
 
 /**
@@ -95,6 +96,34 @@ export const DEMO_ACTIVITIES: readonly DemoActivity[] = [
     launchStatus: 'never-measured',
   },
 ] as const
+
+/**
+ * The one activity that actually resolves today.
+ *
+ * NOT a fourth launch demo, and deliberately not part of {@link DEMO_ACTIVITIES}
+ * — it is the mock backend's own placeholder (`MOCK_DEMO_ACTIVITY_ID`), served
+ * by `mockTransport` so Guest Play could be built before a real backend
+ * existed. Surfacing it gives the picker something a person can actually click
+ * while the three real activities are still being authored in Unity.
+ *
+ * Its content is the mock's, verbatim. Nothing here invents a puzzle
+ * configuration, a question set, or a title for a Unity activity — doing that
+ * would be manufacturing a web-only version of one.
+ *
+ * `launchStatus` is still `'unverifiable'` rather than `'confirmed'`: the link
+ * resolves, which is a different claim from "Unity loaded the right activity".
+ * Those two must not be conflated, which is the entire reason
+ * `activityResolution.ts` exists.
+ */
+export const SAMPLE_ACTIVITY: DemoActivity = {
+  id: MOCK_DEMO_ACTIVITY_ID,
+  title: 'Sample activity',
+  blurb: 'A working example served by the local mock backend, so the flow can be seen end to end.',
+  gradeTag: 'Any grade',
+  strand: 'Sample',
+  accent: 'var(--color-text-muted)',
+  launchStatus: 'unverifiable',
+}
 
 /** Plain-language status line. Shown to a teacher, so no jargon and no ids. */
 export function describeLaunchStatus(status: DemoLaunchStatus): {

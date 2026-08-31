@@ -3,7 +3,7 @@ import { paths } from '@config/routes'
 import { AppShell } from '@components/layout/AppShell'
 import { DemoActivityCard } from '@components/demo/DemoActivityCard'
 import { LinkButton } from '@components/ui/Button'
-import { DEMO_ACTIVITIES, isPlayable } from '@demo/demoActivities'
+import { DEMO_ACTIVITIES, SAMPLE_ACTIVITY, isPlayable } from '@demo/demoActivities'
 import styles from './DemoGalleryPage.module.css'
 
 /**
@@ -21,6 +21,20 @@ import styles from './DemoGalleryPage.module.css'
  */
 export function DemoGalleryPage() {
   const baseUrl = env.publicBaseUrl ?? ''
+  /*
+    Same gate the truncated-link screen already uses: the sample lives in the
+    mock transport, so offering it against a real API would promise an activity
+    that may not exist there — a worse dead end than showing nothing, because
+    this one looks like it works.
+  */
+  const showSample = !env.api.isConfigured
+  const cards = showSample ? [...DEMO_ACTIVITIES, SAMPLE_ACTIVITY] : DEMO_ACTIVITIES
+  /*
+    Deliberately DEMO_ACTIVITIES, not `cards`. The banner is a statement about
+    the three launch activities; the mock sample being playable says nothing
+    about whether those have shipped, and letting it suppress the warning would
+    make the page claim readiness it does not have.
+  */
   const anyPlayable = DEMO_ACTIVITIES.some(isPlayable)
 
   return (
@@ -53,7 +67,7 @@ export function DemoGalleryPage() {
         )}
 
         <ul className={styles.grid}>
-          {DEMO_ACTIVITIES.map((activity) => (
+          {cards.map((activity) => (
             <li key={activity.id}>
               <DemoActivityCard activity={activity} baseUrl={baseUrl} />
             </li>
