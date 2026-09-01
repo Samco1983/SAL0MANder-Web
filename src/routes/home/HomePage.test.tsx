@@ -117,7 +117,7 @@ describe('no dead links', () => {
    */
   it('reads as a classroom math tool, not as internal architecture', () => {
     renderHome()
-    const text = document.body.textContent ?? ''
+    const text = document.querySelector('main')?.textContent ?? ''
 
     expect(text).toMatch(/classroom/i)
     expect(text).toMatch(/question/i)
@@ -127,6 +127,7 @@ describe('no dead links', () => {
     expect(text).not.toMatch(/cloud companion platform/i)
     expect(text).not.toMatch(/mock backend/i)
     expect(text).not.toMatch(/contract version/i)
+    expect(text).not.toMatch(/foundation|unfinished|placeholder|pending product approval/i)
   })
 
   /**
