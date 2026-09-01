@@ -135,8 +135,8 @@ jobs:
             console.log("Unity build present: " + wanted.length + " files.");
           '
 
-      - name: SPA fallback for share links
-        run: cp dist/index.html dist/404.html
+      - name: Pages fallbacks and public route entry points
+        run: npm run pages:fallback
 
       # Pages does not serve files under directories beginning with an
       # underscore unless this exists. Vite emits assets to /assets, but Unity
