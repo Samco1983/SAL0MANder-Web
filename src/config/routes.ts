@@ -17,6 +17,8 @@ export const paths = {
   privacy: '/privacy',
   /** Terms of use. Deliberately sells nothing — see TPT-RULES.md rule 3. */
   terms: '/terms',
+  /** Why this exists, in the author's words. */
+  about: '/about',
   profile: '/profile',
   /** Bare Unity WebGL host, used for smoke-testing a build in isolation. */
   unity: '/unity',
