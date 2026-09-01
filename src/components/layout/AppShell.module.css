@@ -156,3 +156,33 @@
   background: var(--color-surface-sunken);
   border-bottom: 1px solid var(--color-border);
 }
+
+/*
+ * Site-information links, on every page that has a footer.
+ *
+ * Not decoration: these four are what a filter's crawler follows and what a
+ * district reviewer scans for. Before this, /about had nothing linking to it
+ * anywhere on the site.
+ */
+.footerNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.footerLink {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+.footerLink:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

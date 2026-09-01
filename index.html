@@ -38,6 +38,70 @@
     <meta name="twitter:card" content="summary" />
     <meta name="color-scheme" content="light dark" />
     <title>SAL0MANder — Learning Puzzles for the Classroom</title>
+
+    <!--
+      Structured data. Google's guidance says organization data helps automated
+      systems understand and distinguish an organization, and the same machine
+      readability is what a web filter's classifier benefits from — this site is
+      currently categorised "Unknown" by at least one district, which is an
+      absence of information rather than a judgement.
+
+      Deliberately minimal and true: name, what it is, the audience, and the
+      contact routes that actually exist. No founding date, no logo URL, no
+      social profiles, no aggregate rating — every one of those would be either
+      invented or unverifiable, and structured data that overstates is worse
+      than none.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://sal0mander.com/#organization",
+            "name": "SAL0MANder",
+            "url": "https://sal0mander.com/",
+            "description": "SAL0MANder makes classroom practice activities in which students answer questions to uncover a jigsaw puzzle. Built by a high school math teacher, for any subject a teacher writes questions for.",
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "contactType": "customer support",
+                "email": "support@sal0mander.com",
+                "availableLanguage": "English"
+              },
+              {
+                "@type": "ContactPoint",
+                "contactType": "privacy",
+                "email": "privacy@sal0mander.com",
+                "availableLanguage": "English"
+              }
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://sal0mander.com/#website",
+            "url": "https://sal0mander.com/",
+            "name": "SAL0MANder",
+            "publisher": { "@id": "https://sal0mander.com/#organization" },
+            "inLanguage": "en"
+          },
+          {
+            "@type": "LearningResource",
+            "name": "SAL0MANder classroom activities",
+            "url": "https://sal0mander.com/",
+            "learningResourceType": "Activity",
+            "educationalUse": "Practice",
+            "isAccessibleForFree": true,
+            "audience": [
+              { "@type": "EducationalAudience", "educationalRole": "student" },
+              { "@type": "EducationalAudience", "educationalRole": "teacher" }
+            ],
+            "about": ["Mathematics", "Science", "Vocabulary"],
+            "publisher": { "@id": "https://sal0mander.com/#organization" }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -59,6 +123,13 @@
         mathematics such as integer operations, one-step inequalities and linear
         equations; science such as cell structure; or vocabulary review. Suitable
         for roughly grades 6 through 12.
+      </p>
+      <p>
+        More about this site:
+        <a href="/about">About</a> ·
+        <a href="/privacy">Privacy and student data</a> ·
+        <a href="/terms">Terms of use</a> ·
+        <a href="mailto:support@sal0mander.com">Contact</a>
       </p>
       <p>
         This site needs JavaScript enabled to run the activities.

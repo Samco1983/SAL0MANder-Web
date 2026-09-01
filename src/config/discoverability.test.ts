@@ -53,6 +53,49 @@ describe('what a crawler reads', () => {
     expect(robots).toMatch(/Sitemap: https:\/\/sal0mander\.com\/sitemap\.xml/)
   })
 
+  /**
+   * The hole this closes: /about had nothing linking to it anywhere on the
+   * site. Four trust pages that exist but cannot be reached by following links
+   * are worth very little to a crawler or a district reviewer.
+   */
+  it('gives a non-JavaScript reader a route to every trust page', () => {
+    const noscript = /<noscript>([\s\S]*?)<\/noscript>/.exec(html)?.[1] ?? ''
+    for (const href of ['/about', '/privacy', '/terms', 'mailto:support@sal0mander.com']) {
+      expect(noscript).toContain(href)
+    }
+  })
+
+  /**
+   * Google's guidance says organization data helps automated systems understand
+   * and distinguish an organization — the same machine readability a filter's
+   * classifier benefits from.
+   */
+  it('publishes valid structured data identifying who runs this', () => {
+    const block = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)?.[1]
+    expect(block, 'no JSON-LD block found').toBeDefined()
+
+    const data = JSON.parse(block!) as { '@graph': Array<Record<string, unknown>> }
+    const types = data['@graph'].map((n) => n['@type'])
+    expect(types).toContain('Organization')
+    expect(types).toContain('WebSite')
+
+    const org = data['@graph'].find((n) => n['@type'] === 'Organization')!
+    expect(JSON.stringify(org)).toContain('support@sal0mander.com')
+    expect(JSON.stringify(org)).toContain('privacy@sal0mander.com')
+  })
+
+  /**
+   * Structured data that overstates is worse than none: a founding date, a logo
+   * URL, social profiles or an aggregate rating would each be invented or
+   * unverifiable here.
+   */
+  it('claims nothing in structured data it cannot support', () => {
+    const block = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)?.[1] ?? ''
+    for (const key of ['aggregateRating', 'foundingDate', 'sameAs', 'award', 'numberOfEmployees']) {
+      expect(block).not.toContain(key)
+    }
+  })
+
   it('keeps internal surfaces out of the index', () => {
     expect(robots).toMatch(/^Disallow: \/console$/m)
     expect(robots).toMatch(/^Disallow: \/unity$/m)
