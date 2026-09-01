@@ -117,25 +117,51 @@ export function PrivacyPage() {
             possible. Student work is practice, not a record: the software is designed so a class
             can use it without the school handing over student information.
           </p>
+          {/*
+            The "get in touch" sentence that used to sit here was replaced by
+            the Contact section below, which names the address and says what
+            will be sent back. "Please get in touch" is the shape of a sentence
+            that sounds helpful and tells a district technology officer nothing
+            they can act on.
+          */}
           <p>
-            If your district filters web traffic and needs the domain reviewed, or you would like
-            more detail than this page gives, please get in touch.
+            Everything above is what the software does today. If something here is not enough detail
+            for a review, the contact addresses below reach a person.
           </p>
         </section>
 
         {/*
-          Marked so it cannot ship unnoticed. `PrivacyPage.test.tsx` fails while
-          this placeholder is present: a privacy page whose contact route is a
-          dead end is the specific thing a reviewer treats as a bad sign, and an
-          invented address would be worse than an absent one.
+          Two addresses rather than one, because they are read by different
+          people. A teacher whose class cannot load an activity and a district
+          privacy officer evaluating the product both need a route in, and a
+          single inbox makes the second one look like an afterthought.
+
+          Domain addresses rather than a personal mailbox: they can forward
+          anywhere, but a reviewer reads `privacy@sal0mander.com` as a product
+          with a process behind it and a personal Gmail as one person's side
+          project. They also survive the owner changing mail providers, which a
+          published personal address does not.
         */}
         <section className={styles.section} aria-labelledby="contact">
           <h2 className={styles.sectionTitle} id="contact">
             Contact
           </h2>
-          <p data-placeholder="contact">
-            A contact address has not been published yet. This section must carry a real, monitored
-            address before the site is presented to a school or submitted for review.
+          <p>
+            <strong>Teachers and general support:</strong>{' '}
+            <a className={styles.link} href="mailto:support@sal0mander.com">
+              support@sal0mander.com
+            </a>
+          </p>
+          <p>
+            <strong>Privacy, student data, and district technology staff:</strong>{' '}
+            <a className={styles.link} href="mailto:privacy@sal0mander.com">
+              privacy@sal0mander.com
+            </a>
+          </p>
+          <p>
+            If your district filters web traffic and needs {env.appName} reviewed or added to an
+            allow list, write to the privacy address and we will send the exact domain list and a
+            description of what the software does.
           </p>
         </section>
 

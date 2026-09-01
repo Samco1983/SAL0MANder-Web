@@ -42,20 +42,29 @@ describe('privacy page', () => {
   })
 
   /**
-   * Fails while the contact section is unfilled.
-   *
    * A privacy page whose contact route is a dead end is exactly what a filter
-   * reviewer reads as a bad sign — and an invented address would be worse than
-   * an absent one. This test is the reminder that survives a busy week.
+   * reviewer reads as a bad sign. Both addresses are load-bearing: one for a
+   * teacher whose class cannot load an activity, one for a district privacy
+   * officer, and they are read by different people with different questions.
    */
-  it('has not shipped without a real contact address', () => {
+  it('gives teachers and district staff separate ways in', () => {
+    renderPage()
+    const support = screen.getByRole('link', { name: 'support@sal0mander.com' })
+    expect(support).toHaveAttribute('href', 'mailto:support@sal0mander.com')
+
+    const privacy = screen.getByRole('link', { name: 'privacy@sal0mander.com' })
+    expect(privacy).toHaveAttribute('href', 'mailto:privacy@sal0mander.com')
+  })
+
+  it('tells a filtering district exactly who to write to', () => {
+    renderPage()
+    expect(screen.getByText(/filters web traffic/i)).toBeInTheDocument()
+    expect(screen.getByText(/allow list/i)).toBeInTheDocument()
+  })
+
+  it('no longer carries the unfilled-contact placeholder', () => {
     const { container } = renderPage()
-    const placeholder = container.querySelector('[data-placeholder="contact"]')
-    expect(
-      placeholder,
-      'Replace the contact placeholder with a real, monitored address before presenting this site ' +
-        'to a school or submitting the domain for review, then delete this assertion.',
-    ).not.toBeNull()
+    expect(container.querySelector('[data-placeholder="contact"]')).toBeNull()
   })
 
   it('reads as a mathematics classroom tool, which is what it is', () => {
