@@ -6,15 +6,30 @@ import { Wordmark } from '@components/brand/Wordmark'
 import { ThemeToggle } from './ThemeToggle'
 import styles from './AppShell.module.css'
 
-type NavItem = { to: string; label: string }
+/**
+ * `internal` keeps a destination out of the public navigation without taking it
+ * away from whoever needs it.
+ *
+ * The route still resolves — typing the URL works in production exactly as it
+ * does locally. What changes is that a teacher evaluating the site, or a
+ * student on a share link, is never handed "WebGL Host" and "Console" as though
+ * they were part of the product. Removing the routes instead would cost the
+ * team its own smoke-test surfaces to hide two links.
+ */
+type NavItem = { to: string; label: string; internal?: boolean }
 
 const NAV: NavItem[] = [
   { to: paths.home, label: 'Home' },
   { to: paths.guestPlayIndex, label: 'Play' },
   { to: paths.profile, label: 'Profile' },
-  { to: paths.unity, label: 'WebGL Host' },
-  { to: paths.console, label: 'Console' },
+  { to: paths.unity, label: 'WebGL Host', internal: true },
+  { to: paths.console, label: 'Console', internal: true },
 ]
+
+/** What the public sees. In production, internal destinations are not listed. */
+export function visibleNav(isProd: boolean): NavItem[] {
+  return isProd ? NAV.filter((item) => !item.internal) : NAV
+}
 
 /**
  * Responsive application shell.
@@ -57,7 +72,7 @@ export function AppShell({
         </Link>
 
         <nav className={styles.nav} aria-label="Main">
-          {NAV.map((item) => (
+          {visibleNav(env.isProd).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

@@ -177,6 +177,49 @@ describe('the stage must never remount — non-negotiable #4', () => {
     expect(canvas()).toBe(before)
     expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
   })
+
+  it('keeps the same running canvas while entering and leaving full screen', async () => {
+    const unity = stubUnityFactory()
+    let fullscreenElement: Element | null = null
+    Object.defineProperty(document, 'fullscreenElement', {
+      configurable: true,
+      get: () => fullscreenElement,
+    })
+    Object.defineProperty(HTMLElement.prototype, 'requestFullscreen', {
+      configurable: true,
+      value: vi.fn(async () => {
+        fullscreenElement = canvas()?.parentElement ?? null
+        document.dispatchEvent(new Event('fullscreenchange'))
+      }),
+    })
+    Object.defineProperty(Document.prototype, 'exitFullscreen', {
+      configurable: true,
+      value: vi.fn(async () => {
+        fullscreenElement = null
+        document.dispatchEvent(new Event('fullscreenchange'))
+      }),
+    })
+
+    render(<UnityStage activityId="demo" />)
+    fireLoad()
+    await unity.ready()
+    const before = canvas()
+
+    await act(async () => screen.getByRole('button', { name: 'Full screen' }).click())
+    expect(screen.getByRole('button', { name: 'Exit full screen' })).toBeInTheDocument()
+    expect(canvas()).toBe(before)
+    expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
+    expect(unity.quit).not.toHaveBeenCalled()
+
+    await act(async () => screen.getByRole('button', { name: 'Exit full screen' }).click())
+    expect(screen.getByRole('button', { name: 'Full screen' })).toBeInTheDocument()
+    expect(canvas()).toBe(before)
+    expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
+    expect(unity.quit).not.toHaveBeenCalled()
+
+    Reflect.deleteProperty(HTMLElement.prototype, 'requestFullscreen')
+    Reflect.deleteProperty(Document.prototype, 'exitFullscreen')
+  })
 })
 
 describe('failure paths', () => {
