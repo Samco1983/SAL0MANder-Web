@@ -48,9 +48,9 @@ export function PrivacyPage() {
           <p className={styles.eyebrow}>Privacy</p>
           <h1 className={styles.title}>What {env.appName} collects</h1>
           <p className={styles.lede}>
-            {env.appName} is a mathematics practice tool for classrooms. Students solve problems to
-            reveal a puzzle. This page describes exactly what the software does with information —
-            no more and no less.
+            {env.appName} is a practice tool for classrooms. Students answer questions to reveal a
+            puzzle, in whatever subject their teacher built the activity for. This page describes
+            exactly what the software does with information — no more and no less.
           </p>
         </header>
 

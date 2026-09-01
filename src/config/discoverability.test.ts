@@ -21,22 +21,28 @@ const sitemap = readFileSync('public/sitemap.xml', 'utf8')
 describe('what a crawler reads', () => {
   it('has a title that says what this is, not just the brand name', () => {
     const title = /<title>(.*?)<\/title>/.exec(html)?.[1] ?? ''
-    expect(title).toMatch(/math/i)
+    // Not /math/: the puzzle is subject-agnostic and Unity already ships cell
+    // biology and vocabulary activities alongside quadratics. Naming one
+    // subject in the title would be inaccurate and would box the product in.
+    expect(title).toMatch(/learning|classroom|practice/i)
     expect(title.length).toBeGreaterThan(20)
   })
 
   it('describes a classroom math tool rather than a software platform', () => {
     const description = /name="description"[\s\S]*?content="(.*?)"/.exec(html)?.[1] ?? ''
-    expect(description).toMatch(/math/i)
     expect(description).toMatch(/classroom|teacher|student/i)
+    // Several subjects named, which is a stronger Education signal than one.
+    expect(description).toMatch(/math/i)
+    expect(description).toMatch(/science/i)
+    expect(description).toMatch(/vocabulary/i)
     // The exact phrasing that produced "Unknown".
     expect(description).not.toMatch(/cloud companion platform/i)
   })
 
   it('gives a non-JavaScript reader real content, not an error line', () => {
     const noscript = /<noscript>([\s\S]*?)<\/noscript>/.exec(html)?.[1] ?? ''
-    expect(noscript).toMatch(/math/i)
     expect(noscript).toMatch(/teacher|student/i)
+    expect(noscript).toMatch(/classroom/i)
     // A bare "needs JavaScript" is indistinguishable from a parked domain.
     expect(noscript.length).toBeGreaterThan(200)
   })

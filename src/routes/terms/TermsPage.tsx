@@ -54,8 +54,9 @@ export function TermsPage() {
             What this is
           </h2>
           <p>
-            {env.appName} is a mathematics practice activity. Students answer questions to uncover a
-            jigsaw puzzle. Teachers open an activity and share its link with a class.
+            {env.appName} is a classroom practice activity. Students answer questions to uncover a
+            jigsaw puzzle. Teachers choose the subject and the questions, then share an activity
+            link with a class.
           </p>
         </section>
 

@@ -39,12 +39,12 @@ export function HomePage() {
     <AppShell>
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>Math practice for the classroom</p>
+          <p className={styles.eyebrow}>Learning puzzles for the classroom</p>
           <h1 className={styles.title}>{env.appName}</h1>
           <p className={styles.lede}>
-            Students solve math problems to uncover a jigsaw puzzle, one piece at a time. Teachers
-            share an activity with a single link — no accounts to create, no passwords to reset, and
-            nothing for a student to remember.
+            Students answer questions to uncover a jigsaw puzzle, one piece at a time — math,
+            science, vocabulary, or whatever a teacher builds. Share an activity with a single link:
+            no accounts to create, no passwords to reset, nothing for a student to remember.
           </p>
           <div className={styles.actions}>
             <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)} size="lg">
@@ -138,7 +138,8 @@ export function HomePage() {
           </Card>
           <Card title="Answer, and the picture appears">
             Each correct answer releases a puzzle piece. Students see the image come together as
-            they work, which is the part that keeps them going.
+            they work, which is the part that keeps them going — and it works the same whether the
+            questions are equations, cell biology, or vocabulary.
           </Card>
           <Card title="Nothing to configure">
             Everything loads from this one website. No plugins, no extensions, no separate accounts,

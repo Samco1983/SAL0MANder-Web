@@ -119,8 +119,8 @@ describe('no dead links', () => {
     renderHome()
     const text = document.body.textContent ?? ''
 
-    expect(text).toMatch(/math/i)
     expect(text).toMatch(/classroom/i)
+    expect(text).toMatch(/question/i)
     expect(text).toMatch(/teacher/i)
     expect(text).toMatch(/student/i)
 

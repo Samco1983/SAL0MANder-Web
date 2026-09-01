@@ -87,7 +87,7 @@ export function AppShell({
               application", which describes the architecture to an engineer and
               tells a teacher nothing.
             */}
-            {env.appName} — math practice puzzles for the classroom.
+            {env.appName} — learning puzzles for the classroom.
           </span>
           {env.isProd ? null : (
             <span className={styles.envBadge}>
