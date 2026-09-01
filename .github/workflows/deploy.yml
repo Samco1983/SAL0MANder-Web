@@ -186,6 +186,24 @@ jobs:
           VITE_BASE_PATH: /
         run: |
           test -f dist/404.html || { echo "::error::404.html is gone — something rebuilt dist after the SPA fallback step; share links would 404"; exit 1; }
+          # Every URL sitemap.xml promises must be a real file. Pages cannot
+          # rewrite, so a client-side route is served the shell with HTTP 404 —
+          # measured live on 2026-08-31, /about /privacy /terms all returned 404
+          # while rendering fine for a human. A crawler reads the status, so the
+          # trust pages were invisible to the classifiers they exist for.
+          node -e '
+            const fs = require("fs");
+            const sm = fs.readFileSync("dist/sitemap.xml", "utf8");
+            const paths = [...sm.matchAll(/<loc>\s*https?:\/\/[^/]+(\/[^<\s]*)\s*<\/loc>/g)]
+              .map((m) => m[1].replace(/\/$/, ""))
+              .filter(Boolean);
+            const missing = paths.filter((p) => !fs.existsSync("dist" + p + "/index.html"));
+            if (missing.length) {
+              console.error("::error::sitemap promises URLs with no file — a crawler gets 404: " + missing.join(", "));
+              process.exit(1);
+            }
+            console.log("sitemap: " + paths.length + " page(s) resolve with a real file.");
+          '
           node scripts/verify-deploy-artifact.mjs dist "$VITE_BASE_PATH"
 
       - uses: actions/upload-pages-artifact@v3

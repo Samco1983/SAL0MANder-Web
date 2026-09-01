@@ -7,7 +7,7 @@
     "art:dry": "python3 scripts/lib/sal0_image_factory.py --all --dry-run",
     "art:list": "python3 scripts/lib/sal0_image_factory.py --list",
     "art:make": "python3 scripts/lib/sal0_image_factory.py",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/prerender-routes.mjs dist",
     "build:pages": "VITE_BASE_PATH=/SAL0MANder-Web/ npm run build",
     "checkin:monitor": "node scripts/sal0-checkin-monitor.mjs",
     "checkin:monitor:accept": "node scripts/sal0-checkin-monitor.mjs --accept",
