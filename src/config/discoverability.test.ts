@@ -60,7 +60,12 @@ describe('what a crawler reads', () => {
    */
   it('gives a non-JavaScript reader a route to every trust page', () => {
     const noscript = /<noscript>([\s\S]*?)<\/noscript>/.exec(html)?.[1] ?? ''
-    for (const href of ['/about', '/privacy', '/terms', 'mailto:support@sal0mander.com']) {
+    for (const href of [
+      'https://sal0mander.com/about',
+      'https://sal0mander.com/privacy',
+      'https://sal0mander.com/terms',
+      'mailto:samco1983@gmail.com',
+    ]) {
       expect(noscript).toContain(href)
     }
   })
@@ -80,8 +85,7 @@ describe('what a crawler reads', () => {
     expect(types).toContain('WebSite')
 
     const org = data['@graph'].find((n) => n['@type'] === 'Organization')!
-    expect(JSON.stringify(org)).toContain('support@sal0mander.com')
-    expect(JSON.stringify(org)).toContain('privacy@sal0mander.com')
+    expect(JSON.stringify(org)).toContain('samco1983@gmail.com')
   })
 
   /**
