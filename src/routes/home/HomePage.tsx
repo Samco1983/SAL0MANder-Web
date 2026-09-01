@@ -90,6 +90,55 @@ export function HomePage() {
         </dl>
       </section>
 
+      {/*
+        What a student is actually working toward. The page described the
+        mechanic in words and showed none of it — a teacher deciding in four
+        seconds, and a filter reviewer deciding what this domain is, both read
+        pictures faster than paragraphs.
+
+        Art is served from this domain like everything else. Sized and
+        compressed from the originals (1696x2528 and 2752x1536, ~3.5MB each)
+        down to ~300KB; the originals are untouched and live outside the repo.
+        The dated banner in the source image was cropped out rather than
+        shipped — "2024" on a classroom page ages badly.
+      */}
+      <section className={styles.section} aria-labelledby="art-title">
+        <h2 className={styles.sectionTitle} id="art-title">
+          What students uncover
+        </h2>
+        <p className={styles.artLede}>
+          Every correct answer releases a piece. The picture is the reason to keep going.
+        </p>
+        <div className={styles.artGrid}>
+          <figure className={styles.artFigure}>
+            <img
+              className={styles.artImage}
+              src="art/puzzle-space-lab.jpg"
+              /* Descriptive, because it is read aloud and it is also text a
+                 classifier can use. Not "puzzle image 1". */
+              alt="A cartoon cat in a spacesuit and a friendly robot floating inside a space station, looking out a round window at a colourful galaxy and planets."
+              width={1600}
+              height={893}
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption className={styles.artCaption}>Science and space</figcaption>
+          </figure>
+          <figure className={styles.artFigure}>
+            <img
+              className={styles.artImage}
+              src="art/puzzle-hero-dog.jpg"
+              alt="A golden retriever in a superhero cape flying above a sunlit cartoon city."
+              width={1400}
+              height={1050}
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption className={styles.artCaption}>Just for fun</figcaption>
+          </figure>
+        </div>
+      </section>
+
       <section className={styles.section} aria-labelledby="demo-share-title">
         <div className={styles.demoShare}>
           <div className={styles.demoShareCopy}>

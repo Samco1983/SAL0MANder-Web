@@ -133,6 +133,42 @@ describe('no dead links', () => {
    * Claims a district checks first. None of them are established anywhere in
    * this repository, and an unsupported one costs more than silence.
    */
+  /**
+   * The page described the mechanic in words and showed none of it. A teacher
+   * deciding in four seconds reads a picture faster than a paragraph, and alt
+   * text is also content a classifier can use.
+   */
+  it('shows what students uncover, with alt text that describes it', () => {
+    const { container } = renderHome()
+    // Scoped to the art figures: the share panel also renders an <img> (the QR
+    // code), and it is a different kind of image with different rules.
+    const images = [...container.querySelectorAll('figure img')]
+    expect(images.length).toBeGreaterThanOrEqual(2)
+
+    for (const img of images) {
+      const alt = img.getAttribute('alt') ?? ''
+      // Not "puzzle image 1" — it is read aloud, and it is indexable text.
+      expect(alt.length).toBeGreaterThan(30)
+      // Reserved space, so the page does not jump as they load.
+      expect(img).toHaveAttribute('width')
+      expect(img).toHaveAttribute('height')
+      expect(img).toHaveAttribute('loading', 'lazy')
+    }
+  })
+
+  /**
+   * Art is served from this domain like everything else. A third-party image
+   * host is one more domain a district has to allow, and the single-origin
+   * property is one of the stronger things this site has going for it.
+   */
+  it('serves its art from this domain, not a third party', () => {
+    const { container } = renderHome()
+    for (const img of container.querySelectorAll('img')) {
+      // Covers the QR code too — it is generated inline, not fetched.
+      expect(img.getAttribute('src') ?? '').not.toMatch(/^https?:\/\//)
+    }
+  })
+
   it('claims no compliance it cannot evidence', () => {
     renderHome()
     const text = document.body.textContent ?? ''

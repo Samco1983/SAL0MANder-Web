@@ -255,3 +255,46 @@
     box-shadow: var(--shadow-2);
   }
 }
+
+/*
+ * Puzzle art. The page described the mechanic and showed none of it.
+ */
+.artLede {
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+  max-width: 44rem;
+}
+
+.artGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  gap: var(--space-5);
+}
+
+.artFigure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/*
+ * Fixed aspect and object-fit, so the two different source ratios sit as one
+ * row rather than one tall box beside one wide one. width/height on the <img>
+ * reserve the space, so the page does not jump when they load.
+ */
+.artImage {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-1);
+  background: var(--color-surface-sunken);
+}
+
+.artCaption {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
