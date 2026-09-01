@@ -85,7 +85,6 @@ describe('about page', () => {
 
   it('offers a way to reach a person', () => {
     renderPage()
-    expect(screen.getByRole('link', { name: 'support@sal0mander.com' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'privacy@sal0mander.com' })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'samco1983@gmail.com' })).toHaveLength(2)
   })
 })
