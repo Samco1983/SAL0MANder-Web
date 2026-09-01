@@ -95,8 +95,41 @@ export function AppShell({
       {fill ? null : (
         <footer className={styles.footer}>
           <span>
-            {env.appName} — cloud companion platform. Gameplay runs in the Unity application.
+            {/*
+              The footer runs on every page, so this line is read more than any
+              other sentence on the site — including by a filter reviewer. It
+              said "cloud companion platform. Gameplay runs in the Unity
+              application", which describes the architecture to an engineer and
+              tells a teacher nothing.
+            */}
+            {env.appName} — learning puzzles for the classroom.
           </span>
+
+          {/*
+            The trust pages were reachable only from the sitemap and from each
+            other — /about had nothing linking to it at all. A crawler that
+            lands on the home page follows links, and a district reviewer looks
+            for exactly these four words in exactly this place. Four pages that
+            exist but cannot be found are worth very little.
+
+            Global, so every page carries them. The footer is hidden on the
+            `fill` layout, which is the Guest Play stage, so a student mid-game
+            never sees this.
+          */}
+          <nav className={styles.footerNav} aria-label="Site information">
+            <Link className={styles.footerLink} to={paths.about}>
+              About
+            </Link>
+            <Link className={styles.footerLink} to={paths.privacy}>
+              Privacy
+            </Link>
+            <Link className={styles.footerLink} to={paths.terms}>
+              Terms
+            </Link>
+            <a className={styles.footerLink} href="mailto:support@sal0mander.com">
+              Contact
+            </a>
+          </nav>
           {env.isProd ? null : (
             <span className={styles.envBadge}>
               env: {env.appEnv} · contract: {env.api.contractVersion} ·{' '}

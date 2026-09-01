@@ -28,7 +28,7 @@ describe('AppShell in production', () => {
     )
 
     expect(screen.getByRole('contentinfo')).toHaveTextContent(
-      'SAL0MANder — cloud companion platform',
+      'SAL0MANder — learning puzzles for the classroom.',
     )
     expect(screen.queryByText(/env: production/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/contract:/i)).not.toBeInTheDocument()

@@ -138,3 +138,120 @@
   font-size: var(--text-xl);
   margin-bottom: var(--space-4);
 }
+
+/*
+ * ── Brand presence ──────────────────────────────────────────────────────────
+ *
+ * The page was correct and completely flat: white cards on a white page, no
+ * colour but the buttons. Fine as scaffolding, wrong for the two people who
+ * arrive here — a teacher deciding in about four seconds, and a filter reviewer
+ * deciding what this domain is. Both read "unfinished" from an absence of
+ * design as readily as from the word "Draft".
+ *
+ * The lime-and-violet pair is already the wordmark's. Using it on the page
+ * rather than only in the logo is what makes the site feel like one product
+ * instead of a template with a logo dropped in.
+ *
+ * Every value below is a semantic or brand token. Nothing hardcodes a hex, so a
+ * rebrand still only touches design/tokens.css.
+ */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  /*
+    A soft brand wash rather than a flat panel. color-mix keeps it a tint of the
+    real brand colour, so it tracks the token instead of drifting from it.
+  */
+  background:
+    radial-gradient(
+      120% 140% at 88% 0%,
+      color-mix(in srgb, var(--brand-lime) 16%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      90% 120% at 0% 100%,
+      color-mix(in srgb, var(--brand-violet) 12%, transparent),
+      transparent 58%
+    ),
+    var(--color-surface);
+}
+
+/*
+ * The eyebrow now carries the brand, since it is the first line read and the
+ * one that says "math practice for the classroom" — the sentence a reviewer is
+ * looking for.
+ */
+.eyebrow {
+  color: var(--color-brand-green-text);
+  font-weight: 600;
+}
+
+/*
+ * A lime rule under the title. Small, but it is the difference between a
+ * heading and a masthead.
+ */
+.title {
+  position: relative;
+  padding-bottom: var(--space-3);
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 4rem;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--brand-lime), var(--brand-violet));
+}
+
+/*
+ * Numbers are the most scannable thing on the page and were rendered in body
+ * ink. Brand colour and weight make the three zeros land, which is the point of
+ * having them.
+ */
+.statValue {
+  color: var(--color-brand-green-text);
+  font-weight: 700;
+}
+
+.stat {
+  /* A tinted top edge ties the tiles to the hero above them. */
+  border-top: 2px solid color-mix(in srgb, var(--brand-lime) 45%, transparent);
+}
+
+/*
+ * Cards read as one set rather than four separate boxes: a shared accent edge,
+ * and a lift on hover so they feel like objects instead of regions.
+ */
+.grid > * {
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(90deg, var(--brand-lime), var(--brand-violet)) 1;
+  border-image-slice: 1;
+  border-image-width: 3px 0 0 0;
+}
+
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.cardAction {
+  margin-top: var(--space-4);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .grid > * {
+    transition:
+      transform var(--transition-smooth),
+      box-shadow var(--transition-smooth);
+  }
+
+  .grid > *:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-2);
+  }
+}

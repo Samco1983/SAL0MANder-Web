@@ -21,23 +21,87 @@
     -->
     <meta
       name="description"
-      content="SAL0MANder is a free math practice tool for classrooms. Students solve math problems to reveal a jigsaw puzzle — no account and no sign-in needed. Teachers share an activity with a single link."
+      content="SAL0MANder is a free classroom practice tool. Students answer questions to reveal a jigsaw puzzle, one piece at a time — in math, science, vocabulary, or any subject a teacher builds. No account and no sign-in needed; teachers share an activity with a single link."
     />
-    <meta name="keywords" content="math practice, classroom activities, middle school math, teachers, students, educational games" />
+    <meta name="keywords" content="classroom activities, practice questions, math, science, vocabulary, review games, teachers, students, formative assessment, educational games" />
     <meta name="author" content="SAL0MANder" />
     <meta name="robots" content="index, follow" />
 
     <!-- Link previews, in Classroom / Teams / a text message to a parent. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="SAL0MANder" />
-    <meta property="og:title" content="SAL0MANder — math practice puzzles for the classroom" />
+    <meta property="og:title" content="SAL0MANder — learning puzzles for the classroom" />
     <meta
       property="og:description"
-      content="Students solve math problems to reveal a jigsaw puzzle. No account, no sign-in. Teachers share an activity with one link."
+      content="Students answer questions to reveal a jigsaw puzzle. Math, science, vocabulary — whatever a teacher builds. No account, no sign-in."
     />
     <meta name="twitter:card" content="summary" />
     <meta name="color-scheme" content="light dark" />
-    <title>SAL0MANder — Math Practice Puzzles for the Classroom</title>
+    <title>SAL0MANder — Learning Puzzles for the Classroom</title>
+
+    <!--
+      Structured data. Google's guidance says organization data helps automated
+      systems understand and distinguish an organization, and the same machine
+      readability is what a web filter's classifier benefits from — this site is
+      currently categorised "Unknown" by at least one district, which is an
+      absence of information rather than a judgement.
+
+      Deliberately minimal and true: name, what it is, the audience, and the
+      contact routes that actually exist. No founding date, no logo URL, no
+      social profiles, no aggregate rating — every one of those would be either
+      invented or unverifiable, and structured data that overstates is worse
+      than none.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://sal0mander.com/#organization",
+            "name": "SAL0MANder",
+            "url": "https://sal0mander.com/",
+            "description": "SAL0MANder makes classroom practice activities in which students answer questions to uncover a jigsaw puzzle. Built by a high school math teacher, for any subject a teacher writes questions for.",
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "contactType": "customer support",
+                "email": "samco1983@gmail.com",
+                "availableLanguage": "English"
+              },
+              {
+                "@type": "ContactPoint",
+                "contactType": "privacy",
+                "email": "samco1983@gmail.com",
+                "availableLanguage": "English"
+              }
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://sal0mander.com/#website",
+            "url": "https://sal0mander.com/",
+            "name": "SAL0MANder",
+            "publisher": { "@id": "https://sal0mander.com/#organization" },
+            "inLanguage": "en"
+          },
+          {
+            "@type": "LearningResource",
+            "name": "SAL0MANder classroom activities",
+            "url": "https://sal0mander.com/",
+            "learningResourceType": "Activity",
+            "educationalUse": "Practice",
+            "isAccessibleForFree": true,
+            "audience": [
+              { "@type": "EducationalAudience", "educationalRole": "student" },
+              { "@type": "EducationalAudience", "educationalRole": "teacher" }
+            ],
+            "about": ["Mathematics", "Science", "Vocabulary"],
+            "publisher": { "@id": "https://sal0mander.com/#organization" }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -47,16 +111,25 @@
       blank page, which is indistinguishable from a parked domain.
     -->
     <noscript>
-      <h1>SAL0MANder — math practice puzzles for the classroom</h1>
+      <h1>SAL0MANder — learning puzzles for the classroom</h1>
       <p>
-        SAL0MANder is a free mathematics practice tool for teachers and students.
-        Students solve math problems to uncover a jigsaw puzzle, one piece at a
-        time. There is no account to create and no sign-in: a teacher shares a
-        link, and the class plays.
+        SAL0MANder is a free practice tool for teachers and students. Students
+        answer questions to uncover a jigsaw puzzle, one piece at a time. There
+        is no account to create and no sign-in: a teacher shares a link, and the
+        class plays.
       </p>
       <p>
-        The activities cover topics such as integer operations, one-step
-        inequalities, and linear equations, for roughly grades 6 through 9.
+        Teachers build the questions, so an activity can cover any subject —
+        mathematics such as integer operations, one-step inequalities and linear
+        equations; science such as cell structure; or vocabulary review. Suitable
+        for roughly grades 6 through 12.
+      </p>
+      <p>
+        More about this site:
+        <a href="https://sal0mander.com/about">About</a> ·
+        <a href="https://sal0mander.com/privacy">Privacy and student data</a> ·
+        <a href="https://sal0mander.com/terms">Terms of use</a> ·
+        <a href="mailto:samco1983@gmail.com">Contact</a>
       </p>
       <p>
         This site needs JavaScript enabled to run the activities.

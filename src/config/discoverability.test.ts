@@ -21,22 +21,28 @@ const sitemap = readFileSync('public/sitemap.xml', 'utf8')
 describe('what a crawler reads', () => {
   it('has a title that says what this is, not just the brand name', () => {
     const title = /<title>(.*?)<\/title>/.exec(html)?.[1] ?? ''
-    expect(title).toMatch(/math/i)
+    // Not /math/: the puzzle is subject-agnostic and Unity already ships cell
+    // biology and vocabulary activities alongside quadratics. Naming one
+    // subject in the title would be inaccurate and would box the product in.
+    expect(title).toMatch(/learning|classroom|practice/i)
     expect(title.length).toBeGreaterThan(20)
   })
 
   it('describes a classroom math tool rather than a software platform', () => {
     const description = /name="description"[\s\S]*?content="(.*?)"/.exec(html)?.[1] ?? ''
-    expect(description).toMatch(/math/i)
     expect(description).toMatch(/classroom|teacher|student/i)
+    // Several subjects named, which is a stronger Education signal than one.
+    expect(description).toMatch(/math/i)
+    expect(description).toMatch(/science/i)
+    expect(description).toMatch(/vocabulary/i)
     // The exact phrasing that produced "Unknown".
     expect(description).not.toMatch(/cloud companion platform/i)
   })
 
   it('gives a non-JavaScript reader real content, not an error line', () => {
     const noscript = /<noscript>([\s\S]*?)<\/noscript>/.exec(html)?.[1] ?? ''
-    expect(noscript).toMatch(/math/i)
     expect(noscript).toMatch(/teacher|student/i)
+    expect(noscript).toMatch(/classroom/i)
     // A bare "needs JavaScript" is indistinguishable from a parked domain.
     expect(noscript.length).toBeGreaterThan(200)
   })
@@ -45,6 +51,53 @@ describe('what a crawler reads', () => {
     expect(robots).toMatch(/^User-agent: \*/m)
     expect(robots).toMatch(/^Allow: \/$/m)
     expect(robots).toMatch(/Sitemap: https:\/\/sal0mander\.com\/sitemap\.xml/)
+  })
+
+  /**
+   * The hole this closes: /about had nothing linking to it anywhere on the
+   * site. Four trust pages that exist but cannot be reached by following links
+   * are worth very little to a crawler or a district reviewer.
+   */
+  it('gives a non-JavaScript reader a route to every trust page', () => {
+    const noscript = /<noscript>([\s\S]*?)<\/noscript>/.exec(html)?.[1] ?? ''
+    for (const href of [
+      'https://sal0mander.com/about',
+      'https://sal0mander.com/privacy',
+      'https://sal0mander.com/terms',
+      'mailto:samco1983@gmail.com',
+    ]) {
+      expect(noscript).toContain(href)
+    }
+  })
+
+  /**
+   * Google's guidance says organization data helps automated systems understand
+   * and distinguish an organization — the same machine readability a filter's
+   * classifier benefits from.
+   */
+  it('publishes valid structured data identifying who runs this', () => {
+    const block = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)?.[1]
+    expect(block, 'no JSON-LD block found').toBeDefined()
+
+    const data = JSON.parse(block!) as { '@graph': Array<Record<string, unknown>> }
+    const types = data['@graph'].map((n) => n['@type'])
+    expect(types).toContain('Organization')
+    expect(types).toContain('WebSite')
+
+    const org = data['@graph'].find((n) => n['@type'] === 'Organization')!
+    expect(JSON.stringify(org)).toContain('samco1983@gmail.com')
+  })
+
+  /**
+   * Structured data that overstates is worse than none: a founding date, a logo
+   * URL, social profiles or an aggregate rating would each be invented or
+   * unverifiable here.
+   */
+  it('claims nothing in structured data it cannot support', () => {
+    const block = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)?.[1] ?? ''
+    for (const key of ['aggregateRating', 'foundingDate', 'sameAs', 'award', 'numberOfEmployees']) {
+      expect(block).not.toContain(key)
+    }
   })
 
   it('keeps internal surfaces out of the index', () => {

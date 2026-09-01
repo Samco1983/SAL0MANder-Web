@@ -66,10 +66,10 @@ describe('privacy page', () => {
     expect(container.querySelector('[data-placeholder="contact"]')).toBeNull()
   })
 
-  it('reads as a mathematics classroom tool, which is what it is', () => {
+  it('reads as a classroom tool, which is what it is', () => {
     renderPage()
     // Also what a categorization crawler looks for. Accurate first, findable second.
-    expect(screen.getByText(/mathematics practice tool for classrooms/i)).toBeInTheDocument()
+    expect(screen.getByText(/practice tool for classrooms/i)).toBeInTheDocument()
   })
 
   it('lists what is stored rather than describing it vaguely', () => {

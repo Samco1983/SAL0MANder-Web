@@ -1,0 +1,116 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-block: var(--space-6);
+  /* Prose measure: long lines of policy text are the hardest thing to read. */
+  max-width: 42rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.eyebrow {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  color: var(--color-text);
+}
+
+.lede {
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.section p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.65;
+}
+
+.sectionTitle {
+  font-size: var(--text-lg);
+  color: var(--color-text);
+}
+
+.callout {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  border-left: 3px solid var(--color-accent);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.footer {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/*
+ * Long-form prose, which none of the other pages are. Wider line height and
+ * paragraph spacing than the policy pages: this one is meant to be read
+ * through, not scanned for a clause.
+ */
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.prose p {
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/*
+ * The two sentences the whole page turns on. Given weight rather than left to
+ * disappear into the column — a reader who skims should still catch these.
+ */
+.pull {
+  font-size: var(--text-lg) !important;
+  color: var(--color-text) !important;
+  line-height: 1.5 !important;
+  padding-left: var(--space-4);
+  border-left: 3px solid var(--brand-lime);
+}
+
+.prose .sectionTitle {
+  margin-top: var(--space-5);
+}
