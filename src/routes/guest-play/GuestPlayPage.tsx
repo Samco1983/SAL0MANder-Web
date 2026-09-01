@@ -312,12 +312,38 @@ export function GuestPlayPage() {
          */
         reveal={session.resultHeld || state.status === 'error'}
         stage={
-          <UnityStage
-            audience="student"
-            {...(activityId ? { activityId } : {})}
-            {...(boot ? { boot } : {})}
-            {...(sessionStarted ? { sessionStarted } : {})}
-          />
+          /*
+            Withheld entirely when there is no boot payload, rather than mounted
+            without one.
+
+            `{...(boot ? { boot } : {})}` omits the PROP; it does not prevent the
+            stage from mounting. So a 404 on activity resolution used to render
+            the failure message while `UnityStage` still injected the loader,
+            downloaded ~88MB of WebGL, and started Unity — which, with no boot to
+            tell it otherwise, opens whichever activity `ActivityManager` has
+            loaded. A student following a mistyped link saw an error with a
+            different puzzle running behind it.
+
+            That is the containment requirement, not a rendering detail: an
+            unknown id must FAIL, not open another puzzle. Asserting "the error
+            appeared" would have passed the whole time — the tests here assert
+            the canvas never mounts and no boot is ever sent.
+
+            Gated on the failure state rather than on `!boot`. Withholding
+            whenever boot is absent would also withhold during normal loading,
+            so the stage would unmount and remount the moment the bundle
+            arrived — churn a Gate-1 test caught immediately, and a step toward
+            the remount that CLAUDE.md forbids. A resolved bundle keeps the
+            stage mounted exactly as before; only genuine failure withholds it.
+          */
+          state.status === 'error' ? null : (
+            <UnityStage
+              audience="student"
+              {...(activityId ? { activityId } : {})}
+              {...(boot ? { boot } : {})}
+              {...(sessionStarted ? { sessionStarted } : {})}
+            />
+          )
         }
         companion={
           <>
