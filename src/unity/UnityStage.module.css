@@ -95,3 +95,73 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/*
+ * Full-screen control.
+ *
+ * Bottom-right rather than top-left: the companion toggle already owns the
+ * top-left corner of the stage (see the empty-state note above), and the
+ * bottom-right is the corner Unity's own HUD leaves clear.
+ */
+.fullscreenControl {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  /* Above the canvas, below any error overlay that needs the student's eye. */
+  z-index: 1;
+}
+
+/*
+ * Faded until wanted, but never invisible and never removed from the tab
+ * order: a keyboard or screen-reader user must be able to reach it without a
+ * pointer hover that they cannot perform.
+ */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .fullscreenControl {
+    opacity: 0.55;
+    transition: opacity var(--transition-smooth);
+  }
+
+  .stage:hover .fullscreenControl,
+  .fullscreenControl:focus-within {
+    opacity: 1;
+  }
+
+  /*
+   * Never faded while fullscreen. On an iPad there is no Esc key, so this
+   * button is the ONLY way out of a game filling the entire screen — a 55%
+   * grey control in the corner is not good enough for a student who wants to
+   * leave and cannot.
+   *
+   * Cheap to make obvious, too: leaving fullscreen does not remount the
+   * canvas, so an accidental press costs no progress.
+   */
+  .stage[data-fullscreen='true'] .fullscreenControl {
+    opacity: 1;
+  }
+}
+
+.fullscreenFailed {
+  font-size: var(--text-xs);
+  color: var(--color-on-stage-strong);
+  background: var(--color-stage-raised);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  max-width: 24ch;
+  text-align: right;
+}
+
+/*
+ * In fullscreen the stage IS the viewport. Without this the element keeps the
+ * flex sizing it had inside the layout and the browser letterboxes it against
+ * a default white backdrop.
+ */
+.stage[data-fullscreen='true'] {
+  width: 100vw;
+  height: 100vh;
+  background: var(--color-stage);
+}

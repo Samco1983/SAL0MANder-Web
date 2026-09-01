@@ -131,11 +131,6 @@ export function PrivacyPage() {
         </section>
 
         {/*
-          Two addresses rather than one, because they are read by different
-          people. A teacher whose class cannot load an activity and a district
-          privacy officer evaluating the product both need a route in, and a
-          single inbox makes the second one look like an afterthought.
-
           The same monitored mailbox is listed for both audiences until
           dedicated domain mailboxes are configured. A working contact is more
           trustworthy than publishing role addresses that cannot receive mail.

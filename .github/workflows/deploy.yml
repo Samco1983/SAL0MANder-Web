@@ -68,6 +68,17 @@ jobs:
           # The router, asset URLs, Unity build path, and share links all read
           # this value; src/config/deployBasePath.test.ts pins that behaviour.
           VITE_BASE_PATH: /
+          # Without this, env.ts falls back to its 'local' default and the
+          # PUBLIC site renders as a developer preview: the "Foundation
+          # preview — placeholder visual design" banner, an "env: local ·
+          # api: mock" footer, and every <PlaceholderNotice> listing what is
+          # not built yet. All of that is gated on env.isProd, which is
+          # VITE_APP_ENV === 'production' and had never been set anywhere.
+          #
+          # Same shape as the compression bug below: a default that is right
+          # for a laptop is wrong for a deploy, and nothing fails — the site
+          # simply tells teachers it is unfinished.
+          VITE_APP_ENV: production
           # Emergency Pages-hosted WebGL build. Longer-term this can move back
           # to a CDN once Unity licensing is healthy enough for repeat builds.
           VITE_UNITY_BUILD_BASE_URL: /unity

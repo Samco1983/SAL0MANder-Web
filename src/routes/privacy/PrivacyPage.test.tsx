@@ -43,11 +43,10 @@ describe('privacy page', () => {
 
   /**
    * A privacy page whose contact route is a dead end is exactly what a filter
-   * reviewer reads as a bad sign. Both addresses are load-bearing: one for a
-   * teacher whose class cannot load an activity, one for a district privacy
-   * officer, and they are read by different people with different questions.
+   * reviewer reads as a bad sign. Both audience labels are load-bearing even
+   * while they route to the same monitored mailbox.
    */
-  it('gives teachers and district staff separate ways in', () => {
+  it('gives teachers and district staff a working contact route', () => {
     renderPage()
     const contacts = screen.getAllByRole('link', { name: 'samco1983@gmail.com' })
     expect(contacts).toHaveLength(2)
