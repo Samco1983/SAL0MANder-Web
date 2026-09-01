@@ -1,0 +1,22 @@
+# SAL0MANder — math practice puzzles for the classroom.
+#
+# Everything here is public and meant to be indexed. Crawlability is not a
+# marketing nicety for this site: school web filters classify domains partly by
+# what their crawlers can read, and sal0mander.com is currently blocked by at
+# least one district as "categorized as Unknown" — an absence of a judgement
+# rather than a judgement. A site that cannot be read cannot be classified.
+
+User-agent: *
+Allow: /
+
+# Guest Play URLs are per-activity share links. They resolve fine, but they are
+# a teacher's distribution surface rather than site content, and indexing them
+# would fill results with links to individual activities instead of the pages
+# that describe what this is.
+Disallow: /play/
+
+# Internal surfaces. Reachable for the team, not part of the public site.
+Disallow: /console
+Disallow: /unity
+
+Sitemap: https://sal0mander.com/sitemap.xml

@@ -4,16 +4,64 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!--
+      The most-read text on this site, and for a while the ONLY text some
+      readers get. This is a React app, so a crawler that does not run
+      JavaScript sees an empty <div id="root"> and nothing else — the title,
+      this description, and the <noscript> below are the whole page to them.
+
+      That includes the automated classifiers school web filters rely on.
+      sal0mander.com is currently blocked by at least one district as
+      "categorized as Unknown"; the previous description said "cloud companion
+      platform for the SAL0MANder learning puzzle application", which tells a
+      classifier nothing about mathematics, students, or classrooms.
+
+      Written plainly and accurately rather than stuffed with keywords: it
+      describes what the product actually is, in the words a teacher would use.
+    -->
     <meta
       name="description"
-      content="SAL0MANder — cloud companion platform for the SAL0MANder learning puzzle application."
+      content="SAL0MANder is a free math practice tool for classrooms. Students solve math problems to reveal a jigsaw puzzle — no account and no sign-in needed. Teachers share an activity with a single link."
     />
+    <meta name="keywords" content="math practice, classroom activities, middle school math, teachers, students, educational games" />
+    <meta name="author" content="SAL0MANder" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Link previews, in Classroom / Teams / a text message to a parent. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SAL0MANder" />
+    <meta property="og:title" content="SAL0MANder — math practice puzzles for the classroom" />
+    <meta
+      property="og:description"
+      content="Students solve math problems to reveal a jigsaw puzzle. No account, no sign-in. Teachers share an activity with one link."
+    />
+    <meta name="twitter:card" content="summary" />
     <meta name="color-scheme" content="light dark" />
-    <title>SAL0MANder</title>
+    <title>SAL0MANder — Math Practice Puzzles for the Classroom</title>
   </head>
   <body>
     <div id="root"></div>
-    <noscript>SAL0MANder needs JavaScript enabled to run.</noscript>
+    <!--
+      Real content, not an error. A non-JavaScript reader — a person with it
+      disabled, or a classifier that does not execute scripts — otherwise gets a
+      blank page, which is indistinguishable from a parked domain.
+    -->
+    <noscript>
+      <h1>SAL0MANder — math practice puzzles for the classroom</h1>
+      <p>
+        SAL0MANder is a free mathematics practice tool for teachers and students.
+        Students solve math problems to uncover a jigsaw puzzle, one piece at a
+        time. There is no account to create and no sign-in: a teacher shares a
+        link, and the class plays.
+      </p>
+      <p>
+        The activities cover topics such as integer operations, one-step
+        inequalities, and linear equations, for roughly grades 6 through 9.
+      </p>
+      <p>
+        This site needs JavaScript enabled to run the activities.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
