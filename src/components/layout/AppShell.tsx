@@ -80,7 +80,14 @@ export function AppShell({
       {fill ? null : (
         <footer className={styles.footer}>
           <span>
-            {env.appName} — cloud companion platform. Gameplay runs in the Unity application.
+            {/*
+              The footer runs on every page, so this line is read more than any
+              other sentence on the site — including by a filter reviewer. It
+              said "cloud companion platform. Gameplay runs in the Unity
+              application", which describes the architecture to an engineer and
+              tells a teacher nothing.
+            */}
+            {env.appName} — math practice puzzles for the classroom.
           </span>
           {env.isProd ? null : (
             <span className={styles.envBadge}>

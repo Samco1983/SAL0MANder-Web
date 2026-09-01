@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 
@@ -38,24 +38,26 @@ const renderHome = () =>
 describe('the primary action', () => {
   it('offers Guest Play as the first thing a visitor can act on', async () => {
     renderHome()
-    const guestPlay = screen.getByRole('link', { name: /guest play/i })
+    const guestPlay = screen.getByRole('link', { name: /try a sample activity/i })
     expect(guestPlay).toBeVisible()
 
-    // Compare within the hero only. The shell nav also has a WebGL Host entry,
-    // and matching that instead made this fail against a page that was correct —
-    // the first version of this test was the bug, not the page.
+    /*
+      Within the hero only — the shell nav has its own links, and matching those
+      made an earlier version of this test fail against a page that was correct.
+
+      It used to compare against the WebGL host button's position. That button
+      is gone from the public page on purpose, so the assertion is now the
+      simpler and stronger one: playing is the FIRST thing offered.
+    */
     const hero = guestPlay.closest('section')
     expect(hero).not.toBeNull()
     const heroLinks = [...hero!.querySelectorAll('a')]
-    const playIndex = heroLinks.indexOf(guestPlay as HTMLAnchorElement)
-    const hostIndex = heroLinks.findIndex((l) => /webgl/i.test(l.textContent ?? ''))
-    expect(playIndex).toBeGreaterThanOrEqual(0)
-    expect(playIndex).toBeLessThan(hostIndex)
+    expect(heroLinks.indexOf(guestPlay as HTMLAnchorElement)).toBe(0)
   })
 
   it('sends Guest Play to a real activity path, not a placeholder', () => {
     renderHome()
-    const href = screen.getByRole('link', { name: /guest play/i }).getAttribute('href')
+    const href = screen.getByRole('link', { name: /try a sample activity/i }).getAttribute('href')
     expect(href).toMatch(/^\/play\/.+/)
     expect(href).not.toMatch(/undefined|null|:activityId/)
   })
@@ -94,21 +96,56 @@ describe('no dead links', () => {
     }
   })
 
-  it('links progress copy to the guest-safe Profile surface', () => {
+  it('routes the data question to the privacy page, and still gates nothing', () => {
     renderHome()
 
-    expect(screen.getByRole('link', { name: /view guest progress/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /what we collect/i })).toHaveAttribute(
       'href',
-      paths.profile,
+      paths.privacy,
     )
     expect(document.body.textContent ?? '').not.toMatch(/\b(sign (in|up)|log in|create an account) to\b/i)
+  })
+
+  /**
+   * The page a district reviewer reads must say what this is.
+   *
+   * It used to open "Cloud companion platform / The SAL0MANder application owns
+   * the gameplay... cloud companion around it", and report "Mock backend" and
+   * "Contract version v1 · Draft". Accurate to an engineer, and the reason a
+   * filter had nothing to categorise: no mathematics, no classroom, no
+   * students, and two words that say unfinished.
+   */
+  it('reads as a classroom math tool, not as internal architecture', () => {
+    renderHome()
+    const text = document.body.textContent ?? ''
+
+    expect(text).toMatch(/math/i)
+    expect(text).toMatch(/classroom/i)
+    expect(text).toMatch(/teacher/i)
+    expect(text).toMatch(/student/i)
+
+    expect(text).not.toMatch(/cloud companion platform/i)
+    expect(text).not.toMatch(/mock backend/i)
+    expect(text).not.toMatch(/contract version/i)
+  })
+
+  /**
+   * Claims a district checks first. None of them are established anywhere in
+   * this repository, and an unsupported one costs more than silence.
+   */
+  it('claims no compliance it cannot evidence', () => {
+    renderHome()
+    const text = document.body.textContent ?? ''
+    for (const word of [/COPPA/i, /FERPA/i, /WCAG/i, /\bcompliant\b/i, /certified/i]) {
+      expect(text).not.toMatch(word)
+    }
   })
 })
 
 describe('the demo share panel', () => {
   it('lets a teacher copy the same demo activity that the primary action opens', () => {
     renderHome()
-    const playHref = screen.getByRole('link', { name: /guest play/i }).getAttribute('href')
+    const playHref = screen.getByRole('link', { name: /try a sample activity/i }).getAttribute('href')
     const shareInput = screen.getByLabelText(/share link/i) as HTMLInputElement
 
     expect(playHref).toBe(`/play/${MOCK_DEMO_ACTIVITY_ID}`)
@@ -118,19 +155,26 @@ describe('the demo share panel', () => {
   it('lets a teacher preview the same student link they are sharing', () => {
     renderHome()
 
-    expect(screen.getByRole('link', { name: /preview student link/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /see what a student sees/i })).toHaveAttribute(
       'href',
       `/play/${MOCK_DEMO_ACTIVITY_ID}`,
     )
   })
 
-  it('offers a teacher preview path to the WebGL host', () => {
+  /**
+   * Inverted deliberately. The WebGL host is an internal smoke-test route; it
+   * stays reachable by URL (see `visibleNav` in AppShell) but offering it on
+   * the public front page tells a teacher — and a filter reviewer — that this
+   * is a developer build rather than a classroom product.
+   */
+  it('does not advertise the internal WebGL host on the public page', () => {
     renderHome()
 
-    expect(screen.getByRole('link', { name: /preview webgl host/i })).toHaveAttribute(
-      'href',
-      paths.unity,
-    )
+    // Scoped to the page content: the shell nav is gated separately by
+    // `visibleNav(env.isProd)`, and tests render with isProd false.
+    const main = document.querySelector('main')
+    expect(main).not.toBeNull()
+    expect(within(main!).queryByRole('link', { name: /webgl/i })).not.toBeInTheDocument()
   })
 
   it('keeps the QR work hidden until a teacher asks for it', () => {
@@ -174,7 +218,7 @@ describe('keyboard', () => {
   it('reaches the primary action without a mouse', async () => {
     const user = userEvent.setup()
     renderHome()
-    const guestPlay = screen.getByRole('link', { name: /guest play/i })
+    const guestPlay = screen.getByRole('link', { name: /try a sample activity/i })
 
     // Bounded: if the primary action is more than a dozen stops in, it is
     // buried, whatever it looks like on screen.
