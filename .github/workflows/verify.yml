@@ -37,11 +37,8 @@ jobs:
           VITE_BASE_PATH: /SAL0MANder-Web/
         run: npm run build
 
-      - name: SPA fallback for share links
-        run: cp dist/index.html dist/404.html
-
-      - name: disable Jekyll processing
-        run: touch dist/.nojekyll
+      - name: Pages fallbacks and public route entry points
+        run: npm run pages:fallback
 
       - name: deploy artifact gate
         run: npm run verify:artifact
