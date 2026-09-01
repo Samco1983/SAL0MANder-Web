@@ -78,9 +78,46 @@ export function UnityStage({
    */
   sessionStarted?: SessionStartedPayload
 }) {
+  const stageRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [state, setState] = useState<LoadState>({ status: 'unconfigured' })
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [fullscreenError, setFullscreenError] = useState('')
   const config = resolveUnityBuildConfig()
+
+  useEffect(() => {
+    const syncFullscreenState = () => {
+      setIsFullscreen(document.fullscreenElement === stageRef.current)
+      if (document.fullscreenElement === stageRef.current) setFullscreenError('')
+    }
+    const reportFullscreenFailure = () => {
+      setFullscreenError('Full screen could not be opened. You can keep playing in this window.')
+    }
+
+    document.addEventListener('fullscreenchange', syncFullscreenState)
+    document.addEventListener('fullscreenerror', reportFullscreenFailure)
+    return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreenState)
+      document.removeEventListener('fullscreenerror', reportFullscreenFailure)
+    }
+  }, [])
+
+  const toggleFullscreen = async () => {
+    setFullscreenError('')
+    try {
+      if (document.fullscreenElement) {
+        if (typeof document.exitFullscreen !== 'function') throw new Error('Fullscreen unavailable')
+        await document.exitFullscreen()
+      } else {
+        if (typeof stageRef.current?.requestFullscreen !== 'function') {
+          throw new Error('Fullscreen unavailable')
+        }
+        await stageRef.current.requestFullscreen()
+      }
+    } catch {
+      setFullscreenError('Full screen is not available in this browser. You can keep playing here.')
+    }
+  }
 
   // The live instance, kept outside state so obtaining it cannot re-render and
   // cannot become a reason to restart the game.
@@ -290,7 +327,7 @@ export function UnityStage({
   }
 
   return (
-    <div className={styles.stage}>
+    <div className={styles.stage} ref={stageRef}>
       {/*
         tabIndex 0, not -1: the canvas IS the game. Unity WebGL takes keyboard
         input through the focused canvas, so removing it from the tab order
@@ -305,6 +342,21 @@ export function UnityStage({
         tabIndex={0}
         aria-label="SAL0MANder game"
       />
+      <Button
+        className={styles.fullscreenButton}
+        variant="secondary"
+        size="sm"
+        type="button"
+        aria-pressed={isFullscreen}
+        onClick={() => void toggleFullscreen()}
+      >
+        {isFullscreen ? 'Exit full screen' : 'Full screen'}
+      </Button>
+      {fullscreenError ? (
+        <p className={styles.fullscreenStatus} role="status">
+          {fullscreenError}
+        </p>
+      ) : null}
       {state.status === 'loading' ? (
         <div className={styles.empty} role="status">
           <h2 className={styles.emptyTitle}>Loading SAL0MANder…</h2>

@@ -179,6 +179,69 @@ describe('the stage must never remount — non-negotiable #4', () => {
   })
 })
 
+describe('full screen', () => {
+  it('enters and exits full screen without replacing or restarting the Unity canvas', async () => {
+    const unity = stubUnityFactory()
+    let fullscreenElement: Element | null = null
+    Object.defineProperty(document, 'fullscreenElement', {
+      configurable: true,
+      get: () => fullscreenElement,
+    })
+    const exitFullscreen = vi.fn(async () => {
+      fullscreenElement = null
+      document.dispatchEvent(new Event('fullscreenchange'))
+    })
+    vi.stubGlobal('document', document)
+    Object.defineProperty(document, 'exitFullscreen', { configurable: true, value: exitFullscreen })
+
+    render(<UnityStage activityId="demo" />)
+    fireLoad()
+    await unity.ready()
+    const before = canvas()
+    const stage = before?.parentElement as HTMLDivElement
+    const requestFullscreen = vi.fn(async () => {
+      fullscreenElement = stage
+      document.dispatchEvent(new Event('fullscreenchange'))
+    })
+    Object.defineProperty(stage, 'requestFullscreen', {
+      configurable: true,
+      value: requestFullscreen,
+    })
+
+    await act(async () => screen.getByRole('button', { name: 'Full screen' }).click())
+    expect(requestFullscreen).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('button', { name: 'Exit full screen' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(canvas()).toBe(before)
+    expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
+    expect(unity.quit).not.toHaveBeenCalled()
+
+    await act(async () => screen.getByRole('button', { name: 'Exit full screen' }).click())
+    expect(exitFullscreen).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('button', { name: 'Full screen' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    expect(canvas()).toBe(before)
+    expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
+    expect(unity.quit).not.toHaveBeenCalled()
+  })
+
+  it('keeps the game playable when the browser does not support full screen', async () => {
+    render(<UnityStage activityId="demo" audience="student" />)
+
+    await act(async () => screen.getByRole('button', { name: 'Full screen' }).click())
+
+    expect(screen.getByText(/full screen is not available in this browser/i)).toHaveAttribute(
+      'role',
+      'status',
+    )
+    expect(canvas()).toBeInTheDocument()
+  })
+})
+
 describe('failure paths', () => {
   it('reports a loader that never registers its factory', () => {
     // No global createUnityInstance — a truncated or wrong-version build.
