@@ -126,7 +126,7 @@ export function AppShell({
             <Link className={styles.footerLink} to={paths.terms}>
               Terms
             </Link>
-            <a className={styles.footerLink} href="mailto:support@sal0mander.com">
+            <a className={styles.footerLink} href="mailto:samco1983@gmail.com">
               Contact
             </a>
           </nav>

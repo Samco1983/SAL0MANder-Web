@@ -5,7 +5,6 @@ import { AppShell } from '@components/layout/AppShell'
 import { SharePanel } from '@components/share/SharePanel'
 import { LinkButton } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
-import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import styles from './HomePage.module.css'
 
 /**
@@ -153,20 +152,6 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className={styles.section}>
-        <PlaceholderNotice
-          title="This is a foundation, not a finished product surface"
-          pending={[
-            'Product/Gameplay Discovery and wireframes come before broad UX implementation',
-            'Teacher Studio stays in Unity; the web side gets teacher tools later',
-            'Credits, badges, classes, reports, and collaboration are deferred',
-            'No backend provider, auth provider, or storage provider has been chosen',
-          ]}
-        >
-          Every route here exists to establish structure and boundaries. Copy, layout, and visual
-          language are placeholders pending product approval.
-        </PlaceholderNotice>
-      </section>
     </AppShell>
   )
 }
