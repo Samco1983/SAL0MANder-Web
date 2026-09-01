@@ -136,11 +136,9 @@ export function PrivacyPage() {
           privacy officer evaluating the product both need a route in, and a
           single inbox makes the second one look like an afterthought.
 
-          Domain addresses rather than a personal mailbox: they can forward
-          anywhere, but a reviewer reads `privacy@sal0mander.com` as a product
-          with a process behind it and a personal Gmail as one person's side
-          project. They also survive the owner changing mail providers, which a
-          published personal address does not.
+          The same monitored mailbox is listed for both audiences until
+          dedicated domain mailboxes are configured. A working contact is more
+          trustworthy than publishing role addresses that cannot receive mail.
         */}
         <section className={styles.section} aria-labelledby="contact">
           <h2 className={styles.sectionTitle} id="contact">
@@ -148,14 +146,14 @@ export function PrivacyPage() {
           </h2>
           <p>
             <strong>Teachers and general support:</strong>{' '}
-            <a className={styles.link} href="mailto:support@sal0mander.com">
-              support@sal0mander.com
+            <a className={styles.link} href="mailto:samco1983@gmail.com">
+              samco1983@gmail.com
             </a>
           </p>
           <p>
             <strong>Privacy, student data, and district technology staff:</strong>{' '}
-            <a className={styles.link} href="mailto:privacy@sal0mander.com">
-              privacy@sal0mander.com
+            <a className={styles.link} href="mailto:samco1983@gmail.com">
+              samco1983@gmail.com
             </a>
           </p>
           <p>

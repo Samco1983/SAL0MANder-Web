@@ -77,7 +77,6 @@ describe('terms page', () => {
 
   it('gives both contact addresses', () => {
     renderPage()
-    expect(screen.getAllByRole('link', { name: 'support@sal0mander.com' }).length).toBeGreaterThan(0)
-    expect(screen.getByRole('link', { name: 'privacy@sal0mander.com' })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'samco1983@gmail.com' })).toHaveLength(3)
   })
 })

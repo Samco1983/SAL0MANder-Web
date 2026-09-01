@@ -141,14 +141,14 @@ export function AboutPage() {
           </h2>
           <p>
             Teachers and general questions:{' '}
-            <a className={styles.link} href="mailto:support@sal0mander.com">
-              support@sal0mander.com
+            <a className={styles.link} href="mailto:samco1983@gmail.com">
+              samco1983@gmail.com
             </a>
           </p>
           <p>
             Privacy, student data, and district technology staff:{' '}
-            <a className={styles.link} href="mailto:privacy@sal0mander.com">
-              privacy@sal0mander.com
+            <a className={styles.link} href="mailto:samco1983@gmail.com">
+              samco1983@gmail.com
             </a>
           </p>
         </section>

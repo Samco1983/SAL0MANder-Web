@@ -49,11 +49,11 @@ describe('privacy page', () => {
    */
   it('gives teachers and district staff separate ways in', () => {
     renderPage()
-    const support = screen.getByRole('link', { name: 'support@sal0mander.com' })
-    expect(support).toHaveAttribute('href', 'mailto:support@sal0mander.com')
-
-    const privacy = screen.getByRole('link', { name: 'privacy@sal0mander.com' })
-    expect(privacy).toHaveAttribute('href', 'mailto:privacy@sal0mander.com')
+    const contacts = screen.getAllByRole('link', { name: 'samco1983@gmail.com' })
+    expect(contacts).toHaveLength(2)
+    contacts.forEach((contact) => {
+      expect(contact).toHaveAttribute('href', 'mailto:samco1983@gmail.com')
+    })
   })
 
   it('tells a filtering district exactly who to write to', () => {
