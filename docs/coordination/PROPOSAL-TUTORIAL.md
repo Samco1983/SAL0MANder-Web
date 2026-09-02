@@ -95,3 +95,26 @@ answer log rather than mutating piece state.
 `ActivityData` and the tutorial are both Unity's. This is a design the owner
 specified and the web lane wrote down; field names, sequencing and presentation
 are Codex's call.
+
+## What "derived" rules out
+
+Because the tutorial must match the activity the student actually opened, it
+**cannot be a separate thing shown beforehand.** Two approaches that look
+cheaper and do not work:
+
+**A recorded video or animation.** It shows one fixed set of options. Play it
+before a Mystery Reveal activity and it demonstrates a drag that will never
+happen; play it before a rotation-free board and it teaches a control that is
+not there. It is wrong for every activity except the one it was recorded from.
+
+**A dedicated tutorial level or scene.** Same failure with more code. The
+student learns the tutorial activity's rules, then opens their teacher's
+activity, which has different options.
+
+The tutorial has to run **inside the live activity**, pointing at that board's
+real pieces, using that activity's real controls, reading that activity's
+`ActivityData`. It is not a thing shown before the game — it is a layer over the
+first three pieces of the game itself.
+
+That is also why `FocusPieceOnBoard` is the right primitive: it points at a real
+piece on the real board, not at a picture of one.
