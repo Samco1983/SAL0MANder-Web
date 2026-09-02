@@ -1,6 +1,13 @@
-# Proposal — give each piece a cost
+# Proposal — a release schedule
 
-**2026-09-02 · owner's idea · Unity's schema, Unity's call**
+**2026-09-02 · owner's design · Unity's schema, Unity's call**
+
+Supersedes three earlier drafts in this file's history. Each was corrected by
+the owner; the final model is simpler than all of them and is stated here as
+the proposal. The corrections are recorded at the end because they are the
+reason the design is what it is.
+
+---
 
 ## What is hardcoded today
 
@@ -8,347 +15,197 @@
 PuzzleManager.cs:1648   private void ReleaseNextPiece(bool saveUndo = true)
 ```
 
-Singular. One correct answer releases exactly one piece. There is no ratio
-anywhere in the model.
-
-The engine can already choose **which** piece releases —
-`QuestionMappingPolicy` (sequential or random) and `linkedPieceIndex` for a
-question tied to a specific piece. It cannot choose **how many**.
-
-This was never decided against. It is the simplest thing that worked and was
-never revisited.
-
-## The problem that already exists
+Singular. One correct answer releases exactly one piece.
 
 Piece count and question count are independent settings, so they disagree by
 default. **The three demo activities are 9 pieces with 10 questions.** A teacher
-choosing a 24-piece board today has silently committed to writing 24 questions,
-and if they write 8 the picture never completes. Nothing warns them.
+choosing a 24-piece board has silently committed to writing 24 questions; write
+8 and the picture never completes, with no warning.
 
-## The owner's model
+## The model: one integer per release step
 
-**Each piece is assigned a cost.** A correct answer is worth one credit; a piece
-unlocks when accumulated credits reach its cost. Fractions invert the
-relationship, so one field covers both directions.
-
-| Cost | Meaning |
-| --- | --- |
-| `1` | one correct answer unlocks it — today's behaviour |
-| `3` | three correct answers to unlock this piece |
-| `10` | a long multi-step problem set behind one piece |
-| `1/3` | one correct answer unlocks three such pieces |
-
-Verified against all of these:
+Not a cost attached to a piece. **A schedule attached to the activity** — a list
+of how many more correct answers each release needs.
 
 ```
-9 pieces, costs 3,3,3,1,1,1,1/3,1/3,1/3
-  answer  3 -> piece 1
-  answer  9 -> piece 3
-  answer 10 -> piece 4
-  answer 12 -> piece 6
-
-24-piece board, 8 questions, every piece 1/3
-  answer 1 -> pieces 1,2,3
-  answer 8 -> pieces 22,23,24     completes exactly
+[1, 1, 1, 1, 1, 1, 1, 1, 2]     9 pieces, 10 questions
+                                 eight one at a time, the last needs two
 ```
 
-Release loop, in full:
+`0` means "release this one too, with no further answer":
 
 ```
-on correct answer:
-    credits += 1
-    while next piece exists and next.cost <= credits:
-        credits -= next.cost
-        release(next)
+[1, 0, 0, 0, 0, 1, 0, 0, 0]     9 pieces, 2 questions
+                                 one answer releases five, another releases four
 ```
 
-## Why it is cheap
-
-**It is backward compatible with no migration.** Today's behaviour is every
-piece at cost 1, so existing activities keep working if the field defaults to 1.
-
-It is one value per piece and one loop in the release path. It does not touch
-the question model, the answer model, or the bridge.
-
-## The balance check it makes possible
-
-`sum(costs)` against the number of questions tells a teacher whether the puzzle
-can finish:
+Two invariants, each a one-line check:
 
 ```
-9 pieces x 1      total 9   questions 9    balanced
-24 pieces x 1/3   total 8   questions 8    balanced
-3,3,3,1,1,1,...   total 13  questions 12   MISMATCH
+len(schedule) == piece count
+sum(schedule) == question count
 ```
 
-That last row was an error in the proposal's own first draft, caught by the
-check — which is the argument for having it.
+## Why a schedule and not a per-piece cost
 
-**Recommended as a Readiness Checklist row** in Teacher Studio: an activity
-whose costs do not sum to its question count cannot be completed by a student,
-and today nothing says so.
-
-## Lane
-
-The cost field lives in `QuizData` — Unity's schema. The web lane does not
-invent activity schemas, so this is a request for Codex to design, amend or
-reject. Field name, type (rational vs float), and whether cost attaches to the
-piece or to the board are all his call.
-
-One note if it is accepted: floats make `1/3 + 1/3 + 1/3 != 1`, so a piece can
-fail to unlock on the answer that should have released it. A rational or a
-fixed-denominator integer avoids that. The model above was verified with exact
-fractions.
-
----
-
-# Two blockers found while checking this — both predate the proposal
-
-Raised by the owner, confirmed in the code. Neither is caused by the cost model,
-but the first one **must** be solved before cost can ship.
-
-## 1. Undo has the 1:1 assumption in its data model
+**Pieces are not released in index order.** `releaseSequence` is a list of piece
+indices and `QuestionMappingPolicy` offers `SequentialQueue`, **`RandomQueue`**
+and `ExplicitIndexMap`:
 
 ```
-PuzzleManager.cs:2764   public void SaveUndoState(string actionDesc = "", string questionId = "")
-PuzzleManager.cs:1650   if (saveUndo) SaveUndoState("Piece Released");
-PuzzleManager.cs:1366   if (saveUndo) SaveUndoState("Piece Unlocked");
+PuzzleManager.cs:1660   int pieceIndex = releaseSequence[releasedPiecesCount];
 ```
 
-One undo entry carries **one** question id. That is only coherent while one
-answer equals one piece.
+A cost attached to piece 9 could be paid third under a shuffle, turning a
+difficulty ramp into noise. The schedule is indexed by **release position**, so
+it is parallel to `releaseSequence` by construction and the ramp holds under
+every mapping policy.
 
-Under variable cost it has no correct behaviour:
+**It is integers.** An earlier draft used fractional costs with an accumulating
+credit balance. That version needed exact rationals — `1/3 + 1/3 + 1/3` is not
+`1` in floating point, so a piece would fail to release on the answer that
+should have freed it — and a flat fraction across pieces batched them the wrong
+way round. None of that exists here. No fractions, no accumulator, no rounding.
 
-- **Cost 3** — three answers bought one piece. Undo it, and which three
-  questions reopen? There is one slot for one id.
-- **Cost 1/3** — one answer released pieces 1, 2 and 3. Undo piece 2 and the
-  system would have to un-answer a third of a question. **There is no inverse.**
+**It is one field on the activity**, not a field on every piece. Nothing about
+the piece model changes.
 
-### Recommended fix: undo the answer, not the piece
+## Auto-assignment — the teacher never does this by hand
 
-Keep an ordered answer log and **derive** released pieces by replaying credits
-through the release loop. Undo becomes "drop the last answer, recompute", which
-is deterministic at any cost including fractional ones, and removes the need to
-store per-piece question ids at all.
-
-Deriving state beats mutating it. This is worth doing even if cost is rejected —
-the current design already stores enough to drift between the undo stack and the
-real board.
-
-## 2. Only five piece counts actually work
-
-```
-PuzzleManager.cs:2189
-    int cols = 3;
-    int rows = 3;
-    if (pieceCountPreset == 4)  { cols = 2; rows = 2; }
-    else if (pieceCountPreset == 6)  { ... }
-    else if (pieceCountPreset == 9)  { cols = 3; rows = 3; }
-    else if (pieceCountPreset == 12) { ... }
-    else if (pieceCountPreset == 16) { cols = 4; rows = 4; }
-```
-
-**There is no `else`.** Supported values are `{4, 6, 9, 12, 16}`. Any other value
-falls through to the 3x3 default — nine pieces, silently, with no error and no
-log line.
-
-This is live today, independent of anything proposed here. Note that **the
-Teacher Studio wireframe specifies 24 pieces**: a teacher choosing 24 would get a
-3x3 board and never be told. The owner has since set the piece count to 9, but
-the field would accept 24 and quietly lie.
-
-### Recommended fix
-
-Derive `cols`/`rows` from the piece count and board shape, or close the set and
-validate the input. Either is acceptable. Silently substituting 9 is not, and it
-is the kind of defect that reaches a classroom rather than a test.
-
----
-
-# Auto-assignment — the teacher should never have to do this by hand
-
-Owner's refinement, 2026-09-02: **if a teacher does not assign costs, the system
-assigns them.** Manual assignment is the advanced case; the default is
-automatic. This is what turns the cost model from a new setting to learn into
-the thing that removes a constraint.
-
-## The constraint it removes
-
-Today the piece count silently dictates a question quota. A teacher with 11
-questions and a 9-piece board has no correct option: two questions are wasted,
-or they invent two more. A teacher with one great question cannot use it.
-
-With auto-assignment, **any question count works with any piece count.**
-
-| Teacher writes | Pieces | Auto-assigned | Completes |
-| --- | --- | --- | --- |
-| 9 | 9 | 9 x cost 1 | yes |
-| 11 | 9 | 2 x cost 2, 7 x cost 1 | yes |
-| 20 | 9 | 2 x cost 3, 7 x cost 2 | yes |
-| 1 | 9 | 9 x cost 1/9 — one answer reveals everything | yes |
-| 3 | 9 | 9 x cost 1/3 | yes |
-| 8 | 24 | 24 x cost 1/3 | yes |
-| 30 | 16 | 14 x cost 2, 2 x cost 1 | yes |
-| 45 | 16 | 13 x cost 3, 3 x cost 2 | yes |
-| 2 | 4 | 4 x cost 1/2 | yes |
-
-Algorithm:
+If a teacher does not set a schedule, one is generated. Manual is the advanced
+case.
 
 ```
 if questions >= pieces:
     base, extra = divmod(questions, pieces)
-    costs = [base+1] * extra + [base] * (pieces - extra)
+    schedule = [base] * (pieces - extra) + [base+1] * extra
 else:
-    costs = [Fraction(questions, pieces)] * pieces
+    per, rem = divmod(pieces, questions)
+    batches  = [per+1] * rem + [per] * (questions - rem)
+    schedule = flatten([1] + [0]*(n-1) for n in batches)
 ```
 
-Every row above was verified to release exactly `pieces` pieces on exactly
-`questions` answers, with no remainder.
+Verified complete — exactly `pieces` released on exactly `questions` answers:
 
-## Ordering: the expensive pieces go LAST
+| Questions | Pieces | Schedule |
+| --- | --- | --- |
+| 9 | 9 | `1,1,1,1,1,1,1,1,1` |
+| 10 | 9 | `1,1,1,1,1,1,1,1,2` |
+| 11 | 9 | `1,1,1,1,1,1,1,2,2` |
+| 20 | 9 | `2,2,2,2,2,2,2,3,3` |
+| 45 | 16 | `2,2,2,3,3,3,...` |
+| 5 | 9 | `1,0,1,0,1,0,1,0,1` |
+| 3 | 9 | `1,0,0,1,0,0,1,0,0` |
+| 2 | 9 | `1,0,0,0,0,1,0,0,0` |
+| 1 | 9 | `1,0,0,0,0,0,0,0,0` |
+| 8 | 24 | `1,0,0` x 8 |
 
-Owner's call, and it corrects an error in this proposal's first draft.
+**The constraint this removes:** a teacher writes 11 questions because the
+lesson needed 11, not because the board demanded 9 or 16.
 
-The first version distributed the extra cost to the **first** pieces. Measured
-against back-loading, at 10 questions over 9 pieces:
+## Ordering: reward front-loaded, effort back-loaded
+
+Cheap steps first, the expensive one last. Bigger batches first when one answer
+releases several.
+
+This corrects the first draft, which front-loaded the expensive steps. Measured
+at 10 questions over 9 pieces:
 
 ```
 boss at end     pieces at answers  1, 2, 3, 4, 5, 6, 7, 8, 10
 front-loaded    pieces at answers     2, 3, 4, 5, 6, 7, 8, 9, 10
 ```
 
-**Front-loading means the student answers the first question correctly and
-nothing happens.** That is the worst moment in the activity to produce no
-feedback: first answer, first impression, and the mechanic looks broken before
-the student has any reason to trust it.
+Front-loading means **the student answers the first question correctly and
+nothing happens** — the worst possible moment for no feedback, before they have
+any reason to trust the mechanic.
 
-Back-loading gives eight pieces one-for-one and makes the final piece cost two —
-a boss. At 20 questions it is a steady every-two rhythm, then the last two
-pieces cost three each, so the puzzle gets harder exactly as the picture becomes
-legible enough to want.
-
-## The same rule applies when one answer unlocks several pieces
-
-Owner's extension: **if the split is uneven, release more pieces at the
-beginning.**
-
-That makes both halves of the algorithm one principle — **reward front-loaded,
-effort back-loaded.** Cheap pieces first and the boss last when a piece costs
-several answers; bigger batches first when an answer unlocks several pieces.
-
-```
- 2 questions /  9 pieces  ->  batches [5, 4]              not [4, 5]
- 5 questions /  9 pieces  ->  batches [2, 2, 2, 2, 1]     lone single last
- 7 questions / 16 pieces  ->  batches [3, 3, 2, 2, 2, 2, 2]
- 8 questions / 24 pieces  ->  batches [3, 3, 3, 3, 3, 3, 3, 3]
-```
-
-Note this needs unequal fractional costs, not one shared fraction. Nine pieces
-at a flat 2/9 each produces [4, 5] — the wrong way round — because of how
-credits accumulate. Sizing each batch first and deriving the cost from it gives
-[5, 4].
-
-Corrected algorithm, both branches:
-
-```
-if questions >= pieces:
-    base, extra = divmod(questions, pieces)
-    costs = [base] * (pieces - extra) + [base+1] * extra   # cheap first, boss last
-else:
-    per, extra = divmod(pieces, questions)
-    batches = [per+1] * extra + [per] * (questions - extra)  # bigger batches first
-    costs = flatten([Fraction(1, n)] * n for n in batches)
-```
-
-Verified complete — exactly `pieces` released on exactly `questions` answers —
-for 1, 2, 3, 4, 5, 7, 8, 9, 10, 20, 30 and 45 questions across 4, 6, 9, 16 and
-24-piece boards.
-
-## The low-question case falls out for free
-
-A teacher who wants the class to mostly play with the puzzle writes two
-questions:
+## The low-question case comes free
 
 ```
 2 questions, 9 pieces
-  answer 1 -> pieces 1, 2, 3, 4
-  answer 2 -> pieces 5, 6, 7, 8, 9
+  answer 1 -> pieces 1,2,3,4,5
+  answer 2 -> pieces 6,7,8,9
 ```
 
-Two questions, then it is a jigsaw. No separate mode, no extra setting — the
-same model with different numbers. This is worth noting because it means
-"Classic Puzzle" and "Learning Puzzle" stop being a hard boundary and become
-the two ends of one dial.
+Two questions, then it is a jigsaw. No separate mode. **Classic Puzzle and
+Learning Puzzle stop being a hard boundary and become the two ends of one dial.**
 
 ## Showing it to the student
 
-The owner suggested an icon or reminder on pieces that need more questions.
-Recommended refinement:
+**Progress, not price.** A static `3` on a locked slot says what it costs;
+`2 of 3` says how close they are, which is the motivating half — the same reason
+the assembling picture beats a score. A slot that fills as answers land does it
+with no number at all, needs no translation, and is worth prototyping against
+the numeric version.
 
-**Show progress, not price.** A static `3` on a slot tells a student what it
-costs. `2 of 3` tells them how close they are, which is the motivating
-information — the same reason the assembling picture works better than a score.
-A locked slot that fills as answers land does this without a number at all.
-
-**Show nothing when cost is below 1.** "1/3" is meaningless to a student, and
-those pieces arrive in groups anyway, which explains itself.
-
-## Where this belongs in Teacher Studio
-
-Auto-assignment means the balance check stops being an error a teacher must fix
-and becomes a line of information:
-
-> 20 questions across 9 pieces — some pieces will take 2 or 3 answers.
-
-Manual override sits behind an advanced control, consistent with the wireframe's
-own principle that advanced options stay hidden.
+**Show nothing on a `0` step.** Those pieces arrive in a group, which explains
+itself.
 
 ---
 
-# Correction — cost attaches to the release POSITION, not to the piece
+## Blockers — both predate this proposal
 
-Caught by the owner, 2026-09-02. Everything above this section assigned costs to
-pieces by index, which is wrong.
-
-```
-PuzzleManager.cs:1660
-    int pieceIndex = releaseSequence[releasedPiecesCount];
-```
-
-Pieces are not released in index order. `releaseSequence` is a list of piece
-indices, and `QuestionMappingPolicy` offers `SequentialQueue`, **`RandomQueue`**
-and `ExplicitIndexMap`. Under a random sequence, a cost assigned to piece 9
-could be paid third — so "cheap first, boss last" would produce an arbitrary
-difficulty curve rather than a ramp.
-
-## The fix
-
-**Index the costs by position in `releaseSequence`, not by piece.**
+### 1. Undo assumes one answer per piece
 
 ```
-cost[0]  -> whatever piece comes out first
-cost[1]  -> whatever comes out second
-...
-cost[n-1] -> the last piece released, whichever it is — the boss
+PuzzleManager.cs:2764   public void SaveUndoState(string actionDesc = "", string questionId = "")
 ```
 
-The ramp then holds under every mapping policy, because it is a property of the
-step rather than of a square of the picture. This is also more honest about what
-the value means: it is the price of the next release, not an attribute of an
-image region.
+One undo entry carries **one** question id. Under a schedule this has no correct
+behaviour: a step needing three answers has three questions and one slot, and a
+`0` step released a piece that no answer paid for directly.
 
-## A conflict this exposes: ExplicitIndexMap
+**Recommended fix: undo the answer, not the piece.** Keep an ordered answer log
+and derive released pieces by replaying the schedule. Undo becomes "drop the
+last answer, recompute" — deterministic, and it removes the need to store
+per-piece question ids at all.
 
-`linkedPieceIndex` lets a teacher tie a specific question to a specific piece.
-If that piece costs three answers, **which of the three is the linked one?**
+This is worth doing even if the schedule is rejected. The current design already
+stores enough for the undo stack and the board to drift apart.
 
-Explicit mapping assumes one answer per piece, the same assumption undo makes
-(see the undo section above). Two questions for Codex:
+### 2. Only five piece counts work
 
-- Are `ExplicitIndexMap` and variable cost mutually exclusive per activity?
-- Or does a linked piece simply always cost 1, with the remaining budget spread
-  across the unlinked ones?
+```
+PuzzleManager.cs:2189
+    int cols = 3;  int rows = 3;
+    if (pieceCountPreset == 4) { ... }
+    else if (== 6) { ... } else if (== 9) { ... }
+    else if (== 12) { ... } else if (== 16) { ... }
+```
 
-Either is defensible. What must not happen is both being enabled with no defined
-behaviour, which is the state the code is in today.
+**There is no `else`.** Any other value falls through to 3x3 — nine pieces,
+silently, no error, no log. Live today, independent of anything proposed here.
+Note the Teacher Studio wireframe specifies 24 pieces: a teacher choosing 24
+would get a 3x3 board and never be told.
+
+## Open question: ExplicitIndexMap
+
+`linkedPieceIndex` ties a question to a specific piece. If a step needs three
+answers, which one is the linked question? Explicit mapping assumes 1:1, as undo
+does.
+
+Either make `ExplicitIndexMap` and non-uniform schedules mutually exclusive per
+activity, or define that a linked step always needs exactly 1. Both defensible.
+What must not ship is both enabled with no defined behaviour.
+
+## How this proposal reached its final form
+
+Recorded because it is the argument for keeping it behind a playable build.
+
+1. First draft: per-question multiplier plus per-piece requirement. Owner
+   replaced it with a single per-piece cost using fractions — simpler.
+2. Front-loaded the expensive pieces. Owner corrected to boss-last; measurement
+   showed the first draft produced no feedback on the first correct answer.
+3. Used a flat fraction per piece, which batched releases the wrong way round.
+4. Indexed cost by piece, which `RandomQueue` breaks. Owner caught it.
+5. Owner replaced cost-per-piece with a schedule of integers, removing fractions,
+   the credit accumulator and the ordering bug together.
+
+Every correction came from the owner asking a question, not from review.
+
+## Lane
+
+The schedule lives in `QuizData` / `ActivityData` — Unity's schema. The web lane
+does not invent activity schemas. Field name, type, and placement are Codex's
+call.
