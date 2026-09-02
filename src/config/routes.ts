@@ -19,6 +19,8 @@ export const paths = {
   terms: '/terms/',
   /** Why this exists, in the author's words. */
   about: '/about/',
+  /** Teacher Studio — where a teacher builds an activity. Laptop-first. */
+  studio: '/studio',
   profile: '/profile',
   /** Bare Unity WebGL host, used for smoke-testing a build in isolation. */
   unity: '/unity',

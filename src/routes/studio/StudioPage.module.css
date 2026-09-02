@@ -1,0 +1,383 @@
+/*
+  Teacher Studio.
+
+  Targets laptop widths and up: the owner confirmed teachers author on laptops,
+  so a phone-first authoring layout would be work nobody uses. The responsive
+  burden belongs on the student surface, which Unity owns. Below 900px the
+  columns stack rather than collapse into an accordion — a teacher on a small
+  laptop gets a long page, which is fine, rather than a redesigned one.
+*/
+.studio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.title {
+  margin: 0.125rem 0 0;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.barRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/*
+  The save state is a promise, so it must be able to say no. `failed` is not a
+  styling afterthought — a teacher who is told "saved" over lost work stops
+  trusting everything else on the page.
+*/
+.saveState {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+.saveState[data-state='saved'] {
+  color: var(--color-success);
+}
+.saveState[data-state='failed'] {
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.rail {
+  position: sticky;
+  top: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: var(--color-surface-raised);
+}
+
+.railHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.railTitle {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.railEmpty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.railList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.railItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.railItem:hover {
+  background: var(--color-surface-sunken);
+}
+
+.railItem[aria-current='true'] {
+  background: var(--color-accent-soft);
+}
+
+.railItemTitle {
+  font-size: 0.9375rem;
+}
+
+.railItemMeta {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.main {
+  min-width: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-5);
+}
+
+.tab {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.9375rem;
+  padding: var(--space-3) var(--space-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tab[aria-selected='true'] {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.panel {
+  min-width: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 40rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.hint {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.input,
+.textarea {
+  font: inherit;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  width: 100%;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+/*
+  Each mode explains itself. "Mystery reveal" means nothing on its own, and a
+  teacher choosing between four named modes without descriptions is guessing.
+*/
+.choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: 'radio name' 'radio blurb';
+  gap: 2px var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.choice[data-selected='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.choice input {
+  grid-area: radio;
+  align-self: start;
+  margin-top: 2px;
+}
+
+.choiceName {
+  grid-area: name;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.choiceBlurb {
+  grid-area: blurb;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.dangerRow {
+  margin-top: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.checklist {
+  position: sticky;
+  top: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: var(--color-surface-raised);
+}
+
+.checklistTitle {
+  margin: 0 0 var(--space-3);
+  font-size: 0.9375rem;
+}
+
+.checkRows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.checkRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  font-size: 0.875rem;
+}
+
+.checkMark {
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.checkRow[data-complete='true'] .checkMark {
+  color: var(--color-success);
+}
+
+.checkBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* What to do next, not what is wrong. */
+.checkTodo {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.allowance {
+  margin: var(--space-4) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.blank {
+  max-width: 32rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.blankTitle {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.blankText {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.footnote {
+  margin: 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 900px) {
+  .body,
+  .panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rail,
+  .checklist {
+    position: static;
+  }
+}

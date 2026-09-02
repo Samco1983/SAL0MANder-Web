@@ -33,6 +33,9 @@ const PrivacyPage = lazy(() =>
 const GuestPlayIndexPage = lazy(() =>
   import('@routes/guest-play/GuestPlayPage').then((m) => ({ default: m.GuestPlayIndexPage })),
 )
+const StudioPage = lazy(() =>
+  import('@routes/studio/StudioPage').then((m) => ({ default: m.StudioPage })),
+)
 const ProfilePage = lazy(() =>
   import('@routes/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })),
 )
@@ -62,6 +65,11 @@ function split(element: ReactNode) {
  */
 export const routes: RouteObject[] = [
   { path: paths.home, element: <HomePage />, errorElement: <RouteError /> },
+  {
+    path: paths.studio,
+    element: split(<StudioPage />),
+    errorElement: <RouteError />,
+  },
   {
     path: paths.guestPlayIndex,
     element: split(<GuestPlayIndexPage />),
