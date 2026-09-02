@@ -7,6 +7,7 @@ import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { HomePage } from './HomePage'
 import { paths } from '@config/routes'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
+import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 
 /**
  * The entry surface.
@@ -206,6 +207,66 @@ describe('the three activities', () => {
       'act_vocab_review',
     ]) {
       expect(hrefs, `${wrong} is not an activity Unity ships`).not.toContain(`/play/${wrong}`)
+    }
+  })
+})
+
+/**
+ * The page described the mechanic in words and showed none of it.
+ *
+ * These check the rendering, not the library — `puzzleLibrary.test.ts` owns the
+ * files, the sizes and the alt text. What matters here is that all six actually
+ * reach the page, that none of them blocks first paint, and that none acquires
+ * a caption tying it to an activity Unity might not use it for.
+ */
+describe('the pictures', () => {
+  it('shows every picture in the library', () => {
+    renderHome()
+    for (const picture of PUZZLE_LIBRARY) {
+      expect(
+        screen.getByAltText(picture.alt),
+        `${picture.src} is in the library but not on the page`,
+      ).toBeVisible()
+    }
+  })
+
+  /**
+   * Six pictures above the fold on school wifi would delay the thing a teacher
+   * came for. They sit below the activities, and the browser is told so.
+   */
+  it('loads them lazily, and reserves their space so nothing jumps', () => {
+    renderHome()
+    for (const picture of PUZZLE_LIBRARY) {
+      const img = screen.getByAltText(picture.alt)
+      expect(img).toHaveAttribute('loading', 'lazy')
+      expect(img).toHaveAttribute('width')
+      expect(img).toHaveAttribute('height')
+    }
+  })
+
+  /**
+   * The privacy page and the district summary both state that a browser
+   * contacts exactly one domain. An image from a CDN would make both wrong, and
+   * would be the easiest thing in the world to add without noticing.
+   */
+  it('loads no image from another company', () => {
+    renderHome()
+    for (const img of document.querySelectorAll('img')) {
+      expect(img.getAttribute('src') ?? '', 'images must be same-origin').not.toMatch(/^https?:\/\//)
+    }
+  })
+
+  /**
+   * Unity owns which picture an activity uses. A caption pairing one of these
+   * with "Integer Operations" would be unverifiable here and would go stale the
+   * first time a preset changed.
+   */
+  it('does not claim a picture belongs to a particular activity', () => {
+    renderHome()
+    const gallery = document.querySelector('#pictures-title')?.closest('section')
+    expect(gallery).not.toBeNull()
+    for (const activity of MOCK_DEMO_ACTIVITIES) {
+      expect(gallery!.textContent ?? '').not.toContain(activity.title)
     }
   })
 })

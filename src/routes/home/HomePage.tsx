@@ -1,6 +1,7 @@
 import { env } from '@config/env'
 import { paths, buildPath } from '@config/routes'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
+import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { AppShell } from '@components/layout/AppShell'
 import { SharePanel } from '@components/share/SharePanel'
 import { LinkButton } from '@components/ui/Button'
@@ -151,6 +152,48 @@ export function HomePage() {
             title={MOCK_DEMO_ACTIVITIES[0].title}
           />
         </div>
+      </section>
+
+
+      {/*
+        The page described the mechanic in words and showed none of it.
+
+        A teacher decides in about four seconds and reads a picture faster than
+        a paragraph. A filter's classifier gets six sentences of descriptive alt
+        text — coral reefs, the Colosseum, astrophotography — which is a
+        stronger Education signal than prose alone on a domain currently
+        categorised "Unknown".
+
+        Deliberately NOT captioned as belonging to any activity: Unity owns
+        which picture an activity uses. See the note in `puzzleLibrary.ts`.
+
+        Every image is same-origin, lazy below the fold, and carries explicit
+        dimensions so the grid reserves its space and the page does not jump as
+        they arrive.
+      */}
+      <section className={styles.section} aria-labelledby="pictures-title">
+        <h2 className={styles.sectionTitle} id="pictures-title">
+          The pictures students uncover
+        </h2>
+        <p className={styles.demoShareText}>
+          Every activity is built on a picture, revealed a piece at a time as students answer. A
+          sample of the library:
+        </p>
+        <ul className={styles.gallery}>
+          {PUZZLE_LIBRARY.map((picture) => (
+            <li className={styles.galleryItem} key={picture.src}>
+              <img
+                src={picture.src}
+                alt={picture.alt}
+                width={picture.width}
+                height={picture.height}
+                loading="lazy"
+                decoding="async"
+                className={styles.galleryImage}
+              />
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className={styles.section}>

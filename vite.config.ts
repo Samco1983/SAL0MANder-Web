@@ -21,6 +21,7 @@ export default defineConfig({
       '@unity': r('./src/unity'),
       '@auth': r('./src/auth'),
       '@config': r('./src/config'),
+      '@content': r('./src/content'),
       '@lib': r('./src/lib'),
     },
   },
