@@ -163,3 +163,78 @@ the field would accept 24 and quietly lie.
 Derive `cols`/`rows` from the piece count and board shape, or close the set and
 validate the input. Either is acceptable. Silently substituting 9 is not, and it
 is the kind of defect that reaches a classroom rather than a test.
+
+---
+
+# Auto-assignment — the teacher should never have to do this by hand
+
+Owner's refinement, 2026-09-02: **if a teacher does not assign costs, the system
+assigns them.** Manual assignment is the advanced case; the default is
+automatic. This is what turns the cost model from a new setting to learn into
+the thing that removes a constraint.
+
+## The constraint it removes
+
+Today the piece count silently dictates a question quota. A teacher with 11
+questions and a 9-piece board has no correct option: two questions are wasted,
+or they invent two more. A teacher with one great question cannot use it.
+
+With auto-assignment, **any question count works with any piece count.**
+
+| Teacher writes | Pieces | Auto-assigned | Completes |
+| --- | --- | --- | --- |
+| 9 | 9 | 9 x cost 1 | yes |
+| 11 | 9 | 2 x cost 2, 7 x cost 1 | yes |
+| 20 | 9 | 2 x cost 3, 7 x cost 2 | yes |
+| 1 | 9 | 9 x cost 1/9 — one answer reveals everything | yes |
+| 3 | 9 | 9 x cost 1/3 | yes |
+| 8 | 24 | 24 x cost 1/3 | yes |
+| 30 | 16 | 14 x cost 2, 2 x cost 1 | yes |
+| 45 | 16 | 13 x cost 3, 3 x cost 2 | yes |
+| 2 | 4 | 4 x cost 1/2 | yes |
+
+Algorithm:
+
+```
+if questions >= pieces:
+    base, extra = divmod(questions, pieces)
+    costs = [base+1] * extra + [base] * (pieces - extra)
+else:
+    costs = [Fraction(questions, pieces)] * pieces
+```
+
+Every row above was verified to release exactly `pieces` pieces on exactly
+`questions` answers, with no remainder.
+
+## A tuning choice, not a decision the algorithm should make
+
+The version above **front-loads** the expensive pieces: at 20 questions over 9
+pieces the first piece costs 3, then it settles to 2. That means a slow start
+followed by a steady rhythm.
+
+Interleaving the extras evenly instead is a one-line change. Whether a slow
+start builds momentum or discourages is a judgement someone should make rather
+than inherit from an arbitrary ordering.
+
+## Showing it to the student
+
+The owner suggested an icon or reminder on pieces that need more questions.
+Recommended refinement:
+
+**Show progress, not price.** A static `3` on a slot tells a student what it
+costs. `2 of 3` tells them how close they are, which is the motivating
+information — the same reason the assembling picture works better than a score.
+A locked slot that fills as answers land does this without a number at all.
+
+**Show nothing when cost is below 1.** "1/3" is meaningless to a student, and
+those pieces arrive in groups anyway, which explains itself.
+
+## Where this belongs in Teacher Studio
+
+Auto-assignment means the balance check stops being an error a teacher must fix
+and becomes a line of information:
+
+> 20 questions across 9 pieces — some pieces will take 2 or 3 answers.
+
+Manual override sits behind an advanced control, consistent with the wireframe's
+own principle that advanced options stay hidden.
