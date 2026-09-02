@@ -99,3 +99,67 @@ One note if it is accepted: floats make `1/3 + 1/3 + 1/3 != 1`, so a piece can
 fail to unlock on the answer that should have released it. A rational or a
 fixed-denominator integer avoids that. The model above was verified with exact
 fractions.
+
+---
+
+# Two blockers found while checking this — both predate the proposal
+
+Raised by the owner, confirmed in the code. Neither is caused by the cost model,
+but the first one **must** be solved before cost can ship.
+
+## 1. Undo has the 1:1 assumption in its data model
+
+```
+PuzzleManager.cs:2764   public void SaveUndoState(string actionDesc = "", string questionId = "")
+PuzzleManager.cs:1650   if (saveUndo) SaveUndoState("Piece Released");
+PuzzleManager.cs:1366   if (saveUndo) SaveUndoState("Piece Unlocked");
+```
+
+One undo entry carries **one** question id. That is only coherent while one
+answer equals one piece.
+
+Under variable cost it has no correct behaviour:
+
+- **Cost 3** — three answers bought one piece. Undo it, and which three
+  questions reopen? There is one slot for one id.
+- **Cost 1/3** — one answer released pieces 1, 2 and 3. Undo piece 2 and the
+  system would have to un-answer a third of a question. **There is no inverse.**
+
+### Recommended fix: undo the answer, not the piece
+
+Keep an ordered answer log and **derive** released pieces by replaying credits
+through the release loop. Undo becomes "drop the last answer, recompute", which
+is deterministic at any cost including fractional ones, and removes the need to
+store per-piece question ids at all.
+
+Deriving state beats mutating it. This is worth doing even if cost is rejected —
+the current design already stores enough to drift between the undo stack and the
+real board.
+
+## 2. Only five piece counts actually work
+
+```
+PuzzleManager.cs:2189
+    int cols = 3;
+    int rows = 3;
+    if (pieceCountPreset == 4)  { cols = 2; rows = 2; }
+    else if (pieceCountPreset == 6)  { ... }
+    else if (pieceCountPreset == 9)  { cols = 3; rows = 3; }
+    else if (pieceCountPreset == 12) { ... }
+    else if (pieceCountPreset == 16) { cols = 4; rows = 4; }
+```
+
+**There is no `else`.** Supported values are `{4, 6, 9, 12, 16}`. Any other value
+falls through to the 3x3 default — nine pieces, silently, with no error and no
+log line.
+
+This is live today, independent of anything proposed here. Note that **the
+Teacher Studio wireframe specifies 24 pieces**: a teacher choosing 24 would get a
+3x3 board and never be told. The owner has since set the piece count to 9, but
+the field would accept 24 and quietly lie.
+
+### Recommended fix
+
+Derive `cols`/`rows` from the piece count and board shape, or close the set and
+validate the input. Either is acceptable. Silently substituting 9 is not, and it
+is the kind of defect that reaches a classroom rather than a test.
