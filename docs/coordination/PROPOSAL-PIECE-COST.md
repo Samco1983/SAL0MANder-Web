@@ -1,4 +1,4 @@
-# Proposal — a release schedule
+# Proposal — answers are currency, pieces have prices
 
 **2026-09-02 · owner's design · Unity's schema, Unity's call**
 
@@ -17,10 +17,43 @@ PuzzleManager.cs:1648   private void ReleaseNextPiece(bool saveUndo = true)
 
 Singular. One correct answer releases exactly one piece.
 
-Piece count and question count are independent settings, so they disagree by
-default. **The three demo activities are 9 pieces with 10 questions.** A teacher
-choosing a 24-piece board has silently committed to writing 24 questions; write
-8 and the picture never completes, with no warning.
+A teacher choosing a 24-piece board has silently committed to writing 24
+questions; write 8 and the picture never completes, with no warning.
+
+### A correction, because earlier drafts of this file got it wrong
+
+Three earlier revisions described the demos — 9 pieces, 10 questions — as an
+undefined mismatch. **They are not.** `CreateDemoQuiz` sets
+`requiredCorrectAnswers = 9` against 9 pieces and 10 questions, which is one
+spare question. That is deliberate slack, and it is the existing design's answer
+to a student skipping or missing one.
+
+
+## The mental model: answers are currency
+
+The owner's framing, and it makes every edge case obvious:
+
+| Concept | In currency terms |
+| --- | --- |
+| Correct answer | earn 1 coin |
+| Wrong answer | no coin — the student stays on the question (`"Incorrect! Try again!"`) |
+| **Skipped question** | **simply no coin. Nothing special happens** |
+| Release schedule | the price list, in coins |
+| A `0` step | costs nothing; comes free with the piece before it |
+| Spare questions | slack — how many a student may miss and still finish |
+
+`requiredCorrectAnswers` is the total price. Questions available minus total
+price is the miss allowance.
+
+This is why skipping needs no requeue logic, no deferred-question list and no
+special case: a student who skips simply has fewer coins. If the activity has
+slack, they still finish; if it does not, they are short and the puzzle is
+incomplete — which is the same outcome as answering wrong and giving up, already
+the behaviour today.
+
+**It also settles undo.** Undo refunds the coin and recomputes what is
+affordable. Deterministic under any price list, with no per-piece question ids —
+the same fix recommended below, with a name that fits in one's head.
 
 ## The model: one integer per release step
 
@@ -43,8 +76,16 @@ Two invariants, each a one-line check:
 
 ```
 len(schedule) == piece count
-sum(schedule) == question count
+sum(schedule) == requiredCorrectAnswers      # the puzzle's total price
 ```
+
+Questions available may exceed the total price. The difference is the miss
+allowance, and Teacher Studio should state it as a fact rather than an error:
+
+> 10 questions · puzzle costs 9 · **students can miss 1**
+
+That makes the teacher's lever obvious: more forgiveness means writing more
+questions.
 
 ## Why a schedule and not a per-piece cost
 
