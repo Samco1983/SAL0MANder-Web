@@ -65,3 +65,30 @@ pressure; up is a record.
 Student play is Unity's. These drawings came from the web lane because the
 decisions were made here; the implementation, the layout, and the final call on
 every element above are Codex's.
+
+## Two small notes on the RESET control
+
+Both cosmetic, both real, neither would surface in a test.
+
+**`ResetLoosePieces()` is safe and its label says otherwise.** It touches only
+pieces that are out but not placed — nothing earned is lost, and it saves an
+undo state first. But `RESET` sitting beside `UNDO` on the control rail reads as
+*reset everything* to a student. A twelve-year-old with eight pieces earned will
+not press it to tidy their tray. The safest control on the rail looks like the
+most dangerous one.
+
+Suggested: `Tidy`, `Return pieces`, or `Send to tray`.
+
+**It plays the wrong sound.**
+
+```
+PlayFailSound(); // Plays satisfying click to represent mechanical clink/reset
+```
+
+The comment states the intent — a mechanical clink. The method called is the one
+used for a wrong answer, so tidying the tray sounds exactly like getting a
+question wrong, which confirms the fear the label already created.
+
+**RESET and RESTART are correctly separated** and this predates the 2026-09-02
+work: `ResetLoosePieces` is non-destructive, while restarting the activity is
+gated behind `allowRestart` / `SessionContext.CanRestart`. Worth preserving.
