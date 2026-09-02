@@ -1,120 +1,132 @@
 # Directive — Codex, 2026-09-02
 
-## 0. Read first
-
-`AUDIT-2026-09-02.md` · `SPEC-TEACHER-STUDIO-ACTIVITY-EDITOR.md` ·
-`WIREFRAME-REVIEW-2026-09-02.md` · `UNITY-REPO-DIAGNOSIS-2026-09-01.md`
+Two things matter: **make the demo work**, then **build Teacher Studio.**
+Everything else in this repository's docs is background for those two.
 
 The web lane has no network access from its environment — `curl` returns `000`
-for every host, and the browser is blocked from the domain. **It cannot see
-production.** Anywhere below that asks you to confirm something live, that is
-why.
+for every host and the browser is blocked from the domain. It cannot see
+production. Where this asks you to confirm something live, that is why.
 
 ---
 
-## A. Audit — state check before you build anything else
+## PRIORITY 1 — Make the demo work
+
+Nothing a student touches works today. This is the whole job until it is done.
+
+### 1a. Audit before you build
 
 1. **`git status`.** The repo is on `codex/reconcile-student-runtime-20e774b`
    with 22 uncommitted files. Intentional? A build from the working tree matches
-   no commit, which is one way a "fixed" bug ships missing.
-2. **PR #23 strictly contains PR #22.** `git merge-base --is-ancestor` confirms
-   it. **Merging #22 does not deliver the drag fix.** Recommend merging #23 and
-   closing #22.
-3. **PR #16** has been open since 2026-08-18. Land it or close it.
-4. **Confirm the 93 MB WebGL build came from #23**, not from the working tree.
+   no commit — that is one way a fixed bug ships missing.
+2. **PR #23 strictly contains PR #22** (`git merge-base --is-ancestor` confirms).
+   **Merging #22 does not deliver the drag fix.** Merge #23, close #22.
+3. **PR #16**, open since 2026-08-18 — land it or close it.
+4. **Confirm the 93 MB WebGL build came from #23**, not the working tree.
 5. **Check `autoPlaceCorrectPieces` reaches the build.** It is `true` for all
-   three demo activities (`ActivityManager.cs:468`), so dragging should not be
-   on the critical path for them. If the deployed build still demands a drag,
-   the flag is not arriving — cheaper to check than to rebuild.
-6. **Report what production is actually serving.** You can see it; the web lane
-   cannot.
+   three demos (`ActivityManager.cs:468`), so dragging should not be on their
+   critical path. If the deployed build still demands a drag, the flag is not
+   arriving — cheaper to check than to rebuild.
+6. **Report what production is actually serving.** You can see it; we cannot.
 
-## B. Do first — this is the only thing blocking a playable product
+### 1b. Ship it
 
 Merge #23 → rebuild WebGL from that branch → hand over the four files per
 `RUNBOOK-SHIP-A-UNITY-BUILD.md`.
 
-Compression must stay `Disabled`; `deploy.yml` expects
+Compression stays `Disabled`; `deploy.yml` expects
 `VITE_UNITY_BUILD_COMPRESSION: none`. A mismatch is what broke the site until
-PR #82 — loader resolved, progress hit 100%, every student saw "The game didn't
-load", and both the build and the deploy reported success.
+PR #82 — the loader resolved, the bar hit 100%, every student saw "The game
+didn't load", and both the build and the deploy reported success.
 
-Nothing a student touches works until this lands.
+**Done means:** you can open an activity and finish it. Not "the build
+succeeded."
 
-## C. Decisions to implement — settled by the owner 2026-09-02
+### 1c. Small fixes that belong in the same pass
 
-**C1 — Piece count is 9.** Correct both wireframes; they read 24 and 12.
+- **The piece-count `else` bug.** `PuzzleManager.cs:2189` has no `else`: any
+  count outside `{4,6,9,12,16}` silently renders 3x3. Live today.
+- **Contrast.** White on the `CONTINUE` green `#B6FF4D` is **1.21:1**, on the
+  control a student presses most. Dark text on the same green is 15.96:1. White
+  on the `GOT IT` purple is 3.88:1.
+- **Piece count is 9.** Both wireframes say 24 and 12; correct them.
+- **The per-answer reward modal comes out.** Owner's decision. Panel 1's inline
+  bar already does the job. Replace with: question panel closes itself, the
+  piece travels to its slot and snaps using the existing glow, inline bar, next
+  question arrives on its own. 600-800 ms, nothing to press. **Do not make it
+  instant** — the animation is the feedback that replaces the modal. Keep the
+  word "unlocked". Full-screen celebration only at `PUZZLE COMPLETE`.
+- **`RESET` is mislabelled and plays the wrong sound.** `ResetLoosePieces()`
+  only returns unplaced pieces to the dock and saves an undo state first — the
+  safest control on the rail, labelled like the most dangerous, and it calls
+  `PlayFailSound()`. Rename to `Tidy` / `Return pieces`; use a neutral sound.
 
-**C2 — The per-answer reward modal is removed.** The spec contains two answers
-to the same event; panel 1's inline bar wins.
+## PRIORITY 2 — Teacher Studio
 
-Replace with: question panel closes itself → the piece travels to its slot and
-snaps in using the glow already in `PuzzlePiece.cs` → inline bar → next question
-arrives on its own. Roughly 600–800 ms, nothing to press.
-
-**Do not make it instant.** The animation *is* the feedback that replaces the
-modal. Keep the word "unlocked". Keep the full-screen celebration for
-`PUZZLE COMPLETE` only — one modal per activity instead of twelve.
-
-**C3 — Palette resolved.** The three purples are 8° apart: one hue at three
-lightnesses, which is correct, not a conflict. Two of three greens already agree
-at ~85°. Teacher Studio's `#38A169` is the **success/valid** colour — the Saved
-tick, the checklist ticks — and stays distinct from the brand green. One brand
-hue pair expressed as lightness steps per surface, not separate hexes.
-
-**C4 — Mystery Reveal becomes a named Activity Type.** The engine already
-supports it (`autoPlaceCorrectPieces`, shipped 2026-08-30) and it has never had
-a label a teacher can see — your own commit comment describes the intended
-"teacher choice between AUTO and DRAG". Four modes: `Learning Puzzle` /
-`Mystery Reveal` / `Classic Puzzle` / `Both`. Mapping in the spec, §3.1. No new
-data model required.
-
-## D. Fix — measured, not opinion
-
-**Contrast.** White on the `CONTINUE` green `#B6FF4D` measures **1.21:1** and
-sits on the control a student presses most. Dark `#0E0E12` on that same green is
-15.96:1. White on the `GOT IT` purple is 3.88:1 (fails AA normal). White on
-`#38A169` is 3.25:1.
-
-`design/tokens.css` in the web repo already records that white on the vivid
-brand green measures 2.28:1 and was rejected for exactly this reason.
-
-## E. Recommendations — push back if you disagree
-
-- **Text size A−/A/A+** is filed in the spec as "future setting". It is one of
-  the two live complaints. Recommend promoting it.
-- **Accuracy percentage** on the completion screen — recommend cutting. Keep
-  `12/12 pieces`. A student who has "already decided math is not for them"
-  finishing at 58% will not press Play Again.
-- **Timer direction** — counting down is classroom pressure, counting up is a
-  record. Confirm which is intended.
-- **`.gitattributes` says `*.unity binary`** while `SampleScene.unity` is 40,414
-  lines of mergeable YAML. That single line means two branches touching the
-  scene cannot be merged — git takes one side and discards the other silently.
-  It is why work has to serialise onto one long branch. UnityYAMLMerge config is
-  in `UNITY-REPO-DIAGNOSIS-2026-09-01.md`. Not urgent; it is the thing that stops
-  this recurring.
-
-## F. On hold — do not start, and do not continue
-
-**Teacher Studio.** The owner is actively considering moving authoring to the
-website and leaving a minimal Unity surface — an activity picker, a list with
-dropdowns — with the C# editor made **dormant behind a flag rather than
-deleted**.
-
-**This is not decided.** It is recorded here so you do not spend another day on
-a surface that may move. `TeacherStudioUI.cs` was rebuilt five times on
-2026-09-01, including a 484-line redesign, and none of those rebuilds implement
-the owner's wireframe — the wireframe only ever existed as an image in a chat,
-which cannot be diffed or checked off.
+The owner has asked for this wireframe for weeks.
+`TeacherStudioUI.cs` has been rebuilt at least five times, including a 484-line
+redesign on 2026-09-01, and none of those implement it. Nothing was ignored —
+**the wireframe only ever existed as an image in a chat**, which cannot be
+diffed or checked off.
 
 `SPEC-TEACHER-STUDIO-ACTIVITY-EDITOR.md` now writes it out as exact strings with
-a gap table naming nine missing pieces, so it is buildable **if** it stays in
-Unity. Await the owner's decision before touching it either way.
+a **gap table naming nine missing pieces**, so "done" is checkable: five named
+tabs, Readiness Checklist, Subject, Grade Level, Publish gate, Activity Summary,
+Quick Actions, Recent Changes, Activity Notes.
 
-Reasoning for the possible move, so it is not a surprise: Teacher Studio is a
-forms app, the browser gives those controls for free, a web change deploys in
-minutes against a 22-hour Unity round trip, browser zoom solves the text-size
-request outright, and a teacher should not download 93 MB to type a title.
-Unity's version also stores to `PlayerPrefs` — device-local, unshareable — so
-moving loses no backend, because there is none.
+The single most valuable element is the **Readiness Checklist** — it answers
+"why can't I publish yet?" before the teacher asks. `Ready to Publish` is
+derived, never set by hand, and `PUBLISH` stays disabled until it is green.
+
+**Where it runs is still open.** The owner is weighing moving authoring to the
+website, since a web change is live in minutes against a 22-hour Unity round
+trip. That decision does not block Priority 1 and should not be pre-empted
+either way — do not start Teacher Studio until the rebuild ships, and flag it
+if you disagree.
+
+`AUDIT-HANDOFF-OPTIONS.md` has the analysis: the retrieval contract
+(`PlayBundleSchema`) and the delivery mechanism (`boot` with `playBundle`) are
+both already written, so wherever the editor lives, the handoff exists.
+
+## Decisions already made — no need to relitigate
+
+| | |
+| --- | --- |
+| Piece count | **9** |
+| Reward modal | **removed**, inline snap replaces it |
+| Palette | resolved — the three purples are 8 degrees apart, one hue at three lightnesses. `#38A169` is a **status** colour, not a brand green |
+| Questions | stay in Unity, permanently. Multi-platform needs one implementation |
+| The 42% companion | optional context only, never gameplay |
+| Backend | yes, on the website. Not yet — after the demo works |
+
+## Recommendations — push back if you disagree
+
+- **Text size A-/A/A+** is filed as a "future setting" in the Student Play spec.
+  It is one of the two live complaints. Recommend promoting it.
+- **Accuracy %** on the completion screen — recommend cutting. Keep `12/12`.
+- **Timer** — counting down is classroom pressure, up is a record. Which?
+- **`.gitattributes` says `*.unity binary`** while `SampleScene.unity` is 40,414
+  lines of mergeable YAML. That line means two branches touching the scene
+  cannot merge — git takes one side and silently discards the other. It is why
+  work has to serialise onto one long branch. UnityYAMLMerge config is in
+  `UNITY-REPO-DIAGNOSIS-2026-09-01.md`. Not urgent; it is what stops this
+  recurring.
+
+## Designs to read, not to build yet
+
+Both are the owner's, both are strong, both wait for a playable build.
+
+- **`PROPOSAL-PIECE-COST.md`** — answers are currency, each release has a price.
+  Removes the hidden question quota: a teacher writes 11 questions because the
+  lesson needed 11. Includes a blocker — **releases should come off the undo
+  stack entirely**, or a student can answer, undo, and re-answer for unbounded
+  coins.
+- **`PROPOSAL-TUTORIAL.md`** — a fading scaffold across the first three pieces,
+  **derived from `ActivityData` rather than authored**. This is load-bearing:
+  with `autoPlaceCorrectPieces = true` there is no drag, so a fixed tutorial
+  would teach a gesture that does not exist in the current default.
+
+## Everything else
+
+`AUDIT-2026-09-02.md` — every open thread with an owner.
+`WIREFRAME-IDEAS-STUDENT-PLAY.md` — two concepts to audit and re-draw.
+`ACTION-PLAN.md` — the gated sequence.
