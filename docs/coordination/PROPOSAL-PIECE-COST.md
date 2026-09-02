@@ -187,23 +187,46 @@ itself.
 
 ## Blockers — both predate this proposal
 
-### 1. Undo assumes one answer per piece
+### 1. Undo should never have included piece releases
+
+**Corrected 2026-09-02 after the owner asked whether undo un-answers the
+question.** An earlier version of this section recommended "refund the coin and
+recompute". That was solving a problem that should not exist.
+
+What is on the undo stack today:
 
 ```
-PuzzleManager.cs:2764   public void SaveUndoState(string actionDesc = "", string questionId = "")
+line  913   starting a rotation-gizmo drag        board manipulation
+line  946   selecting and detaching a piece       board manipulation
+line 1492   starting to drag a piece from the dock board manipulation
+line 1366   SaveUndoState("Piece Unlocked")       PROGRESSION
+line 1650   SaveUndoState("Piece Released")       PROGRESSION
 ```
 
-One undo entry carries **one** question id. Under a schedule this has no correct
-behaviour: a step needing three answers has three questions and one slot, and a
-`0` step released a piece that no answer paid for directly.
+The first three are what undo is for: *I put that piece in the wrong place, take
+it back.* The last two are a different kind of event, and they are also the only
+two carrying a description string and a `questionId` — the signature of
+something that did not fit the structure it was pushed into.
 
-**Recommended fix: undo the answer, not the piece.** Keep an ordered answer log
-and derive released pieces by replaying the schedule. Undo becomes "drop the
-last answer, recompute" — deterministic, and it removes the need to store
-per-piece question ids at all.
+**Undo must not be able to un-answer a question.** If it refunded a coin, a
+student could answer, take the release back, and answer the same question again
+— unbounded coins and a puzzle completed without solving anything. That is a
+four-minute discovery for a twelve-year-old.
 
-This is worth doing even if the schedule is rejected. The current design already
-stores enough for the undo stack and the board to drift apart.
+**Recommendation: remove releases from the undo stack.** Undo covers student
+board actions only — drag, rotate, place, detach. Once a coin is earned it is
+spent and the piece is out; that is history, not rewindable state.
+
+This removes, rather than solves, every problem the earlier draft described:
+
+- no 1:1 assumption to work around
+- no refund or recompute logic
+- no exploit
+- no interaction between undo and the release schedule at all
+- `questionId` on `SaveUndoState` becomes dead and can be deleted
+
+The same rule covers Mystery Reveal: an auto-placed piece was not a student
+board action, so it is not undoable either.
 
 ### 2. Only five piece counts work
 
