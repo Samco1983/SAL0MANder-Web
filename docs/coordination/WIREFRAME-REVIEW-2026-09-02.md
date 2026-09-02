@@ -1,6 +1,6 @@
-# Wireframe review — four things to settle before they get built
+# Wireframe review — decisions
 
-**2026-09-02 · web lane · advisory only**
+**2026-09-02 · web lane · four items reviewed, four decided**
 
 Reviewed at the owner's request: *Teacher Studio — Activity Editor (Jigsaw
 Puzzle Room) v1.0* and *Unity Game (Student Play) Wireframe Spec v1.0*.
@@ -8,14 +8,15 @@ Puzzle Room) v1.0* and *Unity Game (Student Play) Wireframe Spec v1.0*.
 ## Standing
 
 **Unity owns both surfaces.** Teacher Studio and Student Play are Unity's to
-build; the web lane builds neither and is not proposing to. Everything below is
-a finding, not a requirement — Codex takes it or leaves it.
+build; the web lane builds neither and is not proposing to.
 
-The web lane has one legitimate stake, and it is narrow: **the website is the
-third surface a person sees.** A teacher goes site → studio → game and a student
-goes share link → game. If those three disagree visually, they read as three
-products from three vendors. That is the only reason a web-lane document has an
-opinion about a Unity palette at all.
+The web lane has one narrow stake: **the website is the third surface a person
+sees.** A teacher goes site → studio → game; a student goes share link → game.
+That is the only reason a web-lane document has a view on a Unity palette.
+
+Items 1 and 2 were decided by the owner. Items 3 and 4 are the web lane's
+recommendation, which the owner accepted without a separate ruling — so treat
+them as recommendations Codex may push back on, not as settled instructions.
 
 ## What is strong, and should survive whatever else changes
 
@@ -25,18 +26,18 @@ Student Options / Ready to Publish. It answers "why can't I publish yet?"
 and most products never solve it. Keep it.
 
 **"House owns the system, Room owns the interaction."** A real architectural
-principle rather than a slogan: it is what allows a second room later without
-rebuilding Teacher Studio.
+principle: it is what allows a second room later without rebuilding Teacher
+Studio.
 
-**Chromebook 1366×768 listed first** among the breakpoints. Correct for schools,
-and frequently got wrong in favour of a desktop-first order.
+**Chromebook 1366×768 listed first** among breakpoints. Correct for schools, and
+frequently got wrong in favour of a desktop-first order.
 
 Autosave, 44px touch targets, and "first question fully readable without zoom"
 are all the right calls.
 
 ---
 
-## 1. Piece count: three sources, three numbers
+## 1. Piece count — DECIDED: nine
 
 | Source | Pieces |
 | --- | --- |
@@ -44,31 +45,55 @@ are all the right calls.
 | Teacher Studio wireframe (Activity Summary) | 24 |
 | Student Play wireframe (`3 / 12 PIECES`) | 12 |
 
-Any of the three may be the right answer. What cannot hold is three. The web
-side pins 9 in `threeDemoActivities.test.ts` **because Unity hardcodes 9**, so
-if the real target is 12 or 24, that is a web change too and the web lane needs
-telling. It is a one-line change here and a silent wrong-looking demo if nobody
-says anything.
+**Nine.** Owner's call, 2026-09-02. That matches what both repositories already
+ship, so no web change is required and `threeDemoActivities.test.ts` keeps
+pinning 9 against Unity's constant.
 
-## 2. Three palettes, no two matching
+Both wireframes should be corrected — 24 and 12 are illustrative numbers that
+will otherwise be read as a target by whoever implements them next.
 
-| Surface | Purple | Green |
-| --- | --- | --- |
-| Website (live today) | `#7c3aed` | `#84cc16` |
-| Teacher Studio spec | `#6B46C1` | `#38A169` |
-| Student Play spec | `#A259FF` | `#B6FF4D` |
+## 2. Palette — RESOLVED: there is less conflict than it looked
 
-Six values for what should be two. Nobody chose this — it is what happens when
-three surfaces are specified at three different times, which is ordinary and
-worth fixing once rather than reconciling forever.
+Converting all six brand values to hue/saturation/lightness:
 
-No proposal is made here about *which* pair wins. That is the owner's call, and
-the web lane will follow whatever is decided: the site consumes semantic tokens
-only, so a rebrand touches `design/tokens.css` and nothing else.
+**Purple — 8 degrees apart. Not a conflict.**
 
-## 3. Two contrast failures already visible in the specs
+| Surface | Hue | Sat | Light |
+| --- | --- | --- | --- |
+| Website `#7c3aed` | 262° | 83% | 58% |
+| Teacher Studio `#6B46C1` | 258° | 50% | 52% |
+| Student Play `#A259FF` | 266° | 100% | 67% |
 
-Measured against WCAG AA (4.5:1 for normal text, 3:1 for large):
+One hue at three lightnesses. That is not three brands — it is correct
+behaviour: a dark UI needs a lighter step or the colour disappears into the
+background. Nothing to change.
+
+**Green — 64 degrees apart, but only one outlier.**
+
+| Surface | Hue |
+| --- | --- |
+| Website `#84cc16` | 84° lime |
+| Student Play `#B6FF4D` | 85° lime |
+| Teacher Studio `#38A169` | **148° emerald** |
+
+Two of the three already agree. And the odd one is used on the *Saved* tick and
+the Readiness Checklist ticks — its own style guide labels it **"Success."**
+
+**That is not a competing brand green. It is a status colour, and it should stay
+separate.** Once lime means "correct", lime cannot be used decoratively anywhere
+without reading as a checkmark. Keeping brand and status distinct is the right
+call rather than an inconsistency to iron out.
+
+**Resolution:** one brand hue pair — green ~85°, purple ~262° — expressed as
+lightness steps per surface rather than as separate hex values per surface.
+Emerald `#38A169` remains the success/valid colour and is not a brand colour.
+
+The website consumes semantic tokens only, so it follows this automatically:
+a change touches `design/tokens.css` and nothing else.
+
+## 3. Contrast — this is the real defect
+
+Measured against WCAG AA (4.5:1 normal text, 3:1 large):
 
 | Pairing | Ratio | AA normal | AA large |
 | --- | --- | --- | --- |
@@ -79,99 +104,96 @@ Measured against WCAG AA (4.5:1 for normal text, 3:1 for large):
 | White on Teacher Studio success `#38A169` | 3.25:1 | **fail** | pass |
 | White body text on game background `#0E0E12` | 19.26:1 | pass | pass |
 
-The green one is the severe case: white on `#B6FF4D` is effectively unreadable,
-and it appears to sit on the `CONTINUE` button — the single control a student
-presses most. **Dark text on the same green measures 15.96:1**, so the fix costs
-nothing if it is made now and is a re-export of every screen if it is found
+**Recommendation: dark text on the light greens, not white.** The `CONTINUE`
+case is the severe one — white on `#B6FF4D` is effectively invisible, and it
+sits on the control a student presses most. The same green with dark text
+measures 15.96:1. The fix costs nothing now and is a re-export of every screen
 later.
 
-This is not a new lesson for the project. `design/tokens.css` already carries
-per-colour ratios and an explicit note that white on the vivid brand green
-measures 2.28:1 and was rejected for this exact reason. The same green, the same
-trap.
+This is not a new lesson here: `design/tokens.css` already carries per-colour
+ratios and an explicit note that white on the vivid brand green measures 2.28:1
+and was rejected for exactly this reason. Same green, same trap.
 
-No accessibility *conformance* is claimed anywhere by this document — these are
-measurements of two colour pairs, nothing more.
+No accessibility *conformance* is claimed by this document. These are
+measurements of six colour pairs, nothing more.
 
-## 4. The text-size control is deferred, and it is the live complaint
+## 4. Text size — recommend promoting it out of "future"
 
 Student Play accessibility notes read: *"Adjustable text (future setting)."*
 
 The missing A−/A/A+ control is one of the two defects the owner has been chasing
-for days on the deployed build. The spec is internally consistent — it is
-labelled future — but it should be a deliberate decision that it stays future,
-not something discovered later by a teacher.
+on the deployed build for days. **Recommendation: it is not a future setting.**
+If it stays deferred that should be a decision someone made, not something a
+teacher discovers.
 
----
+## 5. The reward moment — DECIDED: the modal goes
 
-## Suggested order
+The spec contains **two** answers to the same event:
 
-1. **Piece count** — one number, and tell the web lane which
-2. **Contrast** — cheapest to fix now, especially `CONTINUE`
-3. **Palette** — owner decides one pair; web follows via tokens
-4. **Text size** — confirm deferred on purpose, or promote it
+- **Panel 1 (live gameplay)** — an inline bar under the board: *✓ Correct! Piece
+  unlocked!* Board stays visible, nothing to dismiss.
+- **Panel 2 (correct answer feedback)** — the board dims, a centred modal
+  appears (*AWESOME! / You got it! / Piece Unlocked*) with the piece drawn
+  inside the box and a CONTINUE button.
 
-Items 1 and 3 are the only two that touch the web lane at all. The web lane will
-implement neither wireframe and is not asking to.
+**Panel 1 wins. Panel 2's modal is removed.** Owner's call, 2026-09-02.
 
----
+Why:
 
-# 5. The reward moment: the spec contains two answers to it
-
-Added after review with the owner, 2026-09-02. **A product call, not an
-engineering one, and Unity's build either way.** Recorded here so the choice is
-made deliberately rather than by whichever panel gets implemented first.
-
-## Both patterns are drawn
-
-**Panel 1 (live gameplay)** — an inline bar under the board:
-
-> ✓ Correct! Piece unlocked!
-
-Board stays visible. Nothing to dismiss.
-
-**Panel 2 (correct answer feedback)** — the board dims and a centred modal
-appears: *AWESOME! / You got it! / Piece Unlocked*, the piece rendered inside
-the box with confetti, and a CONTINUE button.
-
-These are two solutions to the same event. Shipping both means the student gets
-the bar *and* the modal for every correct answer.
-
-## The case for the inline one
-
-**The modal shows the piece in the wrong place.** The piece is drawn inside the
-celebration box, detached from the puzzle. The student sees it twice — floating
-in a modal, then again on the board — and the moment that actually matters, the
-piece landing in its slot and the picture getting closer, happens behind the dim
-or after the dismiss. The reward here is the picture assembling. The modal
-covers it.
+**The modal shows the piece in the wrong place.** It is drawn inside the
+celebration box, detached from the puzzle, so the student sees it twice — and
+the moment that actually matters, the piece landing in its slot and the picture
+getting closer, happens behind the dim.
 
 **It costs a click every time.** Twelve questions is twelve modals and twelve
-CONTINUE presses, per student, per activity. Thirty students on Chromebooks
-clicking through a box that reports something the board already shows.
+CONTINUE presses per student. A class of thirty spends roughly 330 extra taps
+dismissing a box that reports what the board already shows.
 
 **It repeats a problem already identified.** The owner's note on the questions
 panel — *"auto close the questions when you're done, so you can see the puzzle
-piece"* — is the same complaint about a different overlay: something covering
-the board at the moment the board is worth looking at.
+piece"* — is the same complaint about a different overlay.
 
-## Suggested behaviour
+### What replaces it
 
-On a correct answer, keep the board on screen and let the piece fly to its slot
-and snap in, using the snap glow that already exists in `PuzzlePiece.cs`.
-Celebrate **at** the board rather than over it: the inline bar from panel 1,
-and confetti originating from the piece's slot.
+Correct answer → the question panel closes itself → the piece travels to its
+slot and snaps in using the glow already in `PuzzlePiece.cs` → the inline bar
+appears → the next question arrives on its own. Roughly 600–800ms of motion,
+nothing to press.
 
-Reserve the full-screen celebration for **PUZZLE COMPLETE**, where stopping the
-student is the entire point and the picture is finished.
+**Do not make it instant.** The animation *is* the feedback that replaces the
+modal; a piece that teleports into place is missed by a distracted student and
+the reward does not land.
 
-That is one modal per activity instead of twelve.
+Keep the word **"unlocked"** — it names the real reward rather than awarding a
+point for it. Keep the full-screen celebration for **PUZZLE COMPLETE**, where
+stopping the student is the entire point. One modal per activity instead of
+twelve.
 
-## What this does not touch
+## 6. Accuracy percentage — recommend cutting it
 
-"Piece Unlocked" as language stays — it names the real reward rather than
-awarding a point for it. The completion screen stays. Only the per-answer
-interrupt is in question.
+The completion screen shows `12/12 pieces · 09:31 · 100% accuracy`.
 
-The separate note in section 4 of this document — accuracy percentage on the
-completion screen — is a different decision and is not bundled with this one.
+**Recommendation: drop the accuracy figure.** The About page describes the
+student this is built for — one who has *"already decided that math is not for
+them."* That student finishes and is shown 58%. In a practice tool, a permanent
+score on getting things wrong is the thing that stops them pressing Play Again.
+
+`12/12 pieces` is completion rather than judgement, and should stay. The timer
+is a separate question: counting **down** is pressure in a classroom, counting
+**up** is a record. Worth confirming which is intended.
+
+---
+
+## Summary for Codex
+
+| # | Item | Status |
+| --- | --- | --- |
+| 1 | Piece count | **Decided: 9.** Correct both wireframes |
+| 2 | Palette | **Resolved.** One hue pair, lightness steps per surface; emerald stays a status colour |
+| 3 | Contrast | **Fix.** Dark text on light greens; `CONTINUE` at 1.21:1 is the urgent one |
+| 4 | Text size | Recommend promoting out of "future" |
+| 5 | Reward modal | **Decided: removed.** Inline snap, 600–800ms, nothing to press |
+| 6 | Accuracy % | Recommend cutting; keep `12/12`; confirm timer direction |
+
+Only items 1 and 2 touch the web lane, and both are already satisfied by what
+this repository ships today.
