@@ -228,15 +228,42 @@ a boss. At 20 questions it is a steady every-two rhythm, then the last two
 pieces cost three each, so the puzzle gets harder exactly as the picture becomes
 legible enough to want.
 
-Corrected algorithm:
+## The same rule applies when one answer unlocks several pieces
+
+Owner's extension: **if the split is uneven, release more pieces at the
+beginning.**
+
+That makes both halves of the algorithm one principle — **reward front-loaded,
+effort back-loaded.** Cheap pieces first and the boss last when a piece costs
+several answers; bigger batches first when an answer unlocks several pieces.
+
+```
+ 2 questions /  9 pieces  ->  batches [5, 4]              not [4, 5]
+ 5 questions /  9 pieces  ->  batches [2, 2, 2, 2, 1]     lone single last
+ 7 questions / 16 pieces  ->  batches [3, 3, 2, 2, 2, 2, 2]
+ 8 questions / 24 pieces  ->  batches [3, 3, 3, 3, 3, 3, 3, 3]
+```
+
+Note this needs unequal fractional costs, not one shared fraction. Nine pieces
+at a flat 2/9 each produces [4, 5] — the wrong way round — because of how
+credits accumulate. Sizing each batch first and deriving the cost from it gives
+[5, 4].
+
+Corrected algorithm, both branches:
 
 ```
 if questions >= pieces:
     base, extra = divmod(questions, pieces)
     costs = [base] * (pieces - extra) + [base+1] * extra   # cheap first, boss last
 else:
-    costs = [Fraction(questions, pieces)] * pieces
+    per, extra = divmod(pieces, questions)
+    batches = [per+1] * extra + [per] * (questions - extra)  # bigger batches first
+    costs = flatten([Fraction(1, n)] * n for n in batches)
 ```
+
+Verified complete — exactly `pieces` released on exactly `questions` answers —
+for 1, 2, 3, 4, 5, 7, 8, 9, 10, 20, 30 and 45 questions across 4, 6, 9, 16 and
+24-piece boards.
 
 ## The low-question case falls out for free
 
