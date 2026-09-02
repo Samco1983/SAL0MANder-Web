@@ -113,3 +113,65 @@ not something discovered later by a teacher.
 
 Items 1 and 3 are the only two that touch the web lane at all. The web lane will
 implement neither wireframe and is not asking to.
+
+---
+
+# 5. The reward moment: the spec contains two answers to it
+
+Added after review with the owner, 2026-09-02. **A product call, not an
+engineering one, and Unity's build either way.** Recorded here so the choice is
+made deliberately rather than by whichever panel gets implemented first.
+
+## Both patterns are drawn
+
+**Panel 1 (live gameplay)** — an inline bar under the board:
+
+> ✓ Correct! Piece unlocked!
+
+Board stays visible. Nothing to dismiss.
+
+**Panel 2 (correct answer feedback)** — the board dims and a centred modal
+appears: *AWESOME! / You got it! / Piece Unlocked*, the piece rendered inside
+the box with confetti, and a CONTINUE button.
+
+These are two solutions to the same event. Shipping both means the student gets
+the bar *and* the modal for every correct answer.
+
+## The case for the inline one
+
+**The modal shows the piece in the wrong place.** The piece is drawn inside the
+celebration box, detached from the puzzle. The student sees it twice — floating
+in a modal, then again on the board — and the moment that actually matters, the
+piece landing in its slot and the picture getting closer, happens behind the dim
+or after the dismiss. The reward here is the picture assembling. The modal
+covers it.
+
+**It costs a click every time.** Twelve questions is twelve modals and twelve
+CONTINUE presses, per student, per activity. Thirty students on Chromebooks
+clicking through a box that reports something the board already shows.
+
+**It repeats a problem already identified.** The owner's note on the questions
+panel — *"auto close the questions when you're done, so you can see the puzzle
+piece"* — is the same complaint about a different overlay: something covering
+the board at the moment the board is worth looking at.
+
+## Suggested behaviour
+
+On a correct answer, keep the board on screen and let the piece fly to its slot
+and snap in, using the snap glow that already exists in `PuzzlePiece.cs`.
+Celebrate **at** the board rather than over it: the inline bar from panel 1,
+and confetti originating from the piece's slot.
+
+Reserve the full-screen celebration for **PUZZLE COMPLETE**, where stopping the
+student is the entire point and the picture is finished.
+
+That is one modal per activity instead of twelve.
+
+## What this does not touch
+
+"Piece Unlocked" as language stays — it names the real reward rather than
+awarding a point for it. The completion screen stays. Only the per-answer
+interrupt is in question.
+
+The separate note in section 4 of this document — accuracy percentage on the
+completion screen — is a different decision and is not bundled with this one.
