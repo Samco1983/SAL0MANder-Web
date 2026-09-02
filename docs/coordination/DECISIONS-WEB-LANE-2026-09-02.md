@@ -64,9 +64,9 @@ the next answer. A permanent figure judges the last one.
 
 The art library has five aspect ratios and the engine has three, so six
 generated images cannot be displayed at all. Adding the shapes is the cheaper
-side: the `cols`/`rows` block at `PuzzleManager.cs:2189` has to be touched
-regardless — it currently has no `else` and silently renders 3x3 for any
-unrecognised piece count.
+side. The earlier silent 3x3 fallback for unrecognised piece counts was fixed
+in the 2026-09-02 recovery pass; wide and tall still require explicit row/column
+rules rather than relying on that former fallback.
 
 Discarding six finished images to avoid touching code that is already broken is
 the wrong trade.
