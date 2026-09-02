@@ -149,12 +149,24 @@ yet?" before the teacher asks. Each row is a label plus a state marker.
 | --- | --- |
 | `Basic Info` | title, subject and grade level are all set |
 | `Puzzle Image` | an image is chosen or uploaded |
-| `Questions (10+)` | at least 10 questions exist |
+| `Questions` | enough questions exist to pay for the puzzle |
 | `Student Options` | the options step has been visited and saved |
 | `Ready to Publish` | all four rows above are complete |
 
 `Ready to Publish` is derived, never set by hand. `PUBLISH` is disabled until it
 is complete, and the checklist is the explanation for why.
+
+**On the `Questions` row.** The wireframe reads `Questions (10+)`, a fixed
+threshold. Ten is arbitrary: it is more than a 4-piece board needs and fewer
+than a 24-piece board needs. The meaningful check is **questions available
+against the puzzle's total price** — see `PROPOSAL-PIECE-COST.md`, where a
+correct answer is a coin and each release has a price.
+
+Stated as a fact rather than a threshold, the row reads:
+
+> 10 questions · puzzle costs 9 · students can miss 1
+
+which also tells the teacher their lever: more forgiveness means more questions.
 
 ### Lower row
 
