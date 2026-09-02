@@ -15,6 +15,7 @@ import {
 } from '@studio/activityDraft'
 import { deleteDraft, loadDrafts, upsertDraft } from '@studio/draftStorage'
 import { ImagePanel } from './ImagePanel'
+import { OptionsPanel } from './OptionsPanel'
 import { QuestionsPanel } from './QuestionsPanel'
 import styles from './StudioPage.module.css'
 
@@ -355,14 +356,7 @@ export function StudioPage() {
                     )}
 
                     {tab === 'options' && (
-                      <PlaceholderNotice
-                        label="Building next"
-                        title="Student options"
-                        pending={['Hints on or off', 'Restart and resume', 'Show the finished picture']}
-                      >
-                        Opening this tab marks it as reviewed on the checklist. The controls
-                        themselves land in the next pass.
-                      </PlaceholderNotice>
+                      <OptionsPanel draft={draft} onChange={(next) => update(() => next)} />
                     )}
 
                     {tab === 'preview' && (

@@ -1,0 +1,62 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 38rem;
+}
+
+.intro {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+}
+
+/* The whole row is the target — a 14px checkbox is a poor one. */
+.control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-4);
+  cursor: pointer;
+}
+
+.checkbox {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.effect {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
