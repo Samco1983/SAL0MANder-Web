@@ -60,10 +60,69 @@ single largest gap between the spec and the build.
 | `Subject` | dropdown | e.g. Science |
 | `Grade Level` | dropdown | e.g. 5th Grade |
 | `Description` | multi-line | |
-| `Activity Type` | 3-way segmented | `Learning Puzzle` / `Classic Puzzle` / `Both` |
+| `Activity Type` | 4-way segmented | `Learning Puzzle` / `Mystery Reveal` / `Classic Puzzle` / `Both` — see §3.1 |
 | `Created` | read-only | |
 | `Last Modified` | read-only | |
 | `Status` | read-only | e.g. Draft |
+
+### 3.1 Activity Type — four modes, including Mystery Reveal
+
+**Mystery Reveal already exists in the engine and has never been given a name a
+teacher can see.** Codex shipped it on 2026-08-30 ("Add optional automatic
+answer piece placement"):
+
+```
+QuizData.cs:127        public bool autoPlaceCorrectPieces = false;
+PuzzleManager.cs:1446  public bool AutoPlaceUnlockedPiece(int pieceIndex)
+ActivityManager.cs:468 activity.autoPlaceCorrectPieces = true;
+```
+
+That last line means it is **already on for all three demo activities**, and the
+commit's own comment describes the intended "teacher choice between AUTO and
+DRAG" — a choice that was never surfaced. This needs no new Unity data model; it
+needs a label.
+
+| Mode | Student does | Maps to |
+| --- | --- | --- |
+| `Learning Puzzle` | answers to earn a piece, then drags it into place | `autoPlaceCorrectPieces = false` |
+| `Mystery Reveal` | answers, and the piece places itself | `autoPlaceCorrectPieces = true` |
+| `Classic Puzzle` | jigsaw only, no questions | `allowClassicMode`, no quiz |
+| `Both` | question mode plus classic available | `allowClassicMode = true` |
+
+**Why Mystery Reveal is a first-class mode and not a hidden toggle:**
+
+- **It removes dragging entirely.** Drag on a Chromebook trackpad is hard for
+  younger students and can be impossible for a student with motor difficulties.
+  This is a genuine accessibility route through the same content, not a lesser
+  version of it.
+- **It is shorter.** Warm-up or exit-ticket length rather than a full period.
+- **It matches the reward decision.** With no drag and no modal (see
+  `WIREFRAME-REVIEW-2026-09-02.md` §5), answering makes the picture grow. The
+  reveal is the whole mechanic.
+
+**Worth checking before the next rebuild:** since `autoPlaceCorrectPieces` is
+already true for the three demos, dragging should not be on the critical path
+for them. If the deployed build still requires a drag, the flag is not reaching
+the build — which is cheaper to check than another rebuild.
+
+### 3.2 Contract delta the web side needs — PROPOSAL ONLY
+
+A share link cannot currently express this. `src/contracts/v1/share.ts` carries
+`releaseMode: z.string()` and nothing about placement, so a teacher who chooses
+Mystery Reveal cannot share it as such.
+
+Proposed, as an **optional** field so v1 is not broken:
+
+```ts
+piecePlacement: z.enum(['auto', 'drag']).optional()
+```
+
+Absent means `drag`, preserving today's behaviour for every existing link.
+
+**Not implemented.** The web lane does not change shared contracts without a
+documented joint decision, and does not invent activity schemas. This is a
+request for Codex to accept, amend, or reject; the field name and the enum
+values are his call, not the web lane's.
 
 ### Activity Summary (second column)
 
@@ -168,7 +227,9 @@ dark text on that green, or reserve it for icons and large text only.
 | Quick Actions panel | **no** |
 | `Recent Changes` | **no** |
 | `Activity Notes` | **no** |
+| `Mystery Reveal` named as an Activity Type | **no** — engine support exists, label does not |
 | Activity title field | yes |
+| Auto-place engine support (`autoPlaceCorrectPieces`) | yes — shipped 2026-08-30 |
 | Board shape selection | yes |
 | Learning / Classic / Both | yes |
 | Student preview launch | yes |
