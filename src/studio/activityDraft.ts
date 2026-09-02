@@ -73,6 +73,14 @@ export const StudioMetaSchema = z.object({
   description: z.string(),
   /** "Only you can see these notes" — the wireframe's Activity Notes panel. */
   notes: z.string(),
+  /**
+   * Which library picture was chosen, by stable key rather than array index.
+   *
+   * `imagePresetIndex` is positional in Unity (`0=Dog, 1=Cat, 2=Lotus`), so an
+   * index would silently repoint at a different picture if that array were ever
+   * reordered. Empty means nothing has been chosen yet.
+   */
+  imageKey: z.string(),
   /** Set once the teacher has been through Student Options — see readiness. */
   optionsReviewed: z.boolean(),
   createdAt: z.string(),
@@ -117,6 +125,7 @@ export function newDraft(activityId: string, now: string): ActivityDraft {
       gradeLevel: '',
       description: '',
       notes: '',
+      imageKey: '',
       optionsReviewed: false,
       createdAt: now,
       updatedAt: now,
@@ -177,7 +186,7 @@ export function readiness(draft: ActivityDraft): ReadinessRow[] {
   const price = puzzlePrice(draft)
 
   const basics = config.title.trim() !== '' && meta.subject !== '' && meta.gradeLevel !== ''
-  const image = config.imagePresetIndex !== -2
+  const image = meta.imageKey !== ''
   const enough = questions.length >= price
   const answered = questions.every(
     (q) => q.questionText.trim() !== '' && q.choices.filter((c) => c.isCorrect).length === 1,

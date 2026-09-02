@@ -6,8 +6,6 @@ import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { newId } from '@contracts/v1'
 import {
   ACTIVITY_TYPES,
-  BOARD_SHAPES,
-  PIECE_COUNTS,
   canPublish,
   missAllowance,
   newDraft,
@@ -16,6 +14,7 @@ import {
   type ActivityDraft,
 } from '@studio/activityDraft'
 import { deleteDraft, loadDrafts, upsertDraft } from '@studio/draftStorage'
+import { ImagePanel } from './ImagePanel'
 import { QuestionsPanel } from './QuestionsPanel'
 import styles from './StudioPage.module.css'
 
@@ -325,43 +324,6 @@ export function StudioPage() {
                           </div>
                         </fieldset>
 
-                        <div className={styles.fieldRow}>
-                          <label className={styles.field}>
-                            <span className={styles.label}>Puzzle pieces</span>
-                            <select
-                              className={styles.input}
-                              value={draft.config.pieceCountPreset}
-                              onChange={(e) =>
-                                setConfig({
-                                  pieceCountPreset: Number(e.target.value) as (typeof PIECE_COUNTS)[number],
-                                })
-                              }
-                            >
-                              {PIECE_COUNTS.map((n) => (
-                                <option key={n} value={n}>
-                                  {n} pieces
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                          <label className={styles.field}>
-                            <span className={styles.label}>Board shape</span>
-                            <select
-                              className={styles.input}
-                              value={draft.config.boardShape}
-                              onChange={(e) =>
-                                setConfig({ boardShape: e.target.value as (typeof BOARD_SHAPES)[number] })
-                              }
-                            >
-                              {BOARD_SHAPES.map((s) => (
-                                <option key={s} value={s}>
-                                  {s}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        </div>
-
                         <label className={styles.field}>
                           <span className={styles.label}>Your notes</span>
                           <span className={styles.hint}>Only you can see these.</span>
@@ -389,14 +351,7 @@ export function StudioPage() {
                     )}
 
                     {tab === 'image' && (
-                      <PlaceholderNotice
-                        label="Building next"
-                        title="Puzzle &amp; image"
-                        pending={['Choose from the picture library', 'Upload your own picture']}
-                      >
-                        Uploading your own picture is switched off until image storage exists.
-                        Built-in pictures work now.
-                      </PlaceholderNotice>
+                      <ImagePanel draft={draft} onChange={(next) => update(() => next)} />
                     )}
 
                     {tab === 'options' && (

@@ -103,9 +103,23 @@ describe('the readiness checklist', () => {
   const complete = () =>
     draftWith({
       config: { title: 'Solar System' } as never,
-      meta: { ...newDraft('a', NOW).meta, subject: 'Science', gradeLevel: '5', optionsReviewed: true },
+      meta: {
+        ...newDraft('a', NOW).meta,
+        subject: 'Science',
+        gradeLevel: '5',
+        imageKey: 'coral-reef',
+        optionsReviewed: true,
+      },
       questions: questions(9),
     })
+
+  it('requires a picture to have been chosen', () => {
+    // A default index is not a choice. Without this, an activity publishes with
+    // whatever picture happened to be first and the teacher never picked one.
+    const noPicture = draftWith({ ...complete(), meta: { ...complete().meta, imageKey: '' } })
+    expect(readiness(noPicture).find((r) => r.id === 'image')!.complete).toBe(false)
+    expect(canPublish(noPicture)).toBe(false)
+  })
 
   it('blocks publishing on a brand-new draft', () => {
     expect(canPublish(newDraft('act_x', NOW))).toBe(false)

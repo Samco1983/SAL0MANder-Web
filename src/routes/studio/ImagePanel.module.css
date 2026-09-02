@@ -1,0 +1,121 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 44rem;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.hint {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.select {
+  font: inherit;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.heading {
+  margin: var(--space-2) 0 0;
+  font-size: 0.9375rem;
+}
+
+.count {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.pick {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 6px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pick:hover {
+  border-color: var(--color-border-strong);
+}
+
+.pick[data-selected='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+/*
+  Shown rather than hidden. A teacher who cannot find the castle they saw a
+  moment ago assumes the tool lost it; dimmed with the board it needs explains
+  itself and is one click from working.
+*/
+.pick[data-fits='false'] .thumb {
+  opacity: 0.45;
+}
+
+.pick[data-fits='false'] .pickShape {
+  color: var(--color-text-muted);
+}
+
+.thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+.pickName {
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+.pickShape {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.upload {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
