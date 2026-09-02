@@ -125,3 +125,62 @@ The bridge, the contracts and the web editor are the web lane's. `ActivityData`,
 the reader path and anything inside the engine are Codex's. The overlap is the
 bundle shape, which `share.ts` already defines and which should not be changed
 without a documented joint decision.
+
+---
+
+## Correction — custom images already work on WebGL, and the picker is already JavaScript
+
+Found 2026-09-02, after the audit above was written. This section supersedes the
+claim that custom images are a blocker for the handoff; they are a **storage**
+problem, not a capability one.
+
+`Assets/Plugins/WebGL/Sal0manderBridge.jslib`:
+
+```js
+SAL0OpenPuzzleImagePicker: function (callbackObjectNamePtr) {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/png,image/jpeg,image/webp';
+    ...
+    if (file.size > 12 * 1024 * 1024) { /* reject */ }
+    var reader = new FileReader();
+    reader.onload = function () {
+        SendMessage(callbackObjectName, 'OnWebCustomImageSelected', reader.result || '');
+    };
+}
+```
+
+Unity calls out to it at `PuzzleManager.cs:3201`, and receives a base64 data URL
+which it decodes at `PuzzleManager.cs:3223`.
+
+### Three consequences
+
+**1. The picking half is already the web's.** This is an HTML
+`<input type="file">` created by the web layer, not a Unity dialog. Moving image
+selection to a web Teacher Studio is not a port — that code already lives on the
+web side of the boundary.
+
+**2. There is a size cap and no processing.** 12 MB is the only guard: no
+resize, no re-encode, no format conversion. A teacher's 8 MB phone photo becomes
+roughly 11 MB of base64 inside the activity JSON, and every student in the class
+downloads all of it. The same image measured **92 KB** at 640px WebP during
+tonight's art optimisation — a factor of about 120.
+
+Whatever else changes, **an uploaded image must be resized and re-encoded before
+it is stored.** That is true in every option and should not wait for a storage
+decision.
+
+**3. base64 is a transport, not a storage design.** Unity accepts image bytes at
+boot and always will. Once storage exists the same picker uploads the file and
+hands over a URL instead — `MediaType.WebUrl` is already in the enum beside
+`Base64Data`. Nothing in the engine has to change to move from one to the other.
+
+### Note: `GiantBoard_PlayTest.png`
+
+An untracked file of this name was present in the Unity repository at the start
+of the 2026-09-02 session and no longer exists. Its contents were never read by
+the web lane and, being untracked, it left no history.
+
+If it was a large-piece-count or oversized-board test it is directly relevant to
+two open items — the missing `else` in the `cols`/`rows` selection, and the
+proposal to add wide and tall board shapes. **Worth asking Codex what it was.**
