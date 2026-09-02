@@ -9,11 +9,21 @@
 User-agent: *
 Allow: /
 
-# Guest Play URLs are per-activity share links. They resolve fine, but they are
-# a teacher's distribution surface rather than site content, and indexing them
-# would fill results with links to individual activities instead of the pages
-# that describe what this is.
+# Guest Play URLs are per-activity share links. Indexing them in general would
+# fill results with individual activities instead of the pages that describe
+# what this is, so the surface stays closed by default.
+#
+# The three published demo activities are the exception, and the Allow lines
+# must stay in step with sitemap.xml. Listing a URL in the sitemap while
+# robots.txt blocks it is not a neutral mistake: a crawler reports "submitted
+# URL blocked by robots.txt", which is a worse signal than never mentioning the
+# page — and this domain is already categorised "Unknown". A more specific
+# Allow beats a broader Disallow, so these three are crawlable and arbitrary
+# share links are not. `discoverability.test.ts` fails if the two files drift.
 Disallow: /play/
+Allow: /play/act_integer_operations
+Allow: /play/act_one_step_inequalities
+Allow: /play/act_linear_equations
 
 # Internal surfaces. Reachable for the team, not part of the public site.
 Disallow: /console

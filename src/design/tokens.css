@@ -201,6 +201,30 @@
     0 8px 24px -8px color-mix(in srgb, var(--brand-violet) 40%, transparent);
   --transition-smooth: 220ms cubic-bezier(0.4, 0, 0.2, 1);
 
+  /* --- Scrollbars ---------------------------------------------------------
+   * Deliberately visible, and deliberately wide.
+   *
+   * macOS and iOS hide scrollbars until you scroll, so on a Mac this site gave
+   * no indication that a list continued below the fold — you had to already
+   * know. Styling `::-webkit-scrollbar` opts out of that overlay behaviour and
+   * the bar stays on screen.
+   *
+   * 14px rather than the ~7px default because the people using this are
+   * students on school Chromebooks and trackpads. A 7px target is a miss for
+   * anyone with imprecise pointing, and it is below the 24px minimum that
+   * WCAG 2.2 Target Size (Minimum) asks of pointer targets — 14px does not
+   * reach that either, but the scrollbar is never the only way to scroll, and
+   * a bar wide enough to grab beats one that is technically compliant and
+   * still invisible.
+   *
+   * Green on purpose: the Unity piece tray uses a green scrollbar, and the
+   * game and the site around it should not look like two different products.
+   */
+  --scrollbar-size: 14px;
+  --color-scrollbar-thumb: color-mix(in srgb, var(--brand-green) 62%, transparent);
+  --color-scrollbar-thumb-hover: var(--brand-green-deep);
+  --color-scrollbar-track: var(--neutral-100);
+
   --color-focus-ring: var(--brand-green-deep);
   --color-overlay: rgb(13 17 23 / 0.45);
 
@@ -249,6 +273,15 @@
     --color-success: #6cc98a;
     --color-success-soft: rgb(53 163 90 / 0.18);
 
+    /* The same bar, re-weighted for a dark ground: a mid green reads as a
+       control here, while the deep step disappears into the surface. */
+    --color-scrollbar-thumb: color-mix(in srgb, var(--brand-green) 52%, transparent);
+    --color-scrollbar-thumb-hover: var(--brand-green);
+    /* NOT --neutral-900: that is exactly --color-surface in dark, so the track
+       vanished into the page and the thumb floated on nothing. One step lighter
+       reads as a groove against the surface it sits on. */
+    --color-scrollbar-track: var(--neutral-800);
+
     --color-focus-ring: var(--accent-300);
     --color-overlay: rgb(0 0 0 / 0.6);
 
@@ -288,6 +321,12 @@
   --color-warning-soft: rgb(217 154 30 / 0.18);
   --color-success: #6cc98a;
   --color-success-soft: rgb(53 163 90 / 0.18);
+
+  --color-scrollbar-thumb: color-mix(in srgb, var(--brand-green) 52%, transparent);
+  --color-scrollbar-thumb-hover: var(--brand-green);
+  /* See the note in the media-query block: --neutral-900 is --color-surface
+     here, which made the track invisible. */
+  --color-scrollbar-track: var(--neutral-800);
 
   --color-focus-ring: var(--accent-300);
   --color-overlay: rgb(0 0 0 / 0.6);

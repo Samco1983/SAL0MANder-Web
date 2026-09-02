@@ -38,6 +38,7 @@
       "@unity/*": ["./src/unity/*"],
       "@auth/*": ["./src/auth/*"],
       "@config/*": ["./src/config/*"],
+      "@content/*": ["./src/content/*"],
       "@lib/*": ["./src/lib/*"]
     }
   },

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
+import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 
 /**
  * What a web filter's crawler can actually read.
@@ -17,6 +18,13 @@ import { describe, expect, it } from 'vitest'
 const html = readFileSync('index.html', 'utf8')
 const robots = readFileSync('public/robots.txt', 'utf8')
 const sitemap = readFileSync('public/sitemap.xml', 'utf8')
+
+/** Every path the sitemap vouches for, checked in both directions below. */
+const listedPaths = [
+  ...sitemap.matchAll(/<loc>https:\/\/sal0mander\.com(\/[^<]*)<\/loc>/g),
+]
+  .map((m) => m[1])
+  .filter((p): p is string => p !== undefined)
 
 describe('what a crawler reads', () => {
   it('has a title that says what this is, not just the brand name', () => {
@@ -100,6 +108,38 @@ describe('what a crawler reads', () => {
     }
   })
 
+  /**
+   * The contradiction this catches, which I shipped and did not notice.
+   *
+   * Adding the three activity URLs to sitemap.xml while robots.txt still said
+   * `Disallow: /play/` told crawlers two opposite things at once. A crawler
+   * does not treat that as a tie: it reports "submitted URL blocked by
+   * robots.txt", which is a WORSE signal than never listing the page — on a
+   * domain already categorised "Unknown", which is the whole problem these
+   * files exist to solve.
+   *
+   * Neither file was wrong on its own. Only together.
+   */
+  it('never promises a URL that robots.txt forbids', () => {
+    const disallowed = [...robots.matchAll(/^Disallow:\s*(\S+)/gm)].map((m) => m[1]!)
+    const allowed = [...robots.matchAll(/^Allow:\s*(\S+)/gm)].map((m) => m[1]!)
+
+    for (const path of listedPaths) {
+      const blockedBy = disallowed.filter((rule) => path.startsWith(rule))
+      if (blockedBy.length === 0) continue
+
+      // A more specific Allow wins over a broader Disallow.
+      const rescuedBy = allowed.filter((rule) => path.startsWith(rule))
+      const mostSpecificBlock = Math.max(...blockedBy.map((r) => r.length))
+      const mostSpecificAllow = rescuedBy.length ? Math.max(...rescuedBy.map((r) => r.length)) : -1
+
+      expect(
+        mostSpecificAllow,
+        `${path} is in sitemap.xml but robots.txt blocks it via "${blockedBy.join(', ')}"`,
+      ).toBeGreaterThan(mostSpecificBlock)
+    }
+  })
+
   it('keeps internal surfaces out of the index', () => {
     expect(robots).toMatch(/^Disallow: \/console$/m)
     expect(robots).toMatch(/^Disallow: \/unity$/m)
@@ -110,16 +150,48 @@ describe('what a crawler reads', () => {
    * index.html for anything unknown, so a listed-but-unrouted path renders the
    * not-found screen under a URL the sitemap vouched for — worse than omitting
    * it.
+   *
+   * Two kinds of URL are legitimate here. A static page must appear as a
+   * literal in the route table. An activity link cannot — the route is
+   * `/play/:activityId` — so it is checked against the activities the transport
+   * will actually resolve instead. Anything matching neither is a promised 404.
    */
   it('lists only pages that are actually routed', () => {
     const routes = readFileSync('src/config/routes.ts', 'utf8')
-    const listed = [...sitemap.matchAll(/<loc>https:\/\/sal0mander\.com(\/[^<]*)<\/loc>/g)].map(
-      (m) => m[1],
-    )
-    expect(listed.length).toBeGreaterThan(0)
-    for (const path of listed) {
+    const known = new Set<string>(MOCK_DEMO_ACTIVITIES.map((a) => a.id))
+
+    expect(listedPaths.length).toBeGreaterThan(0)
+    for (const path of listedPaths) {
       if (path === '/') continue
+
+      const activityId = /^\/play\/([^/]+)\/?$/.exec(path)?.[1]
+      if (activityId) {
+        expect(known, `${path} is in the sitemap but no such activity exists`).toContain(activityId)
+        continue
+      }
+
       expect(routes, `${path} is in the sitemap but not in the route table`).toContain(`'${path}'`)
+    }
+  })
+
+  /**
+   * The other direction, and the one that fails quietly.
+   *
+   * `prerender-routes.mjs` derives its file list from this sitemap, so an
+   * activity that is not listed here is an activity whose share link returns
+   * HTTP 404 on GitHub Pages. It still renders for a student — the SPA fallback
+   * serves the shell — which is exactly why nobody would notice. A crawler, a
+   * link checker, and a filter's classifier all read the status.
+   *
+   * So: adding a fourth activity without adding its URL fails here rather than
+   * shipping a link that reads as missing.
+   */
+  it('promises a real URL for every activity a teacher can share', () => {
+    for (const activity of MOCK_DEMO_ACTIVITIES) {
+      expect(
+        listedPaths,
+        `${activity.title} has no sitemap entry, so its share link will 404`,
+      ).toContain(`/play/${activity.id}`)
     }
   })
 })

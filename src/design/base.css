@@ -105,3 +105,84 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+/* --- Scrollbars, everywhere ------------------------------------------------
+ *
+ * The site gave no sign that content continued below the fold. macOS and iOS
+ * use overlay scrollbars that stay hidden until you are already scrolling, so a
+ * list running past its container looked finished — you had to guess.
+ *
+ * ## The two engines must not both be addressed at once
+ *
+ * The obvious version of this file sets `scrollbar-color` on `*` AND styles
+ * `::-webkit-scrollbar`, on the theory that one covers Firefox and the other
+ * covers Chrome. It does not work, and it fails silently: **Chrome ignores the
+ * `::-webkit-scrollbar` pseudo-elements entirely on any element where the
+ * standard `scrollbar-color` or `scrollbar-width` is set.** The standard
+ * property wins, Chrome draws its own overlay bar in the right colours, and the
+ * width, the border and the always-visible behaviour are all discarded.
+ *
+ * Measured, not assumed: with both present, a forced `overflow-y: scroll`
+ * element reported `offsetWidth - clientWidth === 0` — the bar was still an
+ * overlay taking no layout space, exactly the thing this is meant to fix.
+ *
+ * So the standard properties are fenced behind `@supports not
+ * selector(::-webkit-scrollbar)`, which is true in Firefox and false in
+ * Chromium and Safari. Each engine gets one path and they never overlap.
+ *
+ * The bar is green because the Unity piece tray's is green. A student crosses
+ * between the site and the game without noticing a boundary, and the controls
+ * either side of that seam should not contradict each other.
+ */
+
+/* Chromium and Safari. Styling these pseudo-elements is also what opts out of
+   macOS overlay scrollbars, so the bar occupies real width and stays put. */
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  /* Fully rounded, with track showing through on both sides, so the thumb reads
+     as a grabbable object rather than a change in background colour. */
+  border-radius: 999px;
+  border: 3px solid var(--color-scrollbar-track);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background: var(--color-scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+/* Where a vertical and a horizontal bar meet. Left unstyled it renders as a
+   pale notch that reads as a rendering fault. */
+::-webkit-scrollbar-corner {
+  background: var(--color-scrollbar-track);
+}
+
+/* Firefox only — see the note above on why this cannot be unconditional. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+  }
+}
+
+/*
+ * Windows High Contrast and forced-colours modes replace the palette wholesale.
+ * A brand green pushed through that filter is no longer the brand green and can
+ * land on a background it does not contrast with, so hand the scrollbar back to
+ * the operating system — which is the entire point of those modes.
+ */
+@media (forced-colors: active) {
+  * {
+    scrollbar-color: auto;
+  }
+}

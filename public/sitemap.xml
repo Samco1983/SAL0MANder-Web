@@ -11,13 +11,42 @@
     <priority>1.0</priority>
   </url>
   <!--
-    /demo is deliberately absent. The activity gallery is not merged to main
-    yet, and the SPA fallback serves index.html for unknown paths — so a
-    crawler following it would get the not-found screen rendered under a URL
-    the sitemap vouched for. A sitemap that points at missing pages is worse
-    for classification than a short one. Add it in the same change that ships
-    the route.
+    The three activity links.
+
+    These are the URLs a teacher actually shares — pasted into Classroom or
+    printed as a QR code — so they matter more than any other page here. They
+    are listed for two reasons.
+
+    First, status. GitHub Pages cannot rewrite URLs, so a client-side route is
+    served the SPA shell with an HTTP 404. `prerender-routes.mjs` derives its
+    file list FROM this sitemap, so listing a URL here is what makes it resolve
+    200. Unlisted, a shared activity link renders fine for a student and reads
+    as missing to every crawler and filter classifier that checks it.
+
+    Second, content. A domain categorised "Unknown" is one nobody has looked
+    at. Three named activity pages are a stronger Education signal than four
+    pages of policy text.
+
+    Listed by hand because this file is deliberately static, and kept honest by
+    a test: `discoverability.test.ts` asserts one entry here per activity in
+    `MOCK_DEMO_ACTIVITIES`, so adding an activity without adding its URL fails
+    the build rather than shipping a 404.
   -->
+  <url>
+    <loc>https://sal0mander.com/play/act_integer_operations</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://sal0mander.com/play/act_one_step_inequalities</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://sal0mander.com/play/act_linear_equations</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
   <url>
     <loc>https://sal0mander.com/about/</loc>
     <changefreq>monthly</changefreq>

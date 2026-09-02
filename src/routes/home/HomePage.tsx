@@ -1,6 +1,7 @@
 import { env } from '@config/env'
 import { paths, buildPath } from '@config/routes'
-import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
+import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
+import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { AppShell } from '@components/layout/AppShell'
 import { SharePanel } from '@components/share/SharePanel'
 import { LinkButton } from '@components/ui/Button'
@@ -46,8 +47,8 @@ export function HomePage() {
             no accounts to create, no passwords to reset, nothing for a student to remember.
           </p>
           <div className={styles.actions}>
-            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)} size="lg">
-              Try a sample activity
+            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)} size="lg">
+              Try an activity
             </LinkButton>
             {/*
               The "WebGL host" button that sat here was an internal smoke-test
@@ -89,6 +90,44 @@ export function HomePage() {
         </dl>
       </section>
 
+
+      {/*
+        The three activities, rendered FROM `MOCK_DEMO_ACTIVITIES` rather than
+        written out here.
+
+        Not a style preference. Two separate drafts of this work named the
+        activity ids wrong, in two different ways — `act_integer_ops` in one and
+        the old seeded set (`act_quadratics`, `act_cell_structure`,
+        `act_vocab_review`) in another — and neither mistake failed anything,
+        because a hardcoded string on a page is not checked against anything.
+        Mapping the array means the ids here cannot drift from the ids the
+        transport resolves, and `threeDemoActivities.test.ts` pins those to
+        Unity's.
+
+        A wrong id is not a cosmetic bug on this page: it is a dead share link
+        on a teacher's printed worksheet.
+      */}
+      <section className={styles.section} aria-labelledby="activities-title">
+        <h2 className={styles.sectionTitle} id="activities-title">
+          Activities you can try right now
+        </h2>
+        <p className={styles.demoShareText}>
+          Each one opens the way a student sees it — no account, no sign-in, nothing to install.
+        </p>
+        <div className={styles.grid}>
+          {MOCK_DEMO_ACTIVITIES.map((activity) => (
+            <Card key={activity.id} title={activity.title}>
+              {activity.description}
+              <div className={styles.cardAction}>
+                <LinkButton to={buildPath.guestPlay(activity.id)}>
+                  Open {activity.title}
+                </LinkButton>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
       <section className={styles.section} aria-labelledby="demo-share-title">
         <div className={styles.demoShare}>
           <div className={styles.demoShareCopy}>
@@ -102,17 +141,59 @@ export function HomePage() {
               roster to upload.
             </p>
             <div className={styles.inlineActions}>
-              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)} variant="secondary">
+              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)} variant="secondary">
                 See what a student sees
               </LinkButton>
             </div>
           </div>
           <SharePanel
-            activityId={MOCK_DEMO_ACTIVITY_ID}
+            activityId={MOCK_DEMO_ACTIVITIES[0].id}
             baseUrl={env.publicBaseUrl}
-            title="Sample SAL0MANder Activity"
+            title={MOCK_DEMO_ACTIVITIES[0].title}
           />
         </div>
+      </section>
+
+
+      {/*
+        The page described the mechanic in words and showed none of it.
+
+        A teacher decides in about four seconds and reads a picture faster than
+        a paragraph. A filter's classifier gets six sentences of descriptive alt
+        text — coral reefs, the Colosseum, astrophotography — which is a
+        stronger Education signal than prose alone on a domain currently
+        categorised "Unknown".
+
+        Deliberately NOT captioned as belonging to any activity: Unity owns
+        which picture an activity uses. See the note in `puzzleLibrary.ts`.
+
+        Every image is same-origin, lazy below the fold, and carries explicit
+        dimensions so the grid reserves its space and the page does not jump as
+        they arrive.
+      */}
+      <section className={styles.section} aria-labelledby="pictures-title">
+        <h2 className={styles.sectionTitle} id="pictures-title">
+          The pictures students uncover
+        </h2>
+        <p className={styles.demoShareText}>
+          Every activity is built on a picture, revealed a piece at a time as students answer. A
+          sample of the library:
+        </p>
+        <ul className={styles.gallery}>
+          {PUZZLE_LIBRARY.map((picture) => (
+            <li className={styles.galleryItem} key={picture.src}>
+              <img
+                src={picture.src}
+                alt={picture.alt}
+                width={picture.width}
+                height={picture.height}
+                loading="lazy"
+                decoding="async"
+                className={styles.galleryImage}
+              />
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className={styles.section}>

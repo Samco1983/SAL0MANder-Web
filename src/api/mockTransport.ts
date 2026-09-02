@@ -19,6 +19,65 @@ const DEMO_ACTIVITY_ID = 'demo-activity'
 const DEMO_VERSION_ID = 'demo-version-1'
 
 /**
+ * The three launch activities, keyed by the ids Unity actually seeds.
+ *
+ * These are copied from `ActivityManager.CreateDemoActivity` on the reconciled
+ * Unity branch, not chosen here. The web layer hands an id across and never
+ * interprets it, so a mismatch is not a cosmetic problem: Unity looks the id up
+ * with `ActivityManager.GetActivityById` and a miss means the student gets a
+ * different puzzle than the link named.
+ *
+ * An earlier draft used `act_integer_ops`. Unity's is `act_integer_operations`,
+ * and a separate audit independently proposed a third set entirely
+ * (`act_quadratics`, `act_cell_structure`, `act_vocab_review` — the OLD seeded
+ * activities, read from Unity `main` rather than the reconciled branch). Both
+ * would have shipped the wrong activities, so the literals are asserted in
+ * `threeDemoActivities.test.ts` rather than trusted to review.
+ *
+ * Nine pieces and a square board on all three, matching
+ * `CreateDemoActivity(id, title, imagePresetIndex, quiz)`, which hardcodes
+ * both. Any test expecting varied piece counts is describing the old set.
+ *
+ * The questions here are placeholders in the shape the contract specifies —
+ * Unity ships the real ones and owns them. Writing SAL0MANder's actual question
+ * content in this repository would be a second implementation of activity data
+ * that drifts the moment a teacher edits anything.
+ */
+export const MOCK_DEMO_ACTIVITIES = [
+  {
+    id: 'act_integer_operations',
+    title: 'Integer Operations',
+    description:
+      'Adding, subtracting, multiplying and dividing positive and negative numbers.',
+  },
+  {
+    id: 'act_one_step_inequalities',
+    title: 'One-Step Inequalities',
+    description: 'Solving and graphing inequalities that take a single operation to undo.',
+  },
+  {
+    id: 'act_linear_equations',
+    title: 'Linear Equations',
+    description: 'Solving for a variable across one and two-step linear equations.',
+  },
+] as const
+
+/** Unity hardcodes both in `CreateDemoActivity`; the web must not disagree. */
+export const DEMO_PIECE_COUNT = 9
+export const DEMO_BOARD_SHAPE = 'square' as const
+
+type DemoActivity = (typeof MOCK_DEMO_ACTIVITIES)[number]
+
+function findDemoActivity(activityId: string): DemoActivity | undefined {
+  return MOCK_DEMO_ACTIVITIES.find((a) => a.id === activityId)
+}
+
+/** Version ids are per-activity so two bundles can never look like one. */
+function demoVersionId(activityId: string): string {
+  return `${activityId}-v1`
+}
+
+/**
  * Link states a share code can resolve to, so each can be built and seen
  * locally. A teacher fielding "the link doesn't work" needs these to be
  * distinguishable, and a student needs to be told which one happened.
@@ -43,19 +102,29 @@ export const MOCK_SHARE_CODE = MOCK_SHARE_CODES.ok
 
 /** The `PlayBundle` shape from `API_CONTRACT.md`, served by the mock resolver. */
 function demoPlayBundle(activityId: string) {
-  const pieceCount = 9
+  const pieceCount = DEMO_PIECE_COUNT
+  /*
+    A named activity carries its own title and version; the legacy
+    `demo-activity` keeps the placeholder wording it always had.
+
+    This also closes a skew an audit caught: `demoBundle` answered "Sample
+    SAL0MANder Activity" while `demoPlayBundle` answered "Fractions Review" for
+    the same id. Two resolution paths disagreeing about what an activity is
+    called is the kind of thing a teacher notices and nobody can explain.
+  */
+  const activity = findDemoActivity(activityId)
   return {
     activityId,
-    activityVersionId: DEMO_VERSION_ID,
+    activityVersionId: activity ? demoVersionId(activityId) : DEMO_VERSION_ID,
     versionNumber: 1,
-    title: 'Fractions Review',
-    description: 'A mock play bundle in the shape API_CONTRACT.md specifies.',
+    title: activity?.title ?? 'Fractions Review',
+    description: activity?.description ?? 'A mock play bundle in the shape API_CONTRACT.md specifies.',
     authorDisplayName: 'Ms. Rivera',
     allowedPlayModes: ['learning-puzzle', 'classic-puzzle'],
     defaultPlayMode: 'learning-puzzle',
     puzzle: {
       pieceCount,
-      boardShape: 'square',
+      boardShape: DEMO_BOARD_SHAPE,
       showBoardGuide: true,
       enableCameraZoomAndPan: false,
       allowRestart: true,
@@ -76,7 +145,7 @@ function demoPlayBundle(activityId: string) {
       checksum: { algorithm: 'sha256', value: 'a'.repeat(64) },
     },
     quiz: {
-      quizId: 'quiz_demo',
+      quizId: `quiz_${activityId}`,
       releaseMode: 'question-driven',
       // A Learning activity needs at least `pieceCount` questions, or a student
       // is stranded with pieces they can never release.
@@ -122,18 +191,20 @@ const LINK_FAILURES: Record<string, { serverCode: string; message: string }> = {
 }
 
 function demoBundle(activityId: string) {
+  const activity = findDemoActivity(activityId)
   return {
     summary: {
       id: activityId,
-      title: 'Sample SAL0MANder Activity',
+      title: activity?.title ?? 'Sample SAL0MANder Activity',
       description:
+        activity?.description ??
         'A placeholder activity served by the local mock backend so Guest Play can be built and tested before a real backend exists.',
       mode: 'learning-puzzle' as const,
       thumbnail: null,
       authorDisplayName: 'Demo Teacher',
     },
     version: {
-      id: DEMO_VERSION_ID,
+      id: activity ? demoVersionId(activityId) : DEMO_VERSION_ID,
       activityId,
       versionNumber: 1,
       payload: { schemaVersion: 1, body: { placeholder: true } },
@@ -236,8 +307,14 @@ function route(options: RequestOptions, sessions: Map<string, unknown>): unknown
       })
     }
 
-    // Only the demo id resolves, so the not-found path is exercisable locally.
-    if (id !== DEMO_ACTIVITY_ID) {
+    /*
+      Known ids resolve; everything else 404s. Fail-closed on purpose and worth
+      stating: the requirement is that an unknown id FAILS rather than opening
+      some other puzzle, so there is deliberately no nearest-match, no default,
+      and no fallback to `demo-activity`. A student following a mistyped or
+      revoked link must be told, not quietly handed a different activity.
+    */
+    if (id !== DEMO_ACTIVITY_ID && !findDemoActivity(id)) {
       throw new ApiError({ code: 'not_found', message: `No activity ${id}`, status: 404 })
     }
     return demoBundle(id)
