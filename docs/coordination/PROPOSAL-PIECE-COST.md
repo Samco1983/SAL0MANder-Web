@@ -303,3 +303,52 @@ and becomes a line of information:
 
 Manual override sits behind an advanced control, consistent with the wireframe's
 own principle that advanced options stay hidden.
+
+---
+
+# Correction — cost attaches to the release POSITION, not to the piece
+
+Caught by the owner, 2026-09-02. Everything above this section assigned costs to
+pieces by index, which is wrong.
+
+```
+PuzzleManager.cs:1660
+    int pieceIndex = releaseSequence[releasedPiecesCount];
+```
+
+Pieces are not released in index order. `releaseSequence` is a list of piece
+indices, and `QuestionMappingPolicy` offers `SequentialQueue`, **`RandomQueue`**
+and `ExplicitIndexMap`. Under a random sequence, a cost assigned to piece 9
+could be paid third — so "cheap first, boss last" would produce an arbitrary
+difficulty curve rather than a ramp.
+
+## The fix
+
+**Index the costs by position in `releaseSequence`, not by piece.**
+
+```
+cost[0]  -> whatever piece comes out first
+cost[1]  -> whatever comes out second
+...
+cost[n-1] -> the last piece released, whichever it is — the boss
+```
+
+The ramp then holds under every mapping policy, because it is a property of the
+step rather than of a square of the picture. This is also more honest about what
+the value means: it is the price of the next release, not an attribute of an
+image region.
+
+## A conflict this exposes: ExplicitIndexMap
+
+`linkedPieceIndex` lets a teacher tie a specific question to a specific piece.
+If that piece costs three answers, **which of the three is the linked one?**
+
+Explicit mapping assumes one answer per piece, the same assumption undo makes
+(see the undo section above). Two questions for Codex:
+
+- Are `ExplicitIndexMap` and variable cost mutually exclusive per activity?
+- Or does a linked piece simply always cost 1, with the remaining budget spread
+  across the unlinked ones?
+
+Either is defensible. What must not happen is both being enabled with no defined
+behaviour, which is the state the code is in today.
