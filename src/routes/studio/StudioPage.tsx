@@ -16,6 +16,7 @@ import {
   type ActivityDraft,
 } from '@studio/activityDraft'
 import { deleteDraft, loadDrafts, upsertDraft } from '@studio/draftStorage'
+import { QuestionsPanel } from './QuestionsPanel'
 import styles from './StudioPage.module.css'
 
 /**
@@ -381,15 +382,10 @@ export function StudioPage() {
                     )}
 
                     {tab === 'questions' && (
-                      <PlaceholderNotice
-                        label="Building next"
-                        title="Questions"
-                        pending={['Write and edit questions', 'Mark the correct answer', 'Add a hint']}
-                      >
-                        This activity needs {puzzlePrice(draft)} correct answers to finish, so it
-                        needs at least {puzzlePrice(draft)} questions. Write a few more than that and
-                        students can miss one or two and still complete the picture.
-                      </PlaceholderNotice>
+                      <QuestionsPanel
+                        draft={draft}
+                        onChange={(next) => update(() => next)}
+                      />
                     )}
 
                     {tab === 'image' && (
