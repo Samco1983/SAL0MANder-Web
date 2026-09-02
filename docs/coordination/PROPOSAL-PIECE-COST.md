@@ -206,15 +206,53 @@ else:
 Every row above was verified to release exactly `pieces` pieces on exactly
 `questions` answers, with no remainder.
 
-## A tuning choice, not a decision the algorithm should make
+## Ordering: the expensive pieces go LAST
 
-The version above **front-loads** the expensive pieces: at 20 questions over 9
-pieces the first piece costs 3, then it settles to 2. That means a slow start
-followed by a steady rhythm.
+Owner's call, and it corrects an error in this proposal's first draft.
 
-Interleaving the extras evenly instead is a one-line change. Whether a slow
-start builds momentum or discourages is a judgement someone should make rather
-than inherit from an arbitrary ordering.
+The first version distributed the extra cost to the **first** pieces. Measured
+against back-loading, at 10 questions over 9 pieces:
+
+```
+boss at end     pieces at answers  1, 2, 3, 4, 5, 6, 7, 8, 10
+front-loaded    pieces at answers     2, 3, 4, 5, 6, 7, 8, 9, 10
+```
+
+**Front-loading means the student answers the first question correctly and
+nothing happens.** That is the worst moment in the activity to produce no
+feedback: first answer, first impression, and the mechanic looks broken before
+the student has any reason to trust it.
+
+Back-loading gives eight pieces one-for-one and makes the final piece cost two —
+a boss. At 20 questions it is a steady every-two rhythm, then the last two
+pieces cost three each, so the puzzle gets harder exactly as the picture becomes
+legible enough to want.
+
+Corrected algorithm:
+
+```
+if questions >= pieces:
+    base, extra = divmod(questions, pieces)
+    costs = [base] * (pieces - extra) + [base+1] * extra   # cheap first, boss last
+else:
+    costs = [Fraction(questions, pieces)] * pieces
+```
+
+## The low-question case falls out for free
+
+A teacher who wants the class to mostly play with the puzzle writes two
+questions:
+
+```
+2 questions, 9 pieces
+  answer 1 -> pieces 1, 2, 3, 4
+  answer 2 -> pieces 5, 6, 7, 8, 9
+```
+
+Two questions, then it is a jigsaw. No separate mode, no extra setting — the
+same model with different numbers. This is worth noting because it means
+"Classic Puzzle" and "Learning Puzzle" stop being a hard boundary and become
+the two ends of one dial.
 
 ## Showing it to the student
 
