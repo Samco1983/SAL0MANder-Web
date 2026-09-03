@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -51,6 +51,35 @@ describe('prerendering the public pages', () => {
   it('picks up a newly listed page without anyone editing the script', () => {
     const dir = fixture(['/', '/newly-added'])
     run(dir)
+    expect(existsSync(join(dir, 'newly-added', 'index.html'))).toBe(true)
+  })
+
+  /**
+   * A 200 was only half of it. Copying the shell verbatim gave every route the
+   * homepage's title and no description, so a classifier that does not run
+   * JavaScript read the same page at every URL — and identical titles across a
+   * domain is a weak signal, not a neutral one. The districts page in
+   * particular exists to be read by web filter review.
+   */
+  it('gives each page its own title, description and canonical', () => {
+    const dir = fixture(['/', '/districts'])
+    run(dir)
+
+    const page = readFileSync(join(dir, 'districts', 'index.html'), 'utf8')
+    expect(page).toContain('<title>For school districts')
+    expect(page).toContain('<meta name="description" content="Domains to allow')
+    expect(page).toContain('<link rel="canonical" href="https://sal0mander.com/districts/">')
+  })
+
+  /**
+   * Prerendering every sitemap URL is the contract. An earlier version of the
+   * metadata step made a missing entry fatal, which would have failed the build
+   * and shipped no page at all — reintroducing the 404 this script exists to
+   * fix. The miss is loud; the file is still written.
+   */
+  it('still ships a page that has no metadata entry yet', () => {
+    const dir = fixture(['/', '/newly-added'])
+    expect(() => run(dir)).not.toThrow()
     expect(existsSync(join(dir, 'newly-added', 'index.html'))).toBe(true)
   })
 

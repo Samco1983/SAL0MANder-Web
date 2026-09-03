@@ -68,11 +68,26 @@ export function DistrictsPage() {
           </h2>
           <p className={styles.callout}>
             <code className={styles.code}>sal0mander.com</code>
+            <code className={styles.code}>www.sal0mander.com</code>
+          </p>
+          {/*
+            Both hosts, deliberately. A filter matches on hostname, so allowing
+            the apex alone leaves www blocked — which is the exact block a
+            district reported: "www.sal0mander.com is not available because it
+            is categorized as Unknown." Naming one host here would send an
+            administrator to do half the job and believe it was finished.
+          */}
+          <p>
+            That is the complete list — one site, reachable at both names. The website, the
+            activity, and every image, script and asset are served from it over HTTPS. There is no
+            content delivery network, no font service, no analytics endpoint, and no third-party
+            host of any kind.
           </p>
           <p>
-            That is the complete list. The website, the activity, and every image, script and asset
-            are served from this one domain over HTTPS. There is no content delivery network, no
-            font service, no analytics endpoint, and no third-party host of any kind.
+            If your filter categorises by reputation rather than by allowlist, the category to
+            apply is <strong>Education</strong>. A newly registered domain is usually reported as
+            uncategorised, which many default policies deny — that is what we are most often
+            blocked by, and it is not a judgement anyone made about this site.
           </p>
           <p>
             A browser loading an activity makes requests to this domain and nowhere else. If your
