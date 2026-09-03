@@ -19,6 +19,10 @@ export const paths = {
   terms: '/terms/',
   /** Why this exists, in the author's words. */
   about: '/about/',
+  /** Network, browser, and data facts for school technology reviewers. */
+  districts: '/districts/',
+  /** Honest accessibility support and known limitations. */
+  accessibility: '/accessibility/',
   profile: '/profile',
   /** Bare Unity WebGL host, used for smoke-testing a build in isolation. */
   unity: '/unity',

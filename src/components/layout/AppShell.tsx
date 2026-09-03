@@ -123,6 +123,12 @@ export function AppShell({
             <Link className={styles.footerLink} to={paths.privacy}>
               Privacy
             </Link>
+            <Link className={styles.footerLink} to={paths.accessibility}>
+              Accessibility
+            </Link>
+            <Link className={styles.footerLink} to={paths.districts}>
+              District review
+            </Link>
             <Link className={styles.footerLink} to={paths.terms}>
               Terms
             </Link>
