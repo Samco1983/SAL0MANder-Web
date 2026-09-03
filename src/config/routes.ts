@@ -15,6 +15,8 @@ export const paths = {
   guestPlayIndex: '/play',
   /** Privacy and data practices — teacher-facing, and read by filter reviewers. */
   privacy: '/privacy/',
+  /** District technical and data summary — for IT administrators. */
+  districts: '/districts/',
   /** Terms of use. Deliberately sells nothing — see TPT-RULES.md rule 3. */
   terms: '/terms/',
   /** Why this exists, in the author's words. */

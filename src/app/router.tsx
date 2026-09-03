@@ -30,6 +30,9 @@ const TermsPage = lazy(() =>
 const PrivacyPage = lazy(() =>
   import('@routes/privacy/PrivacyPage').then((m) => ({ default: m.PrivacyPage })),
 )
+const DistrictsPage = lazy(() =>
+  import('@routes/districts/DistrictsPage').then((m) => ({ default: m.DistrictsPage })),
+)
 const GuestPlayIndexPage = lazy(() =>
   import('@routes/guest-play/GuestPlayPage').then((m) => ({ default: m.GuestPlayIndexPage })),
 )
@@ -79,6 +82,7 @@ export const routes: RouteObject[] = [
   { path: paths.about, element: split(<AboutPage />), errorElement: <RouteError /> },
   { path: paths.terms, element: split(<TermsPage />), errorElement: <RouteError /> },
   { path: paths.privacy, element: split(<PrivacyPage />), errorElement: <RouteError /> },
+  { path: paths.districts, element: split(<DistrictsPage />), errorElement: <RouteError /> },
   { path: paths.profile, element: split(<ProfilePage />), errorElement: <RouteError /> },
   { path: paths.unity, element: split(<UnityHostPage />), errorElement: <RouteError /> },
   { path: paths.console, element: split(<ConsolePage />), errorElement: <RouteError /> },
