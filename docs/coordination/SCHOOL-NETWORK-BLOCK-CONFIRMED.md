@@ -75,3 +75,22 @@ PR #73 (and duplicated in #83).
 **Land the production presentation fix before submitting for categorization.**
 A reviewer who classifies the site while it presents as a developer build is a
 reviewer classifying the wrong thing.
+
+## Addendum — 2026-09-02: still blocked, now on the `www` host
+
+Same block page, same district account, different IP (`71.195.100.96`, vs
+`206.78.42.94` on 2026-08-30). The blocked host this time reads
+**`www.sal0mander.com`**, not the apex.
+
+Two things this confirms:
+
+- The block follows the **device**, not the location. A different IP means a
+  different network, and the on-device filtering agent blocked it anyway.
+  Changing where you sit does not change the outcome.
+- The categorization request must cover **both hosts**, apex and `www`. Vendors
+  usually categorize the registrable domain, but the block page names the host
+  it was asked for, so name both on the submission.
+
+Sequencing gate is still closed as of this date: the production presentation
+fix (PR #73 / #83) is not on `main`. Land it before submitting for
+categorization.

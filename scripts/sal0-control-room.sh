@@ -42,7 +42,12 @@ TOTAL_N=$(git log --since="$SINCE" --oneline | wc -l | tr -d ' ')
 # (scripts/hooks/commit-msg) is what makes the mark reliable going forward.
 CODEX_N=$(git log --since="$SINCE" --format='%(trailers:key=Sal0-From,valueonly)' \
   | grep -cE 'SAL0-0[12]' || true)
-UNSIGNED_N=$(( TOTAL_N - CLAUDE_N - LOOP_N - CODEX_N ))
+# Antigravity (SAL0-11) signs the same way. It is counted separately rather
+# than folded into a total, because a shared bucket is how attribution went
+# wrong here before.
+ANTIGRAV_N=$(git log --since="$SINCE" --format='%(trailers:key=Sal0-From,valueonly)' \
+  | grep -cE 'SAL0-11' || true)
+UNSIGNED_N=$(( TOTAL_N - CLAUDE_N - LOOP_N - CODEX_N - ANTIGRAV_N ))
 [ "$UNSIGNED_N" -lt 0 ] && UNSIGNED_N=0
 
 FILES_N=$(git log --since="$SINCE" --name-only --format='' | sort -u | grep -c . || true)
@@ -50,6 +55,8 @@ FILES_N=$(git log --since="$SINCE" --name-only --format='' | sort -u | grep -c .
 echo "  WHO WORKED"
 printf "    %-24s %3d commit(s)\n" "Claude (SAL0-04)" "$CLAUDE_N"
 printf "    %-24s %3d commit(s)\n" "Codex (SAL0-01/02)" "$CODEX_N"
+printf "    %-24s %3d commit(s)%s\n" "Antigravity (SAL0-11)" "$ANTIGRAV_N" \
+  "$([ "$ANTIGRAV_N" -eq 0 ] && echo '   <- never signed a commit' || echo '')"
 printf "    %-24s %3d commit(s)\n" "Work loop (unattended)" "$LOOP_N"
 printf "    %-24s %3d commit(s)\n" "UNSIGNED" "$UNSIGNED_N"
 printf "    %-24s %3d file(s) touched\n" "TOTAL" "$FILES_N"
