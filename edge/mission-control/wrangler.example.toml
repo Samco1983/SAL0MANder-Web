@@ -1,7 +1,9 @@
 name = "sal0mander-mission-control"
 main = "worker.js"
 compatibility_date = "2026-08-23"
-workers_dev = false
+# Mission Control is called at the workers.dev URL baked into the web app.
+# Setting this false disables that route on the next Wrangler deployment.
+workers_dev = true
 
 # One SQLite-backed Durable Object serializes owner actions and persists
 # idempotency receipts. Add GITHUB_TOKEN with `wrangler secret put`; use a
@@ -23,3 +25,5 @@ TEAM_DOMAIN = "https://replace-me.cloudflareaccess.com"
 POLICY_AUD = "replace-with-access-application-audience"
 PUBLIC_SITE_URL = "https://samco1983.github.io/SAL0MANder-Web"
 GITHUB_REPOSITORY = "Samco1983/SAL0MANder-Web"
+DEPLOYED_GIT_SHA = "replace-with-git-sha"
+DEPLOYMENT_CANARY_ISSUE = "72"
