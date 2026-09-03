@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import type { Mission, MissionActionResult } from '@contracts/v1'
 import type { MissionControlApi } from '@api/endpoints/missionControl'
+import type { MissionControlBootstrap } from '@api/missionControlBootstrap'
 import { ConsolePage } from './ConsolePage'
 
 const active: Mission = {
@@ -55,11 +56,14 @@ function controller(missions: Mission[] = [active, verified]) {
   } satisfies MissionControlApi
 }
 
-function renderPage(api: MissionControlApi | null) {
+function renderPage(
+  api: MissionControlApi | null,
+  bootstrap: MissionControlBootstrap | null = null,
+) {
   return render(
     <MemoryRouter>
       <ThemeProvider>
-        <ConsolePage controller={api} />
+        <ConsolePage controller={api} bootstrap={bootstrap} />
       </ThemeProvider>
     </MemoryRouter>,
   )
@@ -141,5 +145,44 @@ describe('V6 owner console', () => {
     expect(screen.getByRole('button', { name: 'Run Fast Break' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Championship' })).toBeDisabled()
     expect(screen.queryByText(/mission log connected/i)).toBeNull()
+  })
+
+  it('uses the protected bootstrap and native form when browser requests are filtered', async () => {
+    const api = controller()
+    const bootstrap: MissionControlBootstrap = {
+      missionLog: {
+        missions: [verified],
+        fetchedAtUtc: '2026-08-23T19:32:00.000Z',
+        source: 'github',
+      },
+      actionForm: {
+        url: '/ops/actions/form',
+        csrf: 'a'.repeat(48),
+        idempotencyKey: 'b'.repeat(48),
+      },
+    }
+    renderPage(api, bootstrap)
+
+    expect(await screen.findByText(/mission log connected/i)).toBeVisible()
+    expect(api.list).not.toHaveBeenCalled()
+
+    const fastBreak = screen.getByRole('button', { name: 'Run Fast Break' })
+    const championship = screen.getByRole('button', { name: 'Championship' })
+    const form = fastBreak.closest('form')
+    expect(form).toHaveAttribute('action', '/ops/actions/form')
+    expect(form).toHaveAttribute('method', 'post')
+    expect(fastBreak).toHaveAttribute('type', 'submit')
+    expect(fastBreak).toHaveAttribute('name', 'action')
+    expect(fastBreak).toHaveAttribute('value', 'fast_break')
+    expect(championship).toBeEnabled()
+    expect(championship).toHaveAttribute('value', 'championship')
+    expect(form?.querySelector('input[name="idempotencyKey"]')).toHaveValue('b'.repeat(48))
+    expect(within(form as HTMLFormElement).getByDisplayValue(verified.id)).toHaveAttribute(
+      'name',
+      'id',
+    )
+    expect(
+      within(form as HTMLFormElement).getByDisplayValue(verified.updatedAtUtc),
+    ).toHaveAttribute('name', 'revision')
   })
 })
