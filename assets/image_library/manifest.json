@@ -1,5 +1,5 @@
 {
-  "image_count": 14,
+  "image_count": 18,
   "images": [
     {
       "file_path": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/assets/image_library/square/cartoon/coral_reef_marine_life.jpg",
@@ -210,6 +210,66 @@
       "format": "JPEG",
       "file_size_bytes": 1131247,
       "file_size_kb": 1104.7
+    },
+    {
+      "file_path": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/assets/image_library/landscape/cartoon/african_safari_watering_hole.jpg",
+      "relative_path": "assets/image_library/landscape/cartoon/african_safari_watering_hole.jpg",
+      "category": "landscape/cartoon",
+      "filename": "african_safari_watering_hole.jpg",
+      "subject": "African Savanna, Elephants & Wildlife",
+      "style": "Polished Cartoon Illustration",
+      "aspect_ratio": "4:3",
+      "dimensions": "1200x896",
+      "width": 1200,
+      "height": 896,
+      "format": "JPEG",
+      "file_size_bytes": 1176527,
+      "file_size_kb": 1149.0
+    },
+    {
+      "file_path": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/assets/image_library/landscape/photo/arctic_polar_bears_aurora.jpg",
+      "relative_path": "assets/image_library/landscape/photo/arctic_polar_bears_aurora.jpg",
+      "category": "landscape/photo",
+      "filename": "arctic_polar_bears_aurora.jpg",
+      "subject": "Polar Bears, Glaciers & Northern Lights",
+      "style": "High-Quality Realistic Photography",
+      "aspect_ratio": "4:3",
+      "dimensions": "1200x896",
+      "width": 1200,
+      "height": 896,
+      "format": "JPEG",
+      "file_size_bytes": 1021491,
+      "file_size_kb": 997.5
+    },
+    {
+      "file_path": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/assets/image_library/square/cartoon/wizard_owl_alchemy_lab.jpg",
+      "relative_path": "assets/image_library/square/cartoon/wizard_owl_alchemy_lab.jpg",
+      "category": "square/cartoon",
+      "filename": "wizard_owl_alchemy_lab.jpg",
+      "subject": "Wizard Owl, Potions & Magic Tower",
+      "style": "Polished Cartoon Illustration",
+      "aspect_ratio": "1:1",
+      "dimensions": "1024x1024",
+      "width": 1024,
+      "height": 1024,
+      "format": "JPEG",
+      "file_size_bytes": 1231298,
+      "file_size_kb": 1202.4
+    },
+    {
+      "file_path": "/Users/samuel_saldivar/Desktop/SAL0MANder-Web/assets/image_library/square/photo/spiral_galaxy_cosmic_nebula.jpg",
+      "relative_path": "assets/image_library/square/photo/spiral_galaxy_cosmic_nebula.jpg",
+      "category": "square/photo",
+      "filename": "spiral_galaxy_cosmic_nebula.jpg",
+      "subject": "Spiral Galaxy Core & Cosmic Nebula",
+      "style": "High-Quality Realistic Photography / Astrophotography",
+      "aspect_ratio": "1:1",
+      "dimensions": "1024x1024",
+      "width": 1024,
+      "height": 1024,
+      "format": "JPEG",
+      "file_size_bytes": 1221967,
+      "file_size_kb": 1193.3
     }
   ]
 }
