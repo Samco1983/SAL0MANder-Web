@@ -1,0 +1,13 @@
+.page { display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-6); max-width: 46rem; }
+.header, .section { display: flex; flex-direction: column; gap: var(--space-3); }
+.eyebrow { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .08em; color: var(--color-brand-green-text); font-weight: var(--weight-bold); }
+.title { font-size: clamp(2rem, 6vw, var(--text-3xl)); color: var(--color-text); }
+.lede { font-size: var(--text-lg); color: var(--color-text-muted); line-height: 1.6; }
+.updated { font-size: var(--text-sm); color: var(--color-text-subtle); }
+.sectionTitle { font-size: var(--text-xl); color: var(--color-text); }
+.section p, .list { color: var(--color-text-muted); line-height: 1.7; }
+.list { display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-5); }
+.callout, .domain { padding: var(--space-4); border-left: 4px solid var(--color-accent); border-radius: var(--radius-md); background: var(--color-accent-soft); color: var(--color-text) !important; }
+.domain code { font-family: var(--font-mono); font-size: var(--text-lg); font-weight: var(--weight-bold); overflow-wrap: anywhere; }
+.link { color: var(--color-accent); font-weight: var(--weight-medium); }
+.footer { display: flex; flex-wrap: wrap; gap: var(--space-3); }
