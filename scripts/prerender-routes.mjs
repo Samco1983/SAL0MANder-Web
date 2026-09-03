@@ -141,14 +141,45 @@ function withMeta(path) {
     return html
   }
 
-  const head =
-    `<title>${escape(meta.title)}</title>` +
-    `<meta name="description" content="${escape(meta.description)}">` +
-    `<link rel="canonical" href="${SITE_ORIGIN}${path}/">`
+  /*
+    Replace in place rather than prepend.
+    The shell already carries a description and Open Graph tags for the
+    homepage. An earlier version of this inserted a second description beside
+    the title, and since the shell's copy appears first in the document a
+    crawler kept reading the homepage's text on every route — which is the
+    exact problem this was written to fix, still there, now harder to see.
+  */
+  const swaps = [
+    [/<title>[\s\S]*?<\/title>/, `<title>${escape(meta.title)}</title>`],
+    [
+      /<meta\b[^>]*\bname="description"[^>]*>/,
+      `<meta name="description" content="${escape(meta.description)}" />`,
+    ],
+    // Open Graph, because teachers hand these links to a class in Classroom or
+    // a message. Without this every shared page previews as the homepage.
+    [
+      /<meta\b[^>]*\bproperty="og:title"[^>]*>/,
+      `<meta property="og:title" content="${escape(meta.title)}" />`,
+    ],
+    [
+      /<meta\b[^>]*\bproperty="og:description"[^>]*>/,
+      `<meta property="og:description" content="${escape(meta.description)}" />`,
+    ],
+  ]
 
-  if (/<title>[\s\S]*?<\/title>/.test(html)) return html.replace(/<title>[\s\S]*?<\/title>/, head)
-  if (html.includes('<head>')) return html.replace('<head>', `<head>${head}`)
-  return head + html
+  let page = html
+  for (const [pattern, replacement] of swaps) {
+    if (pattern.test(page)) page = page.replace(pattern, replacement)
+  }
+
+  const canonical = `<link rel="canonical" href="${SITE_ORIGIN}${path}/" />`
+  if (/<link\b[^>]*rel="canonical"[^>]*>/.test(page)) {
+    page = page.replace(/<link\b[^>]*rel="canonical"[^>]*>/, canonical)
+  } else if (page.includes('</head>')) {
+    page = page.replace('</head>', `${canonical}</head>`)
+  }
+
+  return page
 }
 
 for (const path of paths) {

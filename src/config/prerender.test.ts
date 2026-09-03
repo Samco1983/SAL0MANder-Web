@@ -19,7 +19,15 @@ afterEach(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true }))
 function fixture(sitemapPaths: string[]): string {
   const dir = mkdtempSync(join(tmpdir(), 'prerender-'))
   dirs.push(dir)
-  writeFileSync(join(dir, 'index.html'), '<!doctype html><div id="root"></div>')
+  writeFileSync(
+    join(dir, 'index.html'),
+    '<!doctype html><html><head>' +
+      '<meta name="description" content="HOMEPAGE COPY" />' +
+      '<meta property="og:title" content="HOMEPAGE TITLE" />' +
+      '<meta property="og:description" content="HOMEPAGE COPY" />' +
+      '<title>HOMEPAGE TITLE</title>' +
+      '</head><body><div id="root"></div></body></html>',
+  )
   writeFileSync(
     join(dir, 'sitemap.xml'),
     `<?xml version="1.0"?><urlset>${sitemapPaths
@@ -67,8 +75,8 @@ describe('prerendering the public pages', () => {
 
     const page = readFileSync(join(dir, 'districts', 'index.html'), 'utf8')
     expect(page).toContain('<title>For school districts')
-    expect(page).toContain('<meta name="description" content="Domains to allow')
-    expect(page).toContain('<link rel="canonical" href="https://sal0mander.com/districts/">')
+    expect(page).toContain('name="description" content="Domains to allow')
+    expect(page).toContain('<link rel="canonical" href="https://sal0mander.com/districts/" />')
   })
 
   /**
@@ -81,6 +89,43 @@ describe('prerendering the public pages', () => {
     const dir = fixture(['/', '/newly-added'])
     expect(() => run(dir)).not.toThrow()
     expect(existsSync(join(dir, 'newly-added', 'index.html'))).toBe(true)
+  })
+
+  /**
+   * The failure this guards is one I shipped and did not see.
+   *
+   * The first version inserted the route's description next to <title>, and
+   * the shell already carried one higher up the document. A crawler reads the
+   * first, so every page still advertised the homepage — the bug the step was
+   * written to fix, still present, now invisible. Count the tags, not just
+   * their content.
+   */
+  it('replaces the homepage tags rather than shipping two of each', () => {
+    const dir = fixture(['/', '/districts'])
+    run(dir)
+
+    const page = readFileSync(join(dir, 'districts', 'index.html'), 'utf8')
+    const count = (needle: string) => page.split(needle).length - 1
+
+    expect(count('name="description"')).toBe(1)
+    expect(count('property="og:title"')).toBe(1)
+    expect(count('property="og:description"')).toBe(1)
+    expect(count('rel="canonical"')).toBe(1)
+    expect(page).not.toContain('HOMEPAGE COPY')
+    expect(page).not.toContain('HOMEPAGE TITLE')
+  })
+
+  /**
+   * A teacher hands these links to a class in Classroom or a message. Without
+   * per-route Open Graph tags every shared page previews as the homepage, so a
+   * student cannot tell one activity link from another.
+   */
+  it('gives a shared link its own preview', () => {
+    const dir = fixture(['/', '/play/act_linear_equations'])
+    run(dir)
+
+    const page = readFileSync(join(dir, 'play/act_linear_equations', 'index.html'), 'utf8')
+    expect(page).toContain('property="og:title" content="Linear equations puzzle')
   })
 
   it('fails loudly rather than shipping a dist with no pages prerendered', () => {
