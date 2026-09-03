@@ -21,6 +21,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.error
@@ -62,7 +63,28 @@ def reachable(url: str, timeout: int = 15) -> tuple[bool, str]:
         status = int(raw) if code == 0 and raw.isdigit() else 0
         if 200 <= status < 400:
             return True, f"HTTP {status}"
-        return False, f"{type(e).__name__}{f' / HTTP {status}' if status else ''}"
+
+        # Both paths failed. Say WHICH failure this was, because "the site is
+        # down" and "this machine cannot verify certificates" are different
+        # problems with different owners, and the old message called both of
+        # them a dead site.
+        #
+        # Observed 2026-08-25: this returned URLError for the GitHub Pages URL
+        # while the site answered HTTP 200. Python and curl both refused the
+        # same valid Let's Encrypt certificate — "unable to get local issuer
+        # certificate" — under a session with HTTPS_PROXY set. The site was
+        # never down. Reporting it down sends someone to debug a deploy that
+        # is working.
+        #
+        # Verification is deliberately NOT disabled to make this green. A
+        # scorer that trusts an unverified endpoint cannot tell a healthy site
+        # from an intercepted one, which is a worse failure than an
+        # inconclusive line on a board.
+        detail = f"{type(e).__name__}"
+        if "CERTIFICATE_VERIFY_FAILED" in str(e) or "certificate" in str(e).lower():
+            detail = ("certificate could not be verified on THIS machine — the site may be "
+                      "up; check with `curl -I " + url + "` from a shell without a proxy")
+        return False, f"{detail}{f' / HTTP {status}' if status else ''}"
 
 
 # --- the three things -------------------------------------------------------
@@ -78,11 +100,41 @@ def website() -> list[dict]:
     out.append({"name": "a deploy pipeline exists", "ok": os.path.exists(wf),
                 "blocker": "" if os.path.exists(wf) else "no deploy workflow"})
 
+    # `gh` failing to answer is not evidence about GitHub Pages.
+    #
+    # This used to collapse the two: a non-zero exit set lines to empty, which
+    # read as "Pages is off". A network blip, a timeout, or a rate limit all
+    # became a confident claim about the repository's settings. On 2026-08-25 it
+    # reported Pages off while the API said has_pages=true, visibility=public,
+    # and the site was serving HTTP 200 — in the same run where the line below
+    # correctly reported the site answering.
+    #
+    # The blocker text was worse than the wrong verdict: it asserted a CAUSE
+    # this function never measured — "repo is private, so this needs Pro" —
+    # while `.visibility` sat unused in the very query that fetched it. A board
+    # that invents a diagnosis can send an owner to buy a plan they already
+    # do not need.
+    #
+    # So: report what was measured, say so when nothing could be measured, and
+    # read the field that is already on hand before naming a cause.
     code, raw = sh(["gh", "api", f"repos/{SLUG}", "--jq", ".has_pages,.default_branch,.visibility"], 90)
-    lines = raw.split("\n") if code == 0 else []
-    pages = len(lines) > 0 and lines[0].strip() == "true"
-    out.append({"name": "hosting is switched on", "ok": pages,
-                "blocker": "" if pages else "GitHub Pages is off — owner must enable it (repo is private, so this needs Pro or a public repo)"})
+    lines = [line.strip() for line in raw.split("\n")] if code == 0 else []
+    if code != 0 or len(lines) < 3:
+        pages_ok = False
+        pages_blocker = (f"could not ask GitHub about Pages (gh exited {code}) — "
+                         "this says nothing about whether Pages is on")
+    else:
+        has_pages, _default_branch, visibility = lines[0], lines[1], lines[2]
+        pages_ok = has_pages == "true"
+        if pages_ok:
+            pages_blocker = ""
+        elif visibility != "public":
+            pages_blocker = (f"GitHub Pages is off and the repo is {visibility} — "
+                             "Pages on a non-public repo needs a paid plan")
+        else:
+            pages_blocker = ("GitHub Pages is off — enable it in Settings -> Pages "
+                             "(the repo is public, so no paid plan is required)")
+    out.append({"name": "hosting is switched on", "ok": pages_ok, "blocker": pages_blocker})
 
     code, raw = sh(["gh", "api", f"repos/{SLUG}/contents/.github/workflows/deploy.yml?ref=main",
                     "--jq", ".size"], 90)
@@ -97,21 +149,73 @@ def website() -> list[dict]:
 
 
 def game() -> list[dict]:
-    out = []
-    env_files = [os.path.join(REPO, n) for n in (".env", ".env.local", ".env.production")]
-    configured = ""
-    for f in env_files:
-        if os.path.exists(f):
-            for line in open(f, encoding="utf-8", errors="replace"):
-                if line.startswith("VITE_UNITY_BUILD_BASE_URL="):
-                    configured = line.split("=", 1)[1].strip()
-    out.append({"name": "a Unity build location is configured", "ok": bool(configured),
-                "blocker": "" if configured else "VITE_UNITY_BUILD_BASE_URL is unset — the stage shows 'game isn't ready'"})
+    """
+    Ask the deployed site whether a student gets a game — not this laptop.
 
-    ok = False
-    detail = "no build URL to check"
-    if configured.startswith("http"):
-        ok, detail = reachable(configured.rstrip("/") + "/Build/SAL0MANder.loader.js")
+    Rewritten 2026-08-25 after reporting GAME DONE 0/2 while every byte of the
+    build was live: loader, framework, data, and wasm all HTTP 200, about 90 MB,
+    served from the same origin as the site. It sent two agents hunting for a
+    build URL that had been configured all along, and it was the most expensive
+    wrong reading of the night.
+
+    Three separate defects, and together they made this section impossible to
+    pass under any configuration:
+
+    1. It read only local .env files. The value ships from CI — deploy.yml sets
+       VITE_UNITY_BUILD_BASE_URL at build time — so a correctly deployed site
+       always looked unconfigured. The board was asking the wrong machine.
+    2. It skipped the fetch unless the value started with "http". The real value
+       is "/unity", a same-origin relative path, so the loader was never checked
+       even when it was sitting there being served.
+    3. It looked for "SAL0MANder.loader.js". Unity emits the file named by
+       VITE_UNITY_BUILD_NAME, which is "sal0-unity-webgl.loader.js". Wrong name,
+       guaranteed 404, even had 1 and 2 been right.
+
+    Any one of these would have been a bug. All three meant the condition could
+    never be met, so its red told you nothing at all.
+    """
+    out = []
+
+    # deploy.yml is what actually ships, so it is the truth about what a visitor
+    # gets. A local .env only ever changes what THIS machine sees at dev time.
+    deploy_yml = os.path.join(REPO, ".github", "workflows", "deploy.yml")
+    base, name, source = "", "", ""
+    if os.path.exists(deploy_yml):
+        text = open(deploy_yml, encoding="utf-8", errors="replace").read()
+        m = re.search(r"VITE_UNITY_BUILD_BASE_URL:\s*(\S+)", text)
+        n = re.search(r"VITE_UNITY_BUILD_NAME:\s*(\S+)", text)
+        if m:
+            base, source = m.group(1).strip().strip("'\""), "deploy.yml"
+        if n:
+            name = n.group(1).strip().strip("'\"")
+
+    if not base:
+        for filename in (".env", ".env.local", ".env.production"):
+            path = os.path.join(REPO, filename)
+            if not os.path.exists(path):
+                continue
+            for line in open(path, encoding="utf-8", errors="replace"):
+                if line.startswith("VITE_UNITY_BUILD_BASE_URL="):
+                    base, source = line.split("=", 1)[1].strip(), filename
+                elif line.startswith("VITE_UNITY_BUILD_NAME="):
+                    name = line.split("=", 1)[1].strip()
+
+    name = name or "sal0-unity-webgl"
+    out.append({"name": "a Unity build location is configured", "ok": bool(base),
+                "blocker": "" if base else
+                "VITE_UNITY_BUILD_BASE_URL is set nowhere — not in deploy.yml, not in .env. "
+                "The stage will show 'game isn't ready'"})
+
+    # A relative base is the normal case: the build ships inside the site. Resolve
+    # it against the live URL, because the question is whether a STUDENT can fetch
+    # the loader, not whether a path looks plausible.
+    if not base:
+        ok, detail = False, "no build location configured"
+    else:
+        loader = (base.rstrip("/") if base.startswith("http")
+                  else SITE.rstrip("/") + "/" + base.strip("/")) + f"/Build/{name}.loader.js"
+        ok, detail = reachable(loader)
+        detail = f"{detail} — {loader} (from {source})"
     out.append({"name": "the WebGL loader is fetchable", "ok": ok,
                 "blocker": "" if ok else f"loader not reachable ({detail})"})
     return out
@@ -125,10 +229,40 @@ def operational() -> list[dict]:
                 "blocker": "" if code == 0 else "npm run verify fails"})
 
     # Scheduler parity: what a launchd job sees, not what a terminal sees.
+    #
+    # Presence is not authorization. This check read WON for four days straight
+    # while the work loop was locked out of GitHub: the token file existed and
+    # had stopped working, and os.path.exists() cannot tell those two apart.
+    #
+    # The loop itself could. It hit the auth failure, wrote the reason into the
+    # PAUSE file, and stopped — on 2026-08-20, while this line kept reporting a
+    # win. Trusting an inode over the scheduler's own report of its own
+    # credential is how a board stays green straight through an outage, which is
+    # the one failure this whole file exists to make impossible.
+    #
+    # So: read the verdict, not the inode. PAUSE lives outside the repo so no
+    # git operation can clear it, which also makes it the same fact for everyone
+    # who can read the disk.
     token = os.path.expanduser("~/.sal0mander/secrets/claude_oauth_token")
     has_token = os.path.exists(token)
-    out.append({"name": "the worker can authenticate unattended", "ok": has_token,
-                "blocker": "" if has_token else "no token file — a scheduled run cannot log in"})
+    pause_reason = ""
+    pause_path = os.path.expanduser("~/.sal0mander/PAUSE")
+    if os.path.exists(pause_path):
+        with open(pause_path, encoding="utf-8", errors="replace") as fh:
+            pause_reason = fh.read().strip()
+    # Only an auth-flavoured pause invalidates THIS check. An owner calling
+    # TIMEOUT is a deliberate stop, not a broken credential, and it is already
+    # caught by the possession-heartbeat check further down.
+    locked_out = "auth" in pause_reason.lower()
+    can_auth = has_token and not locked_out
+    if not has_token:
+        auth_blocker = "no token file — a scheduled run cannot log in"
+    elif locked_out:
+        auth_blocker = f"token file present but the loop reported a lockout — {pause_reason}"
+    else:
+        auth_blocker = ""
+    out.append({"name": "the worker can authenticate unattended", "ok": can_auth,
+                "blocker": auth_blocker})
 
     code, raw = sh(["gh", "issue", "list", "--repo", SLUG, "--state", "open",
                     "--json", "number", "--jq", "length"], 90)
@@ -164,6 +298,31 @@ def operational() -> list[dict]:
                 t = dt.datetime.fromisoformat(json.loads(line).get("at", "")).timestamp()
                 recent = max(recent, t)
             except Exception:
+                pass
+
+    # NUDGES.jsonl is written by scripts/sal0_nudge.py and by nothing else, so
+    # reading only that file answers "did the nudger run recently", which is a
+    # narrower question than the one this check asks.
+    #
+    # The work loop is the other thing that drives possessions, and it leaves
+    # its own written trace: one docs/coordination/runs/logs/work-loop-*.log per
+    # run. On 2026-08-25 three loop possessions claimed issues, passed the gate,
+    # committed, and pushed while this check reported 5554 minutes of silence —
+    # reporting a live system dead, which is the same defect as reporting a dead
+    # one live and costs the same trust.
+    #
+    # A log file appears whether the run scored or refused, and that is correct
+    # here: this check asks whether anything is *driving*, not whether the last
+    # possession made its shot. "Refused for a stated reason" is a driver
+    # working; the possession checks above are what judge the outcome.
+    run_logs = os.path.join(REPO, "docs", "coordination", "runs", "logs")
+    if os.path.isdir(run_logs):
+        for entry in os.scandir(run_logs):
+            if not (entry.name.startswith("work-loop-") and entry.name.endswith(".log")):
+                continue
+            try:
+                recent = max(recent, entry.stat().st_mtime)
+            except OSError:
                 pass
     age = (dt.datetime.now().astimezone().timestamp() - recent) / 60 if recent else None
     driving = age is not None and age < DRIVER_STALE_MINUTES
