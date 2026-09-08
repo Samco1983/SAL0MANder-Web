@@ -36,8 +36,19 @@ import { useCallback, useEffect, useState, type RefObject } from 'react'
 export type FullscreenState = {
   /** Whether this browser can put an element into fullscreen at all. */
   isSupported: boolean
-  /** Whether the watched element is currently fullscreen. */
+  /**
+   * Whether the watched element, or anything inside it, is currently
+   * fullscreen. This is the one to use for "is the student looking at a full
+   * screen right now" — it is true whether the host or Unity asked.
+   */
   isFullscreen: boolean
+  /**
+   * Whether the watched element ITSELF is the fullscreen element.
+   *
+   * Narrower than {@link isFullscreen} and separate on purpose: only this case
+   * may apply viewport sizing to the stage. See `UnityStage.module.css`.
+   */
+  isSelfFullscreen: boolean
   /** The last request was refused — by the browser, an iframe policy, or the user. */
   didFail: boolean
   /** Enter if out, leave if in. Safe to call when unsupported; it no-ops. */
@@ -62,6 +73,30 @@ function fullscreenElement(): Element | null {
   return doc.fullscreenElement ?? doc.webkitFullscreenElement ?? null
 }
 
+/**
+ * Is the watched element fullscreen, *or* something inside it?
+ *
+ * Identity is the wrong test, because the host is not the only thing that can
+ * request fullscreen here. Unity's `SetFullscreen(1)` reaches
+ * `_emscripten_request_fullscreen`, which calls `target.requestFullscreen()`
+ * on Unity's own canvas — confirmed in the shipped
+ * `sal0-unity-webgl.framework.js`. That canvas is a child of the stage, so an
+ * `===` comparison answers "not fullscreen" while the game fills the screen.
+ *
+ * The consequences all land on the student: the stage never takes its
+ * fullscreen styling, the exit control stays faded at 55% on the one device
+ * (iPad) with no Esc key, the button still reads "Full screen", and pressing
+ * it requests fullscreen a second time instead of leaving.
+ *
+ * `contains` returns true for the element itself, so the host's own path is
+ * unchanged — this only adds the case where Unity got there first.
+ */
+function ownsFullscreen(element: Element | null): boolean {
+  if (!element) return false
+  const active = fullscreenElement()
+  return active !== null && (active === element || element.contains(active))
+}
+
 export function useFullscreen(ref: RefObject<HTMLElement | null>): FullscreenState {
   /*
     Resolved once on mount rather than at module scope: the test environment
@@ -70,6 +105,7 @@ export function useFullscreen(ref: RefObject<HTMLElement | null>): FullscreenSta
   */
   const [isSupported, setIsSupported] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isSelfFullscreen, setIsSelfFullscreen] = useState(false)
   const [didFail, setDidFail] = useState(false)
 
   useEffect(() => {
@@ -82,7 +118,12 @@ export function useFullscreen(ref: RefObject<HTMLElement | null>): FullscreenSta
 
   useEffect(() => {
     // Both spellings: Safari fires only the prefixed event.
-    const sync = () => setIsFullscreen(fullscreenElement() === ref.current)
+    const sync = () => {
+      setIsFullscreen(ownsFullscreen(ref.current))
+      // Identity, deliberately: the sizing rule keyed on this is only correct
+      // when the browser is scaling this exact element.
+      setIsSelfFullscreen(ref.current !== null && fullscreenElement() === ref.current)
+    }
     document.addEventListener('fullscreenchange', sync)
     document.addEventListener('webkitfullscreenchange', sync)
     // Esc and the browser's own exit affordance both land here, so leaving
@@ -104,8 +145,9 @@ export function useFullscreen(ref: RefObject<HTMLElement | null>): FullscreenSta
     const exit = doc.exitFullscreen ?? doc.webkitExitFullscreen
 
     try {
-      const result =
-        fullscreenElement() === element ? exit?.call(doc) : request?.call(element)
+      // Leaving covers "the canvas Unity promoted" as well as "this stage" —
+      // otherwise the exit press becomes a second enter.
+      const result = ownsFullscreen(element) ? exit?.call(doc) : request?.call(element)
       // A rejection here is a refusal, not a crash — an iframe without
       // allow="fullscreen", or a managed-device policy. Never let it reach the
       // window as an unhandled rejection and never let it stop the game.
@@ -115,5 +157,5 @@ export function useFullscreen(ref: RefObject<HTMLElement | null>): FullscreenSta
     }
   }, [ref])
 
-  return { isSupported, isFullscreen, didFail, toggle }
+  return { isSupported, isFullscreen, isSelfFullscreen, didFail, toggle }
 }

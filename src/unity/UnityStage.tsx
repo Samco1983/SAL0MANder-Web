@@ -199,6 +199,10 @@ export function UnityStage({
     script.async = true
 
     script.onload = () => {
+      // Removing a script does not cancel an already queued load callback.
+      // A stale StrictMode/retry callback must never boot a second Unity
+      // instance onto the current canvas and later clear it during Quit().
+      if (cancelled) return
       const createUnityInstance = (
         window as unknown as {
           createUnityInstance?: (
@@ -214,7 +218,10 @@ export function UnityStage({
         return
       }
 
-      createUnityInstance(canvasRef.current, { ...config }, (progress) => {
+      // Keep Unity's logical screen coordinates aligned with the CSS viewport.
+      // Rendering at the browser DPR made Screen.width wider than the hosted
+      // stage on Retina displays, clipping the Matching control rail.
+      createUnityInstance(canvasRef.current, { ...config, devicePixelRatio: 1 }, (progress) => {
         if (!cancelled) setState({ status: 'loading', progress })
       })
         .then((created) => {
@@ -299,7 +306,12 @@ export function UnityStage({
   }
 
   return (
-    <div className={styles.stage} ref={stageRef} data-fullscreen={fullscreen.isFullscreen}>
+    <div
+      className={styles.stage}
+      ref={stageRef}
+      data-fullscreen={fullscreen.isFullscreen}
+      data-fullscreen-self={fullscreen.isSelfFullscreen}
+    >
       {/*
         tabIndex 0, not -1: the canvas IS the game. Unity WebGL takes keyboard
         input through the focused canvas, so removing it from the tab order

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { env } from '@config/env'
 import { AppShell } from '@components/layout/AppShell'
 import { Button } from '@components/ui/Button'
@@ -6,14 +8,13 @@ import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { newId } from '@contracts/v1'
 import {
   ACTIVITY_TYPES,
-  canPublish,
   missAllowance,
   newDraft,
   puzzlePrice,
   readiness,
   type ActivityDraft,
 } from '@studio/activityDraft'
-import { deleteDraft, loadDrafts, upsertDraft } from '@studio/draftStorage'
+import { loadDrafts, saveDrafts } from '@studio/draftStorage'
 import { ImagePanel } from './ImagePanel'
 import { OptionsPanel } from './OptionsPanel'
 import { QuestionsPanel } from './QuestionsPanel'
@@ -74,9 +75,10 @@ const TYPE_LABELS: Record<(typeof ACTIVITY_TYPES)[number], { name: string; blurb
 }
 
 export function StudioPage() {
+  const [searchParams] = useSearchParams()
   const [drafts, setDrafts] = useState<ActivityDraft[]>(() => loadDrafts())
   const [activeId, setActiveId] = useState<string | null>(() => loadDrafts()[0]?.config.activityId ?? null)
-  const [tab, setTab] = useState<TabId>('overview')
+  const [tab, setTab] = useState<TabId>(() => searchParams.get('tab') === 'questions' ? 'questions' : 'overview')
   const [saveState, setSaveState] = useState<'saved' | 'saving' | 'failed'>('saved')
 
   const draft = useMemo(
@@ -90,36 +92,45 @@ export function StudioPage() {
     flushed first — losing the last word someone typed is exactly the kind of
     small betrayal that stops people trusting a tool.
   */
-  const pending = useRef<ActivityDraft | null>(null)
+  const currentDrafts = useRef(drafts)
+  const dirty = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const flush = useCallback(() => {
-    const next = pending.current
-    if (!next) return
-    pending.current = null
-    const ok = upsertDraft(next, new Date().toISOString())
-    setDrafts(ok)
-    setSaveState(ok.some((d) => d.config.activityId === next.config.activityId) ? 'saved' : 'failed')
+    if (timer.current) clearTimeout(timer.current)
+    if (!dirty.current) return
+    const saved = saveDrafts(currentDrafts.current)
+    dirty.current = !saved
+    setSaveState(saved ? 'saved' : 'failed')
   }, [])
 
   useEffect(() => {
+    const onPageHide = () => flush()
+    window.addEventListener('pagehide', onPageHide)
     return () => {
-      if (timer.current) clearTimeout(timer.current)
+      window.removeEventListener('pagehide', onPageHide)
       flush()
     }
   }, [flush])
 
+  const replaceDrafts = useCallback((next: ActivityDraft[]) => {
+    currentDrafts.current = next
+    dirty.current = true
+    setDrafts(next)
+    setSaveState('saving')
+  }, [])
+
   const update = useCallback(
     (mutate: (d: ActivityDraft) => ActivityDraft) => {
-      if (!draft) return
-      const next = mutate(draft)
-      setDrafts((all) => all.map((d) => (d.config.activityId === next.config.activityId ? next : d)))
-      pending.current = next
-      setSaveState('saving')
+      const current = currentDrafts.current.find((d) => d.config.activityId === activeId)
+      if (!current) return
+      const changed = mutate(current)
+      const next = { ...changed, meta: { ...changed.meta, updatedAt: new Date().toISOString() } }
+      replaceDrafts(currentDrafts.current.map((d) => d.config.activityId === next.config.activityId ? next : d))
       if (timer.current) clearTimeout(timer.current)
       timer.current = setTimeout(flush, 500)
     },
-    [draft, flush],
+    [activeId, flush, replaceDrafts],
   )
 
   const setConfig = (patch: Partial<ActivityDraft['config']>) =>
@@ -130,19 +141,21 @@ export function StudioPage() {
   function createActivity() {
     const now = new Date().toISOString()
     const created = newDraft(`act_${newId()}`, now)
-    setDrafts(upsertDraft(created, now))
+    replaceDrafts([created, ...currentDrafts.current])
+    flush()
     setActiveId(created.config.activityId)
     setTab('overview')
   }
 
   function removeActivity(id: string) {
-    const next = deleteDraft(id)
-    setDrafts(next)
+    const next = currentDrafts.current.filter((d) => d.config.activityId !== id)
+    replaceDrafts(next)
+    flush()
     if (activeId === id) setActiveId(next[0]?.config.activityId ?? null)
   }
 
   const rows = draft ? readiness(draft) : []
-  const publishable = draft ? canPublish(draft) : false
+  const picture = PUZZLE_LIBRARY.find((p) => p.key === draft?.meta.imageKey)
 
   return (
     <AppShell>
@@ -161,12 +174,13 @@ export function StudioPage() {
             >
               {saveState === 'saved' && 'All changes saved'}
               {saveState === 'saving' && 'Saving…'}
-              {saveState === 'failed' && 'Not saved — this browser is blocking storage'}
+              {saveState === 'failed' && 'Not saved — keep this page open and retry'}
             </span>
-            <Button variant="secondary" disabled={!draft}>
-              Preview as student
+            {saveState === 'failed' && <Button variant="secondary" onClick={flush}>Retry save</Button>}
+            <Button variant="secondary" disabled={!draft} onClick={() => setTab('preview')}>
+              Preview details
             </Button>
-            <Button disabled={!publishable} title={publishable ? undefined : 'Finish the checklist first'}>
+            <Button disabled title="Class publishing is not connected yet">
               Publish
             </Button>
           </div>
@@ -190,7 +204,7 @@ export function StudioPage() {
                       type="button"
                       className={styles.railItem}
                       aria-current={d.config.activityId === activeId ? 'true' : undefined}
-                      onClick={() => setActiveId(d.config.activityId)}
+                      onClick={() => { flush(); setActiveId(d.config.activityId) }}
                     >
                       <span className={styles.railItemTitle}>
                         {d.config.title.trim() || 'Untitled activity'}
@@ -245,7 +259,9 @@ export function StudioPage() {
                     aria-labelledby={`tab-${tab}`}
                   >
                     {tab === 'overview' && (
+                      <div className={styles.overview}>
                       <section className={styles.form} aria-label="Activity details">
+                        <h2 className={styles.sectionTitle}>Activity overview</h2>
                         <label className={styles.field}>
                           <span className={styles.label}>Activity title</span>
                           <input
@@ -342,6 +358,20 @@ export function StudioPage() {
                           </Button>
                         </div>
                       </section>
+                      <section className={styles.summary} aria-label="Activity summary">
+                        <h2 className={styles.sectionTitle}>Activity summary</h2>
+                        {picture ? <img className={styles.summaryImage} src={picture.src} alt={picture.alt} /> :
+                          <Button variant="secondary" onClick={() => setTab('image')}>Choose puzzle image</Button>}
+                        <dl className={styles.summaryDetails}>
+                          <div><dt>Room type</dt><dd>Jigsaw puzzle</dd></div>
+                          <div><dt>Puzzle image</dt><dd>{picture?.name ?? 'Not selected'}</dd></div>
+                          <div><dt>Piece count</dt><dd>{draft.config.pieceCountPreset} pieces · {draft.config.boardShape}</dd></div>
+                          <div><dt>Questions</dt><dd>{draft.questions.length} questions</dd></div>
+                          <div><dt>Student mode</dt><dd>{TYPE_LABELS[draft.config.activityType].name}</dd></div>
+                          <div><dt>Status</dt><dd>Local draft</dd></div>
+                        </dl>
+                      </section>
+                      </div>
                     )}
 
                     {tab === 'questions' && (
@@ -378,7 +408,14 @@ export function StudioPage() {
                     the same function, so the list cannot disagree with the gate.
                   */}
                   <aside className={styles.checklist} aria-label="Before you publish">
-                    <h2 className={styles.checklistTitle}>Before you publish</h2>
+                    <nav className={styles.quickActions} aria-label="Quick actions">
+                      <h2 className={styles.checklistTitle}>Quick actions</h2>
+                      <Button variant="ghost" onClick={() => setTab('questions')}>Edit questions</Button>
+                      <Button variant="ghost" onClick={() => setTab('image')}>Change puzzle image</Button>
+                      <Button variant="ghost" onClick={() => { setTab('options'); setMeta({ optionsReviewed: true }) }}>Student settings</Button>
+                      <Button variant="ghost" onClick={() => setTab('preview')}>Preview details</Button>
+                    </nav>
+                    <h2 className={styles.checklistTitle}>Readiness checklist</h2>
                     <ul className={styles.checkRows}>
                       {rows.map((row) => (
                         <li key={row.id} className={styles.checkRow} data-complete={row.complete}>

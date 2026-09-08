@@ -8,6 +8,10 @@
   laptop gets a long page, which is fine, rather than a redesigned one.
 */
 .studio {
+  --color-accent: var(--color-brand-violet);
+  --color-accent-hover: color-mix(in srgb, var(--color-brand-violet) 85%, black);
+  --color-accent-soft: color-mix(in srgb, var(--color-brand-violet) 8%, var(--color-surface));
+  --color-focus-ring: var(--color-brand-violet);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -64,7 +68,7 @@
 
 .body {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-columns: 190px minmax(0, 1fr);
   gap: var(--space-5);
   align-items: start;
 }
@@ -173,7 +177,7 @@
 
 .panels {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-columns: minmax(0, 1fr) 220px;
   gap: var(--space-5);
   align-items: start;
 }
@@ -381,3 +385,16 @@
     position: static;
   }
 }
+
+.overview { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: var(--space-5); }
+.sectionTitle { margin: 0 0 var(--space-3); font-size: 1rem; }
+.summary { padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+.summaryImage { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: var(--radius-sm); }
+.summaryDetails { display: grid; gap: var(--space-4); margin-bottom: 0; }
+.summaryDetails dt { font-size: .75rem; color: var(--color-text-muted); text-transform: uppercase; }
+.summaryDetails dd { margin: 4px 0 0; font-size: .875rem; overflow-wrap: anywhere; }
+.quickActions { display: flex; flex-direction: column; align-items: stretch; padding-bottom: var(--space-4); margin-bottom: var(--space-4); border-bottom: 1px solid var(--color-border); }
+.quickActions button { justify-content: flex-start; min-height: 44px; }
+@media (max-width: 1200px) { .overview { grid-template-columns: minmax(0, 1fr); } }
+.summary { min-width: 0; }
+.summary > button { max-width: 100%; white-space: normal; }
