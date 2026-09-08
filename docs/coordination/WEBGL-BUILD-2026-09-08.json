@@ -1,0 +1,30 @@
+{
+  "builtOn": "2026-09-08",
+  "unityVersion": "6000.5.2f1",
+  "unityRepository": "Samco1983/Sal0mander-Jigsaw-Puzzle",
+  "unityCommit": "65d4f8013f20c6a3efcb6ac37903db8b9e38171d",
+  "buildResult": "Succeeded",
+  "compression": "none",
+  "files": [
+    {
+      "File": "sal0-unity-webgl.data",
+      "Bytes": 26511835,
+      "SHA256": "ce78d5a65460036daf0ac0a74aa282cd34165013831099db17ac3d94aecb522b"
+    },
+    {
+      "File": "sal0-unity-webgl.framework.js",
+      "Bytes": 434492,
+      "SHA256": "54675e29eca381c53ade85547800dd36951c609ea08c2bddeff8fd2b9ebcd484"
+    },
+    {
+      "File": "sal0-unity-webgl.loader.js",
+      "Bytes": 26982,
+      "SHA256": "b53a351bc7429fc2464288198decc52794e7f115aea91f3047f0f10a223e4af5"
+    },
+    {
+      "File": "sal0-unity-webgl.wasm",
+      "Bytes": 63647381,
+      "SHA256": "7c13dc26053de02a29f44cec541fcae78ee23ee051ebe54bd63fd8743d44b82c"
+    }
+  ]
+}

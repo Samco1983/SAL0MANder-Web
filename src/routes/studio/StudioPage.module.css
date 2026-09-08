@@ -49,6 +49,21 @@
   flex-wrap: wrap;
 }
 
+.backups {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+.backups p {
+  margin: var(--space-2) 0 0;
+}
+.backupMessage {
+  font-size: 0.875rem;
+  color: var(--color-success);
+}
+.backupMessage[data-error='true'] {
+  color: var(--color-danger);
+}
+
 /*
   The save state is a promise, so it must be able to say no. `failed` is not a
   styling afterthought — a teacher who is told "saved" over lost work stops

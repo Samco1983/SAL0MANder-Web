@@ -15,6 +15,7 @@ import {
   type ActivityDraft,
 } from '@studio/activityDraft'
 import { loadDrafts, saveDrafts } from '@studio/draftStorage'
+import { copyBackupDrafts, createDraftBackup, DraftBackupError, readDraftBackupFile } from '@studio/draftBackup'
 import { ImagePanel } from './ImagePanel'
 import { OptionsPanel } from './OptionsPanel'
 import { QuestionsPanel } from './QuestionsPanel'
@@ -80,6 +81,10 @@ export function StudioPage() {
   const [activeId, setActiveId] = useState<string | null>(() => loadDrafts()[0]?.config.activityId ?? null)
   const [tab, setTab] = useState<TabId>(() => searchParams.get('tab') === 'questions' ? 'questions' : 'overview')
   const [saveState, setSaveState] = useState<'saved' | 'saving' | 'failed'>('saved')
+  const [backupMessage, setBackupMessage] = useState<{ error: boolean; text: string } | null>(null)
+  const [importing, setImporting] = useState(false)
+  const backupInput = useRef<HTMLInputElement>(null)
+  const importAttempt = useRef(0)
 
   const draft = useMemo(
     () => drafts.find((d) => d.config.activityId === activeId) ?? null,
@@ -108,6 +113,7 @@ export function StudioPage() {
     const onPageHide = () => flush()
     window.addEventListener('pagehide', onPageHide)
     return () => {
+      importAttempt.current += 1
       window.removeEventListener('pagehide', onPageHide)
       flush()
     }
@@ -154,6 +160,55 @@ export function StudioPage() {
     if (activeId === id) setActiveId(next[0]?.config.activityId ?? null)
   }
 
+  function downloadBackup() {
+    setBackupMessage(null)
+    try {
+      const text = createDraftBackup(currentDrafts.current)
+      const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `SAL0MANder-activities-${new Date().toISOString().slice(0, 10)}.json`
+      document.body.append(link)
+      link.click()
+      link.remove()
+      // Give the browser time to begin the download before releasing its data.
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+      setBackupMessage({ error: false, text: 'Backup download started. Keep the file somewhere you can find it again.' })
+    } catch (error) {
+      setBackupMessage({ error: true, text: error instanceof DraftBackupError ? error.message : 'The backup could not be downloaded. Keep this page open and try again.' })
+    }
+  }
+
+  async function importBackup(file: File) {
+    const attempt = ++importAttempt.current
+    setBackupMessage(null)
+    setImporting(true)
+    try {
+      const parsed = await readDraftBackupFile(file)
+      if (attempt !== importAttempt.current) return
+      const imported = copyBackupDrafts(parsed)
+      // Read the latest edits after the asynchronous file read. Save the whole
+      // next set before changing the editor, so a refused write is reversible.
+      const next = [...imported, ...currentDrafts.current]
+      if (!saveDrafts(next)) {
+        throw new DraftBackupError('Your browser could not save the imported activities. Existing activities have not been changed. Download a backup of your work and try again.')
+      }
+      if (timer.current) clearTimeout(timer.current)
+      currentDrafts.current = next
+      dirty.current = false
+      setDrafts(next)
+      setSaveState('saved')
+      setActiveId(imported[0]!.config.activityId)
+      setTab('overview')
+      setBackupMessage({ error: false, text: `Imported ${imported.length === 1 ? '1 activity as a new copy' : `${imported.length} activities as new copies`}. Your existing activities are still here.` })
+    } catch (error) {
+      if (attempt !== importAttempt.current) return
+      setBackupMessage({ error: true, text: error instanceof DraftBackupError ? error.message : 'This backup could not be imported. Your activities have not been changed.' })
+    } finally {
+      if (attempt === importAttempt.current) setImporting(false)
+    }
+  }
+
   const rows = draft ? readiness(draft) : []
   const picture = PUZZLE_LIBRARY.find((p) => p.key === draft?.meta.imageKey)
 
@@ -185,6 +240,29 @@ export function StudioPage() {
             </Button>
           </div>
         </header>
+
+        <section className={styles.backups} aria-label="Activity backups">
+          <div className={styles.barRight}>
+            <Button variant="secondary" disabled={drafts.length === 0} onClick={downloadBackup}>Download backup</Button>
+            <Button variant="secondary" disabled={importing} onClick={() => backupInput.current?.click()}>
+              {importing ? 'Importing…' : 'Import backup'}
+            </Button>
+            <input
+              ref={backupInput}
+              type="file"
+              accept=".json,application/json"
+              aria-label="Choose an activity backup"
+              hidden
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0]
+                event.currentTarget.value = ''
+                if (file) void importBackup(file)
+              }}
+            />
+          </div>
+          <p className={styles.hint}>Keep a copy of all your activities, including notes, or move them to another browser. Imports add new copies. Maximum file size: 5 MB.</p>
+          {backupMessage && <p className={styles.backupMessage} role={backupMessage.error ? 'alert' : 'status'} data-error={backupMessage.error}>{backupMessage.text}</p>}
+        </section>
 
         <div className={styles.body}>
           <nav className={styles.rail} aria-label="Your activities">
@@ -447,8 +525,8 @@ export function StudioPage() {
         </div>
 
         <p className={styles.footnote}>
-          Activities are saved in this browser. Sharing them with a class or another teacher needs
-          the {env.appName} account system, which is not built yet.
+          Activities are saved in this browser. Download a backup to keep a separate copy or import
+          it on another device. Publishing to a class needs the {env.appName} account system, which is not built yet.
         </p>
       </div>
     </AppShell>
