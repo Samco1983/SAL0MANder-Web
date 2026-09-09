@@ -3,11 +3,27 @@
  * tiles. Depth is most of what separates "sketch" from "product", and it costs
  * a background and a border rather than a redesign.
  */
+/*
+ * Two columns of content and a full-width strip beneath them.
+ *
+ * The previous grid was `1.6fr 1fr` with `align-items: end` and only two
+ * children — copy on the left, three stat tiles on the right. Because the copy
+ * column was much taller, the tiles sat alone against the bottom of a mostly
+ * empty half, which read as a layout that had gone wrong rather than one that
+ * had been decided.
+ *
+ * Named areas rather than source order, so the stats can span both columns
+ * without moving in the DOM. Their reading position — after the pitch and the
+ * call to action — is the one that makes sense announced aloud.
+ */
 .hero {
   display: grid;
-  gap: var(--space-5);
-  align-items: end;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--space-6) var(--space-7);
+  align-items: center;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  grid-template-areas:
+    'copy art'
+    'stats stats';
   padding: var(--space-6);
   margin-top: var(--space-5);
   background: var(--color-surface);
@@ -17,22 +33,64 @@
 }
 
 .heroCopy {
-  max-width: 54ch;
+  grid-area: copy;
+  /* Wide enough to keep the two calls to action on one line. Stacked, they read
+     as a list of options rather than one obvious next step and a footnote. */
+  max-width: 52ch;
 }
 
-/* The stat strip stacks under the copy before it gets cramped. */
+/*
+ * Capped rather than filling its column. Left to stretch, the square ran to
+ * ~570px on a wide monitor and set the height of the whole hero, pushing the
+ * buttons and the stat strip below the fold — the picture is the argument for
+ * the product, not a substitute for reaching the thing it is arguing for.
+ */
+.heroArt {
+  grid-area: art;
+  margin: 0;
+  width: 100%;
+  max-width: 22rem;
+  justify-self: center;
+}
+
+/* One column below the split, in the order the DOM already has. */
 @media (max-width: 60rem) {
   .hero {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'copy'
+      'art'
+      'stats';
     align-items: start;
+    padding: var(--space-6) var(--space-5);
+  }
+
+  .heroCopy {
+    max-width: none;
   }
 }
 
-/* Orientation at a glance — what exists, and how much of it. */
+/*
+ * Orientation at a glance — what exists, and how much of it.
+ *
+ * A rule above rather than a box around each: the tiles were four bordered
+ * boxes inside a bordered hero inside a bordered page, and every extra frame
+ * costs a little of the authority the one around it was carrying.
+ */
 .stats {
+  grid-area: stats;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
+  gap: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 34rem) {
+  .stats {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
 }
 
 /*
@@ -43,27 +101,28 @@
 .stat {
   display: flex;
   flex-direction: column;
-  padding: var(--space-3);
-  background: var(--color-surface-sunken);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  gap: var(--space-1);
 }
 
 .statValue {
   order: -1;
   margin: 0;
-  font-size: var(--text-xl);
-  font-weight: var(--weight-medium);
+  /* Big enough to be the thing you read first. Three zeros are the argument. */
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   /* The one place accent earns its keep on this page. */
   color: var(--color-accent);
 }
 
 .statLabel {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   /* Muted rather than subtle: subtle sits near the 4.5:1 floor at this size. */
-  color: var(--color-text-muted);
-  letter-spacing: 0.02em;
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0;
 }
 
 .statNote {
@@ -214,12 +273,59 @@
  */
 .statValue {
   color: var(--color-brand-green-text);
-  font-weight: 700;
 }
 
-.stat {
-  /* A tinted top edge ties the tiles to the hero above them. */
-  border-top: 2px solid color-mix(in srgb, var(--brand-lime) 45%, transparent);
+/*
+ * ── The hero picture ────────────────────────────────────────────────────────
+ *
+ * A nine-cell grid laid over the picture, four cells still covered. Unearned
+ * cells are opaque and dark, matching the game: the picture appears only in
+ * the earned areas, without showing its colors or details through the cover.
+ */
+.heroArtFrame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  /* Square, because the launch activities are a square board. */
+  aspect-ratio: 1;
+  box-shadow: var(--shadow-2);
+}
+
+.heroArtImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroArtGrid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+}
+
+/*
+ * Every cell carries the seam; only covered ones carry the opaque fill. Drawing
+ * the seam on all nine is what makes it read as one board rather than four
+ * patches stuck on a photograph.
+ */
+.heroArtCell {
+  border: 1px solid rgb(255 255 255 / 0.22);
+  margin: -0.5px;
+}
+
+.heroArtCell[data-covered='true'] {
+  background: var(--color-stage);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
+}
+
+.heroArtCaption {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: center;
 }
 
 /*

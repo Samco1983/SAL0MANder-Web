@@ -1,0 +1,34 @@
+/*
+ * Profile.
+ *
+ * The page previously styled itself with inline `style` objects — an h1 sized
+ * with a literal `var(--text-2xl)` and two `display:flex` blocks. Every other
+ * route in the app uses a CSS module, so this was the one page whose heading
+ * could drift out of step with the rest without anything catching it, and the
+ * only place a token was referenced from a component file rather than a
+ * stylesheet.
+ */
+
+.title {
+  margin-bottom: var(--space-5);
+}
+
+.lede {
+  color: var(--color-text-muted);
+  max-width: 68ch;
+}
+
+.lede + .lede {
+  margin-top: var(--space-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.pending {
+  margin-top: var(--space-6);
+}

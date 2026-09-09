@@ -68,6 +68,10 @@ describe('a new draft', () => {
     // starting fresh should get the mode they did not have to ask for.
     expect(newDraft('act_x', NOW).config.autoPlaceCorrectPieces).toBe(false)
   })
+
+  it('starts with the picture guide hidden so pieces reveal the picture', () => {
+    expect(newDraft('act_x', NOW).config.showBoardGuide).toBe(false)
+  })
 })
 
 /**

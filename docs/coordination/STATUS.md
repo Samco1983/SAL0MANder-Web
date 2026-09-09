@@ -5,6 +5,20 @@ This file and `OPEN-ITEMS.md` are the technical handoff source for the web lane.
 
 ---
 
+
+## 2026-09-09 - Android 3 final source/build package verified
+
+Codex integrated Unity main `b944d25`, including the Claude-reviewed
+missing-state concealment repair. The staged player and manifest now supersede
+the held `1785146` build. Web changes restore the Learning/Mystery choices and
+hidden-guide defaults with responsive home/profile polish. Verification and
+remaining physical-device limits are recorded in
+[the release report](ANDROID-RELEASE-2026-09-09.md) and
+[manifest](WEBGL-BUILD-2026-09-08-android-3.json). Publication is established by
+the main deployment workflow and served revision, not by this preparation note.
+
+---
+
 ## 2026-08-20 — fixed the bball V3 picker filing duplicate "shot bank exhausted" issues; W-10…W-16 HOLD still stands, nothing new to answer on the hub
 
 ```text

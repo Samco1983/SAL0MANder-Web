@@ -5,40 +5,47 @@ import { AppShell } from '@components/layout/AppShell'
 import { Card } from '@components/ui/Card'
 import { LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
+import styles from './ProfilePage.module.css'
 
 /**
- * Profile placeholder.
- *
- * Accounts are off by default (`VITE_FEATURE_ACCOUNTS=false`) because no auth
- * provider has been chosen. Until then this route shows the device's guest
- * state so the guest → account claim path stays visible in the architecture.
+ * Guest play entry point. Keep playable routes accessible without promising
+ * account features or recovery that this page does not provide.
  */
 export function ProfilePage() {
   return (
     <AppShell>
-      <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-4)' }}>Profile</h1>
+      <h1 className={styles.title}>Profile</h1>
 
       <Card title="Playing as a guest">
-        <p>
-          This browser can keep guest progress on this device. That local session carries no
-          personal information, is not an account, and is not used as authentication. It lets play
-          resume here — and progress can later be attached to a real profile if profile accounts
-          are added.
+        <p className={styles.lede}>
+          You can play shared activities without signing in or creating an account. Pick a sample
+          activity below or use a link from your teacher.
         </p>
-        <p>
-          Next step: keep playing from a shared activity. Guest progress stays local until the
-          product has an approved profile claim flow.
+        <p className={styles.lede}>
+          Your guest session is not an account. Accounts and cloud saves are not available, and
+          this page does not restore previous games.
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+        {/*
+          One primary, then alternatives.
+
+          All three were rendered as primaries, so the card offered three
+          equally-weighted dark green buttons and no answer to "which of these
+          did you want me to press". Opening an activity is the thing this page
+          exists to send someone to; the other two are ways of getting
+          somewhere else.
+        */}
+        <div className={styles.actions}>
           <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)}>Open sample activity</LinkButton>
-          <LinkButton to={paths.guestPlayIndex}>Keep playing as guest</LinkButton>
+          <LinkButton to={paths.guestPlayIndex} variant="secondary">
+            Keep playing as guest
+          </LinkButton>
           <LinkButton to={paths.unity} variant="secondary">
-            Preview WebGL host
+            Open puzzle player
           </LinkButton>
         </div>
       </Card>
 
-      <div style={{ marginTop: 'var(--space-6)' }}>
+      <div className={styles.pending}>
         <PlaceholderNotice
           title={env.features.accounts ? 'Account UX not designed yet' : 'Accounts are not enabled'}
           pending={[

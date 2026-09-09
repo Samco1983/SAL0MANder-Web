@@ -1,0 +1,40 @@
+{
+  "release": "2026-09-08-android-3",
+  "unitySourceCommit": "b944d25505f0867e4e385b85d8f5ce285e2a543f",
+  "unityVersion": "6000.5.2f1",
+  "builtFrom": "codex/reconcile-android-playability-2026-09-09",
+  "sourceCommitAtUtc": "2026-09-09T19:29:45+00:00",
+  "sourceVerification": "Explicit checkpoint matches clean Unity HEAD at staging; build log started after that checkpoint. The build runner does not embed a source commit hash.",
+  "buildLog": {
+    "path": "sync/webgl-build-teacher-preview.log",
+    "sha256": "adac3b9ce22825342e52ea174c43c5f613d7ac770e1130dd9dc88d47eea77d0e",
+    "startedAtUtc": "2026-09-09T19:44:57+00:00",
+    "modifiedAtUtc": "2026-09-09T19:51:03.351351+00:00",
+    "result": "Succeeded",
+    "reportedBytes": 90724623,
+    "duration": "00:05:31.2272776"
+  },
+  "files": [
+    {
+      "name": "sal0-unity-webgl.data",
+      "bytes": 26520403,
+      "sha256": "edc7e05486816ba4e726d570e38d01cb83e674d80b04d3118dd542fd73fdec33"
+    },
+    {
+      "name": "sal0-unity-webgl.framework.js",
+      "bytes": 434887,
+      "sha256": "aa9d96e988b4eb1b63eeb3d579f5f91d3f476eb43eabf4707a06f747468030c9"
+    },
+    {
+      "name": "sal0-unity-webgl.loader.js",
+      "bytes": 26982,
+      "sha256": "d1c3bd3d71efd2a81c0eb5cd3123afa7ab7e9cc44f622a242a0324811a345f5a"
+    },
+    {
+      "name": "sal0-unity-webgl.wasm",
+      "bytes": 63721654,
+      "sha256": "97fed02bb5195bd1a796991f4675a8d2cd1528db368c101651c22fbbab07ed78"
+    }
+  ],
+  "stagedAtUtc": "2026-09-09T22:09:49.946272+00:00"
+}

@@ -94,9 +94,9 @@ describe('accounts are off, and the page acts like it', () => {
     )
   })
 
-  it('offers a teacher or tester path to the WebGL host', () => {
+  it('offers a direct path to the puzzle player', () => {
     renderProfile()
-    expect(screen.getByRole('link', { name: /preview webgl host/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /open puzzle player/i })).toHaveAttribute(
       'href',
       paths.unity,
     )
@@ -105,8 +105,8 @@ describe('accounts are off, and the page acts like it', () => {
 
   it('gives a concrete next step without creating an account prompt', () => {
     renderProfile()
-    expect(screen.getByText(/next step: keep playing from a shared activity/i)).toBeVisible()
-    expect(screen.getByText(/approved profile claim flow/i)).toBeVisible()
+    expect(screen.getByText(/pick a sample activity below or use a link from your teacher/i)).toBeVisible()
+    expect(screen.getByText(/this page does not restore previous games/i)).toBeVisible()
     expect(document.body.textContent ?? '').not.toMatch(/\b(sign (in|up)|log in|create an account) to\b/i)
   })
 })
@@ -120,12 +120,12 @@ describe('the guest session on screen', () => {
     expect(document.querySelector('code')).toBeNull()
   })
 
-  it('explains the local session without presenting it as an account or authentication', () => {
+  it('explains guest access without promising accounts or saved-game recovery', () => {
     renderProfile()
     const text = document.body.textContent ?? ''
-    expect(text).toMatch(/keep guest progress on this device/i)
+    expect(text).toMatch(/play shared activities without signing in/i)
     expect(text).toMatch(/not an account/i)
-    expect(text).toMatch(/not used as authentication|is not authentication/i)
+    expect(text).toMatch(/accounts and cloud saves are not available/i)
   })
 })
 

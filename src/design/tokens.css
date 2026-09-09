@@ -96,20 +96,60 @@
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
+  /*
+   * Body sizes are fixed; display sizes are fluid.
+   *
+   * The three headline steps were fixed rem, so the hero title was 2.75rem on a
+   * 1440px monitor and 2.75rem on an 11" Chromebook — too small to lead a page
+   * on the first and slightly overbearing on the second. `clamp()` gives the
+   * scale a slope: the minimum is what a small laptop gets, the maximum is what
+   * a teacher's external monitor gets, and the middle term does the rest.
+   *
+   * The `vw` coefficient is deliberately modest. A steeper slope looks striking
+   * in a design tool and produces a headline that reflows on every window drag.
+   *
+   * Body text is NOT fluid on purpose: it is already set from the user's own
+   * root size, and scaling it by viewport would quietly override the font size
+   * a person chose in their browser.
+   */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
   --text-lg: 1.125rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 2rem;
-  --text-3xl: 2.75rem;
+  --text-xl: clamp(1.375rem, 1.22rem + 0.7vw, 1.75rem);
+  --text-2xl: clamp(1.75rem, 1.45rem + 1.4vw, 2.5rem);
+  --text-3xl: clamp(2.25rem, 1.7rem + 2.5vw, 3.5rem);
 
   --leading-tight: 1.2;
   --leading-normal: 1.55;
+  /* Display sizes need less than 1.2 or the lines drift apart as they grow. */
+  --leading-display: 1.05;
+
+  /*
+   * Tracking, which is most of the difference between "big bold text" and a
+   * headline.
+   *
+   * A UI face at 3.5rem with default spacing reads as a browser default,
+   * because default spacing is optimised for body sizes. Negative tracking at
+   * display sizes is what makes a heading look set rather than typed. It is
+   * applied by size, never globally: the same -0.03em on 14px body copy would
+   * cramp it and cost legibility, which on a classroom Chromebook is a real
+   * loss rather than a stylistic one.
+   */
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-wide: 0.08em;
 
   --weight-regular: 400;
   --weight-medium: 550;
   --weight-bold: 700;
+  /*
+   * Headlines only. `system-ui` resolves to Segoe UI on Windows and Roboto on
+   * Android, both of which have a real weight here rather than a synthesised
+   * one, and the browser falls back to the nearest available weight where they
+   * do not — so this is safe on a device that lacks it.
+   */
+  --weight-display: 800;
 
   /* --- Primitives: elevation ---------------------------------------------- */
   --shadow-1: 0 1px 2px rgb(13 17 23 / 0.06), 0 1px 3px rgb(13 17 23 / 0.08);
