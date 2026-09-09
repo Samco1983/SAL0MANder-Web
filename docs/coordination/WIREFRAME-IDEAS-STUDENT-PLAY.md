@@ -92,3 +92,64 @@ question wrong, which confirms the fear the label already created.
 **RESET and RESTART are correctly separated** and this predates the 2026-09-02
 work: `ResetLoosePieces` is non-destructive, while restarting the activity is
 gated behind `allowRestart` / `SessionContext.CanRestart`. Worth preserving.
+
+---
+
+## Gap — the art library has five aspect ratios, the engine has three boards
+
+```
+PuzzleManager.cs:12   public enum BoardShape { Square, Portrait, Landscape }
+```
+
+The generated art library is organised into five:
+
+```
+square  portrait  landscape  custom-wide  custom-tall
+```
+
+**`custom-wide` and `custom-tall` have no board to sit on.** Six generated
+images — the steampunk airship, the mountain viaduct, the autumn woodland, the
+alpine lake, the dinosaur valley and the Amazon canopy — cannot be displayed on
+any board the engine supports.
+
+Four of them are currently shipped as optimised WebP in the web repo's
+`public/images/library` and are unused. That was assumed to be a library held
+for a later surface; it is actually this gap.
+
+The owner has described the shape set as "the regular square, landscape, the
+double square, and the import from custom image", which is more shapes than
+`BoardShape` offers.
+
+**Two ways out, and it should be a deliberate choice:**
+
+1. **Add the shapes.** `BoardShape` gains wide and tall variants, and the
+   `cols`/`rows` selection at `PuzzleManager.cs:2189` gains cases for them —
+   which it needs anyway, since it currently has no `else` and silently renders
+   3x3 for any unrecognised piece count.
+2. **Stop generating them.** The art prompt constrains output to 1:1, 4:3 and
+   3:4, and the six existing images are retired or reframed.
+
+What should not continue is generating art in ratios nothing can display.
+
+## Four UX items raised but never specified
+
+Recorded so they are not lost.
+
+**Auto-close the question panel.** The owner's early request: *"auto close the
+questions when you're done, so you can see the puzzle piece."* Currently folded
+into the reward-modal replacement, but it is a distinct behaviour and should be
+specified separately — it applies whether or not the modal work happens.
+
+**Reacquisition after a wrong drop.** From the owner's UX list: picking a piece
+back up after dropping it in the wrong place. Related to the snap-lock fix in
+`PuzzlePiece.cs` but not the same thing — that one governs correct placements.
+
+**MAGNET.** Present on the control rail in the Student Play wireframe with an
+`ON` state. Never specified: what it snaps, how close, whether the teacher can
+disable it, and whether it is on by default.
+
+**STRATEGY.** The wireframe shows `HINT` and `STRATEGY` as two separate tabs.
+Only hints have been discussed and only hints exist in `ActivityData`
+(`allowHints`). Strategy reads as a different thing — a method reminder rather
+than a nudge toward one answer — and needs either a definition or removal from
+the wireframe.

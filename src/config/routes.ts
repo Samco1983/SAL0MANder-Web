@@ -15,12 +15,14 @@ export const paths = {
   guestPlayIndex: '/play',
   /** Privacy and data practices — teacher-facing, and read by filter reviewers. */
   privacy: '/privacy/',
+  /** District technical and data summary — for IT administrators. */
+  districts: '/districts/',
   /** Terms of use. Deliberately sells nothing — see TPT-RULES.md rule 3. */
   terms: '/terms/',
   /** Why this exists, in the author's words. */
   about: '/about/',
-  /** Network, browser, and data facts for school technology reviewers. */
-  districts: '/districts/',
+  /** Teacher Studio — where a teacher builds an activity. Laptop-first. */
+  studio: '/studio',
   /** Honest accessibility support and known limitations. */
   accessibility: '/accessibility/',
   profile: '/profile',

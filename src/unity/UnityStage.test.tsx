@@ -93,6 +93,18 @@ describe('when no build is configured', () => {
 })
 
 describe('booting a configured build', () => {
+  it('ignores a loader callback queued before the stage was unmounted', () => {
+    const unity = stubUnityFactory()
+    const first = render(<UnityStage activityId="demo" />)
+    const staleLoad = loaderScript()?.onload
+    first.unmount()
+    render(<UnityStage activityId="demo" />)
+    act(() => staleLoad?.call(document.createElement('script'), new Event('load')))
+    expect(unity.createUnityInstance).not.toHaveBeenCalled()
+    fireLoad()
+    expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
+  })
+
   it('injects the loader from the resolved build config', () => {
     render(<UnityStage activityId="demo" />)
     const script = loaderScript()

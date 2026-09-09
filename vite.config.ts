@@ -22,6 +22,7 @@ export default defineConfig({
       '@auth': r('./src/auth'),
       '@config': r('./src/config'),
       '@content': r('./src/content'),
+      '@studio': r('./src/studio'),
       '@lib': r('./src/lib'),
     },
   },

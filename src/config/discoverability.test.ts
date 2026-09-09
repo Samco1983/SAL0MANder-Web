@@ -71,6 +71,7 @@ describe('what a crawler reads', () => {
     for (const href of [
       'https://sal0mander.com/about',
       'https://sal0mander.com/privacy',
+      'https://sal0mander.com/districts',
       'https://sal0mander.com/terms',
       'mailto:samco1983@gmail.com',
     ]) {

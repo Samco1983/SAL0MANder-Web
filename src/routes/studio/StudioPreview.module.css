@@ -1,0 +1,9 @@
+.panel { display: grid; gap: var(--space-4); align-content: start; color: var(--color-text); }
+.panel h2, .panel p { margin: 0; }
+.panel ul { margin: 0; padding-left: var(--space-5); }
+.panel button { justify-self: start; }
+.player[open] { position: fixed; inset: 0; display: flex; flex-direction: column; width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; padding: 0; border: 0; background: var(--color-surface); color: var(--color-text); }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-3) var(--space-4); flex-shrink: 0; }
+.toolbar p { margin: var(--space-1) 0 0; font-size: var(--text-sm); }
+.toolbar strong { overflow-wrap: anywhere; }
+.toolbar button { flex-shrink: 0; }

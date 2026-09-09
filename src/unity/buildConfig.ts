@@ -1,5 +1,8 @@
 import { env, type Env } from '@config/env'
 
+/** Bump with a deployed Unity build so all four artifacts share one cache revision. */
+export const UNITY_RELEASE_REVISION = '2026-09-08-android-1'
+
 /**
  * Resolves the file layout Unity emits for a WebGL build.
  *
@@ -59,15 +62,16 @@ export function resolveUnityBuildConfig(source: Env = env): UnityBuildConfig | n
   // Already normalized by `env`, but a caller-supplied source may not be.
   const base = resolveBuildBase(source.unity.buildBaseUrl)
   const name = source.unity.buildName
+  const revisionQuery = `?v=${encodeURIComponent(UNITY_RELEASE_REVISION)}`
 
   return {
-    loaderUrl: `${base}/Build/${name}.loader.js`,
-    dataUrl: `${base}/Build/${name}.data`,
-    frameworkUrl: `${base}/Build/${name}.framework.js`,
-    codeUrl: `${base}/Build/${name}.wasm`,
+    loaderUrl: `${base}/Build/${name}.loader.js${revisionQuery}`,
+    dataUrl: `${base}/Build/${name}.data${revisionQuery}`,
+    frameworkUrl: `${base}/Build/${name}.framework.js${revisionQuery}`,
+    codeUrl: `${base}/Build/${name}.wasm${revisionQuery}`,
     streamingAssetsUrl: `${base}/StreamingAssets`,
     companyName: 'SAL0MANder',
     productName: source.appName,
-    productVersion: '0.0.0',
+    productVersion: UNITY_RELEASE_REVISION,
   }
 }

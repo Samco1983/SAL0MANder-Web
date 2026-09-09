@@ -75,3 +75,49 @@ PR #73 (and duplicated in #83).
 **Land the production presentation fix before submitting for categorization.**
 A reviewer who classifies the site while it presents as a developer build is a
 reviewer classifying the wrong thing.
+
+## Addendum — 2026-09-02: still blocked, now on the `www` host
+
+Same block page, same district account, different IP (`71.195.100.96`, vs
+`206.78.42.94` on 2026-08-30). The blocked host this time reads
+**`www.sal0mander.com`**, not the apex.
+
+Two things this confirms:
+
+- The block follows the **device**, not the location. A different IP means a
+  different network, and the on-device filtering agent blocked it anyway.
+  Changing where you sit does not change the outcome.
+- The categorization request must cover **both hosts**, apex and `www`. Vendors
+  usually categorize the registrable domain, but the block page names the host
+  it was asked for, so name both on the submission.
+
+Sequencing gate is still closed as of this date: the production presentation
+fix (PR #73 / #83) is not on `main`. Land it before submitting for
+categorization.
+
+## Addendum — 2026-09-02: two things that would have made the ask fail
+
+Both fixed in `f07f989`. Recording them because both were silent, and both sat
+directly on the path that clears this block.
+
+**1. The allowlist we were handing out was incomplete.** `/districts` told an
+administrator to allow exactly `sal0mander.com`. The reported block is on
+`www.sal0mander.com`. Filters match on hostname, so an IT request built from
+that page would have left the actual block in place while looking finished. The
+string "www" appeared nowhere in the repository. Both hosts are now named.
+
+**2. A crawler could not read the page written for it.** Prerendering gave each
+route a 200 and then copied the homepage shell verbatim — so `/districts`,
+`/about`, `/privacy` and `/terms` shipped **zero body text and the homepage's
+title**. A categorisation crawler that does not execute JavaScript saw the same
+page at five URLs.
+
+That is worth stating plainly: **"categorized as Unknown" may not be only about
+the domain's age.** A classifier fetching the trust pages found nothing to
+classify. Each route now carries its own title, description and canonical.
+
+Neither is proof of the cause and neither should be reported as a fix for the
+block. They remove two reasons the request could have failed anyway.
+
+Order of operations is unchanged: land these, then ask Sanger IT (Juan Serrano)
+to allow **both** hosts, then submit for categorisation as Education.

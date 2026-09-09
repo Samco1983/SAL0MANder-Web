@@ -2,6 +2,13 @@
 
 **2026-09-02 · owner's design · Unity's schema, Unity's call**
 
+> **PARKED, not dropped.** Owner 2026-09-02: this is for *harder* activities
+> later — a multi-step problem worth several correct answers before one piece
+> drops. Nothing here needs building now. The design is finished and was
+> corrected nine times; see "Status check" at the end for what is actually in
+> the code today (short version: 1 question = 1 piece, and Teacher Studio
+> prevents the mismatch rather than batching around it).
+
 Supersedes three earlier drafts in this file's history. Each was corrected by
 the owner; the final model is simpler than all of them and is stated here as
 the proposal. The corrections are recorded at the end because they are the
@@ -273,3 +280,55 @@ Every correction came from the owner asking a question, not from review.
 The schedule lives in `QuizData` / `ActivityData` — Unity's schema. The web lane
 does not invent activity schemas. Field name, type, and placement are Codex's
 call.
+
+---
+
+## Status check — 2026-09-02 · what is actually built
+
+Asked directly: is it one question per piece, or can one answer unlock several?
+
+**Today it is strictly one question, one piece. The batching half of this
+proposal is designed and not built.**
+
+### Web lane: built
+
+Teacher Studio already speaks the currency model:
+
+```
+src/studio/activityDraft.ts:145  puzzlePrice   = config.pieceCountPreset   (Classic = 0)
+src/studio/activityDraft.ts:157  missAllowance = questions.length - puzzlePrice
+```
+
+`QuestionsPanel.tsx:62-76` states it to the teacher as a fact, not an error —
+"10 questions · puzzle costs 9 · students can miss 1", or "add 3 more, or use
+fewer puzzle pieces" when short. Exactly what this proposal asked for.
+
+### Unity lane: not built
+
+```
+PuzzleManager.cs:1755   private void ReleaseNextPiece(bool saveUndo = true)
+```
+
+Still singular. Grep for `releaseSchedule` / `pieceCost` across all 60 scripts
+returns nothing. `requiredCorrectAnswers` exists on the schema
+(`QuizData.cs:96`, default `-1` = all questions required) and is hardcoded to 9
+for the demos (`ActivityManager.cs:424-426, :518`), but no per-release schedule
+is read anywhere.
+
+### What that means
+
+- **The mismatch is solved by prevention, not by batching.** Teacher Studio
+  requires questions >= pieces, so the "one answer frees five pieces" case
+  (the `0` steps) can never arise — a teacher cannot author it.
+- **A 24-piece board still means writing 24 questions.** The proposal's headline
+  complaint is unfixed in the engine; it is merely no longer silent.
+- The two lanes do not contradict each other. Web is a superset-ready
+  implementation of a model the engine implements only at the 1:1 case.
+
+### Recommendation
+
+Leave it. 1:1 with a stated miss allowance is a complete, teachable model, and
+the schedule is only needed the day a teacher wants a 16-piece picture from 4
+questions. That is not on `LAUNCH-BAR.md` and item 4 still is.
+
+Do **not** build the schedule before the game can re-drag a piece.
