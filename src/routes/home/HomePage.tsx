@@ -34,6 +34,28 @@ import styles from './HomePage.module.css'
  * `index.html` but the app's own module), one domain (the bundle contacts no
  * external host). A page that overstates is the thing a district checks first.
  */
+/**
+ * The hero picture, and the nine cells drawn over it.
+ *
+ * The page explained the mechanic in three places and showed it in none: the
+ * gallery further down proves the pictures are good, but a teacher has to read
+ * a paragraph to learn that answering a question is what uncovers one. This is
+ * that sentence, drawn.
+ *
+ * Chosen BY KEY, never by array position — `puzzleLibrary.ts` makes exactly
+ * this point about `imagePresetIndex`, and a hero that silently repoints at a
+ * different picture when someone reorders the library is the same bug on a more
+ * visible surface.
+ *
+ * Nine cells because the three launch activities are nine pieces on a square
+ * board (`DEMO_PIECE_COUNT`), so the illustration matches what a teacher gets
+ * when they follow the button beside it rather than flattering it.
+ */
+const HERO_PICTURE = PUZZLE_LIBRARY.find((p) => p.key === 'coral-reef')
+/** Still to be earned. Scattered rather than contiguous: a solved-so-far board
+    does not fill in reading order, and a neat block reads as a loading state. */
+const HERO_COVERED = new Set([1, 5, 6, 8])
+
 export function HomePage() {
   return (
     <AppShell>
@@ -75,6 +97,48 @@ export function HomePage() {
           person would say; the value-first version I wrote initially was both
           invalid markup and announced backwards as "1, Demo activity".
         */}
+        {/*
+          Deliberately NOT lazy and NOT below the fold: this is the largest
+          element painted on first load, and `loading="lazy"` on an LCP image
+          delays the very thing it is meant to speed up. The gallery below stays
+          lazy, which is where that attribute earns its keep.
+
+          Its alt text describes the demonstration rather than reusing the
+          library's description of the scene — the same file is doing a
+          different job here, and two identical alt strings on one page would
+          also make "shows every picture in the library" ambiguous.
+        */}
+        {HERO_PICTURE ? (
+          <figure className={styles.heroArt}>
+            <div className={styles.heroArtFrame}>
+              <img
+                className={styles.heroArtImage}
+                src={HERO_PICTURE.src}
+                alt="A coral reef puzzle part-way through: five of its nine pieces uncovered, four still hidden."
+                width={HERO_PICTURE.width}
+                height={HERO_PICTURE.height}
+                decoding="async"
+              />
+              {/*
+                Decorative: the figcaption below says the same thing in words,
+                and a screen reader announcing nine empty spans would be noise.
+              */}
+              <div className={styles.heroArtGrid} aria-hidden="true">
+                {Array.from({ length: 9 }, (_, i) => (
+                  <span
+                    key={i}
+                    className={styles.heroArtCell}
+                    data-covered={HERO_COVERED.has(i) ? 'true' : undefined}
+                  />
+                ))}
+              </div>
+            </div>
+            <figcaption className={styles.heroArtCaption}>
+              Nine pieces, one for each question. Answer, and a piece appears.
+            </figcaption>
+          </figure>
+        ) : null}
+
         <dl className={styles.stats}>
           {[
             { label: 'Student accounts needed', value: '0', note: 'Students never sign up' },
@@ -113,6 +177,11 @@ export function HomePage() {
         </h2>
         <p className={styles.demoShareText}>
           Each one opens the way a student sees it — no account, no sign-in, nothing to install.
+        </p>
+        <p className={styles.demoShareText}>
+          Open a lesson and choose <strong>Learning Puzzle</strong> to answer questions, then drag
+          and place each earned piece, or <strong>Mystery Reveal</strong> to have each earned piece
+          appear automatically. Both uncover the picture one piece at a time.
         </p>
         <div className={styles.grid}>
           {MOCK_DEMO_ACTIVITIES.map((activity) => (

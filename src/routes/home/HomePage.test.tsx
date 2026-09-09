@@ -37,6 +37,21 @@ const renderHome = () =>
   )
 
 describe('the primary action', () => {
+  it('names both lesson styles and explains who places the earned pieces', () => {
+    renderHome()
+    const activities = screen.getByRole('region', { name: 'Activities you can try right now' })
+    expect(activities).toHaveTextContent('Learning Puzzle')
+    expect(activities).toHaveTextContent('drag and place each earned piece')
+    expect(activities).toHaveTextContent('Mystery Reveal')
+    expect(activities).toHaveTextContent('each earned piece appear automatically')
+    expect(activities).toHaveTextContent('Both uncover the picture one piece at a time')
+    expect(activities).not.toHaveTextContent('Classic Puzzle')
+    for (const activity of MOCK_DEMO_ACTIVITIES) {
+      expect(within(activities).getByRole('link', { name: `Open ${activity.title}` }))
+        .toHaveAttribute('href', `/play/${activity.id}`)
+    }
+  })
+
   it('offers Guest Play as the first thing a visitor can act on', async () => {
     renderHome()
     const guestPlay = screen.getByRole('link', { name: /try an activity/i })

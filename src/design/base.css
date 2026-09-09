@@ -63,6 +63,18 @@ h4 {
   line-height: var(--leading-tight);
   text-wrap: balance;
   font-weight: var(--weight-bold);
+  /*
+   * Tracking by level, because tracking is a function of size and these are the
+   * only elements whose size is predictable from the tag. Everything that sets
+   * its own font-size still gets a sensible default, and can override.
+   */
+  letter-spacing: var(--tracking-tight);
+}
+
+h1 {
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
 }
 
 p {

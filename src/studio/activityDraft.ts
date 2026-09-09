@@ -95,12 +95,13 @@ export const ActivityDraftSchema = z.object({
 export type ActivityDraft = z.infer<typeof ActivityDraftSchema>
 
 /**
- * Unity's own defaults, from `ActivityData` and `CreateDemoActivity`.
+ * Unity-compatible authoring defaults, from `ActivityData` and `CreateDemoActivity`.
  *
  * Nine pieces and a square board because that is what all three shipped demo
  * activities use. `autoPlaceCorrectPieces` is false — Unity's field default —
  * even though the demos set it true; a teacher starting fresh gets the
  * drag-and-place experience unless they choose Mystery Reveal.
+ * The board guide starts hidden so the picture is uncovered piece by piece.
  */
 export function newDraft(activityId: string, now: string): ActivityDraft {
   return {
@@ -112,7 +113,7 @@ export function newDraft(activityId: string, now: string): ActivityDraft {
       imagePresetIndex: 0,
       pieceCountPreset: 9,
       boardShape: 'Square',
-      showBoardGuide: true,
+      showBoardGuide: false,
       enableCameraZoomAndPan: false,
       allowRestart: true,
       allowResumeLater: true,

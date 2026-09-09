@@ -47,17 +47,15 @@ const TOGGLES: Toggle[] = [
   },
   {
     key: 'showBoardGuide',
-    // PuzzleManager.cs:31 — "the target board silhouette and pieces spawn tray
-    // preview". A faint outline of where each piece belongs.
-    label: 'Show where pieces go',
-    on: 'A faint outline on the board shows where each piece belongs.',
-    off: 'No outline. Students work out the placement themselves — a harder puzzle.',
+    label: 'Show picture guide',
+    on: 'A faint finished picture appears behind the pieces as a hint.',
+    off: 'A dark board shows piece outlines. The picture is revealed as pieces are earned.',
   },
   {
     key: 'allowCompletedPictureView',
-    label: 'Peek at the finished picture',
-    on: 'Students can look at the completed picture while they play.',
-    off: 'The picture stays a surprise until they finish it.',
+    label: 'Picture-only view',
+    on: 'Students can hide the controls for a clear view of their current puzzle.',
+    off: 'Controls stay visible while students play.',
   },
 ]
 
@@ -74,8 +72,8 @@ export function OptionsPanel({
   return (
     <section className={styles.panel} aria-label="Student options">
       <p className={styles.intro}>
-        Three choices that change how hard the activity is. Everything else keeps
-        sensible defaults — students can always restart and pick up where they left off.
+        Choose the help students receive while they play. Try these settings in
+        Preview; preview progress starts fresh after a reload.
       </p>
 
       <ul className={styles.list}>
