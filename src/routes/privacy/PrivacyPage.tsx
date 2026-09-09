@@ -79,18 +79,25 @@ export function PrivacyPage() {
             What is stored on the device
           </h2>
           <p>
-            {env.appName} keeps a small amount of information in the browser so a student can come
-            back to what they were doing. As of this writing that is the complete list:
+            {env.appName} stores preferences and local work in the browser. Depending on which
+            features you use, this includes:
           </p>
           <ul className={styles.list}>
             <li>The nickname a player chose, if they chose one</li>
             <li>A random identifier, so a session can be resumed on the same device</li>
             <li>Light or dark appearance preference</li>
             <li>Whether the side panel is open or closed</li>
+            <li>Game settings and locally saved puzzle progress</li>
+            <li>Teacher Studio activity drafts, including questions, picture choices, settings and notes</li>
           </ul>
           <p>
             The random identifier is not a login and grants access to nothing. It contains no
             personal information and is not tied to a name, an email address, or a school record.
+          </p>
+          <p>
+            Teacher drafts stay in the browser where they were created. Download backup saves a
+            separate file containing those drafts and notes; importing it adds copies to that browser.
+            Teacher previews use temporary game progress and do not replace saved student progress.
           </p>
         </section>
 

@@ -11,6 +11,7 @@ import {
   type WebToUnityMessage,
 } from './bridge'
 import { useFullscreen } from './useFullscreen'
+import { onPreviewMessage, sendPreview, type PreviewBoot } from './previewBridge'
 import styles from './UnityStage.module.css'
 
 /**
@@ -59,6 +60,7 @@ export function UnityStage({
   activityId,
   boot,
   sessionStarted,
+  preview,
   audience = 'developer',
 }: {
   activityId?: string
@@ -72,6 +74,8 @@ export function UnityStage({
    */
   audience?: 'student' | 'developer'
   boot?: BootPayload
+  /** Local teacher preview, on its own versioned channel. Never combined with guest boot. */
+  preview?: PreviewBoot
   /**
    * The canonical session, once the web has opened it. Sent on to Unity so it
    * can correlate anything it later emits — Unity cannot know this id, because
@@ -106,6 +110,54 @@ export function UnityStage({
   const instanceRef = useRef<UnityMessageTarget | null>(null)
   const bootedRef = useRef(false)
   const [bridgeDiagnostics, setBridgeDiagnostics] = useState<BridgeMismatchSummary[]>([])
+  const previewSent = useRef(false)
+  const [previewHandshake, setPreviewHandshake] = useState(0)
+  const [previewState, setPreviewState] = useState<'pending' | 'ready' | 'error'>('pending')
+  const [previewError, setPreviewError] = useState('')
+
+  useEffect(() => {
+    if (!preview) return
+    return onPreviewMessage((message) => {
+      if (message.type === 'preview-receiver-ready') {
+        setPreviewHandshake((n) => n + 1)
+        return
+      }
+      if (message.requestId !== preview.requestId && !(previewState === 'pending' && message.type === 'preview-error' && message.requestId === '')) return
+      if (message.type === 'preview-ready') setPreviewState('ready')
+      if (message.type === 'preview-error') {
+        setPreviewError(message.message || 'The game could not open this activity.')
+        setPreviewState('error')
+      }
+    })
+  }, [preview, previewState])
+
+  useEffect(() => {
+    if (!preview || previewSent.current || state.status !== 'ready') return
+    previewSent.current = sendPreview(instanceRef.current, preview)
+  }, [preview, state.status, previewHandshake])
+
+  useEffect(() => {
+    if (!preview || state.status !== 'ready' || previewState !== 'pending') return
+    const timer = window.setTimeout(() => {
+      setPreviewError('This game build did not open the activity. End the preview and try again with the current game build.')
+      setPreviewState('error')
+    }, 20000)
+    return () => window.clearTimeout(timer)
+  }, [preview, state.status, previewState])
+
+  // An accepted boot may lose its acknowledgement. Retry the same immutable
+  // request; Unity replays the acknowledgement without restarting the attempt.
+  useEffect(() => {
+    if (!preview || state.status !== 'ready' || previewState !== 'pending') return
+    const timers = [2000, 5000].map((delay) => window.setTimeout(() => {
+      sendPreview(instanceRef.current, preview)
+    }, delay))
+    return () => timers.forEach((timer) => window.clearTimeout(timer))
+  }, [preview, state.status, previewState])
+
+  useEffect(() => {
+    if (preview && previewState === 'ready') canvasRef.current?.focus({ preventScroll: true })
+  }, [preview, previewState])
 
   /**
    * How many times Unity has announced, from inside the build, that its bridge
@@ -153,14 +205,14 @@ export function UnityStage({
    * delivered one is never repeated.
    */
   useEffect(() => {
-    if (!boot || bootedRef.current || state.status !== 'ready') return
+    if (preview || !boot || bootedRef.current || state.status !== 'ready') return
     const sent = sendToUnity(instanceRef.current, {
       type: 'boot',
       version: BRIDGE_VERSION,
       ...boot,
     })
     if (sent) bootedRef.current = true
-  }, [boot, state.status, handshakes])
+  }, [preview, boot, state.status, handshakes])
 
   /**
    * Hand Unity the canonical session id once the web has one.
@@ -176,7 +228,7 @@ export function UnityStage({
    */
   const sentSessionRef = useRef<string | undefined>(undefined)
   useEffect(() => {
-    if (!sessionStarted || state.status !== 'ready' || !bootedRef.current) return
+    if (preview || !sessionStarted || state.status !== 'ready' || !bootedRef.current) return
     if (sentSessionRef.current === sessionStarted.sessionId) return
     const sent = sendToUnity(instanceRef.current, {
       type: 'session-started',
@@ -184,7 +236,7 @@ export function UnityStage({
       ...sessionStarted,
     })
     if (sent) sentSessionRef.current = sessionStarted.sessionId
-  }, [sessionStarted, state.status, handshakes])
+  }, [preview, sessionStarted, state.status, handshakes])
 
   useEffect(() => {
     if (!config || !canvasRef.current) return
@@ -258,6 +310,7 @@ export function UnityStage({
       // nothing. Resetting only `bootedRef` would boot the replacement into an
       // activity and never tell it which session it is playing.
       bootedRef.current = false
+      previewSent.current = false
       sentSessionRef.current = undefined
       script.remove()
     }
@@ -323,7 +376,9 @@ export function UnityStage({
         id="unity-canvas"
         ref={canvasRef}
         className={styles.canvas}
-        tabIndex={0}
+        tabIndex={preview && previewState !== 'ready' ? -1 : 0}
+        aria-hidden={preview && previewState !== 'ready' ? true : undefined}
+        style={preview && previewState !== 'ready' ? { visibility: 'hidden' } : undefined}
         aria-label="SAL0MANder game"
       />
       {/*
@@ -335,7 +390,7 @@ export function UnityStage({
         loading spinner or an error message hides the browser chrome around a
         screen that has nothing to show.
       */}
-      {fullscreen.isSupported && state.status === 'ready' ? (
+      {fullscreen.isSupported && state.status === 'ready' && (!preview || previewState === 'ready') ? (
         <div className={styles.fullscreenControl}>
           <Button variant="secondary" size="sm" onClick={fullscreen.toggle}>
             {fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}
@@ -350,6 +405,12 @@ export function UnityStage({
               This browser would not allow full screen.
             </p>
           ) : null}
+        </div>
+      ) : null}
+      {preview && state.status === 'ready' && previewState !== 'ready' ? (
+        <div className={`${styles.empty} ${styles.previewNotice}`} role={previewState === 'error' ? 'alert' : 'status'}>
+          <h2 className={styles.emptyTitle}>{previewState === 'error' ? 'Preview could not start' : 'Opening your activity…'}</h2>
+          <p className={styles.emptyBody}>{previewState === 'error' ? previewError : 'Loading your selected picture, questions and settings.'}</p>
         </div>
       ) : null}
       {state.status === 'loading' ? (

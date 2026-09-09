@@ -1,30 +1,28 @@
 {
-  "builtOn": "2026-09-08",
+  "release": "2026-09-08-android-1",
+  "unitySourceCommit": "71f65da8677e5a6a2cf71f50dbb51d602ca974bc",
   "unityVersion": "6000.5.2f1",
-  "unityRepository": "Samco1983/Sal0mander-Jigsaw-Puzzle",
-  "unityCommit": "65d4f8013f20c6a3efcb6ac37903db8b9e38171d",
-  "buildResult": "Succeeded",
-  "compression": "none",
+  "builtFrom": "codex/matching-learning-checkpoint-2026-09-07",
   "files": [
     {
-      "File": "sal0-unity-webgl.data",
-      "Bytes": 26511835,
-      "SHA256": "ce78d5a65460036daf0ac0a74aa282cd34165013831099db17ac3d94aecb522b"
+      "name": "sal0-unity-webgl.data",
+      "bytes": 26518517,
+      "sha256": "c38678b050dcbdcf1b6003ab017eb51044978c1e3a35e1098f268c11ef71ebf7"
     },
     {
-      "File": "sal0-unity-webgl.framework.js",
-      "Bytes": 434492,
-      "SHA256": "54675e29eca381c53ade85547800dd36951c609ea08c2bddeff8fd2b9ebcd484"
+      "name": "sal0-unity-webgl.framework.js",
+      "bytes": 434734,
+      "sha256": "52c3a712013388157dee6e22fe453b44e018c3ca10907311cc4d41c20fbfaa30"
     },
     {
-      "File": "sal0-unity-webgl.loader.js",
-      "Bytes": 26982,
-      "SHA256": "b53a351bc7429fc2464288198decc52794e7f115aea91f3047f0f10a223e4af5"
+      "name": "sal0-unity-webgl.loader.js",
+      "bytes": 26982,
+      "sha256": "f0570a3fa12a20a538c879850df423ede25da7e8d4a62b37d6111665cfa2fdc4"
     },
     {
-      "File": "sal0-unity-webgl.wasm",
-      "Bytes": 63647381,
-      "SHA256": "7c13dc26053de02a29f44cec541fcae78ee23ee051ebe54bd63fd8743d44b82c"
+      "name": "sal0-unity-webgl.wasm",
+      "bytes": 63682337,
+      "sha256": "1e3f822a9ed0065f2558a7909dff9a814df1bde2f57e0efc1560d476380b3ac4"
     }
   ]
 }

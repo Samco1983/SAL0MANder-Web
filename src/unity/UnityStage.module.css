@@ -30,6 +30,8 @@
   text-align: center;
 }
 
+.previewNotice { position: absolute; inset: 0; margin: auto; height: fit-content; }
+
 .emptyTitle {
   font-size: var(--text-lg);
   margin-bottom: var(--space-3);

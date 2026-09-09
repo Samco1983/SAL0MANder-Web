@@ -4,64 +4,36 @@ import { AppShell } from '@components/layout/AppShell'
 import { LinkButton } from '@components/ui/Button'
 import styles from './DistrictsPage.module.css'
 
-/**
- * The page a teacher forwards to their district technology office.
- *
- * That conversation happens whether or not this page exists — a teacher wants
- * to use SAL0MANder, IT asks what it is and what it collects, and without an
- * artifact the teacher has to answer from memory. This is the artifact.
- *
- * ## Written for the person who says no
- *
- * A district technology officer is not the buyer; they are the veto. They are
- * looking for the thing that makes this someone else's problem — an unexplained
- * third-party domain, student data with no retention story, a vague privacy
- * page, a vendor who cannot name what they store.
- *
- * So this page leads with the allowlist, states the storage inventory
- * exhaustively, and answers the questions in the order they get asked rather
- * than the order that flatters the product.
- *
- * ## Every fact here was measured, not asserted
- *
- *   - one domain — the production bundle contacts no external host. The
- *     `api.github.com` and Cloudflare Access references in the repository exist
- *     only inside `missionControlWorker.test.ts`, an internal ops test, and
- *     never ship.
- *   - four storage keys — the complete set as of this writing, from the
- *     constants in `src/auth/guestIdentity.ts`, `ThemeProvider`, and
- *     `CompanionLayout`.
- *   - no accounts — `guestIdentity.ts`, and CLAUDE.md non-negotiable 3.
- *
- * ## What it must never do
- *
- * Claim COPPA, FERPA, WCAG, or standards compliance. A district checks those
- * first, and an unsupported claim on the page written to earn their trust is
- * worse than no page. What it can do — and does — is state the facts precisely
- * enough that a reviewer can draw their own conclusion.
- *
- * It also sells nothing: `TPT-RULES.md` records that a page reachable from a
- * TPT resource must not advertise anything for sale, and this one is linked
- * from the footer of every page.
- */
+/** School review facts, combining the public trust pages with current local authoring. */
 export function DistrictsPage() {
   return (
     <AppShell>
-      <div className={styles.page}>
+      <article className={styles.page}>
         <header className={styles.header}>
-          <p className={styles.eyebrow}>For district technology staff</p>
+          <p className={styles.eyebrow}>For school and district technology staff</p>
           <h1 className={styles.title}>{env.appName} technical and data summary</h1>
           <p className={styles.lede}>
             Written for the person deciding whether this may run on a school network. Everything
             below describes what the software does today. If you need something this page does not
             answer, the contact address at the bottom reaches a person.
           </p>
+          <p className={styles.updated}>Last reviewed September 8, 2026</p>
         </header>
 
-        {/*
-          First, because it is the question that actually gets asked, and a
-          reviewer who has to hunt for it assumes the answer is complicated.
-        */}
+        <section className={styles.section} aria-labelledby="classification">
+          <h2 className={styles.sectionTitle} id="classification">
+            Requested classification
+          </h2>
+          <p className={styles.callout}>
+            <strong>Education / classroom learning</strong>
+          </p>
+          <p>
+            Students answer teacher-provided questions to reveal or assemble a jigsaw picture.
+            Current demonstrations cover integer operations, one-step inequalities, and linear
+            equations.
+          </p>
+        </section>
+
         <section className={styles.section} aria-labelledby="allowlist">
           <h2 className={styles.sectionTitle} id="allowlist">
             Domains to allow
@@ -78,21 +50,17 @@ export function DistrictsPage() {
             administrator to do half the job and believe it was finished.
           */}
           <p>
-            That is the complete list — one site, reachable at both names. The website, the
-            activity, and every image, script and asset are served from it over HTTPS. There is no
-            content delivery network, no font service, no analytics endpoint, and no third-party
-            host of any kind.
+            The public website and current game files are served over HTTPS from this site. No
+            browser extension, downloaded application, administrator access, camera, or microphone
+            is required. Images, fonts, and game assets are bundled with the site.
           </p>
           <p>
             If your filter categorises by reputation rather than by allowlist, the category to
-            apply is <strong>Education</strong>. A newly registered domain is usually reported as
-            uncategorised, which many default policies deny — that is what we are most often
-            blocked by, and it is not a judgement anyone made about this site.
+            request is <strong>Education</strong>. Some school filters have reported the domain as
+            unknown or uncategorised. Your district or filtering provider decides whether to approve
+            or recategorise it.
           </p>
-          <p>
-            A browser loading an activity makes requests to this domain and nowhere else. If your
-            filter reports otherwise, we would genuinely like to know — write to the address below.
-          </p>
+          <p>If a filter blocks an activity, the contact address below can help with the review.</p>
         </section>
 
         <section className={styles.section} aria-labelledby="accounts">
@@ -116,8 +84,8 @@ export function DistrictsPage() {
             What is stored, and where
           </h2>
           <p>
-            Four values, in the browser&apos;s local storage on the student&apos;s own device. This
-            is the complete inventory as of this writing:
+            Website preferences and teacher drafts stay in the browser&apos;s local storage on the
+            device where they were entered. The website keys include:
           </p>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
@@ -155,12 +123,29 @@ export function DistrictsPage() {
                   </td>
                   <td>Whether the side panel is open or closed.</td>
                 </tr>
+                <tr>
+                  <td>
+                    <code className={styles.code}>sal0mander.studio.drafts</code>
+                  </td>
+                  <td>
+                    Activities a teacher creates in Teacher Studio, including their questions and
+                    settings.
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
           <p>
-            Clearing site data in the browser removes all of it. There is no server-side student
-            record to request the deletion of, because none is created.
+            The game can also keep local progress in browser storage. Teacher Studio previews use
+            temporary progress. Downloaded activity backups are files the teacher saves separately;
+            clearing site data does not remove those files.
+          </p>
+          <p>
+            Clearing the browser&apos;s site data removes locally stored values and drafts. See the{' '}
+            <a className={styles.link} href={paths.privacy}>
+              privacy page
+            </a>{' '}
+            for the plain-language explanation.
           </p>
         </section>
 
@@ -169,9 +154,8 @@ export function DistrictsPage() {
             Advertising, analytics and tracking
           </h2>
           <p>
-            None of the three. No advertising network, no analytics service, no tracking pixel, and
-            no third-party script is loaded on any page. Nothing about a student is transmitted to
-            another company, because no other company is involved.
+            No advertising network, third-party analytics service, or tracking pixel is included in
+            the public classroom pages.
           </p>
         </section>
 
@@ -214,18 +198,20 @@ export function DistrictsPage() {
         */}
         <section className={styles.section} aria-labelledby="accessibility">
           <h2 className={styles.sectionTitle} id="accessibility">
-            Accessibility
+            Accessibility status
           </h2>
           <p>
-            The website is built with semantic HTML and landmarks, is operable by keyboard, and its
-            text and interface colours are checked against WCAG AA contrast ratios in both light and
-            dark appearance.
+            The public website includes semantic structure, keyboard focus, responsive layouts,
+            reduced-motion support, and light/dark appearances. The game includes text-size controls
+            and full screen. Known limitations and the reporting route are published on the{' '}
+            <a className={styles.link} href={paths.accessibility}>
+              accessibility page
+            </a>
+            .
           </p>
           <p>
-            The activity itself has not yet been through a formal accessibility audit, and no
-            conformance report exists. We would rather say that plainly than claim a standard we
-            have not verified. If your district requires a completed accessibility report before
-            approval, write to us and we will tell you honestly where that work stands.
+            We do not claim formal WCAG conformance or a completed third-party accessibility audit.
+            If your district requires a completed accessibility report before approval, write to us.
           </p>
         </section>
 
@@ -234,7 +220,8 @@ export function DistrictsPage() {
             Who to contact
           </h2>
           <p>
-            Questions about data, privacy, security, or adding the domain to an allow list:{' '}
+            Questions about data, privacy, security, accessibility, classification, or adding the
+            domain to an allow list:{' '}
             <a className={styles.link} href="mailto:samco1983@gmail.com">
               samco1983@gmail.com
             </a>
@@ -252,11 +239,14 @@ export function DistrictsPage() {
           <LinkButton to={paths.terms} variant="secondary">
             Terms of use
           </LinkButton>
+          <LinkButton to={paths.accessibility} variant="secondary">
+            Accessibility
+          </LinkButton>
           <LinkButton to={paths.about} variant="secondary">
             About
           </LinkButton>
         </footer>
-      </div>
+      </article>
     </AppShell>
   )
 }

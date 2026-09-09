@@ -4,7 +4,6 @@ import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { env } from '@config/env'
 import { AppShell } from '@components/layout/AppShell'
 import { Button } from '@components/ui/Button'
-import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { newId } from '@contracts/v1'
 import {
   ACTIVITY_TYPES,
@@ -19,6 +18,7 @@ import { copyBackupDrafts, createDraftBackup, DraftBackupError, readDraftBackupF
 import { ImagePanel } from './ImagePanel'
 import { OptionsPanel } from './OptionsPanel'
 import { QuestionsPanel } from './QuestionsPanel'
+import { StudioPreview } from './StudioPreview'
 import styles from './StudioPage.module.css'
 
 /**
@@ -468,14 +468,7 @@ export function StudioPage() {
                     )}
 
                     {tab === 'preview' && (
-                      <PlaceholderNotice
-                        label="Building next"
-                        title="Preview"
-                        pending={['Play the activity exactly as a student sees it']}
-                      >
-                        The preview loads the real game with this activity, so what you see is what
-                        your class gets.
-                      </PlaceholderNotice>
+                      <StudioPreview key={draft.config.activityId} draft={draft} />
                     )}
                   </div>
 

@@ -89,5 +89,6 @@ server.listen(PORT, async () => {
   }
   server.close()
   console.log(failed ? `\n  ${failed} path(s) would break once deployed\n` : '\n  every visitor path survives the deploy shape\n')
-  process.exit(failed ? 1 : 0)
+  // Let the HTTP/fetch handles close before Node exits (required on Windows).
+  process.exitCode = failed ? 1 : 0
 })

@@ -16,12 +16,9 @@ import styles from './ImagePanel.module.css'
  * they need — rather than hidden. A teacher who cannot find the castle they saw
  * a moment ago will assume the tool lost it.
  *
- * ## Known gap: Unity does not have these pictures
- *
- * `PuzzleManager.cs:30` defines `0=Dog, 1=Cat, 2=Lotus, -1=Custom` and loads
- * three textures from `Resources/PuzzleImages/`. The library here is twelve
- * different images, so **a selection made on this screen cannot yet be rendered
- * by the game.** See `HANDOFF-PICTURE-LIBRARY.md`.
+ * Play preview resolves the selected key in this library, converts its WebP
+ * into PNG, and sends the actual pixels through the local preview bridge.
+ * Unity's built-in numbered presets remain separate. Publishing is pending.
  *
  * The selection is therefore stored as a stable `key`, never as an array index.
  * `imagePresetIndex` is positional, so reordering Unity's array would silently

@@ -95,6 +95,11 @@ const META = {
     description:
       'SAL0MANder asks students for no name, email or password, and creates no student accounts. What is stored, where it is stored, and how to have it removed.',
   },
+  '/accessibility': {
+    title: 'Accessibility — SAL0MANder learning puzzles',
+    description:
+      'Accessibility features, known limitations and ways to report a barrier in SAL0MANder classroom puzzles. A formal accessibility audit has not yet been completed.',
+  },
   '/districts': {
     title: 'For school districts — technical and data summary',
     description:
