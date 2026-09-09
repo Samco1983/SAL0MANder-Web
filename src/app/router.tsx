@@ -60,6 +60,8 @@ function split(element: ReactNode) {
   return <Suspense fallback={<RouteFallback />}>{element}</Suspense>
 }
 
+const unityHostElement = split(<UnityHostPage />)
+
 /**
  * The route table, separate from the router built out of it.
  *
@@ -92,7 +94,10 @@ export const routes: RouteObject[] = [
     errorElement: <RouteError />,
   },
   { path: paths.profile, element: split(<ProfilePage />), errorElement: <RouteError /> },
-  { path: paths.unity, element: split(<UnityHostPage />), errorElement: <RouteError /> },
+  { path: paths.unity, element: unityHostElement, errorElement: <RouteError /> },
+  // A saved link to the former standalone export now uses the same host,
+  // without redirecting away its query string or fragment.
+  { path: `${paths.unity}/index.html`, element: unityHostElement, errorElement: <RouteError /> },
   { path: paths.console, element: split(<ConsolePage />), errorElement: <RouteError /> },
   // The catch-all needs a boundary too: without one, a throw inside
   // NotFoundPage renders React Router's default blank screen — the exact

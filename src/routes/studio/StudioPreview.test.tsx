@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { newDraft } from '@studio/activityDraft'
@@ -8,7 +8,12 @@ import { StudioPreview } from './StudioPreview'
 vi.mock('@unity/previewBridge', async (original) => ({ ...await original<typeof import('@unity/previewBridge')>(), preparePreview: vi.fn() }))
 vi.mock('@unity/UnityStage', async () => {
   const { useLocation } = await import('react-router-dom')
-  return { UnityStage: ({ preview }: { preview: { config: { title: string } } }) => <div data-testid="preview-game">{preview.config.title} {useLocation().search}</div> }
+  const { useState } = await import('react')
+  return { UnityStage: function PreviewGame({ preview }: { preview: { config: { title: string } } }) {
+    const location = useLocation()
+    const [initialSearch] = useState(location.search)
+    return <div data-testid="preview-game" data-initial-search={initialSearch}>{preview.config.title} {location.search}</div>
+  } }
 })
 const draft = newDraft('act_teacher', '2026-09-08T00:00:00Z')
 draft.config.title = 'Teacher-authored picture'
@@ -21,7 +26,7 @@ beforeEach(() => {
   Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value: function (this: HTMLDialogElement) { this.removeAttribute('open') } })
   vi.mocked(preparePreview).mockResolvedValue(packet)
 })
-afterEach(() => { Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal'); Reflect.deleteProperty(HTMLDialogElement.prototype, 'close'); vi.restoreAllMocks(); vi.clearAllMocks() })
+afterEach(() => { cleanup(); Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal'); Reflect.deleteProperty(HTMLDialogElement.prototype, 'close'); vi.restoreAllMocks(); vi.clearAllMocks() })
 const open = (value = draft) => render(<MemoryRouter><StudioPreview draft={value} /></MemoryRouter>)
 
 it('starts a prepared activity with the persistence marker present before Unity loads, and ends explicitly', async () => {
@@ -29,7 +34,8 @@ it('starts a prepared activity with the persistence marker present before Unity 
   expect(screen.queryByTestId('preview-game')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Play preview' }))
   expect(await screen.findByTestId('preview-game')).toHaveTextContent('Teacher-authored picture ?teacherPreview=1')
-  expect(screen.getByRole('dialog')).toHaveAccessibleName('Activity preview')
+  expect(screen.getByTestId('preview-game')).toHaveAttribute('data-initial-search', '?teacherPreview=1')
+  expect(await screen.findByRole('dialog')).toHaveAccessibleName('Activity preview')
   expect(screen.getByText(/Progress is temporary/)).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'End preview' }))
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()

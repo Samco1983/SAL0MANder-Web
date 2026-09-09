@@ -108,6 +108,8 @@ export function UnityStage({
    */
   const [retryToken, setRetryToken] = useState(0)
   const instanceRef = useRef<UnityMessageTarget | null>(null)
+  // A stage owns one launch context; a new preview gets a new stage instance.
+  const teacherPreviewAtMount = useRef(Boolean(preview))
   const bootedRef = useRef(false)
   const [bridgeDiagnostics, setBridgeDiagnostics] = useState<BridgeMismatchSummary[]>([])
   const previewSent = useRef(false)
@@ -273,7 +275,9 @@ export function UnityStage({
       // Keep Unity's logical screen coordinates aligned with the CSS viewport.
       // Rendering at the browser DPR made Screen.width wider than the hosted
       // stage on Retina displays, clipping the Matching control rail.
-      createUnityInstance(canvasRef.current, { ...config, devicePixelRatio: 1 }, (progress) => {
+      // Latch preview isolation on this runtime, not the page URL: an ended
+      // preview may still be starting after navigation removes its query flag.
+      createUnityInstance(canvasRef.current, { ...config, devicePixelRatio: 1, sal0manderTeacherPreview: teacherPreviewAtMount.current }, (progress) => {
         if (!cancelled) setState({ status: 'loading', progress })
       })
         .then((created) => {
@@ -391,7 +395,7 @@ export function UnityStage({
         screen that has nothing to show.
       */}
       {fullscreen.isSupported && state.status === 'ready' && (!preview || previewState === 'ready') ? (
-        <div className={styles.fullscreenControl}>
+        <div className={styles.fullscreenControl} role="group" aria-label="Game display controls">
           <Button variant="secondary" size="sm" onClick={fullscreen.toggle}>
             {fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}
           </Button>

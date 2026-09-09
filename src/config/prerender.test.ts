@@ -1,8 +1,19 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+  statSync,
+} from 'node:fs'
+import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve, sep } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { readEnv } from './env'
+import { resolveUnityBuildConfig, UNITY_RELEASE_REVISION } from '@unity/buildConfig'
 
 /**
  * Every URL the sitemap promises must be a real file.
@@ -41,6 +52,102 @@ const run = (dir: string) =>
   execFileSync('node', ['scripts/prerender-routes.mjs', dir], { encoding: 'utf8' })
 
 describe('prerendering the public pages', () => {
+  it.each(['/', '/SAL0MANder-Web/'])(
+    'serves fresh Unity hard loads through the app shell under %s',
+    async (base) => {
+      const dir = fixture(['/', '/about'])
+      const entry = `${base}assets/app-fixture.js`
+      writeFileSync(
+        join(dir, 'index.html'),
+        readFileSync(join(dir, 'index.html'), 'utf8').replace(
+          '</body>',
+          `<script type="module" src="${entry}"></script></body>`,
+        ),
+      )
+      mkdirSync(join(dir, 'assets'))
+      writeFileSync(join(dir, 'assets/app-fixture.js'), '// bundled React entry')
+      mkdirSync(join(dir, 'unity/Build'), { recursive: true })
+      mkdirSync(join(dir, 'unity/StreamingAssets'))
+      writeFileSync(join(dir, 'unity/StreamingAssets/marker.json'), '{"retained":true}')
+      // A stale public-folder export must be replaced, even when /unity is intentionally absent from the sitemap.
+      writeFileSync(
+        join(dir, 'unity/index.html'),
+        '<canvas width="960" height="600">legacy host</canvas>',
+      )
+      const config = resolveUnityBuildConfig(
+        readEnv({
+          VITE_UNITY_BUILD_BASE_URL: `${base}unity`,
+          VITE_UNITY_BUILD_NAME: 'Fixture',
+        }),
+      )!
+      const artifactUrls = [config.loaderUrl, config.dataUrl, config.frameworkUrl, config.codeUrl]
+      for (const url of artifactUrls) {
+        const pathname = new URL(url, 'https://example.test').pathname.slice(base.length)
+        writeFileSync(join(dir, pathname), `artifact: ${pathname}`)
+      }
+      run(dir)
+
+      // Serve physical files, with directory-index redirects and no SPA fallback.
+      // A memory router alone cannot catch a legacy public/index.html winning this request.
+      const server = createServer((request, response) => {
+        const url = new URL(request.url ?? '/', 'http://localhost')
+        const file = resolve(dir, url.pathname.slice(base.length))
+        if (
+          !url.pathname.startsWith(base) ||
+          (file !== resolve(dir) && !file.startsWith(resolve(dir) + sep))
+        ) {
+          response.writeHead(404).end()
+          return
+        }
+        if (!existsSync(file)) {
+          response.writeHead(404).end()
+          return
+        }
+        if (statSync(file).isDirectory() && !url.pathname.endsWith('/')) {
+          response.writeHead(301, { Location: `${url.pathname}/${url.search}` }).end()
+          return
+        }
+        const target = statSync(file).isDirectory() ? join(file, 'index.html') : file
+        if (!existsSync(target)) {
+          response.writeHead(404).end()
+          return
+        }
+        response.writeHead(200).end(readFileSync(target))
+      })
+      await new Promise<void>((ready, reject) => {
+        server.once('error', reject)
+        server.listen(0, '127.0.0.1', ready)
+      })
+      try {
+        const address = server.address()
+        if (!address || typeof address === 'string') throw new Error('No test server port')
+        const origin = `http://127.0.0.1:${address.port}`
+        for (const path of ['unity', 'unity/', 'unity/index.html']) {
+          const response = await fetch(`${origin}${base}${path}?probe=keep`)
+          expect(response.status).toBe(200)
+          expect(new URL(response.url).search).toBe('?probe=keep')
+          const page = await response.text()
+          expect(page).toContain('<div id="root"></div>')
+          expect(page).toContain(`src="${entry}"`)
+          expect(page).not.toContain('legacy host')
+          expect(page).not.toContain('createUnityInstance')
+        }
+        for (const url of artifactUrls) {
+          expect(new URL(url, origin).searchParams.get('v')).toBe(UNITY_RELEASE_REVISION)
+          const response = await fetch(`${origin}${url}`)
+          expect(response.status).toBe(200)
+          expect(await response.text()).toContain('artifact: unity/Build/')
+        }
+        const streaming = await fetch(`${origin}${base}unity/StreamingAssets/marker.json`)
+        expect(await streaming.json()).toEqual({ retained: true })
+      } finally {
+        await new Promise<void>((closed, reject) =>
+          server.close((error) => (error ? reject(error) : closed())),
+        )
+      }
+    },
+  )
+
   it('writes a real file for every sitemap URL, so crawlers get 200', () => {
     const dir = fixture(['/', '/about', '/privacy', '/terms'])
     run(dir)

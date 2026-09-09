@@ -1,8 +1,11 @@
 .stage {
   position: relative;
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
   place-items: center;
   background: var(--color-stage);
   color: var(--color-on-stage);
@@ -10,6 +13,7 @@
 }
 
 .canvas {
+  grid-area: 1 / 1;
   /* Unity writes inline pixel dimensions after boot. Keep the live canvas
      inside the responsive host instead of cropping its right/bottom edges. */
   width: 100% !important;
@@ -25,12 +29,15 @@
 }
 
 .empty {
+  grid-area: 1 / 1;
   max-width: 44ch;
+  max-height: 100%;
+  overflow: auto;
   padding: var(--space-6);
   text-align: center;
 }
 
-.previewNotice { position: absolute; inset: 0; margin: auto; height: fit-content; }
+.previewNotice { z-index: 1; }
 
 .emptyTitle {
   font-size: var(--text-lg);
@@ -103,53 +110,29 @@
 /*
  * Full-screen control.
  *
- * Bottom-right rather than top-left: the companion toggle already owns the
- * top-left corner of the stage (see the empty-state note above), and the
- * bottom-right is the corner Unity's own HUD leaves clear.
+ * Reserve a row outside the canvas: Unity uses its bottom edge for the piece
+ * dock, so a floating web button can hide or intercept a student's piece.
+ * Keep this row in fullscreen too, including a reachable exit on touch devices.
  */
 .fullscreenControl {
-  position: absolute;
-  right: var(--space-3);
-  bottom: var(--space-3);
+  grid-area: 2 / 1;
+  justify-self: stretch;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
   gap: var(--space-2);
-  /* Above the canvas, below any error overlay that needs the student's eye. */
-  z-index: 1;
+  padding: var(--space-1) var(--space-3);
+  padding-bottom: max(var(--space-1), env(safe-area-inset-bottom, 0px));
+  background: var(--color-stage-raised);
 }
 
-/*
- * Faded until wanted, but never invisible and never removed from the tab
- * order: a keyboard or screen-reader user must be able to reach it without a
- * pointer hover that they cannot perform.
- */
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .fullscreenControl {
-    opacity: 0.55;
-    transition: opacity var(--transition-smooth);
-  }
-
-  .stage:hover .fullscreenControl,
-  .fullscreenControl:focus-within {
-    opacity: 1;
-  }
-
-  /*
-   * Never faded while fullscreen. On an iPad there is no Esc key, so this
-   * button is the ONLY way out of a game filling the entire screen — a 55%
-   * grey control in the corner is not good enough for a student who wants to
-   * leave and cannot.
-   *
-   * Cheap to make obvious, too: leaving fullscreen does not remount the
-   * canvas, so an accidental press costs no progress.
-   */
-  .stage[data-fullscreen='true'] .fullscreenControl {
-    opacity: 1;
-  }
+.fullscreenControl > button {
+  min-height: 44px;
 }
 
 .fullscreenFailed {
+  margin: 0;
   font-size: var(--text-xs);
   color: var(--color-on-stage-strong);
   background: var(--color-stage-raised);
@@ -187,5 +170,6 @@
 .stage[data-fullscreen-self='true'] {
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   background: var(--color-stage);
 }

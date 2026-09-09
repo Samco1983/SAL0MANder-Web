@@ -190,7 +190,7 @@ describe('the stage must never remount — non-negotiable #4', () => {
     expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
   })
 
-  it('keeps the same running canvas while entering and leaving full screen', async () => {
+  it('keeps the same running canvas and display controls through fullscreen and reorientation', async () => {
     const unity = stubUnityFactory()
     let fullscreenElement: Element | null = null
     Object.defineProperty(document, 'fullscreenElement', {
@@ -213,18 +213,26 @@ describe('the stage must never remount — non-negotiable #4', () => {
     })
 
     render(<UnityStage activityId="demo" />)
+    expect(screen.queryByRole('group', { name: 'Game display controls' })).not.toBeInTheDocument()
     fireLoad()
     await unity.ready()
     const before = canvas()
+    const controls = screen.getByRole('group', { name: 'Game display controls' })
+    expect(controls.parentElement).toBe(before?.parentElement)
 
     await act(async () => screen.getByRole('button', { name: 'Full screen' }).click())
-    expect(screen.getByRole('button', { name: 'Exit full screen' })).toBeInTheDocument()
+    expect(controls).toContainElement(screen.getByRole('button', { name: 'Exit full screen' }))
+    act(() => {
+      window.dispatchEvent(new Event('resize'))
+      window.dispatchEvent(new Event('orientationchange'))
+    })
+    expect(screen.getByRole('group', { name: 'Game display controls' })).toBe(controls)
     expect(canvas()).toBe(before)
     expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
     expect(unity.quit).not.toHaveBeenCalled()
 
     await act(async () => screen.getByRole('button', { name: 'Exit full screen' }).click())
-    expect(screen.getByRole('button', { name: 'Full screen' })).toBeInTheDocument()
+    expect(controls).toContainElement(screen.getByRole('button', { name: 'Full screen' }))
     expect(canvas()).toBe(before)
     expect(unity.createUnityInstance).toHaveBeenCalledTimes(1)
     expect(unity.quit).not.toHaveBeenCalled()
