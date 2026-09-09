@@ -53,10 +53,14 @@ the attempt. The 20-second acceptance timeout starts after the WebGL loader is
 ready; loader progress/errors are handled separately. Explicit End preview
 calls Unity Quit; ordinary layout/fullscreen changes keep the stage mounted.
 
-The URL marker `teacherPreview=1` is set before the instance starts. Unity
-latches temporary-session mode before scene startup and guards its persistent
-save, archive, preference and custom-image writers. This avoids the old activity
-and image APIs clearing a student's saved game while merely previewing a draft.
+The URL marker `teacherPreview=1` reflects the active preview route. Persistence
+is controlled by the immutable `sal0manderTeacherPreview` boolean passed to each
+Unity instance: true for previews, false for ordinary games. Unity latches the
+copied Module value during SubsystemRegistration, before scene startup, and
+guards its save, archive, preference and custom-image writers. Closing a preview
+while its loader is still starting cannot turn it into a persistent student game;
+when that cancelled loader resolves, the host quits it. A stale URL marker cannot
+turn an ordinary game into a temporary preview.
 
 ## Review and verification
 

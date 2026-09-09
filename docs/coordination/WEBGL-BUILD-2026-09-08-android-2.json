@@ -1,0 +1,29 @@
+{
+  "release": "2026-09-08-android-2",
+  "unitySourceCommit": "983f3c2de099af327d437f057c438cc01394e27f",
+  "unityVersion": "6000.5.2f1",
+  "builtFrom": "codex/matching-learning-checkpoint-2026-09-07",
+  "stagedAtUtc": "2026-09-09T04:19:47.666847+00:00",
+  "files": [
+    {
+      "name": "sal0-unity-webgl.data",
+      "bytes": 26518590,
+      "sha256": "a8543f3742c467a1dff550348c95b1e92fddc8ac1d821288e9ba2628fa36aa79"
+    },
+    {
+      "name": "sal0-unity-webgl.framework.js",
+      "bytes": 434887,
+      "sha256": "aa9d96e988b4eb1b63eeb3d579f5f91d3f476eb43eabf4707a06f747468030c9"
+    },
+    {
+      "name": "sal0-unity-webgl.loader.js",
+      "bytes": 26982,
+      "sha256": "46fe1c87bcb0b3cf12fdf0d183ee19c980db96752d4f7b38577a69417d0e4a0e"
+    },
+    {
+      "name": "sal0-unity-webgl.wasm",
+      "bytes": 63682373,
+      "sha256": "b78bbe11a2b742833eadb21e2e4092e3e2016fcecf11d2b7c6f45c58442e5348"
+    }
+  ]
+}

@@ -26,7 +26,7 @@ function Player({ preview, onEnd }: { preview: PreviewBoot; onEnd: () => void })
 }
 
 export function StudioPreview({ draft }: { draft: ActivityDraft }) {
-  const [, setSearchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [preview, setPreview] = useState<PreviewBoot | null>(null)
   const [preparing, setPreparing] = useState(false)
   const [error, setError] = useState('')
@@ -43,8 +43,8 @@ export function StudioPreview({ draft }: { draft: ActivityDraft }) {
     try {
       const prepared = await preparePreview(draft, `preview_${newId()}`, controller.signal)
       if (controller.signal.aborted) return
-      // Unity reads this before scene startup, so even initial preference/save
-      // writers know this instance is a temporary teacher preview.
+      // Keep the route in sync before mounting the preview. UnityStage passes
+      // the separate immutable instance flag that protects student saves.
       setSearchParams((current) => {
         const next = new URLSearchParams(current)
         next.set('teacherPreview', '1')
@@ -75,7 +75,9 @@ export function StudioPreview({ draft }: { draft: ActivityDraft }) {
       {problems.length > 0 && <ul>{problems.map((problem) => <li key={problem}>{problem}</li>)}</ul>}
       {error && <p role="alert">{error}</p>}
       <Button disabled={preparing || problems.length > 0} onClick={() => void start()}>{preparing ? 'Preparing picture…' : 'Play preview'}</Button>
-      {preview && <Player key={preview.requestId} preview={preview} onEnd={end} />}
+      {/* Router navigation may commit after the prepared snapshot. Never mount
+          Unity until this route reflects the active preview. */}
+      {preview && searchParams.get('teacherPreview') === '1' && <Player key={preview.requestId} preview={preview} onEnd={end} />}
     </section>
   )
 }

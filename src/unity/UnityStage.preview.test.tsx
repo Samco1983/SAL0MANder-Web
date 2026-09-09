@@ -13,8 +13,15 @@ draft.config.activityType = 'Classic'
 const preview = PreviewBootSchema.parse({ type: 'preview-boot', previewVersion: 1, requestId: 'preview_test', config: draft.config, questions: [], picture: { key: 'coral-reef', pngBase64: 'aGVsbG8=' } })
 const emit = (type: string, requestId = preview.requestId) => act(() => { window.dispatchEvent(new CustomEvent(PREVIEW_EVENT, { detail: { type, requestId, previewVersion: 1 } })) })
 
-beforeEach(() => { vi.mocked(resolveUnityBuildConfig).mockReturnValue(config) })
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.clearAllMocks() })
+let previousUrl: string
+beforeEach(() => {
+  previousUrl = window.location.href
+  vi.mocked(resolveUnityBuildConfig).mockReturnValue(config)
+})
+afterEach(() => {
+  window.history.replaceState(null, '', previousUrl)
+  vi.useRealTimers(); vi.unstubAllGlobals(); vi.clearAllMocks()
+})
 
 async function load(failFirstSend = false) {
   const SendMessage = vi.fn()
@@ -73,4 +80,60 @@ it('handles a receiver handshake after a failed first send without rebuilding Un
   expect(stage.create).toHaveBeenCalledOnce()
   stage.unmount()
   expect(stage.Quit).toHaveBeenCalledOnce()
+})
+
+it('keeps a cancelled runtime isolated after the URL changes and discards its late startup', async () => {
+  const oldInstance = { SendMessage: vi.fn(), Quit: vi.fn(async () => {}) }
+  const currentInstance = { SendMessage: vi.fn(), Quit: vi.fn(async () => {}) }
+  let finishOld: (instance: typeof oldInstance) => void = () => {}
+  let oldProgress: (progress: number) => void = () => {}
+  const create = vi.fn((_canvas: HTMLCanvasElement, _config: Record<string, unknown>, _progress: (progress: number) => void) => Promise.resolve(currentInstance))
+  create.mockImplementationOnce((_canvas, _config, progress) => {
+    oldProgress = progress
+    return new Promise((resolve) => { finishOld = resolve })
+  })
+  vi.stubGlobal('createUnityInstance', create)
+  window.history.replaceState(null, '', '/studio?teacherPreview=1')
+  const oldView = render(<UnityStage preview={preview} />)
+  await act(async () => { document.querySelector<HTMLScriptElement>('script[src="/preview.loader.js"]')?.onload?.(new Event('load')) })
+  const oldConfig = create.mock.calls[0]![1]
+  expect(oldConfig.sal0manderTeacherPreview).toBe(true)
+
+  oldView.unmount()
+  window.history.replaceState(null, '', '/studio')
+  expect(oldConfig.sal0manderTeacherPreview).toBe(true)
+  const replacement = { ...preview, requestId: 'preview_replacement' }
+  const currentView = render(<UnityStage preview={replacement} />)
+  await act(async () => { document.querySelector<HTMLScriptElement>('script[src="/preview.loader.js"]')?.onload?.(new Event('load')) })
+  emit('preview-ready', replacement.requestId)
+  const currentCanvas = document.querySelector('canvas')
+  expect(currentCanvas).not.toHaveAttribute('aria-hidden')
+
+  await act(async () => {
+    oldProgress(0.75)
+    finishOld(oldInstance)
+  })
+  expect(oldInstance.Quit).toHaveBeenCalledOnce()
+  expect(oldInstance.SendMessage).not.toHaveBeenCalled()
+  expect(currentInstance.Quit).not.toHaveBeenCalled()
+  expect(currentInstance.SendMessage).toHaveBeenCalledOnce()
+  expect(JSON.parse(currentInstance.SendMessage.mock.calls[0]![2]).requestId).toBe(replacement.requestId)
+  expect(document.querySelector('canvas')).toBe(currentCanvas)
+  expect(currentCanvas).not.toHaveAttribute('aria-hidden')
+  expect(screen.queryByText('Loading SAL0MANder…')).not.toBeInTheDocument()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(create).toHaveBeenCalledTimes(2)
+  currentView.unmount()
+  expect(currentInstance.Quit).toHaveBeenCalledOnce()
+  expect(oldInstance.Quit).toHaveBeenCalledOnce()
+})
+
+it('explicitly disables preview isolation on an ordinary runtime even with a stale URL flag', async () => {
+  window.history.replaceState(null, '', '/unity?teacherPreview=1')
+  const create = vi.fn(async (_canvas: HTMLCanvasElement, _config: Record<string, unknown>) => ({ SendMessage: vi.fn(), Quit: vi.fn(async () => {}) }))
+  vi.stubGlobal('createUnityInstance', create)
+  render(<UnityStage activityId="act_integer_operations" />)
+  await act(async () => { document.querySelector<HTMLScriptElement>('script[src="/preview.loader.js"]')?.onload?.(new Event('load')) })
+  expect(create).toHaveBeenCalledOnce()
+  expect(create.mock.calls[0]![1].sal0manderTeacherPreview).toBe(false)
 })

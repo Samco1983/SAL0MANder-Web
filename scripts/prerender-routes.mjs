@@ -63,7 +63,9 @@ const paths = [...sitemap.matchAll(/<loc>\s*https?:\/\/[^/]+(\/[^<\s]*)\s*<\/loc
   .filter((p) => p !== '')
 
 if (paths.length === 0) {
-  console.error('[prerender] sitemap.xml lists no paths beyond the root. Refusing to no-op silently.')
+  console.error(
+    '[prerender] sitemap.xml lists no paths beyond the root. Refusing to no-op silently.',
+  )
   process.exit(1)
 }
 
@@ -193,6 +195,15 @@ for (const path of paths) {
   writeFileSync(join(dir, 'index.html'), withMeta(path))
   console.log(`[prerender] ${path}/index.html${META[path] ? ` — "${META[path].title}"` : ''}`)
 }
+
+// /unity contains the build assets, so its physical directory wins a Pages
+// hard load over the SPA fallback. Always put the same React shell there,
+// including when the internal host is intentionally absent from the sitemap.
+// Only replace the entry HTML; Build and StreamingAssets remain unchanged.
+const unityEntry = join(dist, 'unity')
+mkdirSync(unityEntry, { recursive: true })
+writeFileSync(join(unityEntry, 'index.html'), html)
+console.log('[prerender] /unity/index.html — shared React application entry')
 
 console.log(
   `[prerender] ${paths.length} page(s) now resolve with 200, each with its own title and description.`,

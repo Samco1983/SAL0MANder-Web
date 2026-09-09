@@ -109,7 +109,9 @@ describe('the route table itself', () => {
   it('declares a route for every canonical path', () => {
     // `paths` is the versioned contract for share-link shape. A path that has no
     // route is a link a teacher can print and a student cannot open.
-    expect(routes.map((route) => route.path).sort()).toEqual(Object.values(paths).sort())
+    expect(routes.map((route) => route.path).sort()).toEqual(
+      [...Object.values(paths), `${paths.unity}/index.html`].sort(),
+    )
   })
 })
 
@@ -138,6 +140,34 @@ describe('routes that download before they render', () => {
       `/play/${MOCK_DEMO_ACTIVITY_ID}`,
     )
     expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', paths.home)
+  })
+
+  it.each([
+    ['/unity', '/'],
+    ['/unity/', '/'],
+    ['/unity/index.html', '/'],
+    ['/SAL0MANder-Web/unity', '/SAL0MANder-Web'],
+    ['/SAL0MANder-Web/unity/', '/SAL0MANder-Web'],
+    ['/SAL0MANder-Web/unity/index.html', '/SAL0MANder-Web'],
+  ])('opens %s in the shared host and preserves URL state', async (path, basename) => {
+    const hostRouter = createMemoryRouter(routes, {
+      initialEntries: [`${path}?qa=keep#board`],
+      basename,
+    })
+    render(
+      <ThemeProvider>
+        <RouterProvider router={hostRouter} />
+      </ThemeProvider>,
+    )
+    expect(await screen.findByRole('heading', { name: /unity webgl host/i })).toBeVisible()
+    expect(hostRouter.state.location).toMatchObject({
+      pathname: path,
+      search: '?qa=keep',
+      hash: '#board',
+    })
+    const canonical = routes.find((route) => route.path === paths.unity)!
+    const alias = routes.find((route) => route.path === `${paths.unity}/index.html`)!
+    expect(alias.element).toBe(canonical.element)
   })
 
   it('serves home eagerly, with no loading state at all', () => {
