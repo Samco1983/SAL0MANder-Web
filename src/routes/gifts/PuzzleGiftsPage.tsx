@@ -20,17 +20,25 @@ import { giftOriginCopy } from '@/gifts/giftOrigin'
 import {
   DEFAULT_GIFT_PRESENTATION,
   GIFT_OCCASIONS,
+  MAX_OCCASION_CHARACTERS,
+  OccasionTextSchema,
+  giftGreeting,
   type GiftPresentation,
 } from '@/gifts/giftPresentation'
+import { GiftPicturePicker } from './GiftPicturePicker'
 import { GiftSurveyForm } from './GiftSurveyForm'
 import styles from './PuzzleGifts.module.css'
 
 export function PuzzleGiftsPage() {
   const originCopy = giftOriginCopy(window.location.origin)
   const [imageKey, setImageKey] = useState('')
-  const [mode, setMode] = useState<GiftMode>('learning')
+  const [mode, setMode] = useState<GiftMode>('mystery')
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [presentation, setPresentation] = useState<GiftPresentation>(DEFAULT_GIFT_PRESENTATION)
+  const occasionCheck =
+    presentation.occasionText === undefined
+      ? null
+      : OccasionTextSchema.safeParse(presentation.occasionText)
   const effectChosen = useRef(false)
   const [url, setUrl] = useState('')
   const [error, setError] = useState('')
@@ -104,29 +112,13 @@ export function PuzzleGiftsPage() {
 
         <section className={styles.section} aria-labelledby="gift-picture-heading">
           <h2 id="gift-picture-heading">1. Pick their picture</h2>
-          <div className={styles.pictures}>
-            {PUZZLE_LIBRARY.map((picture) => (
-              <button
-                key={picture.key}
-                type="button"
-                className={styles.picture}
-                aria-pressed={picture.key === imageKey}
-                onClick={() => {
-                  changed()
-                  setImageKey(picture.key)
-                }}
-              >
-                <img
-                  src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}${picture.src}`}
-                  alt={picture.alt}
-                  width={picture.width}
-                  height={picture.height}
-                  loading="lazy"
-                />
-                <span>{picture.name}</span>
-              </button>
-            ))}
-          </div>
+          <GiftPicturePicker
+            selectedKey={imageKey}
+            onSelect={(key) => {
+              changed()
+              setImageKey(key)
+            }}
+          />
         </section>
 
         <fieldset className={styles.section}>
@@ -147,7 +139,27 @@ export function PuzzleGiftsPage() {
                   onChange={() => chooseMode(option.id)}
                 />
                 <span>
-                  <strong>{option.name}</strong>
+                  <strong>
+                    {option.id === 'mystery' && (
+                      <svg className={styles.revealIcon} viewBox="0 0 30 30" aria-hidden="true">
+                        <rect
+                          x="1"
+                          y="1"
+                          width="28"
+                          height="28"
+                          rx="5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                        <path d="M2 22 10 12l6 7 5-5 7 8" fill="currentColor" opacity=".45" />
+                        <path d="M10 2v27M20 2v27M2 10h27M2 20h27" stroke="currentColor" />
+                        <rect x="11" y="1" width="9" height="9" fill="currentColor" />
+                        <rect x="20" y="11" width="9" height="9" fill="currentColor" />
+                      </svg>
+                    )}
+                    {option.name}
+                  </strong>
                   <span>{option.description}</span>
                 </span>
               </label>
@@ -194,6 +206,47 @@ export function PuzzleGiftsPage() {
               </label>
             ))}
           </fieldset>
+          <div className={styles.occasionNote}>
+            <label htmlFor="gift-occasion-text">Your occasion or message</label>
+            <p id="gift-occasion-help">
+              Make it yours: “Happy 10th birthday, Maya!” or “You got the job!” Leave it blank to
+              use the occasion above.
+            </p>
+            <input
+              id="gift-occasion-text"
+              className={styles.textAnswer}
+              type="text"
+              value={presentation.occasionText ?? ''}
+              placeholder="What are you celebrating?"
+              aria-describedby="gift-occasion-help gift-occasion-count"
+              aria-invalid={occasionCheck ? !occasionCheck.success : false}
+              onChange={(event) => {
+                changed()
+                const value = event.currentTarget.value
+                setPresentation((current) => ({
+                  ...current,
+                  occasionText: value === '' ? undefined : value,
+                }))
+              }}
+            />
+            <p id="gift-occasion-count" className={styles.quiet}>
+              {[...(presentation.occasionText ?? '')].length} / {MAX_OCCASION_CHARACTERS} characters
+            </p>
+            {occasionCheck && !occasionCheck.success && (
+              <p role="alert">{occasionCheck.error.issues[0]?.message}</p>
+            )}
+            {(!occasionCheck || occasionCheck.success) && (
+              <p className={styles.greetingPreview}>
+                They’ll see:{' '}
+                <strong>
+                  {giftGreeting({
+                    ...presentation,
+                    occasionText: occasionCheck?.success ? occasionCheck.data : undefined,
+                  })}
+                </strong>
+              </p>
+            )}
+          </div>
           <fieldset className={styles.preferences}>
             <legend>Celebrate with</legend>
             {(['confetti', 'hearts', 'balloons'] as const).map((effect) => (
@@ -244,8 +297,9 @@ export function PuzzleGiftsPage() {
           </p>
           {!candidate.success && (
             <p>
-              Choose a picture
-              {questionMode ? ' and answer all nine favorites.' : '.'}
+              {!imageKey ? 'Choose a picture. ' : ''}
+              {questionMode ? 'Answer all nine favorites. ' : ''}
+              {occasionCheck && !occasionCheck.success ? 'Check your occasion message.' : ''}
             </p>
           )}
           {error && <p role="alert">{error}</p>}

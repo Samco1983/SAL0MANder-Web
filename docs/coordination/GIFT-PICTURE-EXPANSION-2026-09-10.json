@@ -1,0 +1,181 @@
+{
+  "capturedUtc": "2026-09-10T23:24:39.862500+00:00",
+  "releasedWorktreeHead": "c0488de276ac02892eb377f23c7d48b202801306",
+  "githubMainObserved": "6cf377f96201dbe1dc7420ae694c53d471349846",
+  "provenance": "Six completed previews from the existing September2 generated image library (assets/image_library/manifest.json and docs/IMAGE_LIBRARY_MANIFEST.md). Already present in the released public assets, visually inspected September10. No new image generation or alteration.",
+  "inspection": "All six viewed individually at actual preview resolution. Distinct subjects, usable details across the picture and no painted puzzle edges. Original masters remain untouched.",
+  "assetFileAdditions": 0,
+  "existingKeysPreserved": true,
+  "pictureCountBefore": 9,
+  "pictureCountAfter": 15,
+  "newlySelectableBytes": 471714,
+  "allSelectableBytes": 1182566,
+  "files": [
+    {
+      "key": "salamander-forest",
+      "src": "/images/library/square/fantasy/salamander_forest.webp",
+      "width": 480,
+      "height": 480,
+      "bytes": 45964,
+      "sha256": "E2F3F313C03403D9B7D44282D579FCDA500A31FAFF7807C838CE9C82CF88D294",
+      "rgbaPngDiagnosticBytes": 539193,
+      "newlySelectable": false,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "red-panda",
+      "src": "/images/library/square/wildlife/red_panda_forest.webp",
+      "width": 480,
+      "height": 480,
+      "bytes": 46920,
+      "sha256": "7D4D7017D37DF630BF5E510218EA8BE701FA09E73638CA0CF2B5D69A95550008",
+      "rgbaPngDiagnosticBytes": 529153,
+      "newlySelectable": false,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "snow-leopard",
+      "src": "/images/library/square/wildlife/snow_leopard_mountains.webp",
+      "width": 480,
+      "height": 480,
+      "bytes": 43208,
+      "sha256": "D6216543D581BC171D41141351C1EB6013D2C856DDEB6D8932CE53D01CB6F2B0",
+      "rgbaPngDiagnosticBytes": 483298,
+      "newlySelectable": false,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "coral-reef",
+      "src": "/images/library/square/cartoon/coral_reef_marine_life.webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 162168,
+      "sha256": "40C6AB06A82282BE1DFBF90CB27FF84339CAAC530DC601C6686D8477ADBF9DF5",
+      "rgbaPngDiagnosticBytes": 1195578,
+      "newlySelectable": false,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "colosseum",
+      "src": "/images/library/square/photo/colosseum_rome_aerial.webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 77672,
+      "sha256": "0F93137127A9B80ABAD186141BADD814E0F7A397B9B03CCF5679CA16A69A4195",
+      "rgbaPngDiagnosticBytes": 803739,
+      "newlySelectable": false,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "bakery",
+      "src": "/images/library/landscape/cartoon/magical_bakery_workshop.webp",
+      "width": 640,
+      "height": 478,
+      "bytes": 73714,
+      "sha256": "FD34376D873587181DF74A286ACCA24907439EAE884DE124259E5F6C321216E2",
+      "rgbaPngDiagnosticBytes": 690720,
+      "newlySelectable": false,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "saturn",
+      "src": "/images/library/landscape/photo/saturn_nebula_astrophotography.webp",
+      "width": 640,
+      "height": 478,
+      "bytes": 62824,
+      "sha256": "F6682A6FDD2ACBA9B38CE64BD1F47229931226F0EE5236CF79FA5F467A9E151B",
+      "rgbaPngDiagnosticBytes": 646311,
+      "newlySelectable": false,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "dragon-castle",
+      "src": "/images/library/portrait/cartoon/floating_island_castle_dragon.webp",
+      "width": 640,
+      "height": 857,
+      "bytes": 101864,
+      "sha256": "B65CCF8BE5FBD35064F153CB3EC61A125494A4F26D2FA05CE3C83295C76AE062",
+      "rgbaPngDiagnosticBytes": 1211017,
+      "newlySelectable": false,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "highland-castle",
+      "src": "/images/library/portrait/photo/scottish_highland_stone_fortress.webp",
+      "width": 640,
+      "height": 857,
+      "bytes": 96518,
+      "sha256": "DD49D8162AFEF563E78A90B055158EABE78140255A5CAB76D7E59D7C82B31B10",
+      "rgbaPngDiagnosticBytes": 1092048,
+      "newlySelectable": false,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "autumn-woodland",
+      "src": "/images/library/custom-wide/cartoon/enchanted_autumn_woodland.webp",
+      "width": 640,
+      "height": 429,
+      "bytes": 89290,
+      "sha256": "7D12E3D49036207CC1CBAA2366FCC415D272B2381EFE8D7F441AAA42E830A1A5",
+      "rgbaPngDiagnosticBytes": 745184,
+      "newlySelectable": true,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "dinosaur-valley",
+      "src": "/images/library/custom-wide/cartoon/dinosaur_jurassic_valley.webp",
+      "width": 640,
+      "height": 357,
+      "bytes": 54160,
+      "sha256": "91434510DF14241D992499FE2EDC2F1D72EB9F71349007CCB5D4D7FB48AFE9B2",
+      "rgbaPngDiagnosticBytes": 540361,
+      "newlySelectable": true,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "alpine-lake",
+      "src": "/images/library/custom-wide/photo/alpine_lake_wildflowers.webp",
+      "width": 640,
+      "height": 429,
+      "bytes": 63172,
+      "sha256": "ACF16A873E95A2FDE0B2A39390066329BF532E7B40918D4524B3AFD83EBCAC57",
+      "rgbaPngDiagnosticBytes": 618173,
+      "newlySelectable": true,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "rainforest-macaws",
+      "src": "/images/library/custom-wide/photo/amazon_rainforest_macaws.webp",
+      "width": 640,
+      "height": 357,
+      "bytes": 51506,
+      "sha256": "D9AF79CFBEDFFE25DF23ED0980D0AE9F2EA4EF5E5BF27C90E5DFE0651E3DE2BB",
+      "rgbaPngDiagnosticBytes": 518433,
+      "newlySelectable": true,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "steampunk-airship",
+      "src": "/images/library/custom-tall/cartoon/steampunk_flying_airship.webp",
+      "width": 640,
+      "height": 954,
+      "bytes": 120110,
+      "sha256": "334C9B590C08B6F0FF0A9E1093A44FE5335F1877B0770F4C72D6BF02BD9E9235",
+      "rgbaPngDiagnosticBytes": 1325275,
+      "newlySelectable": true,
+      "assetUnchangedFromReleasedHead": true
+    },
+    {
+      "key": "mountain-steam-train",
+      "src": "/images/library/custom-tall/photo/steam_locomotive_mountain_viaduct.webp",
+      "width": 640,
+      "height": 954,
+      "bytes": 93476,
+      "sha256": "EC189F8EABD6A211CF4892C5E589379885D199C6488DF78AA3ADDC6C41412E80",
+      "rgbaPngDiagnosticBytes": 1083506,
+      "newlySelectable": true,
+      "assetUnchangedFromReleasedHead": true
+    }
+  ],
+  "limits": "RGBA PNG measurements use Pillow as a size diagnostic, not the browser canvas encoder. Actual browser image-to-Unity preparation remains integration acceptance. No Unity run/build or external publication."
+}

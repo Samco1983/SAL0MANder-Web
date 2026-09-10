@@ -6,6 +6,7 @@ import { AppShell } from '@components/layout/AppShell'
 import { SharePanel } from '@components/share/SharePanel'
 import { LinkButton } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
+import { Link } from 'react-router-dom'
 import styles from './HomePage.module.css'
 
 /**
@@ -56,6 +57,52 @@ const HERO_PICTURE = PUZZLE_LIBRARY.find((p) => p.key === 'salamander-forest')
     does not fill in reading order, and a neat block reads as a loading state. */
 const HERO_COVERED = new Set([0, 5, 6, 8])
 
+/** Original, decorative line icons; the adjacent link text names each action. */
+function StartIcon({ kind }: { kind: 'mystery' | 'gift' | 'open' | 'studio' | 'pictures' }) {
+  return (
+    <svg className={styles.startIcon} viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      {kind === 'mystery' ? (
+        <>
+          <rect x="3" y="3" width="42" height="42" rx="5" className={styles.iconBoard} />
+          <path d="M5 39 18 22l9 11 8-9 8 15Z" fill="currentColor" opacity="0.6" />
+          <circle cx="32" cy="13" r="5" fill="currentColor" />
+          <path
+            d="M3 3h14v14H3ZM31 17h14v14H31ZM3 31h14v14H3ZM31 31h14v14H31Z"
+            className={styles.iconCovered}
+          />
+          <path d="M17 3v42M31 3v42M3 17h42M3 31h42" stroke="currentColor" strokeWidth="1.5" />
+        </>
+      ) : (
+        <g stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          {kind === 'gift' && (
+            <>
+              <path d="M7 20h34v9H7ZM10 29v14h28V29M24 20v23" />
+              <path d="M24 20C5 20 10 4 18 10c4 3 6 10 6 10Zm0 0C43 20 38 4 30 10c-4 3-6 10-6 10Z" />
+            </>
+          )}
+          {kind === 'open' && (
+            <>
+              <path d="m5 19 19-13 19 13v24H5ZM5 19l19 14 19-14M5 43l14-14m24 14L29 29" />
+            </>
+          )}
+          {kind === 'studio' && (
+            <>
+              <path d="M8 6h25v36H8ZM14 14h12M14 21h8M14 34h12m2-9 10-10 5 5-10 10-7 2Z" />
+            </>
+          )}
+          {kind === 'pictures' && (
+            <>
+              <rect x="5" y="5" width="38" height="38" rx="4" />
+              <circle cx="16" cy="16" r="4" />
+              <path d="m7 37 11-12 7 7 7-13 9 18" />
+            </>
+          )}
+        </g>
+      )}
+    </svg>
+  )
+}
+
 export function HomePage() {
   return (
     <AppShell>
@@ -63,30 +110,81 @@ export function HomePage() {
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>{env.appName} · Learning puzzles for the classroom</p>
           <h1 className={styles.title}>
-            Solve a question.<span>Reveal a world.</span>
+            Mystery Pictures<span>Answer. Reveal a picture.</span>
           </h1>
           <p className={styles.lede}>
-            Turn math, science, and vocabulary practice into a picture worth uncovering. Students
-            answer, earn pieces, and see what’s waiting underneath.
+            Make math, science, and vocabulary practice visual. Each correct answer uncovers more of
+            the picture automatically. No student account needed.
           </p>
-          <div className={styles.actions}>
-            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)} size="lg">
-              Play a demo
-            </LinkButton>
-            {/*
-              The "WebGL host" button that sat here was an internal smoke-test
-              route. It stays reachable by URL — see `visibleNav` in AppShell —
-              but offering it on the front page tells a teacher this is a
-              developer build.
-            */}
-            <LinkButton to={paths.studio} variant="secondary" size="lg">
-              Teacher Studio
-            </LinkButton>
-            <LinkButton to={paths.giftPlay} variant="secondary" size="lg">
-              Open a gift
-            </LinkButton>
-          </div>
         </div>
+
+        <nav className={styles.startChoices} aria-label="Start here">
+          <Link
+            to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}
+            className={`${styles.startTile} ${styles.mysteryTile}`}
+            aria-labelledby="start-mystery-title start-demo-action"
+            aria-describedby="start-mystery-description"
+          >
+            <StartIcon kind="mystery" />
+            <span className={styles.startText}>
+              <strong id="start-mystery-title">Mystery Pictures</strong>
+              <span id="start-mystery-description">
+                In the demo, choose Mystery Reveal for automatic picture reveals.
+              </span>
+              <span className={styles.startAction} id="start-demo-action">
+                Play a demo <span aria-hidden="true">→</span>
+              </span>
+            </span>
+          </Link>
+          <Link
+            to={paths.gifts}
+            className={styles.startTile}
+            aria-labelledby="start-gift-title"
+            aria-describedby="start-gift-description"
+          >
+            <StartIcon kind="gift" />
+            <span className={styles.startText}>
+              <strong id="start-gift-title">Make a Puzzle Gift</strong>
+              <span id="start-gift-description">Choose a picture and a way to play.</span>
+            </span>
+          </Link>
+          <Link
+            to={paths.giftPlay}
+            className={styles.startTile}
+            aria-labelledby="start-open-title"
+            aria-describedby="start-open-description"
+          >
+            <StartIcon kind="open" />
+            <span className={styles.startText}>
+              <strong id="start-open-title">Open a gift</strong>
+              <span id="start-open-description">Paste a complete gift link or backup code.</span>
+            </span>
+          </Link>
+          <Link
+            to={paths.studio}
+            className={styles.startTile}
+            aria-labelledby="start-studio-title"
+            aria-describedby="start-studio-description"
+          >
+            <StartIcon kind="studio" />
+            <span className={styles.startText}>
+              <strong id="start-studio-title">Teacher Studio</strong>
+              <span id="start-studio-description">Create and preview your own activity.</span>
+            </span>
+          </Link>
+          <a
+            href="#pictures-title"
+            className={styles.startTile}
+            aria-labelledby="start-pictures-title"
+            aria-describedby="start-pictures-description"
+          >
+            <StartIcon kind="pictures" />
+            <span className={styles.startText}>
+              <strong id="start-pictures-title">Picture library</strong>
+              <span id="start-pictures-description">Find a picture worth uncovering.</span>
+            </span>
+          </a>
+        </nav>
 
         {/*
           Three numbers a teacher and a district reviewer both care about, and
@@ -157,6 +255,47 @@ export function HomePage() {
         </dl>
       </section>
 
+      <section className={styles.section} aria-labelledby="play-styles-title">
+        <h2 className={styles.sectionTitle} id="play-styles-title">
+          Choose how to play
+        </h2>
+        <div className={styles.modeChoices}>
+          <Card title="Mystery Pictures">
+            Answer a question and watch part of the picture appear automatically. Choose
+            <strong> Mystery Reveal</strong> in the demo.
+            <div className={styles.cardAction}>
+              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
+                Open demo options
+              </LinkButton>
+            </div>
+          </Card>
+          <Card title="Learning Puzzle">
+            Answer questions to earn pieces, then drag and place them yourself.
+            <div className={styles.cardAction}>
+              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
+                Open demo options
+              </LinkButton>
+            </div>
+          </Card>
+          <Card title="Classic Jigsaw">
+            Put the picture together with every piece available and no questions. Choose Classic in
+            the demo.
+            <div className={styles.cardAction}>
+              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
+                Open demo options
+              </LinkButton>
+            </div>
+          </Card>
+          <Card title="Slide & Solve">
+            Shift whole rows and columns to rebuild the picture. Choose Slide &amp; Solve in the
+            gift maker.
+            <div className={styles.cardAction}>
+              <LinkButton to={paths.gifts}>Open gift maker</LinkButton>
+            </div>
+          </Card>
+        </div>
+      </section>
+
       {/*
         The three activities, rendered FROM `MOCK_DEMO_ACTIVITIES` rather than
         written out here.
@@ -181,9 +320,10 @@ export function HomePage() {
           Pick a lesson and start playing. No account or installation needed.
         </p>
         <p className={styles.demoShareText}>
-          Open a lesson and choose <strong>Learning Puzzle</strong> to answer questions, then drag
-          and place each earned piece, or <strong>Mystery Reveal</strong> to have each earned piece
-          appear automatically. Both uncover the picture one piece at a time.
+          Start with <strong>Mystery Pictures</strong>: choose <strong>Mystery Reveal</strong> in a
+          lesson to have each earned piece appear automatically. Choose{' '}
+          <strong>Learning Puzzle</strong> to answer questions, then drag and place each earned
+          piece yourself. Both uncover the picture one piece at a time.
         </p>
         <div className={styles.grid}>
           {MOCK_DEMO_ACTIVITIES.map((activity) => (
@@ -240,7 +380,7 @@ export function HomePage() {
         they arrive.
       */}
       <section className={styles.section} aria-labelledby="pictures-title">
-        <h2 className={styles.sectionTitle} id="pictures-title">
+        <h2 className={styles.sectionTitle} id="pictures-title" tabIndex={-1}>
           The pictures students uncover
         </h2>
         <p className={styles.demoShareText}>
@@ -285,9 +425,9 @@ export function HomePage() {
             time lost to sign-ins that do not work.
           </Card>
           <Card title="Answer, and the picture appears">
-            Each correct answer releases a puzzle piece. Students see the image come together as
-            they work, which is the part that keeps them going — and it works the same whether the
-            questions are equations, cell biology, or vocabulary.
+            In Mystery Pictures, each correct answer reveals part of the image automatically.
+            Learning Puzzle gives students the earned piece to place. Use either style with your
+            math, science, or vocabulary questions.
           </Card>
           <Card title="Nothing to configure">
             Everything loads from this one website. No plugins, no extensions, no separate accounts,

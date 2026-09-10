@@ -2,7 +2,7 @@ import { existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { PUZZLE_LIBRARY } from './puzzleLibrary'
+import { PUZZLE_LIBRARY, PUZZLE_PICTURE_CATEGORIES } from './puzzleLibrary'
 
 /**
  * The four ways an image on this page can be wrong.
@@ -45,7 +45,8 @@ describe('the puzzle picture library', () => {
       total += bytes
       expect(bytes, `${picture.src} is ${Math.round(bytes / 1024)} KB`).toBeLessThan(200 * 1024)
     }
-    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(700 * 1024)
+    // Fifteen lazy-loaded options, reusing six previews already shipped on the same origin.
+    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(1280 * 1024)
   })
 
   /**
@@ -67,6 +68,38 @@ describe('the puzzle picture library', () => {
     for (const picture of PUZZLE_LIBRARY) {
       expect(picture.width).toBeGreaterThan(0)
       expect(picture.height).toBeGreaterThan(0)
+      expect(picture.width).toBeLessThanOrEqual(1024)
+      expect(picture.height).toBeLessThanOrEqual(1024)
+    }
+  })
+
+  it('keeps existing Gift picture keys attached to their original files', () => {
+    const existing = {
+      'salamander-forest': '/images/library/square/fantasy/salamander_forest.webp',
+      'red-panda': '/images/library/square/wildlife/red_panda_forest.webp',
+      'snow-leopard': '/images/library/square/wildlife/snow_leopard_mountains.webp',
+      'coral-reef': '/images/library/square/cartoon/coral_reef_marine_life.webp',
+      colosseum: '/images/library/square/photo/colosseum_rome_aerial.webp',
+      bakery: '/images/library/landscape/cartoon/magical_bakery_workshop.webp',
+      saturn: '/images/library/landscape/photo/saturn_nebula_astrophotography.webp',
+      'dragon-castle': '/images/library/portrait/cartoon/floating_island_castle_dragon.webp',
+      'highland-castle': '/images/library/portrait/photo/scottish_highland_stone_fortress.webp',
+    }
+    for (const [key, src] of Object.entries(existing)) {
+      expect(PUZZLE_LIBRARY.find((picture) => picture.key === key)?.src).toBe(src)
+    }
+    expect(new Set(PUZZLE_LIBRARY.map((picture) => picture.key)).size).toBe(PUZZLE_LIBRARY.length)
+    expect(new Set(PUZZLE_LIBRARY.map((picture) => picture.src)).size).toBe(PUZZLE_LIBRARY.length)
+  })
+
+  it('makes every picture discoverable through a supported theme', () => {
+    for (const picture of PUZZLE_LIBRARY)
+      expect(PUZZLE_PICTURE_CATEGORIES).toContain(picture.category)
+    for (const category of PUZZLE_PICTURE_CATEGORIES) {
+      expect(
+        PUZZLE_LIBRARY.some((picture) => picture.category === category),
+        category,
+      ).toBe(true)
     }
   })
 

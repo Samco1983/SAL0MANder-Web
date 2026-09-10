@@ -474,3 +474,47 @@
     animation: none;
   }
 }
+
+.occasionNote {
+  display: grid;
+  gap: var(--space-2);
+  margin-block: var(--space-5);
+  max-width: 36rem;
+}
+.occasionNote label {
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+.occasionNote p {
+  margin: 0;
+  line-height: 1.6;
+}
+.occasionNote input {
+  box-sizing: border-box;
+}
+.greetingPreview {
+  padding: var(--space-3);
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-surface-muted, var(--color-surface));
+  border-radius: var(--radius-sm);
+  overflow-wrap: anywhere;
+}
+
+.revealIcon {
+  width: 30px;
+  height: 30px;
+  vertical-align: middle;
+  margin-inline-end: var(--space-2);
+  color: var(--color-accent);
+}
+
+.recipient .eyebrow {
+  overflow-wrap: anywhere;
+}
+.celebration p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.celebration > a {
+  flex-shrink: 0;
+}

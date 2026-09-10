@@ -37,9 +37,82 @@ const renderHome = () =>
   )
 
 describe('the primary action', () => {
+  it('puts useful navigation on the page before the illustration and long content', () => {
+    renderHome()
+    const choices = screen.getByRole('navigation', { name: 'Start here' })
+    const links = within(choices).getAllByRole('link')
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      `/play/${MOCK_DEMO_ACTIVITIES[0].id}`,
+      paths.gifts,
+      paths.giftPlay,
+      paths.studio,
+      '#pictures-title',
+    ])
+    for (const name of ['Make a Puzzle Gift', 'Open a gift', 'Teacher Studio', 'Picture library']) {
+      expect(within(choices).getByRole('link', { name })).toBeVisible()
+    }
+    const primary = within(choices).getByRole('link', { name: /Mystery Pictures.*Play a demo/i })
+    expect(primary).toHaveAccessibleDescription(/choose Mystery Reveal/i)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Mystery Pictures')
+    const picture = screen.getByAltText(/A forest guardian puzzle part-way through/i)
+    expect(choices.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(document.getElementById('pictures-title')).toHaveTextContent(
+      'The pictures students uncover',
+    )
+  })
+
+  it('keeps visible actions inside a deployed project base', () => {
+    render(
+      <ThemeProvider>
+        <MemoryRouter basename="/school" initialEntries={['/school/']}>
+          <HomePage />
+        </MemoryRouter>
+      </ThemeProvider>,
+    )
+    const choices = screen.getByRole('navigation', { name: 'Start here' })
+    expect(within(choices).getByRole('link', { name: /play a demo/i })).toHaveAttribute(
+      'href',
+      `/school/play/${MOCK_DEMO_ACTIVITIES[0].id}`,
+    )
+    expect(within(choices).getByRole('link', { name: 'Make a Puzzle Gift' })).toHaveAttribute(
+      'href',
+      '/school/gifts',
+    )
+    expect(within(choices).getByRole('link', { name: 'Open a gift' })).toHaveAttribute(
+      'href',
+      '/school/gifts/play',
+    )
+    expect(within(choices).getByRole('link', { name: 'Teacher Studio' })).toHaveAttribute(
+      'href',
+      '/school/studio',
+    )
+  })
+
+  it('presents all four play styles with honest destinations', () => {
+    renderHome()
+    const modes = screen.getByRole('region', { name: 'Choose how to play' })
+    expect(
+      within(modes)
+        .getAllByRole('heading', { level: 3 })
+        .map((heading) => heading.textContent),
+    ).toEqual(['Mystery Pictures', 'Learning Puzzle', 'Classic Jigsaw', 'Slide & Solve'])
+    const options = within(modes).getAllByRole('link', { name: 'Open demo options' })
+    expect(options).toHaveLength(3)
+    for (const link of options)
+      expect(link).toHaveAttribute('href', `/play/${MOCK_DEMO_ACTIVITIES[0].id}`)
+    expect(within(modes).getByRole('link', { name: 'Open gift maker' })).toHaveAttribute(
+      'href',
+      paths.gifts,
+    )
+    expect(modes).toHaveTextContent('Choose Slide & Solve in the gift maker')
+  })
+
   it('offers the existing gift recovery entry without a login', () => {
     renderHome()
-    expect(screen.getByRole('link', { name: 'Open a gift' })).toHaveAttribute('href', paths.giftPlay)
+    expect(screen.getByRole('link', { name: 'Open a gift' })).toHaveAttribute(
+      'href',
+      paths.giftPlay,
+    )
   })
   it('names both lesson styles and explains who places the earned pieces', () => {
     renderHome()

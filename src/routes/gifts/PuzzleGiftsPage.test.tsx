@@ -107,7 +107,7 @@ it('requires a picture and nine answers, supports reviewing edits, and preserves
   await user.click(screen.getByRole('button', { name: 'Create gift link' }))
   expect(sharedGift()).toMatchObject({
     version: 2,
-    mode: 'learning',
+    mode: 'mystery',
     imageKey: 'salamander-forest',
     answers: GIFT_SURVEY.map((item) => ({
       templateId: item.id,
@@ -136,10 +136,10 @@ it('clears survey answers on Classic and requires them again when returning', as
   await user.click(screen.getByRole('button', { name: /Forest guardian/ }))
   await user.type(screen.getByRole('textbox', { name: GIFT_SURVEY[0].ask }), 'Teal')
   await user.click(screen.getByRole('radio', { name: /Classic Jigsaw/ }))
-  expect(screen.queryByRole('textbox')).toBeNull()
+  expect(screen.queryByRole('textbox', { name: GIFT_SURVEY[0].ask })).toBeNull()
   await user.click(screen.getByRole('button', { name: 'Create gift link' }))
   expect(sharedGift()).toMatchObject({ mode: 'classic', answers: [] })
-  await user.click(screen.getByRole('radio', { name: /Mystery Reveal/ }))
+  await user.click(screen.getByRole('radio', { name: /Mystery Pictures/ }))
   expect(screen.getByRole('button', { name: 'Create gift link' })).toBeDisabled()
   expect(screen.getByText('0 of 9 answered')).toBeVisible()
 })
@@ -197,11 +197,31 @@ it('creates a picture-only Slide & Solve gift and clears the survey across mode 
   await user.type(screen.getByRole('textbox', { name: GIFT_SURVEY[0].ask }), 'Teal')
   await user.click(screen.getByRole('button', { name: /Forest guardian/ }))
   await user.click(screen.getByRole('radio', { name: /Slide & Solve/ }))
-  expect(screen.queryByRole('textbox')).toBeNull()
+  expect(screen.queryByRole('textbox', { name: GIFT_SURVEY[0].ask })).toBeNull()
   expect(screen.getByText(/Slide rows and columns around the 3 × 3 picture grid/)).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Create gift link' }))
   expect(sharedGift()).toMatchObject({ version: 3, mode: 'sliding', answers: [] })
-  await user.click(screen.getByRole('radio', { name: /Mystery Reveal/ }))
+  await user.click(screen.getByRole('radio', { name: /Mystery Pictures/ }))
   expect(screen.getByText('0 of 9 answered')).toBeVisible()
   expect(screen.getByRole('button', { name: 'Create gift link' })).toBeDisabled()
+})
+
+it('leads with Mystery Pictures and keeps a custom occasion in the shared snapshot', async () => {
+  const user = userEvent.setup()
+  show()
+  expect(screen.getByRole('radio', { name: 'Mystery Pictures' })).toBeChecked()
+  expect(screen.getAllByRole('radio')[0]).toHaveAccessibleName('Mystery Pictures')
+  await user.click(screen.getByRole('button', { name: /Forest guardian/ }))
+  await user.click(screen.getByRole('radio', { name: /Classic Jigsaw/ }))
+  const message = screen.getByRole('textbox', { name: 'Your occasion or message' })
+  await user.type(message, 'Happy 10th birthday, Maya!')
+  await user.click(screen.getByRole('button', { name: 'Create gift link' }))
+  expect(sharedGift()).toMatchObject({ occasionText: 'Happy 10th birthday, Maya!' })
+  await user.clear(message)
+  await user.type(message, '<b>Birthday</b>')
+  expect(screen.queryByRole('link', { name: 'Open gift' })).toBeNull()
+  expect(screen.getByRole('button', { name: 'Create gift link' })).toBeDisabled()
+  expect(screen.getByRole('alert')).toHaveTextContent('plain text')
+  await user.clear(message)
+  expect(screen.getByRole('button', { name: 'Create gift link' })).toBeEnabled()
 })

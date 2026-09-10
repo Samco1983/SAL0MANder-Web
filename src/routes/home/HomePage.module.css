@@ -23,6 +23,7 @@
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   grid-template-areas:
     'copy art'
+    'choices art'
     'stats stats';
   padding: var(--space-6);
   margin-top: 0;
@@ -34,9 +35,103 @@
 
 .heroCopy {
   grid-area: copy;
-  /* Wide enough to keep the two calls to action on one line. Stacked, they read
-     as a list of options rather than one obvious next step and a footnote. */
   max-width: 52ch;
+}
+
+.startChoices {
+  grid-area: choices;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.startTile {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 5rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.startTile:hover {
+  border-color: var(--color-brand-green-text);
+}
+
+.startTile:focus-visible {
+  outline: 3px solid var(--color-brand-violet);
+  outline-offset: 3px;
+}
+
+.mysteryTile {
+  grid-column: 1 / -1;
+  border-color: var(--color-brand-green-text);
+  background: color-mix(in srgb, var(--color-brand-green-text) 10%, var(--color-surface));
+  align-items: center;
+}
+
+.startIcon {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-brand-green-text);
+}
+
+.mysteryTile .startIcon {
+  width: 3rem;
+  height: 3rem;
+}
+
+.iconBoard {
+  fill: var(--color-surface);
+  stroke: currentColor;
+}
+
+.iconCovered {
+  fill: var(--color-stage);
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+
+.startText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.startText strong {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.startText > span {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
+
+.startText .startAction {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-brand-green-text);
+}
+
+.modeChoices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.modeChoices > * {
+  min-width: 0;
 }
 
 /*
@@ -59,6 +154,7 @@
     grid-template-columns: 1fr;
     grid-template-areas:
       'copy'
+      'choices'
       'art'
       'stats';
     align-items: start;
@@ -67,6 +163,10 @@
 
   .heroCopy {
     max-width: none;
+  }
+
+  .modeChoices {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -145,13 +245,6 @@
   color: var(--color-text-muted);
 }
 
-.actions {
-  display: flex;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  margin-top: var(--space-5);
-}
-
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
@@ -192,6 +285,7 @@
 .sectionTitle {
   font-size: var(--text-xl);
   margin-bottom: var(--space-4);
+  scroll-margin-top: calc(var(--app-header-height) + var(--space-5));
 }
 
 /*
@@ -332,14 +426,35 @@
     letter-spacing: 0.04em;
   }
 
-  .actions {
+  .startChoices {
     gap: var(--space-2);
-    margin-top: var(--space-4);
   }
 
-  .actions > * {
-    flex: 1 1 auto;
-    text-align: center;
+  .startTile {
+    gap: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  .startIcon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .lede {
+    font-size: var(--text-sm);
+  }
+
+  .title {
+    font-size: clamp(1.6rem, 6.5vw, 2.5rem);
+  }
+
+  .title span {
+    font-size: var(--text-xl);
+  }
+
+  .mysteryTile .startIcon {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .heroArt {

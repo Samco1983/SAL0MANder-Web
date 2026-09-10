@@ -70,7 +70,7 @@ const GRADES = ['3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th',
 
 const TYPE_LABELS: Record<(typeof ACTIVITY_TYPES)[number], { name: string; blurb: string }> = {
   Learning: { name: 'Learning puzzle', blurb: 'Answer a question, then place the piece yourself.' },
-  MysteryReveal: { name: 'Mystery reveal', blurb: 'Answer a question and the piece places itself. No dragging.' },
+  MysteryReveal: { name: 'Mystery Pictures', blurb: 'Start here: each right answer uncovers part of the picture automatically.' },
   Classic: { name: 'Classic puzzle', blurb: 'Just the jigsaw. No questions.' },
   Both: { name: 'Both', blurb: 'Students choose which way to play.' },
 }

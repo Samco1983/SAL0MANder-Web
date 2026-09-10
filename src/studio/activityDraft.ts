@@ -36,7 +36,7 @@ export const PIECE_COUNTS = [4, 6, 9, 12, 16] as const
 export const BOARD_SHAPES = ['Square', 'Portrait', 'Landscape'] as const
 
 /** Mirrors Unity's `ActivityType`. */
-export const ACTIVITY_TYPES = ['Learning', 'MysteryReveal', 'Classic', 'Both'] as const
+export const ACTIVITY_TYPES = ['MysteryReveal', 'Learning', 'Classic', 'Both'] as const
 
 export const ActivityConfigSchema = z.object({
   schemaVersion: z.literal(2),
@@ -98,9 +98,8 @@ export type ActivityDraft = z.infer<typeof ActivityDraftSchema>
  * Unity-compatible authoring defaults, from `ActivityData` and `CreateDemoActivity`.
  *
  * Nine pieces and a square board because that is what all three shipped demo
- * activities use. `autoPlaceCorrectPieces` is false — Unity's field default —
- * even though the demos set it true; a teacher starting fresh gets the
- * drag-and-place experience unless they choose Mystery Reveal.
+ * activities use. New drafts start in Mystery Pictures, where each correct
+ * answer automatically reveals part of the picture. Saved drafts retain their mode.
  * The board guide starts hidden so the picture is uncovered piece by piece.
  */
 export function newDraft(activityId: string, now: string): ActivityDraft {
@@ -109,7 +108,7 @@ export function newDraft(activityId: string, now: string): ActivityDraft {
       schemaVersion: 2,
       activityId,
       title: '',
-      activityType: 'Learning',
+      activityType: 'MysteryReveal',
       imagePresetIndex: 0,
       pieceCountPreset: 9,
       boardShape: 'Square',
@@ -119,7 +118,7 @@ export function newDraft(activityId: string, now: string): ActivityDraft {
       allowResumeLater: true,
       allowHints: true,
       allowCompletedPictureView: false,
-      autoPlaceCorrectPieces: false,
+      autoPlaceCorrectPieces: true,
     },
     meta: {
       subject: '',

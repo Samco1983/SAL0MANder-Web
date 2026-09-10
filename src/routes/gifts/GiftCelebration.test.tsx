@@ -175,3 +175,17 @@ it('shows a static celebration with reduced motion and creates no animation time
   expect(view.container.querySelector('[data-moving]')).toHaveAttribute('data-moving', 'false')
   expect(vi.getTimerCount()).toBe(0)
 })
+
+it('shows the personal occasion after completion as plain text', () => {
+  render(
+    <MemoryRouter>
+      <GiftCelebration
+        requestId="custom"
+        presentation={{ ...DEFAULT_GIFT_PRESENTATION, occasionText: 'You got the job!' }}
+      />
+    </MemoryRouter>,
+  )
+  expect(screen.queryByText('You got the job!')).toBeNull()
+  finish('custom')
+  expect(screen.getByRole('status')).toHaveTextContent('You got the job!')
+})

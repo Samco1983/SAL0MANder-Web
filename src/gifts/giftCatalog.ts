@@ -2,14 +2,14 @@
 export const GIFT_CATALOG_VERSION = 1 as const
 export const GIFT_MODES = [
   {
-    id: 'learning',
-    name: 'Learning Puzzle',
-    description: 'Answer a question, then place the piece you earn.',
+    id: 'mystery',
+    name: 'Mystery Pictures',
+    description: 'Start here: answer a question and uncover the picture, one part at a time.',
   },
   {
-    id: 'mystery',
-    name: 'Mystery Reveal',
-    description: 'Each right answer reveals another piece for you.',
+    id: 'learning',
+    name: 'Learning Puzzle',
+    description: 'Answer a question, then place the puzzle piece you earn.',
   },
   {
     id: 'classic',

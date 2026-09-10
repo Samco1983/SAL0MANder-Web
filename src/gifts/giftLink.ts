@@ -24,6 +24,7 @@ const GiftV1Schema = z
     imageKey: catalogId.refine((key) => PUZZLE_LIBRARY.some((picture) => picture.key === key)),
     selections: z.array(z.strictObject({ templateId: catalogId, answerId: catalogId })).max(4),
     occasion: GiftPresentationSchema.shape.occasion.optional(),
+    occasionText: GiftPresentationSchema.shape.occasionText,
     wrapper: GiftPresentationSchema.shape.wrapper.optional(),
     celebration: GiftPresentationSchema.shape.celebration.optional(),
   })

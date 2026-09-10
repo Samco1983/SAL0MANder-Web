@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { AppShell } from '@components/layout/AppShell'
 import { Button, LinkButton } from '@components/ui/Button'
 import { paths } from '@config/routes'
+import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { newId } from '@contracts/v1'
 import { UnityStage } from '@unity/UnityStage'
 import { preparePreview, type PreviewBoot } from '@unity/previewBridge'
@@ -10,7 +11,7 @@ import { prepareSlide, type SlideBoot } from '@unity/slideBridge'
 import { decodeGift, type Gift } from '@/gifts/giftLink'
 import { giftToDraft } from '@/gifts/giftActivity'
 import { GIFT_MODES } from '@/gifts/giftCatalog'
-import { giftPresentation } from '@/gifts/giftPresentation'
+import { giftGreeting, giftPresentation } from '@/gifts/giftPresentation'
 import { GiftOpening } from './GiftOpening'
 import { GiftCelebration } from './GiftCelebration'
 import { GiftRecoveryForm } from './GiftRecoveryForm'
@@ -128,7 +129,15 @@ function GiftRecipient({ hash, urlLength }: { hash: string; urlLength: number })
               {GIFT_MODES.find((mode) => mode.id === gift!.mode)!.name} ·{' '}
               {gift!.version === 1 ? 'Four' : 'Nine'} pieces
             </p>
-            <GiftOpening wrapper={giftPresentation(gift!).wrapper}>
+            <p className={styles.eyebrow}>{giftGreeting(giftPresentation(gift!))}</p>
+            <GiftOpening
+              wrapper={giftPresentation(gift!).wrapper}
+              picture={
+                gift!.mode === 'classic' || gift!.mode === 'sliding'
+                  ? PUZZLE_LIBRARY.find((item) => item.key === gift!.imageKey)
+                  : undefined
+              }
+            >
               <p>
                 {gift!.mode === 'sliding'
                   ? 'Slide a row or column to move all three tiles, wrapping around the edge. Restore the picture to finish.'
