@@ -94,6 +94,12 @@ describe('a link that arrived damaged', () => {
 })
 
 describe('the route table itself', () => {
+  it('routes gifts separately while preserving the classroom guest path', async () => {
+    expect(firstRouteMatch('/gifts').route.path).toBe(paths.gifts)
+    expect(firstRouteMatch('/gifts/play').route.path).toBe(paths.giftPlay)
+    renderAt('/gifts')
+    expect(await screen.findByRole('heading', { name: 'Puzzle Gifts' })).toBeVisible()
+  })
   it('gives every route an error boundary, so no path can render blank', () => {
     // React Router renders its own bare "Unexpected Application Error" screen
     // for a route with no `errorElement`. A student mid-activity must never

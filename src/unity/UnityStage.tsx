@@ -12,6 +12,9 @@ import {
 } from './bridge'
 import { useFullscreen } from './useFullscreen'
 import { onPreviewMessage, sendPreview, type PreviewBoot } from './previewBridge'
+import { cancelSlide, type SlideBoot } from './slideBridge'
+import { useSlideSession } from './useSlideSession'
+import { usePreviewAttemptSession } from './usePreviewAttemptSession'
 import styles from './UnityStage.module.css'
 
 /**
@@ -61,6 +64,8 @@ export function UnityStage({
   boot,
   sessionStarted,
   preview,
+  previewAttempts = false,
+  slide,
   audience = 'developer',
 }: {
   activityId?: string
@@ -76,6 +81,10 @@ export function UnityStage({
   boot?: BootPayload
   /** Local teacher preview, on its own versioned channel. Never combined with guest boot. */
   preview?: PreviewBoot
+  /** Gift recipients require replay-aware preview events; Teacher Studio keeps its legacy flow. */
+  previewAttempts?: boolean
+  /** Picture-only cyclic sliding on its own protocol; never combined with another launch. */
+  slide?: SlideBoot
   /**
    * The canonical session, once the web has opened it. Sent on to Unity so it
    * can correlate anything it later emits — Unity cannot know this id, because
@@ -109,16 +118,33 @@ export function UnityStage({
   const [retryToken, setRetryToken] = useState(0)
   const instanceRef = useRef<UnityMessageTarget | null>(null)
   // A stage owns one launch context; a new preview gets a new stage instance.
-  const teacherPreviewAtMount = useRef(Boolean(preview))
+  const teacherPreviewAtMount = useRef(Boolean(preview || slide))
+  const slideAtMount = useRef(slide?.requestId)
+  const conflictingLaunch = Boolean(
+    (slide && (preview || boot || sessionStarted)) ||
+    (previewAttempts && (!preview || slide || boot || sessionStarted)),
+  )
+  const slideSession = useSlideSession(slide, instanceRef, state.status === 'ready', retryToken)
+  const attemptSession = usePreviewAttemptSession(
+    previewAttempts ? preview : undefined, instanceRef, state.status === 'ready', retryToken,
+  )
+  const privateLaunch = Boolean(preview || slide)
   const bootedRef = useRef(false)
   const [bridgeDiagnostics, setBridgeDiagnostics] = useState<BridgeMismatchSummary[]>([])
   const previewSent = useRef(false)
   const [previewHandshake, setPreviewHandshake] = useState(0)
   const [previewState, setPreviewState] = useState<'pending' | 'ready' | 'error'>('pending')
   const [previewError, setPreviewError] = useState('')
+  const currentPreviewState = previewAttempts ? attemptSession.status : previewState
+  const currentPreviewError = previewAttempts ? attemptSession.message : previewError
+  const launchReady = slide ? slideSession.status === 'ready' : currentPreviewState === 'ready'
 
   useEffect(() => {
-    if (!preview) return
+    if (slide && slideSession.status === 'ready') canvasRef.current?.focus({ preventScroll: true })
+  }, [slide, slideSession.status])
+
+  useEffect(() => {
+    if (!preview || previewAttempts) return
     return onPreviewMessage((message) => {
       if (message.type === 'preview-receiver-ready') {
         setPreviewHandshake((n) => n + 1)
@@ -131,35 +157,35 @@ export function UnityStage({
         setPreviewState('error')
       }
     })
-  }, [preview, previewState])
+  }, [preview, previewState, previewAttempts])
 
   useEffect(() => {
-    if (!preview || previewSent.current || state.status !== 'ready') return
+    if (!preview || previewAttempts || previewSent.current || state.status !== 'ready') return
     previewSent.current = sendPreview(instanceRef.current, preview)
-  }, [preview, state.status, previewHandshake])
+  }, [preview, state.status, previewHandshake, previewAttempts])
 
   useEffect(() => {
-    if (!preview || state.status !== 'ready' || previewState !== 'pending') return
+    if (!preview || previewAttempts || state.status !== 'ready' || previewState !== 'pending') return
     const timer = window.setTimeout(() => {
       setPreviewError('This game build did not open the activity. End the preview and try again with the current game build.')
       setPreviewState('error')
     }, 20000)
     return () => window.clearTimeout(timer)
-  }, [preview, state.status, previewState])
+  }, [preview, state.status, previewState, previewAttempts])
 
   // An accepted boot may lose its acknowledgement. Retry the same immutable
   // request; Unity replays the acknowledgement without restarting the attempt.
   useEffect(() => {
-    if (!preview || state.status !== 'ready' || previewState !== 'pending') return
+    if (!preview || previewAttempts || state.status !== 'ready' || previewState !== 'pending') return
     const timers = [2000, 5000].map((delay) => window.setTimeout(() => {
       sendPreview(instanceRef.current, preview)
     }, delay))
     return () => timers.forEach((timer) => window.clearTimeout(timer))
-  }, [preview, state.status, previewState])
+  }, [preview, state.status, previewState, previewAttempts])
 
   useEffect(() => {
-    if (preview && previewState === 'ready') canvasRef.current?.focus({ preventScroll: true })
-  }, [preview, previewState])
+    if (preview && currentPreviewState === 'ready') canvasRef.current?.focus({ preventScroll: true })
+  }, [preview, currentPreviewState])
 
   /**
    * How many times Unity has announced, from inside the build, that its bridge
@@ -207,14 +233,14 @@ export function UnityStage({
    * delivered one is never repeated.
    */
   useEffect(() => {
-    if (preview || !boot || bootedRef.current || state.status !== 'ready') return
+    if (preview || slide || !boot || bootedRef.current || state.status !== 'ready') return
     const sent = sendToUnity(instanceRef.current, {
       type: 'boot',
       version: BRIDGE_VERSION,
       ...boot,
     })
     if (sent) bootedRef.current = true
-  }, [preview, boot, state.status, handshakes])
+  }, [preview, slide, boot, state.status, handshakes])
 
   /**
    * Hand Unity the canonical session id once the web has one.
@@ -230,7 +256,7 @@ export function UnityStage({
    */
   const sentSessionRef = useRef<string | undefined>(undefined)
   useEffect(() => {
-    if (preview || !sessionStarted || state.status !== 'ready' || !bootedRef.current) return
+    if (preview || slide || !sessionStarted || state.status !== 'ready' || !bootedRef.current) return
     if (sentSessionRef.current === sessionStarted.sessionId) return
     const sent = sendToUnity(instanceRef.current, {
       type: 'session-started',
@@ -238,11 +264,12 @@ export function UnityStage({
       ...sessionStarted,
     })
     if (sent) sentSessionRef.current = sessionStarted.sessionId
-  }, [preview, sessionStarted, state.status, handshakes])
+  }, [preview, slide, sessionStarted, state.status, handshakes])
 
   useEffect(() => {
-    if (!config || !canvasRef.current) return
+    if (!config || !canvasRef.current || conflictingLaunch) return
 
+    const slideRequestIdAtLoad = slideAtMount.current
     let cancelled = false
     let instance: { Quit: () => Promise<void> } | null = null
     setState({ status: 'loading', progress: 0 })
@@ -277,7 +304,7 @@ export function UnityStage({
       // stage on Retina displays, clipping the Matching control rail.
       // Latch preview isolation on this runtime, not the page URL: an ended
       // preview may still be starting after navigation removes its query flag.
-      createUnityInstance(canvasRef.current, { ...config, devicePixelRatio: 1, sal0manderTeacherPreview: teacherPreviewAtMount.current }, (progress) => {
+      createUnityInstance(canvasRef.current, { ...config, devicePixelRatio: 1, sal0manderTeacherPreview: teacherPreviewAtMount.current, sal0manderSlideGift: Boolean(slideAtMount.current) }, (progress) => {
         if (!cancelled) setState({ status: 'loading', progress })
       })
         .then((created) => {
@@ -308,6 +335,7 @@ export function UnityStage({
 
     return () => {
       cancelled = true
+      if (slideRequestIdAtLoad) cancelSlide(instance as unknown as UnityMessageTarget | null, slideRequestIdAtLoad)
       void instance?.Quit()
       instanceRef.current = null
       // A fresh instance is an unbooted one — and one that has been told
@@ -324,7 +352,9 @@ export function UnityStage({
     // retryToken re-runs this effect, and React tears the previous one down
     // first — so Quit() is always called before a new instance is created.
     // That is what makes retry unable to duplicate an instance.
-  }, [config?.loaderUrl, retryToken])
+  }, [config?.loaderUrl, retryToken, conflictingLaunch])
+
+  if (conflictingLaunch) return <div className={styles.stage} role="alert">This puzzle has conflicting launch settings. Close it and try again.</div>
 
   if (!config) {
     if (audience === 'student') {
@@ -380,9 +410,9 @@ export function UnityStage({
         id="unity-canvas"
         ref={canvasRef}
         className={styles.canvas}
-        tabIndex={preview && previewState !== 'ready' ? -1 : 0}
-        aria-hidden={preview && previewState !== 'ready' ? true : undefined}
-        style={preview && previewState !== 'ready' ? { visibility: 'hidden' } : undefined}
+        tabIndex={privateLaunch && !launchReady ? -1 : 0}
+        aria-hidden={privateLaunch && !launchReady ? true : undefined}
+        style={privateLaunch && !launchReady ? { visibility: 'hidden' } : undefined}
         aria-label="SAL0MANder game"
       />
       {/*
@@ -394,7 +424,7 @@ export function UnityStage({
         loading spinner or an error message hides the browser chrome around a
         screen that has nothing to show.
       */}
-      {fullscreen.isSupported && state.status === 'ready' && (!preview || previewState === 'ready') ? (
+      {fullscreen.isSupported && state.status === 'ready' && (!privateLaunch || launchReady) ? (
         <div className={styles.fullscreenControl} role="group" aria-label="Game display controls">
           <Button variant="secondary" size="sm" onClick={fullscreen.toggle}>
             {fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}
@@ -411,10 +441,16 @@ export function UnityStage({
           ) : null}
         </div>
       ) : null}
-      {preview && state.status === 'ready' && previewState !== 'ready' ? (
-        <div className={`${styles.empty} ${styles.previewNotice}`} role={previewState === 'error' ? 'alert' : 'status'}>
-          <h2 className={styles.emptyTitle}>{previewState === 'error' ? 'Preview could not start' : 'Opening your activity…'}</h2>
-          <p className={styles.emptyBody}>{previewState === 'error' ? previewError : 'Loading your selected picture, questions and settings.'}</p>
+      {preview && state.status === 'ready' && currentPreviewState !== 'ready' ? (
+        <div className={`${styles.empty} ${styles.previewNotice}`} role={currentPreviewState === 'error' ? 'alert' : 'status'}>
+          <h2 className={styles.emptyTitle}>{currentPreviewState === 'error' ? 'Preview could not start' : 'Opening your activity…'}</h2>
+          <p className={styles.emptyBody}>{currentPreviewState === 'error' ? currentPreviewError : 'Loading your selected picture, questions and settings.'}</p>
+        </div>
+      ) : null}
+      {slide && state.status === 'ready' && !launchReady ? (
+        <div className={`${styles.empty} ${styles.previewNotice}`} role={slideSession.status === 'error' ? 'alert' : 'status'}>
+          <h2 className={styles.emptyTitle}>{slideSession.status === 'error' ? 'Slide & Solve could not start' : 'Opening Slide & Solve…'}</h2>
+          <p className={styles.emptyBody}>{slideSession.status === 'error' ? slideSession.message : 'Preparing your picture puzzle.'}</p>
         </div>
       ) : null}
       {state.status === 'loading' ? (

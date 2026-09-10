@@ -1,7 +1,7 @@
 import { env, type Env } from '@config/env'
 
 /** Bump with a deployed Unity build so all four artifacts share one cache revision. */
-export const UNITY_RELEASE_REVISION = '2026-09-09-forest-1'
+export const UNITY_RELEASE_REVISION = '2026-09-10-gifts-modes-1'
 
 /**
  * Resolves the file layout Unity emits for a WebGL build.

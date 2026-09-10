@@ -469,6 +469,9 @@ export function GuestPlayIndexPage() {
             </LinkButton>
           </>
         ) : null}
+        <LinkButton to={paths.giftPlay} variant="secondary">
+          Open a gift
+        </LinkButton>
         <LinkButton to={paths.home}>Back to home</LinkButton>
       </div>
     </AppShell>

@@ -195,4 +195,9 @@ describe('what a crawler reads', () => {
       ).toContain(`/play/${activity.id}`)
     }
   })
+
+  it('lists both gift entry points so direct recipient links get physical Pages entries', () => {
+    expect(listedPaths).toContain('/gifts')
+    expect(listedPaths).toContain('/gifts/play')
+  })
 })

@@ -82,6 +82,9 @@ export function HomePage() {
             <LinkButton to={paths.studio} variant="secondary" size="lg">
               Teacher Studio
             </LinkButton>
+            <LinkButton to={paths.giftPlay} variant="secondary" size="lg">
+              Open a gift
+            </LinkButton>
           </div>
         </div>
 

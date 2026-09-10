@@ -19,6 +19,21 @@ vi.mock('@config/env', () => ({
 import { AppShell, visibleNav } from './AppShell'
 
 describe('AppShell in production', () => {
+  it('keeps keyboard skip navigation working without changing page fragments', async () => {
+    const user = userEvent.setup()
+    render(
+      <ThemeProvider>
+        <MemoryRouter>
+          <AppShell>Page</AppShell>
+        </MemoryRouter>
+      </ThemeProvider>,
+    )
+    const href = window.location.href
+    screen.getByRole('link', { name: 'Skip to main content' }).focus()
+    await user.keyboard('{Enter}')
+    expect(screen.getByRole('main')).toHaveFocus()
+    expect(window.location.href).toBe(href)
+  })
   it('opens the menu and returns keyboard focus to its button on Escape', async () => {
     const user = userEvent.setup()
     render(
@@ -96,6 +111,10 @@ describe('AppShell in production', () => {
     // What a teacher should still see.
     expect(within(nav).getByRole('link', { name: 'Home' })).toBeInTheDocument()
     expect(within(nav).getByRole('link', { name: 'Play' })).toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Puzzle Gifts' })).toHaveAttribute(
+      'href',
+      '/gifts',
+    )
   })
 
   /**

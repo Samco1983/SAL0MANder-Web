@@ -35,6 +35,10 @@ const renderIndex = () =>
 afterEach(() => vi.clearAllMocks())
 
 describe('what the student is told', () => {
+  it('offers the separate gift recovery entry', () => {
+    renderIndex()
+    expect(screen.getByRole('link', { name: 'Open a gift' })).toHaveAttribute('href', '/gifts/play')
+  })
   it('says the link arrived incomplete', () => {
     renderIndex()
     expect(screen.getByRole('heading', { name: /link looks incomplete/i })).toBeVisible()

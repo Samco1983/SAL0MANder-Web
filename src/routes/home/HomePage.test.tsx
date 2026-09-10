@@ -37,6 +37,10 @@ const renderHome = () =>
   )
 
 describe('the primary action', () => {
+  it('offers the existing gift recovery entry without a login', () => {
+    renderHome()
+    expect(screen.getByRole('link', { name: 'Open a gift' })).toHaveAttribute('href', paths.giftPlay)
+  })
   it('names both lesson styles and explains who places the earned pieces', () => {
     renderHome()
     const activities = screen.getByRole('region', { name: 'Activities you can try right now' })

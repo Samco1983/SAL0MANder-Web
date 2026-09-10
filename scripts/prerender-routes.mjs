@@ -87,6 +87,16 @@ if (paths.length === 0) {
  * this script was written to fix.
  */
 const META = {
+  '/gifts': {
+    title: 'Make a puzzle gift — SAL0MANder',
+    description:
+      'Choose a picture, a puzzle style and an occasion, then share a puzzle gift link. No account needed.',
+  },
+  '/gifts/play': {
+    title: 'Open a puzzle gift — SAL0MANder',
+    description:
+      'Open your puzzle gift or paste its complete link or backup code. No account needed. The game website must be reachable.',
+  },
   '/about': {
     title: 'About SAL0MANder — who makes it and why',
     description:

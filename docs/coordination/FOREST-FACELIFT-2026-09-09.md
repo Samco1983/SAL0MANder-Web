@@ -26,7 +26,7 @@ ten warnings and is staged as `2026-09-09-forest-1`; its checksums and source
 record are in `WEBGL-BUILD-2026-09-09-forest-1.json`. Final 390x844 browser checks
 verified the bright offscreen cue, count, tap-to-retrieve action, successful
 answer submission, and hidden board. No browser console errors were captured.
-Publication still requires deployment checks. Sliding Puzzle remains a local
+Publication still requires deployment checks. Slide & Solve remains a local
 prototype and is not a fifth public mode in this package.
 
 Public sample/demo actions now consistently open `/play/act_integer_operations`

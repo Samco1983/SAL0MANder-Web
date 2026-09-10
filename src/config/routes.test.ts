@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { buildPath, buildShareLink } from './routes'
+import { buildPath, buildShareLink, paths } from './routes'
 
 describe('share links', () => {
+  it('keeps gifts separate from existing classroom links', () => {
+    expect(paths.gifts).toBe('/gifts')
+    expect(paths.giftPlay).toBe('/gifts/play')
+    expect(paths.guestPlay).toBe('/play/:activityId')
+  })
   it('builds the canonical guest play path', () => {
     expect(buildPath.guestPlay('abc123')).toBe('/play/abc123')
   })

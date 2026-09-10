@@ -26,7 +26,6 @@ function resolveShareUrl(props: SharePanelProps): string {
 export function SharePanel(props: SharePanelProps) {
   const url = resolveShareUrl(props)
   const { title } = props
-  const { state, copy } = useCopyToClipboard()
   const [showQr, setShowQr] = useState(false)
 
   return (
@@ -34,6 +33,34 @@ export function SharePanel(props: SharePanelProps) {
       <h2 className={styles.heading}>Share</h2>
       {title ? <p className={styles.subject}>{title}</p> : null}
 
+      <CopyLinkFields key={url} url={url} />
+
+      <Button variant="ghost" onClick={() => setShowQr((v) => !v)} aria-expanded={showQr}>
+        {showQr ? 'Hide QR code' : 'Show QR code'}
+      </Button>
+
+      {showQr ? (
+        <div className={styles.qrWrap}>
+          <Suspense
+            fallback={<div className={styles.qrPlaceholder} style={{ width: 176, height: 176 }} />}
+          >
+            <ShareQr url={url} />
+          </Suspense>
+          <p className={styles.qrHint}>
+            Point a phone camera at this, or print it on a worksheet. It opens the activity with no
+            sign-in.
+          </p>
+        </div>
+      ) : null}
+    </section>
+  )
+}
+
+/** Clipboard feedback belongs to the exact displayed link, while the QR toggle stays open. */
+function CopyLinkFields({ url }: { url: string }) {
+  const { state, copy } = useCopyToClipboard()
+  return (
+    <>
       <div className={styles.linkRow}>
         {/*
           Readonly rather than disabled: a disabled input is not selectable or
@@ -55,23 +82,6 @@ export function SharePanel(props: SharePanelProps) {
             : ''}
       </p>
 
-      <Button variant="ghost" onClick={() => setShowQr((v) => !v)} aria-expanded={showQr}>
-        {showQr ? 'Hide QR code' : 'Show QR code'}
-      </Button>
-
-      {showQr ? (
-        <div className={styles.qrWrap}>
-          <Suspense
-            fallback={<div className={styles.qrPlaceholder} style={{ width: 176, height: 176 }} />}
-          >
-            <ShareQr url={url} />
-          </Suspense>
-          <p className={styles.qrHint}>
-            Point a phone camera at this, or print it on a worksheet. It opens the activity with no
-            sign-in.
-          </p>
-        </div>
-      ) : null}
-    </section>
+    </>
   )
 }
