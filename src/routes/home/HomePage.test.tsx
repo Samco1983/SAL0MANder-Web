@@ -75,7 +75,7 @@ describe('the primary action', () => {
   it('sends Guest Play to a real activity path, not a placeholder', () => {
     renderHome()
     const href = screen.getByRole('link', { name: /play a demo/i }).getAttribute('href')
-    expect(href).toMatch(/^\/play\/.+/)
+    expect(href).toBe('/play/act_integer_operations')
     expect(href).not.toMatch(/undefined|null|:activityId/)
   })
 

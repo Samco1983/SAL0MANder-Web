@@ -137,7 +137,7 @@ describe('routes that download before they render', () => {
     await user.click(screen.getByRole('button', { name: /show companion/i }))
     expect(screen.getByRole('link', { name: /open sample activity/i })).toHaveAttribute(
       'href',
-      `/play/${MOCK_DEMO_ACTIVITY_ID}`,
+      '/play/act_integer_operations',
     )
     expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', paths.home)
   })

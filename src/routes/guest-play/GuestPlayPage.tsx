@@ -10,7 +10,7 @@ import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
 import { correlateAttempt, isUsableFinishedPayload, onUnityMessage } from '@unity/bridge'
-import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
+import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
@@ -464,7 +464,7 @@ export function GuestPlayIndexPage() {
         {canDemo ? (
           <>
             <p className={styles.centeredBody}>In the meantime, you can try a sample puzzle.</p>
-            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)}>
+            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
               Try a sample activity
             </LinkButton>
           </>

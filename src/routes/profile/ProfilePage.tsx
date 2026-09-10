@@ -1,6 +1,6 @@
 import { env } from '@config/env'
 import { buildPath, paths } from '@config/routes'
-import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
+import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 import { AppShell } from '@components/layout/AppShell'
 import { Card } from '@components/ui/Card'
 import { LinkButton } from '@components/ui/Button'
@@ -35,7 +35,7 @@ export function ProfilePage() {
           somewhere else.
         */}
         <div className={styles.actions}>
-          <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITY_ID)}>Open sample activity</LinkButton>
+          <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open sample activity</LinkButton>
           <LinkButton to={paths.guestPlayIndex} variant="secondary">
             Keep playing as guest
           </LinkButton>
