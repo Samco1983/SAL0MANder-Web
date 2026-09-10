@@ -18,6 +18,9 @@ const POSSESSION_PROPAGATION_GRACE_MS = 300_000
 const MISSION_LOG_CLOCK_SKEW_MS = 30_000
 const GATE_NAME = 'owner-mission-control'
 const DEFAULT_PUBLIC_SITE_URL = 'https://samco1983.github.io/SAL0MANder-Web'
+const FORM_ACTION_PATH = '/ops/actions/form'
+const FORM_CSRF_COOKIE = 'sal0_mc_csrf'
+const FORM_TOKEN_PATTERN = /^[a-f0-9]{48}$/
 const DEFAULT_GITHUB_REPOSITORY = 'Samco1983/SAL0MANder-Web'
 const GITHUB_API_ROOT = 'https://api.github.com'
 const GITHUB_API_VERSION = '2022-11-28'
@@ -47,7 +50,16 @@ export async function handleRequest(request, env, dependencies = {}) {
   if (!identity) return json({ error: 'authentication_required' }, 401, cors)
 
   if (publicAppRequest) {
-    return servePublicApp(request, env, dependencies.fetchPublicApp ?? fetch)
+    return servePublicApp(
+      request,
+      env,
+      dependencies.fetchPublicApp ?? fetch,
+      dependencies.missionRequest ?? githubMissionRequest,
+    )
+  }
+
+  if (request.method === 'POST' && url.pathname.endsWith(FORM_ACTION_PATH)) {
+    return handleFormAction(request, env, identity)
   }
 
   if (request.method === 'GET' && url.pathname.endsWith('/ops/missions')) {
@@ -65,19 +77,134 @@ export async function handleRequest(request, env, dependencies = {}) {
     return json({ error: 'not_found' }, 404, cors)
   }
 
-  if (!env.MISSION_GATE) return json({ error: 'dispatcher_unavailable' }, 503, cors)
-  const gateId = env.MISSION_GATE.idFromName(GATE_NAME)
-  const gate = env.MISSION_GATE.get(gateId)
-  const headers = new Headers(request.headers)
-  headers.set('X-Verified-Owner', identity)
-  const gateResponse = await gate.fetch(
-    new Request('https://mission-gate.internal/actions', {
-      method: 'POST',
-      headers,
-      body: await request.text(),
-    }),
+  const gateResponse = await dispatchThroughGate(
+    env,
+    identity,
+    await request.text(),
+    request.headers.get('Idempotency-Key')?.trim() ?? '',
   )
   return withHeaders(gateResponse, cors)
+}
+
+async function dispatchThroughGate(env, identity, body, idempotencyKey) {
+  if (!env.MISSION_GATE) return json({ error: 'dispatcher_unavailable' }, 503)
+  const gateId = env.MISSION_GATE.idFromName(GATE_NAME)
+  const gate = env.MISSION_GATE.get(gateId)
+  return gate.fetch(
+    new Request('https://mission-gate.internal/actions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': idempotencyKey,
+        'X-Verified-Owner': identity,
+      },
+      body,
+    }),
+  )
+}
+
+async function handleFormAction(request, env, identity) {
+  const requestUrl = new URL(request.url)
+  if (request.headers.get('Origin') !== requestUrl.origin) {
+    return formError('This launch must start from the protected Mission Control page.', 403, env)
+  }
+
+  const contentType = request.headers.get('Content-Type') ?? ''
+  if (!contentType.startsWith('application/x-www-form-urlencoded')) {
+    return formError('Mission Control could not read that launch request.', 415, env)
+  }
+
+  const encoded = await request.text()
+  if (encoded.length > 2_048) {
+    return formError('That launch request was too large.', 413, env)
+  }
+
+  const form = new URLSearchParams(encoded)
+  const csrf = form.get('csrf') ?? ''
+  const idempotencyKey = form.get('idempotencyKey') ?? ''
+  const csrfCookie = readCookie(request.headers.get('Cookie') ?? '', FORM_CSRF_COOKIE)
+  if (
+    !FORM_TOKEN_PATTERN.test(csrf) ||
+    !FORM_TOKEN_PATTERN.test(csrfCookie) ||
+    !constantTimeEqual(csrf, csrfCookie)
+  ) {
+    return formError('Mission Control expired. Return to the console and try again.', 403, env)
+  }
+  if (!FORM_TOKEN_PATTERN.test(idempotencyKey)) {
+    return formError('Mission Control rejected that launch request.', 400, env)
+  }
+
+  const missionReference = parseMissionReference(form.get('mission'))
+
+  const action = normalizeAction({
+    action: form.get('action'),
+    mission:
+      form.get('missionKind') === 'new'
+        ? { kind: 'new', title: form.get('title') }
+        : {
+            kind: 'existing',
+            id: form.get('id') || missionReference?.id,
+            revision: form.get('revision') || missionReference?.revision,
+          },
+  })
+  if (!action) return formError('Mission Control rejected that launch request.', 400, env)
+
+  const gateResponse = await dispatchThroughGate(
+    env,
+    identity,
+    JSON.stringify(action),
+    `form:${idempotencyKey}:${action.action}`,
+  )
+  const result = await gateResponse.json().catch(() => null)
+  const receiptUrl = result?.receipt?.url
+  if (!gateResponse.ok || !isHttpUrl(receiptUrl)) {
+    return formError(formFailureMessage(result?.error), gateResponse.status, env)
+  }
+
+  return new Response(null, {
+    status: 303,
+    headers: {
+      Location: receiptUrl,
+      'Cache-Control': 'private, no-store',
+      'Referrer-Policy': 'no-referrer',
+    },
+  })
+}
+
+function parseMissionReference(value) {
+  try {
+    const parsed = JSON.parse(value ?? '')
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function formFailureMessage(error) {
+  if (error === 'verification_required') {
+    return 'Championship still needs fresh independent verification.'
+  }
+  if (error === 'possession_active' || error === 'possession_in_progress') {
+    return 'Another mission already has possession.'
+  }
+  if (error === 'rate_limited') return 'Mission Control needs a short timeout before another shot.'
+  if (error === 'mission_changed')
+    return 'That mission changed. Return to the console to reload it.'
+  return 'The dispatcher did not accept this launch.'
+}
+
+function formError(message, status, env) {
+  const publicPath = normalizePublicSiteUrl(env.PUBLIC_SITE_URL)?.pathname ?? '/'
+  const consoleUrl = `${publicPath}${publicPath.endsWith('/') ? '' : '/'}console`
+  const body = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mission not launched</title><body><main><h1>Mission not launched</h1><p>${escapeHtml(message)}</p><p><a href="${escapeHtml(consoleUrl)}">Return to Mission Control</a></p></main></body></html>`
+  return new Response(body, {
+    status: Math.max(400, Math.min(status || 500, 599)),
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'private, no-store',
+      'X-Robots-Tag': 'noindex, nofollow',
+    },
+  })
 }
 
 export class MissionGate {
@@ -874,13 +1001,14 @@ function isPublicAppRequest(request, url, env) {
   return Boolean(publicSiteUrl && url.pathname.startsWith(`${publicSiteUrl.pathname}/`))
 }
 
-async function servePublicApp(request, env, fetchPublicApp) {
+async function servePublicApp(request, env, fetchPublicApp, missionRequest) {
   const publicSiteUrl = normalizePublicSiteUrl(env.PUBLIC_SITE_URL)
   if (!publicSiteUrl) return json({ error: 'console_unavailable' }, 503)
 
   const requestUrl = new URL(request.url)
   const lastSegment = requestUrl.pathname.split('/').pop() ?? ''
   const isDocumentRoute = !lastSegment.includes('.')
+  const isConsoleRoute = isDocumentRoute && requestUrl.pathname.endsWith('/console')
   const upstreamUrl = new URL(
     isDocumentRoute ? `${publicSiteUrl.href}/` : `${publicSiteUrl.origin}${requestUrl.pathname}`,
   )
@@ -905,7 +1033,68 @@ async function servePublicApp(request, env, fetchPublicApp) {
   headers.delete('Set-Cookie')
   headers.set('X-Robots-Tag', 'noindex, nofollow')
   if (isDocumentRoute) headers.set('Cache-Control', 'private, no-store')
+
+  if (isConsoleRoute && upstream.ok) {
+    const current = await missionRequest(env, {
+      operation: 'list_missions',
+      source: 'owner_console',
+    })
+    const missionLog = current.ok ? normalizeMissionLog(current.body) : null
+    const contentType = headers.get('Content-Type') ?? ''
+    if (missionLog && contentType.includes('text/html')) {
+      const csrf = createFormToken()
+      const idempotencyKey = createFormToken()
+      const html = injectMissionBootstrap(await upstream.text(), {
+        missionLog,
+        actionForm: { url: FORM_ACTION_PATH, csrf, idempotencyKey },
+      })
+      headers.delete('Content-Length')
+      headers.delete('Content-Encoding')
+      headers.delete('ETag')
+      headers.delete('Last-Modified')
+      headers.set(
+        'Set-Cookie',
+        `${FORM_CSRF_COOKIE}=${csrf}; Path=${FORM_ACTION_PATH}; Max-Age=600; Secure; HttpOnly; SameSite=Strict`,
+      )
+      return new Response(html, { status: upstream.status, headers })
+    }
+  }
+
   return new Response(upstream.body, { status: upstream.status, headers })
+}
+
+function createFormToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(24))
+  return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+function injectMissionBootstrap(html, bootstrap) {
+  const serialized = JSON.stringify(bootstrap)
+    .replaceAll('<', '\\u003c')
+    .replaceAll('&', '\\u0026')
+    .replaceAll('\u2028', '\\u2028')
+    .replaceAll('\u2029', '\\u2029')
+  const element = `${renderNativeConsole(bootstrap)}<script id="sal0-mission-control-bootstrap" type="application/json">${serialized}</script>`
+  return /<\/body>/i.test(html)
+    ? html.replace(/<\/body>/i, `${element}</body>`)
+    : `${html}${element}`
+}
+
+function renderNativeConsole({ missionLog, actionForm }) {
+  const missions = missionLog.missions
+  const verified = missions.filter((mission) => championshipReady(mission))
+  const options = missions.map((mission) => missionOption(mission)).join('')
+  const verifiedOptions = verified.map((mission) => missionOption(mission)).join('')
+  const common = `<input type="hidden" name="csrf" value="${actionForm.csrf}"><input type="hidden" name="idempotencyKey" value="${actionForm.idempotencyKey}">`
+  const hasMissions = missions.length > 0
+
+  return `<section id="sal0-mission-control-native" class="sal0-native" aria-labelledby="sal0-native-title"><style>.sal0-native{box-sizing:border-box;max-width:52rem;margin:2rem auto;padding:1.25rem;font-family:system-ui,sans-serif;color:#171717;background:#fff;border:1px solid #d4d4d4;border-radius:8px}.sal0-native *{box-sizing:border-box;letter-spacing:0}.sal0-native h1{margin:0 0 1rem;font-size:1.5rem}.sal0-native form{display:grid;gap:.75rem;margin-top:1rem}.sal0-native label{font-weight:650}.sal0-native select,.sal0-native input[type=text]{width:100%;min-height:2.75rem;padding:.55rem .7rem;border:1px solid #737373;border-radius:6px;background:#fff;color:#171717;font:inherit}.sal0-native .choice{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:.5rem}.sal0-native button{min-height:2.75rem;padding:.55rem .9rem;border:1px solid #171717;border-radius:6px;background:#171717;color:#fff;font:700 1rem system-ui,sans-serif;cursor:pointer}.sal0-native button.secondary{background:#fff;color:#171717}.sal0-native button:disabled{cursor:not-allowed;opacity:.55}@media(max-width:40rem){.sal0-native{margin:1rem;padding:1rem}}</style><h1 id="sal0-native-title">Mission Control</h1><form action="${actionForm.url}" method="post">${common}<label class="choice"><input type="radio" name="missionKind" value="existing"${hasMissions ? ' checked' : ' disabled'}><span>Existing mission</span></label><select name="mission" aria-label="Existing mission"${hasMissions ? '' : ' disabled'}>${options}</select><label class="choice"><input type="radio" name="missionKind" value="new"${hasMissions ? '' : ' checked'}><span>New mission</span></label><label for="sal0-native-title-input">Outcome</label><input id="sal0-native-title-input" type="text" name="title" maxlength="160" autocomplete="off"><button type="submit" name="action" value="fast_break">Run Fast Break</button></form><form action="${actionForm.url}" method="post">${common}<input type="hidden" name="missionKind" value="existing"><label for="sal0-native-championship">Verified mission</label><select id="sal0-native-championship" name="mission"${verified.length ? '' : ' disabled'}>${verifiedOptions}</select><button class="secondary" type="submit" name="action" value="championship"${verified.length ? '' : ' disabled'}>Championship</button></form></section>`
+}
+
+function missionOption(mission) {
+  const value = escapeHtml(JSON.stringify({ id: mission.id, revision: mission.updatedAtUtc }))
+  const status = mission.status.replaceAll('_', ' ')
+  return `<option value="${value}">${escapeHtml(mission.title)} - ${escapeHtml(status)}</option>`
 }
 
 function normalizePublicSiteUrl(value) {
@@ -967,6 +1156,32 @@ function isHttpUrl(value) {
   } catch {
     return false
   }
+}
+
+function readCookie(header, name) {
+  for (const part of header.split(';')) {
+    const [key, ...value] = part.trim().split('=')
+    if (key === name) return value.join('=')
+  }
+  return ''
+}
+
+function constantTimeEqual(left, right) {
+  if (left.length !== right.length) return false
+  let difference = 0
+  for (let index = 0; index < left.length; index += 1) {
+    difference |= left.charCodeAt(index) ^ right.charCodeAt(index)
+  }
+  return difference === 0
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
 }
 
 async function sha256(value) {
