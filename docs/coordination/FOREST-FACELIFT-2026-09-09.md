@@ -19,11 +19,21 @@ Production preview at 390x844 verified the home layout, menu/Escape focus and
 unchanged game-canvas dimensions while opening and closing navigation.
 
 The accompanying Unity changes are prepared in Unity PR #32, source
-`4de199e9c67987e64adcb037183f501639deedde`. They include usable-piece dock
+`2997eec0fee95f2a3dc42e407730f1f96faee470`. They include usable-piece dock
 retrieval and new stock reward artwork, with migration and saved-attempt
-recovery checks. A matching player must be staged and verified before this
-document can claim the new game is published. Sliding Puzzle remains a local
+recovery checks. The matching player built successfully with zero errors and
+ten warnings and is staged as `2026-09-09-forest-1`; its checksums and source
+record are in `WEBGL-BUILD-2026-09-09-forest-1.json`. Final 390x844 browser checks
+verified the bright offscreen cue, count, tap-to-retrieve action, successful
+answer submission, and hidden board. No browser console errors were captured.
+Publication still requires deployment checks. Sliding Puzzle remains a local
 prototype and is not a fifth public mode in this package.
+
+Public sample/demo actions now consistently open `/play/act_integer_operations`
+from Home, About, Profile, the Unity host, and truncated-link recovery. Named
+lesson choices retain their own destinations. The affected route checks passed
+85 tests; the release URL configuration passed six tests. Legacy demo fixtures
+remain available for compatibility.
 
 The local artwork catalog is `SAL0MANder/art/catalog/index.html`: 22 unique
 masters, source paths and provenance; two old images need repair and six

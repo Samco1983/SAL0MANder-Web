@@ -1,0 +1,66 @@
+{
+  "release": "2026-09-09-forest-1",
+  "unitySourceCommit": "2997eec0fee95f2a3dc42e407730f1f96faee470",
+  "unityVersion": "6000.5.2f1",
+  "builtFrom": "codex/forest-art-dock-2026-09-09",
+  "sourceCommitAtUtc": "2026-09-10T03:38:01+00:00",
+  "sourceVerification": "Clean source checkpoint recorded before live-Editor build; saved BuildReport begins after the request; clean matching HEAD verified at staging. Player does not embed a source hash.",
+  "buildReport": {
+    "result": "Succeeded",
+    "outputPath": "C:/Users/samco/SAL0MANder/Unity-Game/Build/WebGL",
+    "platform": "WebGL",
+    "startedAtUtc": "2026-09-10T03:38:22.0388911Z",
+    "endedAtUtc": "2026-09-10T03:45:22.1991313Z",
+    "unityVersion": "6000.5.2f1",
+    "startedKind": "Unspecified",
+    "endedKind": "Unspecified",
+    "editorUtcNow": "2026-09-10T03:46:05.6288029Z",
+    "editorLocalNow": "2026-09-09T20:46:05.6288029-07:00",
+    "bytes": 104154775,
+    "errors": 0,
+    "warnings": 10,
+    "seconds": 420.1602402,
+    "timestampInterpretation": "UTC clock values returned with DateTimeKind.Unspecified; raw start agrees with the recorded UTC request. No local timezone conversion applied; raw receipt and Editor clock readings preserved."
+  },
+  "evidence": [
+    {
+      "path": "sync/forest-cue-build-request.json",
+      "sha256": "65893236ddf8105d647a8d67529da7453662925f5fa5aff291eb3ad4f8b07fee"
+    },
+    {
+      "path": "sync/forest-build-report.json",
+      "sha256": "b0218c908afcda90d3fc9a8efa9ed8a5554b1ab82790c12072133d9211cd3fed"
+    },
+    {
+      "path": "sync/forest-build-editor.log",
+      "sha256": "4c98d06e2a44fdc9a4e00ce7fecb08bc4a7b0546af745679bd7bcbf43e944f96"
+    }
+  ],
+  "files": [
+    {
+      "sourceName": "WebGL.data",
+      "name": "sal0-unity-webgl.data",
+      "bytes": 39882599,
+      "sha256": "6fae8360a50baf6cf1cc33a88dd369d7546533803493b0d4a3234dd5f33305a1"
+    },
+    {
+      "sourceName": "WebGL.framework.js",
+      "name": "sal0-unity-webgl.framework.js",
+      "bytes": 434887,
+      "sha256": "79a8ae6be3ce030df21732fa067c40085403262a8024a608cdfa18b39c891860"
+    },
+    {
+      "sourceName": "WebGL.loader.js",
+      "name": "sal0-unity-webgl.loader.js",
+      "bytes": 26982,
+      "sha256": "8354c1f6751e49af5b9d9e9d6125dcd86af9f2d4a0b0c502bb3ebbb5164ae351"
+    },
+    {
+      "sourceName": "WebGL.wasm",
+      "name": "sal0-unity-webgl.wasm",
+      "bytes": 63789564,
+      "sha256": "adaa181e17d0dba8b2e9e909f96204434707bdefd4bf2d655e67e284690532eb"
+    }
+  ],
+  "stagedAtUtc": "2026-09-10T03:46:43.990136+00:00"
+}
