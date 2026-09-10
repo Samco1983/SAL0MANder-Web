@@ -57,14 +57,38 @@ export type PuzzlePicture = {
 }
 
 /**
- * Six pictures: Unity's three board shapes, each as one illustration and one
- * photograph.
- *
- * The 50/50 split is the point. A teacher deciding in four seconds should not
- * have to guess whether this is only for younger students, and the pairing
- * answers that faster than a sentence about age range would.
+ * A mix of fantasy, realistic wildlife, and educational scenes across Unity's
+ * three board shapes. Full-quality masters stay separate from these compact
+ * website previews; generated wildlife is identified in its description.
  */
 export const PUZZLE_LIBRARY: readonly PuzzlePicture[] = [
+  {
+    key: 'salamander-forest',
+    shape: 'Square',
+    name: 'Forest guardian',
+    src: '/images/library/square/fantasy/salamander_forest.webp',
+    alt: 'Fantasy illustration of a bright-eyed black salamander with lime markings and small fins, perched on a mossy log beside glowing mushrooms and a forest waterfall.',
+    width: 480,
+    height: 480,
+  },
+  {
+    key: 'red-panda',
+    shape: 'Square',
+    name: 'Red panda forest',
+    src: '/images/library/square/wildlife/red_panda_forest.webp',
+    alt: 'Realistic generated wildlife illustration of a red panda with russet fur and a long ringed tail resting on a mossy tree above a mountain forest.',
+    width: 480,
+    height: 480,
+  },
+  {
+    key: 'snow-leopard',
+    shape: 'Square',
+    name: 'Snow leopard mountains',
+    src: '/images/library/square/wildlife/snow_leopard_mountains.webp',
+    alt: 'Realistic generated wildlife illustration of a young snow leopard with silver spotted fur and a thick curling tail on a rocky ledge in sunlit snowy mountains.',
+    width: 480,
+    height: 480,
+  },
   {
     key: 'coral-reef',
     shape: 'Square',

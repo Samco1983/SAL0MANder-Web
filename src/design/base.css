@@ -82,7 +82,7 @@ p {
 }
 
 a {
-  color: var(--color-accent);
+  color: var(--color-brand-violet);
   text-underline-offset: 0.15em;
 }
 

@@ -51,26 +51,27 @@ import styles from './HomePage.module.css'
  * board (`DEMO_PIECE_COUNT`), so the illustration matches what a teacher gets
  * when they follow the button beside it rather than flattering it.
  */
-const HERO_PICTURE = PUZZLE_LIBRARY.find((p) => p.key === 'coral-reef')
+const HERO_PICTURE = PUZZLE_LIBRARY.find((p) => p.key === 'salamander-forest')
 /** Still to be earned. Scattered rather than contiguous: a solved-so-far board
     does not fill in reading order, and a neat block reads as a loading state. */
-const HERO_COVERED = new Set([1, 5, 6, 8])
+const HERO_COVERED = new Set([0, 5, 6, 8])
 
 export function HomePage() {
   return (
     <AppShell>
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>Learning puzzles for the classroom</p>
-          <h1 className={styles.title}>{env.appName}</h1>
+          <p className={styles.eyebrow}>{env.appName} · Learning puzzles for the classroom</p>
+          <h1 className={styles.title}>
+            Solve a question.<span>Reveal a world.</span>
+          </h1>
           <p className={styles.lede}>
-            Students answer questions to uncover a jigsaw puzzle, one piece at a time — math,
-            science, vocabulary, or whatever a teacher builds. Share an activity with a single link:
-            no accounts to create, no passwords to reset, nothing for a student to remember.
+            Turn math, science, and vocabulary practice into a picture worth uncovering. Students
+            answer, earn pieces, and see what’s waiting underneath.
           </p>
           <div className={styles.actions}>
             <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)} size="lg">
-              Try an activity
+              Play a demo
             </LinkButton>
             {/*
               The "WebGL host" button that sat here was an internal smoke-test
@@ -78,8 +79,8 @@ export function HomePage() {
               but offering it on the front page tells a teacher this is a
               developer build.
             */}
-            <LinkButton to={paths.privacy} variant="secondary" size="lg">
-              Privacy &amp; student data
+            <LinkButton to={paths.studio} variant="secondary" size="lg">
+              Teacher Studio
             </LinkButton>
           </div>
         </div>
@@ -114,7 +115,7 @@ export function HomePage() {
               <img
                 className={styles.heroArtImage}
                 src={HERO_PICTURE.src}
-                alt="A coral reef puzzle part-way through: five of its nine pieces uncovered, four still hidden."
+                alt="A forest guardian puzzle part-way through: five of its nine pieces uncovered, four still hidden."
                 width={HERO_PICTURE.width}
                 height={HERO_PICTURE.height}
                 decoding="async"
@@ -134,26 +135,24 @@ export function HomePage() {
               </div>
             </div>
             <figcaption className={styles.heroArtCaption}>
-              Nine pieces, one for each question. Answer, and a piece appears.
+              A little more wonder with every answer.
             </figcaption>
           </figure>
         ) : null}
 
         <dl className={styles.stats}>
           {[
-            { label: 'Student accounts needed', value: '0', note: 'Students never sign up' },
-            { label: 'Ads and tracking scripts', value: '0', note: 'None, anywhere' },
-            { label: 'Steps for a student to start', value: '1', note: 'Open the link' },
+            { label: 'Student accounts', value: 'None needed' },
+            { label: 'Ads and tracking scripts', value: 'None' },
+            { label: 'Classroom setup', value: 'Share one link' },
           ].map((s) => (
             <div className={styles.stat} key={s.label}>
               <dt className={styles.statLabel}>{s.label}</dt>
               <dd className={styles.statValue}>{s.value}</dd>
-              <dd className={styles.statNote}>{s.note}</dd>
             </div>
           ))}
         </dl>
       </section>
-
 
       {/*
         The three activities, rendered FROM `MOCK_DEMO_ACTIVITIES` rather than
@@ -176,7 +175,7 @@ export function HomePage() {
           Activities you can try right now
         </h2>
         <p className={styles.demoShareText}>
-          Each one opens the way a student sees it — no account, no sign-in, nothing to install.
+          Pick a lesson and start playing. No account or installation needed.
         </p>
         <p className={styles.demoShareText}>
           Open a lesson and choose <strong>Learning Puzzle</strong> to answer questions, then drag
@@ -188,9 +187,7 @@ export function HomePage() {
             <Card key={activity.id} title={activity.title}>
               {activity.description}
               <div className={styles.cardAction}>
-                <LinkButton to={buildPath.guestPlay(activity.id)}>
-                  Open {activity.title}
-                </LinkButton>
+                <LinkButton to={buildPath.guestPlay(activity.id)}>Open {activity.title}</LinkButton>
               </div>
             </Card>
           ))}
@@ -222,7 +219,6 @@ export function HomePage() {
           />
         </div>
       </section>
-
 
       {/*
         The page described the mechanic in words and showed none of it.
@@ -301,7 +297,6 @@ export function HomePage() {
           </Card>
         </div>
       </section>
-
     </AppShell>
   )
 }

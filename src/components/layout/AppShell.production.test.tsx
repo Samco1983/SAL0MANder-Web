@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
@@ -18,6 +19,43 @@ vi.mock('@config/env', () => ({
 import { AppShell, visibleNav } from './AppShell'
 
 describe('AppShell in production', () => {
+  it('opens the menu and returns keyboard focus to its button on Escape', async () => {
+    const user = userEvent.setup()
+    render(
+      <ThemeProvider>
+        <MemoryRouter>
+          <AppShell>Page</AppShell>
+        </MemoryRouter>
+      </ThemeProvider>,
+    )
+    const menu = screen.getByRole('button', { name: 'Menu' })
+    await user.click(menu)
+    expect(menu).toHaveAttribute('aria-expanded', 'true')
+    const nav = screen.getByRole('navigation', { name: 'Main' })
+    expect(nav.id).toBe(menu.getAttribute('aria-controls'))
+    within(nav).getByRole('link', { name: 'Play' }).focus()
+    await user.keyboard('{Escape}')
+    expect(menu).toHaveAttribute('aria-expanded', 'false')
+    expect(menu).toHaveFocus()
+  })
+
+  it('closes the menu after navigating so it cannot keep covering the game', async () => {
+    const user = userEvent.setup()
+    render(
+      <ThemeProvider>
+        <MemoryRouter>
+          <AppShell>Page</AppShell>
+        </MemoryRouter>
+      </ThemeProvider>,
+    )
+    const menu = screen.getByRole('button', { name: 'Menu' })
+    await user.click(menu)
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Main' })).getByRole('link', { name: 'Play' }),
+    )
+    expect(menu).toHaveAttribute('aria-expanded', 'false')
+  })
+
   it('does not expose deployment diagnostics to students or teachers', () => {
     render(
       <ThemeProvider>

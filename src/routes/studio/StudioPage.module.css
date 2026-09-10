@@ -186,8 +186,8 @@
 }
 
 .tab[aria-selected='true'] {
-  color: var(--color-accent);
-  border-bottom-color: var(--color-accent);
+  color: var(--color-brand-violet);
+  border-bottom-color: var(--color-brand-violet);
 }
 
 .panels {
@@ -276,7 +276,7 @@
 }
 
 .choice[data-selected='true'] {
-  border-color: var(--color-accent);
+  border-color: var(--color-brand-violet);
   background: var(--color-accent-soft);
 }
 

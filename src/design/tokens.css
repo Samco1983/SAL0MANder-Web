@@ -59,6 +59,11 @@
   --brand-green-deep: #3f6212; /* 7.08:1 — fills behind white text */
   --brand-violet-text: #6d28d9; /* 7.10:1 */
   --brand-ink: #14121c;
+  --brand-night: #100e19;
+  --brand-panel: #1b1726;
+  --brand-panel-raised: #272035;
+  --brand-border: #3c334c;
+  --brand-violet-action: #8b4bdd;
 
   /* Placeholder secondary, used for informational/teacher surfaces. */
   --support-100: #d9f2ee;
@@ -203,11 +208,11 @@
    * fail AA outright. The deep step clears 7.13:1 and still reads as the same
    * green beside the wordmark.
    */
-  --color-accent: var(--brand-green-deep);
+  --color-accent: var(--brand-violet-text);
   /* One step deeper, still green. Flipping to ink on hover read as a different
      button rather than the same one lit — the glow does the signalling. */
-  --color-accent-hover: #14532d;
-  --color-accent-soft: color-mix(in srgb, var(--brand-green) 14%, white);
+  --color-accent-hover: #5b21b6;
+  --color-accent-soft: color-mix(in srgb, var(--brand-violet) 12%, white);
   --color-on-accent: var(--neutral-0);
 
   --color-support: var(--support-700);
@@ -286,22 +291,24 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --color-canvas: var(--neutral-950);
-    --color-surface: var(--neutral-900);
-    --color-surface-raised: var(--neutral-800);
-    --color-surface-sunken: var(--neutral-950);
-    --color-border: var(--neutral-800);
-    --color-border-strong: var(--neutral-700);
+    --color-canvas: var(--brand-night);
+    --color-surface: var(--brand-panel);
+    --color-surface-raised: var(--brand-panel-raised);
+    --color-surface-sunken: var(--brand-ink);
+    --color-border: var(--brand-border);
+    --color-border-strong: #81728e;
 
     --color-text: var(--neutral-100);
     --color-text-muted: var(--neutral-300);
     --color-text-subtle: var(--neutral-400);
     --color-text-inverse: var(--neutral-950);
 
-    --color-accent: var(--accent-500);
-    --color-accent-hover: var(--accent-300);
-    --color-accent-soft: rgb(242 121 61 / 0.16);
-    --color-on-accent: var(--neutral-950);
+    --color-accent: var(--brand-violet-action);
+    --color-accent-hover: #7940c7;
+    --color-accent-soft: rgb(156 101 255 / 0.16);
+    --color-on-accent: var(--neutral-0);
+    --color-brand-violet: #bb97ff;
+    --color-brand-green-text: #b4ed60;
 
     --color-support: var(--support-500);
     --color-support-soft: rgb(42 168 153 / 0.16);
@@ -322,7 +329,7 @@
        reads as a groove against the surface it sits on. */
     --color-scrollbar-track: var(--neutral-800);
 
-    --color-focus-ring: var(--accent-300);
+    --color-focus-ring: #c3a2ff;
     --color-overlay: rgb(0 0 0 / 0.6);
 
     --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
@@ -335,22 +342,24 @@
 
 /* Explicit dark choice must win over a light system preference. */
 :root[data-theme='dark'] {
-  --color-canvas: var(--neutral-950);
-  --color-surface: var(--neutral-900);
-  --color-surface-raised: var(--neutral-800);
-  --color-surface-sunken: var(--neutral-950);
-  --color-border: var(--neutral-800);
-  --color-border-strong: var(--neutral-700);
+  --color-canvas: var(--brand-night);
+  --color-surface: var(--brand-panel);
+  --color-surface-raised: var(--brand-panel-raised);
+  --color-surface-sunken: var(--brand-ink);
+  --color-border: var(--brand-border);
+  --color-border-strong: #81728e;
 
   --color-text: var(--neutral-100);
   --color-text-muted: var(--neutral-300);
   --color-text-subtle: var(--neutral-400);
   --color-text-inverse: var(--neutral-950);
 
-  --color-accent: var(--accent-500);
-  --color-accent-hover: var(--accent-300);
-  --color-accent-soft: rgb(242 121 61 / 0.16);
-  --color-on-accent: var(--neutral-950);
+  --color-accent: var(--brand-violet-action);
+  --color-accent-hover: #7940c7;
+  --color-accent-soft: rgb(156 101 255 / 0.16);
+  --color-on-accent: var(--neutral-0);
+  --color-brand-violet: #bb97ff;
+  --color-brand-green-text: #b4ed60;
 
   --color-support: var(--support-500);
   --color-support-soft: rgb(42 168 153 / 0.16);
@@ -368,7 +377,7 @@
      here, which made the track invisible. */
   --color-scrollbar-track: var(--neutral-800);
 
-  --color-focus-ring: var(--accent-300);
+  --color-focus-ring: #c3a2ff;
   --color-overlay: rgb(0 0 0 / 0.6);
 
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);

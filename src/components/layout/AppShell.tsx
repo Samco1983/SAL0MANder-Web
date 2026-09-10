@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { env } from '@config/env'
 import { paths } from '@config/routes'
@@ -48,6 +48,19 @@ export function AppShell({
   fill?: boolean
   contained?: boolean
 }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuId = useId()
+  const menuButton = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!menuOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setMenuOpen(false)
+      menuButton.current?.focus()
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [menuOpen])
   return (
     <div className={styles.shell} data-fill={fill}>
       <a className={`${styles.skipLink} sr-only`} href="#main">
@@ -72,12 +85,23 @@ export function AppShell({
           <Wordmark />
         </Link>
 
-        <nav className={styles.nav} aria-label="Main">
+        <button
+          type="button"
+          className={styles.menuButton}
+          ref={menuButton}
+          aria-expanded={menuOpen}
+          aria-controls={menuId}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? 'Close menu' : 'Menu'}
+        </button>
+        <nav id={menuId} className={styles.nav} data-open={menuOpen} aria-label="Main">
           {visibleNav(env.isProd).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === paths.home}
+              onClick={() => setMenuOpen(false)}
               className={({ isActive }) =>
                 isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
               }

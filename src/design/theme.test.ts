@@ -75,8 +75,14 @@ describe('reading the stored preference', () => {
     expect(readStoredTheme()).toBe(DEFAULT_THEME)
   })
 
-  it('defaults to system when nothing is stored', () => {
-    expect(readStoredTheme()).toBe('system')
+  it('defaults to dark when nothing is stored without overwriting preferences', () => {
+    expect(readStoredTheme()).toBe('dark')
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
+  })
+
+  it.each(['light', 'system'])('preserves a saved %s choice', (mode) => {
+    localStorage.setItem(THEME_STORAGE_KEY, mode)
+    expect(readStoredTheme()).toBe(mode)
   })
 
   it('survives storage being blocked', () => {
