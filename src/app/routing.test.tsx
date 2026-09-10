@@ -94,6 +94,12 @@ describe('a link that arrived damaged', () => {
 })
 
 describe('the route table itself', () => {
+  it('routes gifts separately while preserving the classroom guest path', async () => {
+    expect(firstRouteMatch('/gifts').route.path).toBe(paths.gifts)
+    expect(firstRouteMatch('/gifts/play').route.path).toBe(paths.giftPlay)
+    renderAt('/gifts')
+    expect(await screen.findByRole('heading', { name: 'Puzzle Gifts' })).toBeVisible()
+  })
   it('gives every route an error boundary, so no path can render blank', () => {
     // React Router renders its own bare "Unexpected Application Error" screen
     // for a route with no `errorElement`. A student mid-activity must never
@@ -137,7 +143,7 @@ describe('routes that download before they render', () => {
     await user.click(screen.getByRole('button', { name: /show companion/i }))
     expect(screen.getByRole('link', { name: /open sample activity/i })).toHaveAttribute(
       'href',
-      `/play/${MOCK_DEMO_ACTIVITY_ID}`,
+      '/play/act_integer_operations',
     )
     expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', paths.home)
   })
@@ -174,6 +180,6 @@ describe('routes that download before they render', () => {
     // Home is the most common cold entry after a share link, so it is not split.
     renderAt(paths.home)
     expect(screen.queryByText(/loading/i)).toBeNull()
-    expect(screen.getByRole('link', { name: /try an activity/i })).toBeVisible()
+    expect(screen.getByRole('link', { name: /play a demo/i })).toBeVisible()
   })
 })

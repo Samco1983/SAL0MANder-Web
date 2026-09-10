@@ -5,7 +5,6 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { GuestPlayIndexPage } from './GuestPlayPage'
-import { MOCK_DEMO_ACTIVITY_ID } from '@api/mockTransport'
 
 /**
  * The student whose share link got cut off.
@@ -36,6 +35,10 @@ const renderIndex = () =>
 afterEach(() => vi.clearAllMocks())
 
 describe('what the student is told', () => {
+  it('offers the separate gift recovery entry', () => {
+    renderIndex()
+    expect(screen.getByRole('link', { name: 'Open a gift' })).toHaveAttribute('href', '/gifts/play')
+  })
   it('says the link arrived incomplete', () => {
     renderIndex()
     expect(screen.getByRole('heading', { name: /link looks incomplete/i })).toBeVisible()
@@ -92,7 +95,7 @@ describe('a way forward, not only a way back', () => {
   it('offers a playable sample while there is no backend', () => {
     renderIndex()
     const demo = screen.getByRole('link', { name: /sample activity/i })
-    expect(demo).toHaveAttribute('href', `/play/${MOCK_DEMO_ACTIVITY_ID}`)
+    expect(demo).toHaveAttribute('href', '/play/act_integer_operations')
   })
 
   it('still offers home, so the page is not a one-way door either', () => {

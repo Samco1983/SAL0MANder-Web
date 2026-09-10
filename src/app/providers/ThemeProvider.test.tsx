@@ -62,11 +62,11 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks())
 
 describe('initial state', () => {
-  it('starts on system and resolves it against the OS', () => {
-    stubMatchMedia(true)
+  it('starts dark for a new visitor even with a light OS preference', () => {
+    stubMatchMedia(false)
     renderProvider()
 
-    expect(screen.getByTestId('mode')).toHaveTextContent('system')
+    expect(screen.getByTestId('mode')).toHaveTextContent('dark')
     expect(screen.getByTestId('resolved')).toHaveTextContent('dark')
     expect(stamped()).toBe('dark')
   })
@@ -83,6 +83,7 @@ describe('initial state', () => {
 })
 
 describe('following the OS while on system', () => {
+  beforeEach(() => localStorage.setItem(THEME_STORAGE_KEY, 'system'))
   it('re-resolves when the OS flips', () => {
     // The case a static read misses entirely: the user changes their system
     // appearance with the page already open.

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SharePanel } from './SharePanel'
 
@@ -31,6 +31,7 @@ function setClipboard(impl?: () => Promise<void>) {
 afterEach(() => {
   setClipboard(undefined)
   vi.clearAllMocks()
+  vi.useRealTimers()
 })
 
 describe('the link itself', () => {
@@ -65,6 +66,71 @@ describe('the link itself', () => {
 })
 
 describe('copying', () => {
+  it('clears copied feedback when the displayed share link changes', async () => {
+    const user = userEvent.setup()
+    setClipboard(async () => {})
+    const view = render(<SharePanel url={URL_UNDER_TEST} />)
+    await user.click(screen.getByRole('button', { name: 'Copy link' }))
+    expect(await screen.findByRole('status')).toHaveTextContent(/copied to your clipboard/i)
+
+    view.rerender(<SharePanel url="https://sal0mander.example/gifts/play#gift=new" />)
+
+    expect(screen.getByRole('textbox', { name: 'Share link' })).toHaveValue(
+      'https://sal0mander.example/gifts/play#gift=new',
+    )
+    expect(screen.getByRole('button', { name: 'Copy link' })).toBeEnabled()
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
+  })
+
+  it('does not let a previous link’s delayed copy failure replace the new link’s result', async () => {
+    const user = userEvent.setup()
+    const oldCopy = deferred<void>()
+    const newCopy = deferred<void>()
+    const write = vi.fn().mockReturnValueOnce(oldCopy.promise).mockReturnValueOnce(newCopy.promise)
+    setClipboard(write)
+    const view = render(<SharePanel url={URL_UNDER_TEST} />)
+    await user.click(screen.getByRole('button', { name: 'Copy link' }))
+    view.rerender(<SharePanel url="https://sal0mander.example/gifts/play#gift=new" />)
+    await user.click(screen.getByRole('button', { name: 'Copy link' }))
+    await act(async () => newCopy.resolve())
+    expect(screen.getByRole('status')).toHaveTextContent(/copied to your clipboard/i)
+
+    await act(async () => oldCopy.reject(new Error('Old request denied')))
+
+    expect(screen.getByRole('status')).toHaveTextContent(/copied to your clipboard/i)
+    expect(write.mock.calls.map(([text]) => text)).toEqual([
+      URL_UNDER_TEST,
+      'https://sal0mander.example/gifts/play#gift=new',
+    ])
+  })
+
+  it('keeps the newest copy outcome when requests finish out of order', async () => {
+    const user = userEvent.setup()
+    const first = deferred<void>()
+    const second = deferred<void>()
+    setClipboard(vi.fn().mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise))
+    render(<SharePanel url={URL_UNDER_TEST} />)
+    await user.click(screen.getByRole('button', { name: 'Copy link' }))
+    await user.click(screen.getByRole('button', { name: 'Copy link' }))
+    await act(async () => second.resolve())
+    await act(async () => first.reject(new Error('Earlier copy denied')))
+    expect(screen.getByRole('status')).toHaveTextContent(/copied to your clipboard/i)
+  })
+
+  it('does not schedule a reset after a pending copy finishes on an unmounted panel', async () => {
+    vi.useFakeTimers()
+    const pending = deferred<void>()
+    setClipboard(() => pending.promise)
+    const view = render(<SharePanel url={URL_UNDER_TEST} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }))
+    view.unmount()
+    const timersAfterUnmount = vi.getTimerCount()
+
+    await act(async () => pending.resolve())
+
+    expect(vi.getTimerCount()).toBe(timersAfterUnmount)
+  })
+
   it('writes the link and confirms it', async () => {
     const user = userEvent.setup()
     // After setup: userEvent installs its own clipboard stub and would
@@ -109,7 +175,7 @@ describe('copying', () => {
     // believing the link is on their clipboard.
     const user = userEvent.setup()
     setClipboard(async () => {
-      throw new Error("denied by permissions policy")
+      throw new Error('denied by permissions policy')
     })
     render(<SharePanel url={URL_UNDER_TEST} />)
 
@@ -149,7 +215,10 @@ describe('QR code', () => {
     await user.click(screen.getByRole('button', { name: /show qr code/i }))
 
     await waitFor(() => expect(toDataURL).toHaveBeenCalled())
-    const [url, opts] = toDataURL.mock.calls[0] as unknown as [string, { errorCorrectionLevel: string }]
+    const [url, opts] = toDataURL.mock.calls[0] as unknown as [
+      string,
+      { errorCorrectionLevel: string },
+    ]
     expect(url).toBe(URL_UNDER_TEST)
     // Worksheets get photocopied and creased.
     expect(opts.errorCorrectionLevel).toBe('H')

@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { verifyArtifact, localAssetRefs } from './verify-deploy-artifact.mjs'
+import { verifyArtifact, localAssetRefs, PUBLIC_GIFT_PATHS } from './verify-deploy-artifact.mjs'
 
 /**
  * Guarantees about the built artifact, not the source.
@@ -28,6 +28,12 @@ const writeAssets = () => {
   write('assets/index-abc.js', 'console.log("fixture")')
   write('assets/index-abc.css', 'body {}')
 }
+const writeGiftEntries = (html = GOOD_HTML) => {
+  for (const route of PUBLIC_GIFT_PATHS) {
+    mkdirSync(join(dir, route), { recursive: true })
+    write(`${route}/index.html`, html)
+  }
+}
 
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'sal0-artifact-'))
@@ -39,6 +45,7 @@ const completeArtifact = () => {
   write('index.html', GOOD_HTML)
   write('404.html', GOOD_HTML)
   write('.nojekyll', '')
+  writeGiftEntries()
 }
 
 describe('a correct artifact', () => {
@@ -54,6 +61,26 @@ describe('a correct artifact', () => {
 })
 
 describe('the failures that ship silently', () => {
+  it.each(PUBLIC_GIFT_PATHS)('rejects a fallback-only gift entry at %s', (route) => {
+    completeArtifact()
+    rmSync(join(dir, route, 'index.html'))
+    expect(verifyArtifact(dir, BASE).join(' ')).toContain(`${route}/index.html is missing`)
+  })
+
+  it.each(PUBLIC_GIFT_PATHS)('rejects stale assets on the physical %s entry', (route) => {
+    completeArtifact()
+    write(`${route}/index.html`, GOOD_HTML.replace('index-abc.js', 'index-OLD.js'))
+    expect(verifyArtifact(dir, BASE).join(' ')).toContain(
+      `${route}/index.html does not boot the same app assets`,
+    )
+  })
+
+  it('accepts gift metadata changes without requiring byte-identical HTML', () => {
+    completeArtifact()
+    writeGiftEntries(GOOD_HTML.replace('</head>', '<title>Open a puzzle gift</title></head>'))
+    expect(verifyArtifact(dir, BASE)).toEqual([])
+  })
+
   it('catches assets that lost the deploy base', () => {
     // The whole site renders blank. Build exits 0, tests are green.
     write('index.html', GOOD_HTML.replaceAll('/SAL0MANder-Web/assets', '/assets'))
@@ -138,6 +165,7 @@ describe('the failures that ship silently', () => {
 
 describe('references it must not judge', () => {
   it('ignores absolute URLs, so a working CDN is never flagged', () => {
+    writeGiftEntries()
     writeAssets()
     write('index.html', GOOD_HTML.replace('</head>', '<script src="https://cdn.example.com/x.js"></script></head>'))
     write('404.html', GOOD_HTML.replace('</head>', '<script src="https://cdn.example.com/x.js"></script></head>'))
@@ -162,6 +190,7 @@ describe('at the root', () => {
   it('accepts a site served from a custom domain', () => {
     writeAssets()
     const rootHtml = GOOD_HTML.replaceAll('/SAL0MANder-Web/assets', '/assets')
+    writeGiftEntries(rootHtml)
     write('index.html', rootHtml)
     write('404.html', rootHtml)
     write('.nojekyll', '')

@@ -22,10 +22,18 @@
 import { createServer } from 'node:http'
 import { readFileSync, existsSync, statSync } from 'node:fs'
 import { join, extname } from 'node:path'
+import { PUBLIC_GIFT_PATHS, verifyArtifact } from './verify-deploy-artifact.mjs'
 
 const DIST = process.argv[2] ?? 'dist'
 const BASE = (process.env.VITE_BASE_PATH ?? '/SAL0MANder-Web/').replace(/\/$/, '')
 const PORT = 4322
+
+// A fallback can render correctly while a gift hard load still returns 404 on Pages.
+const artifactProblems = verifyArtifact(DIST, BASE || '/')
+if (artifactProblems.length) {
+  for (const problem of artifactProblems) console.error(problem)
+  process.exit(1)
+}
 
 const TYPES = {
   '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
@@ -61,6 +69,10 @@ const CHECKS = [
   { path: `${BASE}/play/demo-activity`, must: [new RegExp(`${BASE}/assets/`), ...MOBILE] },
   { path: `${BASE}/play/`, must: [new RegExp(`${BASE}/assets/`)] },
   { path: `${BASE}/teacher/dashboard`, must: [new RegExp(`${BASE}/assets/`)] },
+  ...PUBLIC_GIFT_PATHS.map((route) => ({
+    path: `${BASE}/${route}`,
+    must: [/<div id="root">/, new RegExp(`${BASE}/assets/`), /<title>[^<]*puzzle gift/i, ...MOBILE],
+  })),
 ]
 
 server.listen(PORT, async () => {

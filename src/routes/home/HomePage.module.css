@@ -18,14 +18,14 @@
  */
 .hero {
   display: grid;
-  gap: var(--space-6) var(--space-7);
+  gap: var(--space-5) var(--space-7);
   align-items: center;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   grid-template-areas:
     'copy art'
     'stats stats';
   padding: var(--space-6);
-  margin-top: var(--space-5);
+  margin-top: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -54,7 +54,7 @@
 }
 
 /* One column below the split, in the order the DOM already has. */
-@media (max-width: 60rem) {
+@media (max-width: 46rem) {
   .hero {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -62,7 +62,7 @@
       'art'
       'stats';
     align-items: start;
-    padding: var(--space-6) var(--space-5);
+    padding: var(--space-5);
   }
 
   .heroCopy {
@@ -86,13 +86,6 @@
   border-top: 1px solid var(--color-border);
 }
 
-@media (max-width: 34rem) {
-  .stats {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
-  }
-}
-
 /*
  * Value shown above its label, but written label-first in the DOM so it
  * announces as "Demo activity: 1". Visual order is presentation; reading order
@@ -105,20 +98,18 @@
 }
 
 .statValue {
-  order: -1;
   margin: 0;
   /* Big enough to be the thing you read first. Three zeros are the argument. */
-  font-size: var(--text-2xl);
-  font-weight: var(--weight-display);
-  letter-spacing: var(--tracking-display);
-  line-height: 1;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
   font-variant-numeric: tabular-nums;
   /* The one place accent earns its keep on this page. */
-  color: var(--color-accent);
+  color: var(--color-brand-violet);
 }
 
 .statLabel {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   /* Muted rather than subtle: subtle sits near the 4.5:1 floor at this size. */
   color: var(--color-text);
   font-weight: var(--weight-medium);
@@ -144,8 +135,13 @@
   margin: var(--space-3) 0;
 }
 
+.title span {
+  display: block;
+  color: var(--color-brand-violet);
+}
+
 .lede {
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   color: var(--color-text-muted);
 }
 
@@ -225,7 +221,7 @@
   background:
     radial-gradient(
       120% 140% at 88% 0%,
-      color-mix(in srgb, var(--brand-lime) 16%, transparent),
+      color-mix(in srgb, var(--color-brand-violet) 10%, transparent),
       transparent 62%
     ),
     radial-gradient(
@@ -256,7 +252,7 @@
 }
 
 .title::after {
-  content: '';
+  content: none;
   position: absolute;
   left: 0;
   bottom: 0;
@@ -319,6 +315,41 @@
 .heroArtCell[data-covered='true'] {
   background: var(--color-stage);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
+}
+
+@media (max-width: 40rem) {
+  .hero {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+
+  .title {
+    font-size: clamp(1.875rem, 7.6vw, 2.5rem);
+    padding-bottom: 0;
+  }
+
+  .eyebrow {
+    letter-spacing: 0.04em;
+  }
+
+  .actions {
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .actions > * {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .heroArt {
+    max-width: 16rem;
+  }
+
+  .stats {
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+  }
 }
 
 .heroArtCaption {

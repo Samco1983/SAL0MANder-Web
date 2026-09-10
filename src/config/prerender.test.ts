@@ -53,9 +53,9 @@ const run = (dir: string) =>
 
 describe('prerendering the public pages', () => {
   it.each(['/', '/SAL0MANder-Web/'])(
-    'serves fresh Unity hard loads through the app shell under %s',
+    'serves fresh Unity and Gift hard loads through physical app entries under %s',
     async (base) => {
-      const dir = fixture(['/', '/about'])
+      const dir = fixture(['/', '/about', '/gifts', '/gifts/play'])
       const entry = `${base}assets/app-fixture.js`
       writeFileSync(
         join(dir, 'index.html'),
@@ -131,6 +131,19 @@ describe('prerendering the public pages', () => {
           expect(page).toContain(`src="${entry}"`)
           expect(page).not.toContain('legacy host')
           expect(page).not.toContain('createUnityInstance')
+        }
+        for (const path of ['gifts', 'gifts/', 'gifts/play', 'gifts/play/']) {
+          const response = await fetch(`${origin}${base}${path}?probe=gift`)
+          expect(response.status).toBe(200)
+          expect(new URL(response.url).search).toBe('?probe=gift')
+          const page = await response.text()
+          expect(page).toContain('<div id="root"></div>')
+          expect(page).toContain(`src="${entry}"`)
+          expect(page).toMatch(/<title>(Make|Open) a puzzle gift/)
+          expect(page).toMatch(/property="og:title" content="(Make|Open) a puzzle gift/)
+          expect(page).not.toContain('HOMEPAGE COPY')
+          const canonicalPath = path.replace(/\/$/, '')
+          expect(page).toContain(`href="https://sal0mander.com/${canonicalPath}/"`)
         }
         for (const url of artifactUrls) {
           expect(new URL(url, origin).searchParams.get('v')).toBe(UNITY_RELEASE_REVISION)

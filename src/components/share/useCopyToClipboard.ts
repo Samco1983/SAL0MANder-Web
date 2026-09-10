@@ -17,13 +17,25 @@ export type CopyState = 'idle' | 'copied' | 'failed'
 export function useCopyToClipboard(resetAfterMs = 2000) {
   const [state, setState] = useState<CopyState>('idle')
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const active = useRef(false)
+  const operation = useRef(0)
 
   // A copy landing just before unmount must not set state afterwards.
-  useEffect(() => () => clearTimeout(timer.current), [])
+  useEffect(() => {
+    operation.current++
+    active.current = true
+    return () => {
+      active.current = false
+      clearTimeout(timer.current)
+    }
+  }, [])
 
   const copy = useCallback(
     async (text: string) => {
+      if (!active.current) return false
+      const current = ++operation.current
       clearTimeout(timer.current)
+      setState('idle')
       let ok = false
       try {
         if (navigator.clipboard?.writeText) {
@@ -33,6 +45,7 @@ export function useCopyToClipboard(resetAfterMs = 2000) {
       } catch {
         ok = false
       }
+      if (!active.current || operation.current !== current) return ok
       setState(ok ? 'copied' : 'failed')
       timer.current = setTimeout(() => setState('idle'), resetAfterMs)
       return ok

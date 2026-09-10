@@ -9,7 +9,8 @@ export const THEME_MODES = ['light', 'dark', 'system'] as const
 export type ThemeMode = (typeof THEME_MODES)[number]
 
 export const THEME_STORAGE_KEY = 'sal0mander.theme'
-export const DEFAULT_THEME: ThemeMode = 'system'
+// New visitors get the owner-approved dark brand; existing choices still win.
+export const DEFAULT_THEME: ThemeMode = 'dark'
 
 export function isThemeMode(value: unknown): value is ThemeMode {
   return typeof value === 'string' && (THEME_MODES as readonly string[]).includes(value)

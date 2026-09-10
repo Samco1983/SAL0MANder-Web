@@ -1,5 +1,6 @@
 import { env } from '@config/env'
-import { paths } from '@config/routes'
+import { buildPath, paths } from '@config/routes'
+import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 import { AppShell } from '@components/layout/AppShell'
 import { LinkButton } from '@components/ui/Button'
 import styles from './AboutPage.module.css'
@@ -154,7 +155,7 @@ export function AboutPage() {
         </section>
 
         <footer className={styles.footer}>
-          <LinkButton to={paths.home}>Try an activity</LinkButton>
+          <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Try an activity</LinkButton>
           <LinkButton to={paths.privacy} variant="secondary">
             Privacy &amp; student data
           </LinkButton>

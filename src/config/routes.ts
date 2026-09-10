@@ -23,6 +23,9 @@ export const paths = {
   about: '/about/',
   /** Teacher Studio — where a teacher builds an activity. Laptop-first. */
   studio: '/studio',
+  /** A separate, account-free gift composer and transient Unity recipient. */
+  gifts: '/gifts',
+  giftPlay: '/gifts/play',
   /** Honest accessibility support and known limitations. */
   accessibility: '/accessibility/',
   profile: '/profile',

@@ -2,10 +2,11 @@ import { z } from 'zod'
 import { ActivityConfigSchema, type ActivityDraft } from '@studio/activityDraft'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import type { UnityMessageTarget } from './bridge'
+import { MAX_LIBRARY_IMAGE_BYTES, prepareLibraryPicture } from './libraryPicture'
 
 /** A local preview extension. The shipped guest v1 contract is unchanged. */
 export const PREVIEW_EVENT = 'sal0mander:preview-message'
-export const MAX_PREVIEW_IMAGE_BYTES = 2 * 1024 * 1024
+export const MAX_PREVIEW_IMAGE_BYTES = MAX_LIBRARY_IMAGE_BYTES
 const id = z.string().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/)
 const requiredText = (max: number) => z.string().max(max).refine((s) => s.trim().length > 0)
 const choice = z.object({ id, text: requiredText(500), isCorrect: z.boolean() })
@@ -77,32 +78,6 @@ export function previewProblems(draft: ActivityDraft): string[] {
 /** Decode the selected same-origin library WebP in the browser, then send PNG Unity can read. */
 export async function preparePreview(draft: ActivityDraft, requestId: string, signal: AbortSignal): Promise<PreviewBoot> {
   const activity = PreviewActivitySchema.parse(draft)
-  const picture = PUZZLE_LIBRARY.find((p) => p.key === draft.meta.imageKey)
-  if (!picture) throw new Error('Choose a puzzle picture from the library.')
-  const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
-  const response = await fetch(`${base}${picture.src}`, { signal })
-  if (!response.ok) throw new Error('The selected picture could not be loaded. Try again.')
-  const blob = await response.blob()
-  if (blob.size > MAX_PREVIEW_IMAGE_BYTES) throw new Error('This picture is too large for a preview.')
-  const image = new Image()
-  const imageUrl = URL.createObjectURL(blob)
-  try {
-    image.src = imageUrl
-    await image.decode()
-    signal.throwIfAborted()
-    if (!image.naturalWidth || !image.naturalHeight || image.naturalWidth > 1024 || image.naturalHeight > 1024) {
-      throw new Error('This picture has unsupported dimensions.')
-    }
-    const canvas = document.createElement('canvas')
-    canvas.width = image.naturalWidth
-    canvas.height = image.naturalHeight
-    const context = canvas.getContext('2d')
-    if (!context) throw new Error('This browser could not prepare the puzzle picture.')
-    context.drawImage(image, 0, 0)
-    const png = canvas.toDataURL('image/png')
-    if (!png.startsWith('data:image/png;base64,')) throw new Error('The puzzle picture could not be prepared.')
-    const pngBase64 = png.slice('data:image/png;base64,'.length)
-    if (pngBase64.length > Math.ceil(MAX_PREVIEW_IMAGE_BYTES / 3) * 4) throw new Error('This picture is too large for a preview.')
-    return PreviewBootSchema.parse({ type: 'preview-boot', previewVersion: 1, requestId, ...activity, picture: { key: picture.key, pngBase64 } })
-  } finally { URL.revokeObjectURL(imageUrl) }
+  const picture = await prepareLibraryPicture(draft.meta.imageKey, signal)
+  return PreviewBootSchema.parse({ type: 'preview-boot', previewVersion: 1, requestId, ...activity, picture })
 }

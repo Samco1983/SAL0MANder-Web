@@ -19,7 +19,7 @@
  *
  * Usage: node scripts/verify-live-site.mjs https://samco1983.github.io/SAL0MANder-Web/
  */
-import { localAssetRefs } from './verify-deploy-artifact.mjs'
+import { localAssetRefs, PUBLIC_GIFT_PATHS } from './verify-deploy-artifact.mjs'
 
 const base = (process.argv[2] ?? '').replace(/\/?$/, '/')
 if (!base.startsWith('http')) {
@@ -91,6 +91,21 @@ const servesOurApp = scripts.length > 0 && scripts.some((s) => deepRefs.includes
 if (!servesOurApp) {
   const whose = /GitHub Pages/i.test(deep.body) ? "GitHub's 404 page, not ours" : 'not the app'
   failures.push(`a share link (/play/demo-activity) served ${whose} (${deep.body.length} bytes) — every link a teacher pastes is dead on a hard load`)
+}
+
+// Unlike legacy fallback routes, gift entry points are prerendered and must
+// return 200 on a fresh public request as well as reference this release's app.
+for (const path of PUBLIC_GIFT_PATHS) {
+  const gift = await get(path)
+  const refs = localAssetRefs(gift.body)
+  if (
+    gift.status !== 200 ||
+    scripts.length === 0 ||
+    !scripts.every((script) => refs.includes(script)) ||
+    !/<title>[^<]*puzzle gift/i.test(gift.body)
+  ) {
+    failures.push(`${path} did not serve the current gift entry page (HTTP ${gift.status})`)
+  }
 }
 
 console.log(`live: ${base}`)

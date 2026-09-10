@@ -12,8 +12,8 @@ describe('App composition root', () => {
   it('mounts the real router inside the theme provider', async () => {
     render(<App />)
 
-    expect(await screen.findByRole('link', { name: /try an activity/i })).toBeVisible()
-    expect(screen.getByRole('button', { name: /theme: system/i })).toBeVisible()
-    expect(document.documentElement.dataset.theme).toMatch(/light|dark/)
+    expect(await screen.findByRole('link', { name: /play a demo/i })).toBeVisible()
+    expect(screen.getByRole('button', { name: /theme: dark/i })).toBeVisible()
+    expect(document.documentElement.dataset.theme).toBe('dark')
   })
 })

@@ -42,6 +42,12 @@ const GuestPlayIndexPage = lazy(() =>
 const StudioPage = lazy(() =>
   import('@routes/studio/StudioPage').then((m) => ({ default: m.StudioPage })),
 )
+const PuzzleGiftsPage = lazy(() =>
+  import('@routes/gifts/PuzzleGiftsPage').then((m) => ({ default: m.PuzzleGiftsPage })),
+)
+const GiftPlayPage = lazy(() =>
+  import('@routes/gifts/GiftPlayPage').then((m) => ({ default: m.GiftPlayPage })),
+)
 const ProfilePage = lazy(() =>
   import('@routes/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })),
 )
@@ -84,6 +90,8 @@ export const routes: RouteObject[] = [
     errorElement: <RouteError />,
   },
   { path: paths.guestPlay, element: split(<GuestPlayPage />), errorElement: <RouteError /> },
+  { path: paths.gifts, element: split(<PuzzleGiftsPage />), errorElement: <RouteError /> },
+  { path: paths.giftPlay, element: split(<GiftPlayPage />), errorElement: <RouteError /> },
   { path: paths.about, element: split(<AboutPage />), errorElement: <RouteError /> },
   { path: paths.terms, element: split(<TermsPage />), errorElement: <RouteError /> },
   { path: paths.privacy, element: split(<PrivacyPage />), errorElement: <RouteError /> },

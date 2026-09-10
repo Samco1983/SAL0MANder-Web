@@ -19,6 +19,9 @@
 import { readFileSync, existsSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 
+/** These shared entry points must be physical pages, not fallback-only routes. */
+export const PUBLIC_GIFT_PATHS = ['gifts', 'gifts/play']
+
 /** Local references the browser must be able to fetch. Ignores external URLs. */
 export function localAssetRefs(html) {
   const refs = []
@@ -108,6 +111,23 @@ export function verifyArtifact(dir, basePath) {
       '.nojekyll is missing — Pages runs Jekyll and hides any path beginning ' +
         'with an underscore, which is where Unity WebGL output can land',
     )
+  }
+
+  const entryRefs = localAssetRefs(index).sort()
+  for (const route of PUBLIC_GIFT_PATHS) {
+    const path = join(dir, route, 'index.html')
+    if (!existsSync(path) || !statSync(path).isFile()) {
+      problems.push(`${route}/index.html is missing — direct gift links would depend on the 404 fallback`)
+      continue
+    }
+    const page = readFileSync(path, 'utf8')
+    if (
+      !/<div\b[^>]*\bid=["']root["']/.test(page) ||
+      entryRefs.length === 0 ||
+      JSON.stringify(localAssetRefs(page).sort()) !== JSON.stringify(entryRefs)
+    ) {
+      problems.push(`${route}/index.html does not boot the same app assets as index.html`)
+    }
   }
 
   return problems

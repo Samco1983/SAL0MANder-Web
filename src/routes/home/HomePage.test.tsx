@@ -37,6 +37,10 @@ const renderHome = () =>
   )
 
 describe('the primary action', () => {
+  it('offers the existing gift recovery entry without a login', () => {
+    renderHome()
+    expect(screen.getByRole('link', { name: 'Open a gift' })).toHaveAttribute('href', paths.giftPlay)
+  })
   it('names both lesson styles and explains who places the earned pieces', () => {
     renderHome()
     const activities = screen.getByRole('region', { name: 'Activities you can try right now' })
@@ -47,14 +51,15 @@ describe('the primary action', () => {
     expect(activities).toHaveTextContent('Both uncover the picture one piece at a time')
     expect(activities).not.toHaveTextContent('Classic Puzzle')
     for (const activity of MOCK_DEMO_ACTIVITIES) {
-      expect(within(activities).getByRole('link', { name: `Open ${activity.title}` }))
-        .toHaveAttribute('href', `/play/${activity.id}`)
+      expect(
+        within(activities).getByRole('link', { name: `Open ${activity.title}` }),
+      ).toHaveAttribute('href', `/play/${activity.id}`)
     }
   })
 
   it('offers Guest Play as the first thing a visitor can act on', async () => {
     renderHome()
-    const guestPlay = screen.getByRole('link', { name: /try an activity/i })
+    const guestPlay = screen.getByRole('link', { name: /play a demo/i })
     expect(guestPlay).toBeVisible()
 
     /*
@@ -73,8 +78,8 @@ describe('the primary action', () => {
 
   it('sends Guest Play to a real activity path, not a placeholder', () => {
     renderHome()
-    const href = screen.getByRole('link', { name: /try an activity/i }).getAttribute('href')
-    expect(href).toMatch(/^\/play\/.+/)
+    const href = screen.getByRole('link', { name: /play a demo/i }).getAttribute('href')
+    expect(href).toBe('/play/act_integer_operations')
     expect(href).not.toMatch(/undefined|null|:activityId/)
   })
 
@@ -83,7 +88,9 @@ describe('the primary action', () => {
     // share link and playable content. Home is on that path.
     renderHome()
     expect(screen.queryByLabelText(/name|email|password/i)).toBeNull()
-    expect(screen.queryByText(/sign in|log in|create an account|enter your (name|email)/i)).toBeNull()
+    expect(
+      screen.queryByText(/sign in|log in|create an account|enter your (name|email)/i),
+    ).toBeNull()
   })
 })
 
@@ -119,7 +126,9 @@ describe('no dead links', () => {
       'href',
       paths.privacy,
     )
-    expect(document.body.textContent ?? '').not.toMatch(/\b(sign (in|up)|log in|create an account) to\b/i)
+    expect(document.body.textContent ?? '').not.toMatch(
+      /\b(sign (in|up)|log in|create an account) to\b/i,
+    )
   })
 
   /**
@@ -267,7 +276,9 @@ describe('the pictures', () => {
   it('loads no image from another company', () => {
     renderHome()
     for (const img of document.querySelectorAll('img')) {
-      expect(img.getAttribute('src') ?? '', 'images must be same-origin').not.toMatch(/^https?:\/\//)
+      expect(img.getAttribute('src') ?? '', 'images must be same-origin').not.toMatch(
+        /^https?:\/\//,
+      )
     }
   })
 
@@ -289,7 +300,7 @@ describe('the pictures', () => {
 describe('the demo share panel', () => {
   it('lets a teacher copy the same demo activity that the primary action opens', () => {
     renderHome()
-    const playHref = screen.getByRole('link', { name: /try an activity/i }).getAttribute('href')
+    const playHref = screen.getByRole('link', { name: /play a demo/i }).getAttribute('href')
     const shareInput = screen.getByLabelText(/share link/i) as HTMLInputElement
 
     expect(playHref).toBe(`/play/${MOCK_DEMO_ACTIVITIES[0].id}`)
@@ -362,7 +373,7 @@ describe('keyboard', () => {
   it('reaches the primary action without a mouse', async () => {
     const user = userEvent.setup()
     renderHome()
-    const guestPlay = screen.getByRole('link', { name: /try an activity/i })
+    const guestPlay = screen.getByRole('link', { name: /play a demo/i })
 
     // Bounded: if the primary action is more than a dozen stops in, it is
     // buried, whatever it looks like on screen.

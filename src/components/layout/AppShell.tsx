@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { env } from '@config/env'
 import { paths } from '@config/routes'
@@ -21,6 +21,7 @@ type NavItem = { to: string; label: string; internal?: boolean }
 const NAV: NavItem[] = [
   { to: paths.home, label: 'Home' },
   { to: paths.guestPlayIndex, label: 'Play' },
+  { to: paths.gifts, label: 'Puzzle Gifts' },
   { to: paths.studio, label: 'Teacher Studio' },
   { to: paths.profile, label: 'Profile' },
   { to: paths.unity, label: 'WebGL Host', internal: true },
@@ -48,9 +49,33 @@ export function AppShell({
   fill?: boolean
   contained?: boolean
 }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuId = useId()
+  const menuButton = useRef<HTMLButtonElement>(null)
+  const main = useRef<HTMLElement>(null)
+  useEffect(() => {
+    if (!menuOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setMenuOpen(false)
+      menuButton.current?.focus()
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [menuOpen])
   return (
     <div className={styles.shell} data-fill={fill}>
-      <a className={`${styles.skipLink} sr-only`} href="#main">
+      <a
+        className={`${styles.skipLink} sr-only`}
+        href="#main"
+        onClick={(event) => {
+          // A gift's fragment is its content. Skip navigation must not replace it
+          // or remount a playing Unity instance; focus the landmark directly.
+          event.preventDefault()
+          main.current?.focus({ preventScroll: true })
+          main.current?.scrollIntoView?.({ block: 'start' })
+        }}
+      >
         Skip to main content
       </a>
 
@@ -72,12 +97,23 @@ export function AppShell({
           <Wordmark />
         </Link>
 
-        <nav className={styles.nav} aria-label="Main">
+        <button
+          type="button"
+          className={styles.menuButton}
+          ref={menuButton}
+          aria-expanded={menuOpen}
+          aria-controls={menuId}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? 'Close menu' : 'Menu'}
+        </button>
+        <nav id={menuId} className={styles.nav} data-open={menuOpen} aria-label="Main">
           {visibleNav(env.isProd).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === paths.home}
+              onClick={() => setMenuOpen(false)}
               className={({ isActive }) =>
                 isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
               }
@@ -89,7 +125,13 @@ export function AppShell({
         </nav>
       </header>
 
-      <main id="main" className={styles.main} data-contained={contained && !fill}>
+      <main
+        id="main"
+        ref={main}
+        tabIndex={-1}
+        className={styles.main}
+        data-contained={contained && !fill}
+      >
         {children}
       </main>
 

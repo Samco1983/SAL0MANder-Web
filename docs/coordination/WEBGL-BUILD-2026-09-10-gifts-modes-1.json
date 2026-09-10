@@ -1,0 +1,630 @@
+{
+  "release": "2026-09-10-gifts-modes-1",
+  "packagedAtUtc": "2026-09-10T16:56:04.159043+00:00",
+  "status": "Local package only; full combined gate and final browser acceptance pending; not published",
+  "unitySourceCommit": "ebab2bd76ec30d1543e3018d5a063a8bc2b9de95",
+  "unitySourceSnapshot": [
+    {
+      "path": "Assets/Editor/MatchingCompletionStateTestRunner.cs",
+      "before": "74E3624B513013D510C59F0FEF2737AF32705B85F78069666EB1FCFFA8C8EAB4",
+      "after": "74E3624B513013D510C59F0FEF2737AF32705B85F78069666EB1FCFFA8C8EAB4",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Editor/SlidingPuzzlePanelTestRunner.cs",
+      "before": "ACC86F30D09F470AD16023DD1601AD49A912E913B8066DC9D5DA7FA48358BDC1",
+      "after": "ACC86F30D09F470AD16023DD1601AD49A912E913B8066DC9D5DA7FA48358BDC1",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Editor/SlidingPuzzleStateTestRunner.cs",
+      "before": "4D3E00C27B084972B6E057EA2EBB67D49350C66FEF4BAC51B359DED2AEF32D06",
+      "after": "4D3E00C27B084972B6E057EA2EBB67D49350C66FEF4BAC51B359DED2AEF32D06",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Plugins/WebGL/Sal0manderPreview.jslib",
+      "before": "C7444A0A8FED5F19685137DA562CB5285A49E9CDC1FDC54BF02F867C0B72B2A0",
+      "after": "C7444A0A8FED5F19685137DA562CB5285A49E9CDC1FDC54BF02F867C0B72B2A0",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/AppNavigationController.cs",
+      "before": "E0AB2FD2336F35F79703BCEFF8F3424F0255C919CCE76D84FB801CFE57510BAC",
+      "after": "E0AB2FD2336F35F79703BCEFF8F3424F0255C919CCE76D84FB801CFE57510BAC",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/CompanionPanel.cs",
+      "before": "1FAEE3967E3AF2C8ADE07136255ED7FD9E74C3CE4130EE242E1ADC4749444FDE",
+      "after": "1FAEE3967E3AF2C8ADE07136255ED7FD9E74C3CE4130EE242E1ADC4749444FDE",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/PuzzleManager.cs",
+      "before": "835F5AA540802B69C670959AD533BB8DC4CCDC4C5818515D92CB07A00A9CBC68",
+      "after": "835F5AA540802B69C670959AD533BB8DC4CCDC4C5818515D92CB07A00A9CBC68",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/PuzzleOptionsUI.cs",
+      "before": "AA11D8665BC246B126DAFAE67234E2B5A8F5E5E17FAF10E27F8E82D299A9355E",
+      "after": "AA11D8665BC246B126DAFAE67234E2B5A8F5E5E17FAF10E27F8E82D299A9355E",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/SAL0MANderPreview.cs",
+      "before": "8FFA7EC8575D3B060B4E0CF614888EFF6AED4C6916E80F4BEA020D013275090C",
+      "after": "8FFA7EC8575D3B060B4E0CF614888EFF6AED4C6916E80F4BEA020D013275090C",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/SlidingPuzzlePanel.cs",
+      "before": "C1977FCC50DDE97C599579474982E4A6431E4B965D192DAE1EF0215F501529AF",
+      "after": "C1977FCC50DDE97C599579474982E4A6431E4B965D192DAE1EF0215F501529AF",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/SlidingPuzzleState.cs",
+      "before": "B0AE5D41EE92678EB53DEA92A44626ADD4C6CD34463FBF81C707E3999B328E1E",
+      "after": "B0AE5D41EE92678EB53DEA92A44626ADD4C6CD34463FBF81C707E3999B328E1E",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset",
+      "before": "4E51A01F34B2A9DCACAED79E060313C95D1239FF8C803C986830D19D68B546B6",
+      "after": "4E51A01F34B2A9DCACAED79E060313C95D1239FF8C803C986830D19D68B546B6",
+      "unchanged": true
+    },
+    {
+      "path": "docs/coordination/ARTWORK-DOCK-SLIDING-2026-09-09.md",
+      "before": "6979E11E6B87C9CB75355B52A7C28A509ECC96D3D0FBEED7C710B2CF63D0559D",
+      "after": "6979E11E6B87C9CB75355B52A7C28A509ECC96D3D0FBEED7C710B2CF63D0559D",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Editor/GameFeedbackTestRunner.cs",
+      "before": "04755A319C88C5B6FD459FCB55EFEBCAD2B7FA793436AF81CB3F78FDC6D0933D",
+      "after": "04755A319C88C5B6FD459FCB55EFEBCAD2B7FA793436AF81CB3F78FDC6D0933D",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Editor/GameFeedbackTestRunner.cs.meta",
+      "before": "E0E91A357F95732BBCD734215E4F8DF3BA13D3290F6C80CF3AC30CC13E093D5B",
+      "after": "E0E91A357F95732BBCD734215E4F8DF3BA13D3290F6C80CF3AC30CC13E093D5B",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Editor/SAL0MANderSlideTestRunner.cs",
+      "before": "56C8B61E50F1F28CABB753E02AB1F8F51A5293760EF2C30DAFECA789421BFE6B",
+      "after": "56C8B61E50F1F28CABB753E02AB1F8F51A5293760EF2C30DAFECA789421BFE6B",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Editor/SAL0MANderSlideTestRunner.cs.meta",
+      "before": "58566ABC11680B6419E40EF920E197E5B119BC93BE2AC61DFAD3F478D2FE5B2D",
+      "after": "58566ABC11680B6419E40EF920E197E5B119BC93BE2AC61DFAD3F478D2FE5B2D",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Plugins/WebGL/LocalSlidingPuzzle.jslib",
+      "before": "61CD835873DF4DA68A8D4A9DE4554B67E894A0AB9A47C7C7A7FB42F523F57F3A",
+      "after": "61CD835873DF4DA68A8D4A9DE4554B67E894A0AB9A47C7C7A7FB42F523F57F3A",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Plugins/WebGL/LocalSlidingPuzzle.jslib.meta",
+      "before": "2E8497BC127A5E148C8853DD55D5C9F97867AE0B8903B33FA511BABDB16793AE",
+      "after": "2E8497BC127A5E148C8853DD55D5C9F97867AE0B8903B33FA511BABDB16793AE",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Plugins/WebGL/Sal0manderSlide.jslib",
+      "before": "4B6E0ECF8B2410DF60571EE151A1BCA68603874ED15FE1968BF3DFBF4F92EC4D",
+      "after": "4B6E0ECF8B2410DF60571EE151A1BCA68603874ED15FE1968BF3DFBF4F92EC4D",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Plugins/WebGL/Sal0manderSlide.jslib.meta",
+      "before": "220015514884969015A96821EEAEF1A4E27F3C80C280F26F4FB238417D239CE6",
+      "after": "220015514884969015A96821EEAEF1A4E27F3C80C280F26F4FB238417D239CE6",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio.meta",
+      "before": "6295C3B3451F2623241D04EBD7C772471462117BF7B704980C275092119CF447",
+      "after": "6295C3B3451F2623241D04EBD7C772471462117BF7B704980C275092119CF447",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/forest-focus-loop-v1.wav",
+      "before": "48FF0EE40EEDB0A9FAA169586E80CD5EBD797630FC9F9435EF724E15635E3DCF",
+      "after": "48FF0EE40EEDB0A9FAA169586E80CD5EBD797630FC9F9435EF724E15635E3DCF",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/forest-focus-loop-v1.wav.meta",
+      "before": "BA47E1D82F4381BCE5544853F16313F08395B49138DA94A4658E87947EB6C1A2",
+      "after": "BA47E1D82F4381BCE5544853F16313F08395B49138DA94A4658E87947EB6C1A2",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/manifest.json",
+      "before": "99919111A5C7D068E09EA799A8F9ADCA7730E7556CE7AB180F106A19927F19BF",
+      "after": "99919111A5C7D068E09EA799A8F9ADCA7730E7556CE7AB180F106A19927F19BF",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/manifest.json.meta",
+      "before": "C13FD2044EBF1E7710B1B9977E6B20EDB86A901073A62E1DD94F59FA6DF9DABC",
+      "after": "C13FD2044EBF1E7710B1B9977E6B20EDB86A901073A62E1DD94F59FA6DF9DABC",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/win-playful-v1.wav",
+      "before": "BE62F7A9C9B20924721F852C0BCD4B68C72FD19AC0242DFF1F474024744A8489",
+      "after": "BE62F7A9C9B20924721F852C0BCD4B68C72FD19AC0242DFF1F474024744A8489",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/win-playful-v1.wav.meta",
+      "before": "F586891FC2EF0F302300CD6BD6A3CE5DC6A50F4DF958196CD8DAA214F0E94F48",
+      "after": "F586891FC2EF0F302300CD6BD6A3CE5DC6A50F4DF958196CD8DAA214F0E94F48",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/win-sparkle-v1.wav",
+      "before": "100C3006D44449E184141174683DB7B3AC2A2F938CC07DCC299EDB372A56A31B",
+      "after": "100C3006D44449E184141174683DB7B3AC2A2F938CC07DCC299EDB372A56A31B",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/win-sparkle-v1.wav.meta",
+      "before": "17178AEF1F38A07B3CF03F1688E807225CCC192205CF620147F6C55AA44BEF22",
+      "after": "17178AEF1F38A07B3CF03F1688E807225CCC192205CF620147F6C55AA44BEF22",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/win-warm-chord-v1.wav",
+      "before": "E917C0B62627178D67650762D15B67BFAB6DB9194B2E211C061FE26C73BE8198",
+      "after": "E917C0B62627178D67650762D15B67BFAB6DB9194B2E211C061FE26C73BE8198",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Resources/GameAudio/win-warm-chord-v1.wav.meta",
+      "before": "F3F9523E86135D61BC55305275C351BE4F4B4DBE5F9C847281F95DAEECD59FB0",
+      "after": "F3F9523E86135D61BC55305275C351BE4F4B4DBE5F9C847281F95DAEECD59FB0",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/GameAudioController.cs",
+      "before": "696F41EAFE8A879752DE7638444E449A5639C6AD3853EBEC759EAB161AD4D91B",
+      "after": "696F41EAFE8A879752DE7638444E449A5639C6AD3853EBEC759EAB161AD4D91B",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/GameAudioController.cs.meta",
+      "before": "28B68FF7671E7084B78CD15B75E98D5F7B72B6AA3302BAB2D13903C9DCF0787D",
+      "after": "28B68FF7671E7084B78CD15B75E98D5F7B72B6AA3302BAB2D13903C9DCF0787D",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/LocalSlidingPuzzleController.cs",
+      "before": "EB15C649B258C819AAB7AA30F19A5432865FAB752EACED1AD60C3D84A15A1D19",
+      "after": "EB15C649B258C819AAB7AA30F19A5432865FAB752EACED1AD60C3D84A15A1D19",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/LocalSlidingPuzzleController.cs.meta",
+      "before": "DD98A33F1FE3AA53B8B8FF6FD7CCDB5E2911715034343BBD18B85ED34870998D",
+      "after": "DD98A33F1FE3AA53B8B8FF6FD7CCDB5E2911715034343BBD18B85ED34870998D",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/SAL0MANderSlide.cs",
+      "before": "26B69D30DD553FFEE63B0CA4973C7BE725BCBF6209441B4AA3A45AA56ECBD98B",
+      "after": "26B69D30DD553FFEE63B0CA4973C7BE725BCBF6209441B4AA3A45AA56ECBD98B",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/SAL0MANderSlide.cs.meta",
+      "before": "A5801601D298BC95A0F3EE171301361D0D9BAA8C39F013A60487DE8C94F0A11E",
+      "after": "A5801601D298BC95A0F3EE171301361D0D9BAA8C39F013A60487DE8C94F0A11E",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/WinCelebrationPresenter.cs",
+      "before": "05DFE113C4A89521263F9D2DE989F4BF940F63B38626B8AF1FD2CE8316C1A88D",
+      "after": "05DFE113C4A89521263F9D2DE989F4BF940F63B38626B8AF1FD2CE8316C1A88D",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/WinCelebrationPresenter.cs.meta",
+      "before": "F1A92BA0EEDC38EA913A2ABA7506E9FF25499EBE359CF5AC9319201FF9A0253E",
+      "after": "F1A92BA0EEDC38EA913A2ABA7506E9FF25499EBE359CF5AC9319201FF9A0253E",
+      "unchanged": true
+    },
+    {
+      "path": "docs/slide-preview-protocol.md",
+      "before": "B161923279A7BF8FFB3D261174F92F7DEA8AEFEBA73AD99E5931F72AE41BB843",
+      "after": "B161923279A7BF8FFB3D261174F92F7DEA8AEFEBA73AD99E5931F72AE41BB843",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scenes/SampleScene.unity",
+      "before": "C07E47019034EA8113B43DE8F9EDEEEF3A72E3B7CE048FDCDF0B02903052A9E4",
+      "after": "C07E47019034EA8113B43DE8F9EDEEEF3A72E3B7CE048FDCDF0B02903052A9E4",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Settings/UniversalRP.asset",
+      "before": "D617D04CEE2A11732B596D4ED4C5076499D5C0CBDEDF8EB53B120BBECA9FA352",
+      "after": "D617D04CEE2A11732B596D4ED4C5076499D5C0CBDEDF8EB53B120BBECA9FA352",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Settings/UniversalRenderPipelineGlobalSettings.asset",
+      "before": "B1DEEC0164C483F7D8931975F7B95732A56BAC1CCC5681EA55ED890B43A16807",
+      "after": "B1DEEC0164C483F7D8931975F7B95732A56BAC1CCC5681EA55ED890B43A16807",
+      "unchanged": true
+    },
+    {
+      "path": "ProjectSettings/ProjectSettings.asset",
+      "before": "2BBBE78947A467D4A2E0CD92AB207E7DFDF3209121C89FC98259D62D6B4F4A68",
+      "after": "2BBBE78947A467D4A2E0CD92AB207E7DFDF3209121C89FC98259D62D6B4F4A68",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Scripts/SAL0MANderBridge.cs",
+      "before": "5334C02560773B7C0151712D23A3413F8F03C35679F1FE2EDA53F8A27919EC48",
+      "after": "5334C02560773B7C0151712D23A3413F8F03C35679F1FE2EDA53F8A27919EC48",
+      "unchanged": true
+    },
+    {
+      "path": "Assets/Editor/WebGLBuildRunner.cs",
+      "before": "796C96DBBB961BB8F2A4C173AEDAFA6F237C26690127DA2AED62969570F3CB40",
+      "after": "796C96DBBB961BB8F2A4C173AEDAFA6F237C26690127DA2AED62969570F3CB40",
+      "unchanged": true
+    }
+  ],
+  "sourceCaveat": "The player includes the recorded uncommitted Unity changes; HEAD alone does not identify this build.",
+  "buildBasename": "cg-modes-webgl-candidate-v2",
+  "productionBasename": "sal0-unity-webgl",
+  "buildResult": "[WebGLBuild] result=Succeeded, output=C:\\Users\\samco\\Documents\\Codex\\2026-09-09\\gmail-plugin-gmail-openai-curated-remote\\work\\cg-modes-webgl-candidate-v2, size=104913392, duration=00:05:45.2033590",
+  "buildExit0": true,
+  "buildEvidence": {
+    "path": "outputs/cg-modes-build-evidence-v2.json",
+    "sha256": "42A238A94042FE608CC7D96A099B1C13F36D8FD830D860095F29A8EBA7C5ED6E"
+  },
+  "buildLogSha256": "6AC413893A374F00837FE3B7036ABB4F8752CC2BCD930CFFF402248745561CCA",
+  "webBaseCommit": "76bb5b7db6298b0d034acad9834664f9ae5387fc",
+  "webEntrySnapshot": {
+    "path": "work/puzzle-gifts-public-entry-hashes.json",
+    "sha256": "906AF0488528CD5B6C85539D6C2D3BB53AB36A8093777F43E6AEB81068D92EAE"
+  },
+  "webEntryFiles": [
+    {
+      "path": "public/sitemap.xml",
+      "sha256": "4F809EA9C24934B2796533D137E3734E5FC403E4CBAF6CDC2724DD90BC9648BE"
+    },
+    {
+      "path": "scripts/prerender-routes.mjs",
+      "sha256": "FD69DFB334261A671750BD6C351361E122D802F90A65D8339181EE9A08DF5B60"
+    },
+    {
+      "path": "scripts/verify-deploy-artifact.mjs",
+      "sha256": "8D8AD03BAE9251F79DF1DD3E80F5DD5C4929846BB6F1FF8EFFAF0867F71556F8"
+    },
+    {
+      "path": "scripts/verify-deploy-artifact.test.mjs",
+      "sha256": "B03ADACD95394CFAC734DC11B07F951E1885E3FED8D36B4E64664E00DFE1AA41"
+    },
+    {
+      "path": "scripts/verify-deployed-site.mjs",
+      "sha256": "F7312E2C2DAFC6C92C4A20E919C5BBE7A622148E4E7440798FE8A4EB1346428E"
+    },
+    {
+      "path": "scripts/verify-live-site.mjs",
+      "sha256": "684FAC6E265402DB4110B49E965FCBB0BB2956CD4D5AFC00A5252312EFE78F62"
+    },
+    {
+      "path": "src/config/discoverability.test.ts",
+      "sha256": "FCEDED97DD4B256C8980FC463BC47513EF32BBFD107660E2509EBF924E456906"
+    },
+    {
+      "path": "src/config/prerender.test.ts",
+      "sha256": "0C538FBF23894B9FB610E27B5CB0BC3C6CA10EF5A1922CF6AA8A90754B85DA33"
+    },
+    {
+      "path": "src/gifts/giftOrigin.ts",
+      "sha256": "0F0B12C339FB1557A85C9D4D632C1CD41878C33CA26F1FFE4B9C7989502BCD36"
+    },
+    {
+      "path": "src/gifts/giftOrigin.test.ts",
+      "sha256": "2F9E167505AE79C1B8FE8689B99D57A1B3BB8783A01DD68E39453C06B8ED322E"
+    },
+    {
+      "path": "src/routes/gifts/PuzzleGiftsPage.tsx",
+      "sha256": "D082C848CFE34924067D0737E5E2BA4F236B241A45C1D1BA6CEDB33A2CC0E145"
+    },
+    {
+      "path": "src/routes/gifts/PuzzleGiftsPage.test.tsx",
+      "sha256": "8D4102D13ADE3D6873C6BCE1459617A13436E281119DD1149C3F56500A3E77CB"
+    }
+  ],
+  "webSourceSnapshot": [
+    {
+      "path": ".gitattributes",
+      "sha256": "068D4A8D9FB43D923051BC35BA828B7288437670275B31B8F773A57E9E9620EA"
+    },
+    {
+      "path": "public/sitemap.xml",
+      "sha256": "4F809EA9C24934B2796533D137E3734E5FC403E4CBAF6CDC2724DD90BC9648BE"
+    },
+    {
+      "path": "scripts/prerender-routes.mjs",
+      "sha256": "FD69DFB334261A671750BD6C351361E122D802F90A65D8339181EE9A08DF5B60"
+    },
+    {
+      "path": "scripts/verify-deploy-artifact.mjs",
+      "sha256": "8D8AD03BAE9251F79DF1DD3E80F5DD5C4929846BB6F1FF8EFFAF0867F71556F8"
+    },
+    {
+      "path": "scripts/verify-deploy-artifact.test.mjs",
+      "sha256": "B03ADACD95394CFAC734DC11B07F951E1885E3FED8D36B4E64664E00DFE1AA41"
+    },
+    {
+      "path": "scripts/verify-deployed-site.mjs",
+      "sha256": "F7312E2C2DAFC6C92C4A20E919C5BBE7A622148E4E7440798FE8A4EB1346428E"
+    },
+    {
+      "path": "scripts/verify-live-site.mjs",
+      "sha256": "684FAC6E265402DB4110B49E965FCBB0BB2956CD4D5AFC00A5252312EFE78F62"
+    },
+    {
+      "path": "src/app/router.tsx",
+      "sha256": "F37D6BCC6B4FCB5349BF2267CE1E8C11F9600E259991EAFB86AE57E870BA8D2B"
+    },
+    {
+      "path": "src/app/routing.test.tsx",
+      "sha256": "79D4A72ECEF6970AD4C945D1D9AA527860FDFA9B1F48CEB23D8F969BF99CDF5F"
+    },
+    {
+      "path": "src/components/layout/AppShell.production.test.tsx",
+      "sha256": "8AE205ECFADCB76B9B0E5374EA3063EC1BBBDD055F4C16A0B29A600BFE6A9055"
+    },
+    {
+      "path": "src/components/layout/AppShell.tsx",
+      "sha256": "9FA3D00E97F9136B231726CD8F3E0664B00AC3E3A6B1BA3C3A1F2990FC919346"
+    },
+    {
+      "path": "src/components/share/SharePanel.test.tsx",
+      "sha256": "5E36013798A5C6E496F728698FA7A7076FD8A10E02D6D0E20834F94F2D4C3FA5"
+    },
+    {
+      "path": "src/components/share/SharePanel.tsx",
+      "sha256": "0E9C447BFCD5FD2EBD8243F1580818781F17696826C60F7DE7969B7E45EE4C64"
+    },
+    {
+      "path": "src/components/share/useCopyToClipboard.ts",
+      "sha256": "7365B29ADEEB12F15BEF60022CDB0E5BA745C02D07A0112B726712FD2C25E25C"
+    },
+    {
+      "path": "src/config/discoverability.test.ts",
+      "sha256": "FCEDED97DD4B256C8980FC463BC47513EF32BBFD107660E2509EBF924E456906"
+    },
+    {
+      "path": "src/config/prerender.test.ts",
+      "sha256": "0C538FBF23894B9FB610E27B5CB0BC3C6CA10EF5A1922CF6AA8A90754B85DA33"
+    },
+    {
+      "path": "src/config/routes.test.ts",
+      "sha256": "FF13CE35635A62578885D1ED2BB9D3C415CDA1E64FEAB2F44055D494BAB0F447"
+    },
+    {
+      "path": "src/config/routes.ts",
+      "sha256": "09B6F96DBB4E11158BFAE2A2CFCABAB460D3D8691C7E626A419D0477BB1CFACE"
+    },
+    {
+      "path": "src/gifts/giftActivity.test.ts",
+      "sha256": "FE8EE2A0C2133DA8F3458601E163A390EBBA77210DA4EC814F272CEA56086C5D"
+    },
+    {
+      "path": "src/gifts/giftActivity.ts",
+      "sha256": "A76BB147E1C01A4EFEDE8C95B8FFE33F77847591F92A24E80DCE4B4A88D9EBC5"
+    },
+    {
+      "path": "src/gifts/giftCatalog.ts",
+      "sha256": "0C8963B98D2780D7BFACCDB9792B695DD7E1D48E57BE710870144A57AFD404D4"
+    },
+    {
+      "path": "src/gifts/giftLink.test.ts",
+      "sha256": "D938B9203490FBD39B5DEB9C764676376747872722A14D30109841B182B768F7"
+    },
+    {
+      "path": "src/gifts/giftLink.ts",
+      "sha256": "95B5F7E457BD94FD6EFCD152907FBCD0DAE4DB10FAE54D1A70054D801ECF2143"
+    },
+    {
+      "path": "src/gifts/giftOrigin.test.ts",
+      "sha256": "2F9E167505AE79C1B8FE8689B99D57A1B3BB8783A01DD68E39453C06B8ED322E"
+    },
+    {
+      "path": "src/gifts/giftOrigin.ts",
+      "sha256": "0F0B12C339FB1557A85C9D4D632C1CD41878C33CA26F1FFE4B9C7989502BCD36"
+    },
+    {
+      "path": "src/gifts/giftPresentation.ts",
+      "sha256": "4E1126F85F054DC6097D33683084A0A21D0A8F4DA7EEFB7357021E6062135A34"
+    },
+    {
+      "path": "src/gifts/giftRecovery.test.ts",
+      "sha256": "4CD8809C3D97B5A1EFD2A6CCBF963B68F44B6B0709C475FD248C792AEC123AAF"
+    },
+    {
+      "path": "src/gifts/giftSlide.test.ts",
+      "sha256": "A4621156F94AE2FE424F917E5A8E343FA72728BCB19A7A8E8AC0B6D63DA4B309"
+    },
+    {
+      "path": "src/gifts/giftSurvey.ts",
+      "sha256": "00D4ACA8C93C285AEB3210AAEAE1FED994CBC1BDDF7F0B74D1A2208D0467674F"
+    },
+    {
+      "path": "src/gifts/giftV2.test.ts",
+      "sha256": "DB3C7FEC5B6FFEBC3E67C3E0C3A13D7339045B69A7847E34E1E9723A92EA0647"
+    },
+    {
+      "path": "src/routes/gifts/GiftCelebration.test.tsx",
+      "sha256": "309A7F8310891F6DFA347481D542F028DFCB7035C508980AC0EB4DCD43925CDC"
+    },
+    {
+      "path": "src/routes/gifts/GiftCelebration.tsx",
+      "sha256": "C680BF5DBB0A2E5C37630D7D796912853D13610636D4549B39036226D31B0856"
+    },
+    {
+      "path": "src/routes/gifts/GiftOpening.test.tsx",
+      "sha256": "046D43D8730CEA98117B9A53714800DA13BEAD75734B20CD29A87BF280CB561E"
+    },
+    {
+      "path": "src/routes/gifts/GiftOpening.tsx",
+      "sha256": "772949673B0B06D4A8DD1D98E791591E1FAEAFA52E1C697BF9CADC0296E9DC01"
+    },
+    {
+      "path": "src/routes/gifts/GiftPlayPage.test.tsx",
+      "sha256": "9E5079EE154392FF99E624BC83A233F886724F7C4B39C856F35C43A857F76D5F"
+    },
+    {
+      "path": "src/routes/gifts/GiftPlayPage.tsx",
+      "sha256": "CA6B7FACDF9BCF796F5E60AF7E0150918F24D440AB2700C42FD3553D8D323EFE"
+    },
+    {
+      "path": "src/routes/gifts/GiftRecoveryForm.tsx",
+      "sha256": "E9F08C869224E0AD666B000614194A07B21119E2F229D9372FB8B5643D84EF7E"
+    },
+    {
+      "path": "src/routes/gifts/GiftSurveyForm.tsx",
+      "sha256": "45CE3169FCDFD46F66B1669E558F6994BCC91816689454203AF183122EEA329C"
+    },
+    {
+      "path": "src/routes/gifts/PuzzleGifts.module.css",
+      "sha256": "6904E6465A041D28BAEF31B47A4A2E7B00641D12ADE1B5FC1766E68387B28BFD"
+    },
+    {
+      "path": "src/routes/gifts/PuzzleGiftsPage.test.tsx",
+      "sha256": "8D4102D13ADE3D6873C6BCE1459617A13436E281119DD1149C3F56500A3E77CB"
+    },
+    {
+      "path": "src/routes/gifts/PuzzleGiftsPage.tsx",
+      "sha256": "D082C848CFE34924067D0737E5E2BA4F236B241A45C1D1BA6CEDB33A2CC0E145"
+    },
+    {
+      "path": "src/routes/guest-play/GuestPlayPage.tsx",
+      "sha256": "1B4315D302541058F50A34CF28578FF2EF534A77F169EF1CD1CBF5E022E86282"
+    },
+    {
+      "path": "src/routes/guest-play/truncatedLink.test.tsx",
+      "sha256": "A7563A77584D8FFC031A30C6F96BDBBC0596AD8CB0933FDED59DB6B2D7AD542B"
+    },
+    {
+      "path": "src/routes/home/HomePage.test.tsx",
+      "sha256": "265A5F2C9B0926F4D967A6C13837FE31CB92BC122EBCF369068FCE9D318BF21B"
+    },
+    {
+      "path": "src/routes/home/HomePage.tsx",
+      "sha256": "7919DEC6335E5D6B7E44F9A840762D9CAF87845BA05DC53BD3204B20C1C3C82D"
+    },
+    {
+      "path": "src/unity/UnityStage.previewAttempts.test.tsx",
+      "sha256": "2256C873EC03C8EB9858228DACC571403DC5931BB04A00CA727206A29DC795CC"
+    },
+    {
+      "path": "src/unity/UnityStage.slide.test.tsx",
+      "sha256": "F1CCA133CA99D7FA7EDC75B9B92294D6C0E887DEE0B1AADB167A74452B8B6268"
+    },
+    {
+      "path": "src/unity/UnityStage.tsx",
+      "sha256": "22EDE7F9DA6D6BAB8136A11662D45F4D95430642DAD01B7A9C34DA6A5A30E08C"
+    },
+    {
+      "path": "src/unity/buildConfig.ts",
+      "sha256": "C98E29D0C6C5F52D0A0EBEC0F238E6240EE738E5AE88FBF5A15E9A03F091BF10"
+    },
+    {
+      "path": "src/unity/libraryPicture.ts",
+      "sha256": "E44C4B17DF9FF21FE031365C413EF340658C39EE587B06E03BDC3B14FBA409CA"
+    },
+    {
+      "path": "src/unity/previewAttemptBridge.ts",
+      "sha256": "594997E61631FB53DD00A6BB7F4DFF02351E97D616FF71F92F7FCF014B2782EF"
+    },
+    {
+      "path": "src/unity/previewBridge.ts",
+      "sha256": "471116BD38ECE446FD2C2430F09D8C7EE4FB36BA5F9189DAAA2351F6C40A6934"
+    },
+    {
+      "path": "src/unity/slideBridge.test.ts",
+      "sha256": "B6A6DE82C7241E7B5B2E79050EDF9D65F32037971E808B289257625B45B8A362"
+    },
+    {
+      "path": "src/unity/slideBridge.ts",
+      "sha256": "7DA5C88A51ABD3290F50AFBA6F7ECC8DB3C65A3181BC2F368053E306B3EDD77E"
+    },
+    {
+      "path": "src/unity/usePreviewAttemptSession.ts",
+      "sha256": "66B9EFBAFEE02DCA554047585839BA8A5F38B65CBCFCB927F4507127009584C0"
+    },
+    {
+      "path": "src/unity/useSlideSession.ts",
+      "sha256": "C178D7B5D85A60336B6CBFC659E2C795C9DF91D4EFC41319068ADE0F9A609AAB"
+    }
+  ],
+  "gitAttributesSha256": "068D4A8D9FB43D923051BC35BA828B7288437670275B31B8F773A57E9E9620EA",
+  "buildConfigSha256": "C98E29D0C6C5F52D0A0EBEC0F238E6240EE738E5AE88FBF5A15E9A03F091BF10",
+  "files": [
+    {
+      "sourceName": "Build/cg-modes-webgl-candidate-v2.loader.js",
+      "path": "public/unity/Build/sal0-unity-webgl.loader.js",
+      "bytes": 26982,
+      "sha256": "BE283FDD1570BB73523815EE6EC268F2C0578F8B56DB9A681C550824170DD016",
+      "gitBlobSha1": "6d60077aa1fdb88e115893ac64184921581f1c53",
+      "gitFiltersPreserveBytes": true
+    },
+    {
+      "sourceName": "Build/cg-modes-webgl-candidate-v2.data",
+      "path": "public/unity/Build/sal0-unity-webgl.data",
+      "bytes": 40588350,
+      "sha256": "B321B9DE6E4E8D867D42D88840EFEAF1E90B7891B6E6488F9415FAA61BCF7367",
+      "gitBlobSha1": "a5c99abe6643f1b4d1ee2e05d13244c285488325",
+      "gitFiltersPreserveBytes": true
+    },
+    {
+      "sourceName": "Build/cg-modes-webgl-candidate-v2.framework.js",
+      "path": "public/unity/Build/sal0-unity-webgl.framework.js",
+      "bytes": 436123,
+      "sha256": "81FC757C6221B148005D920A09F26973DB008295C47109DF7D3B73D1DC5DF9B5",
+      "gitBlobSha1": "0d9fa5f2ebf9a3a3b44127b7665a9fd7a0d36136",
+      "gitFiltersPreserveBytes": true
+    },
+    {
+      "sourceName": "Build/cg-modes-webgl-candidate-v2.wasm",
+      "path": "public/unity/Build/sal0-unity-webgl.wasm",
+      "bytes": 63841196,
+      "sha256": "E75B786B456E9FF1B0AD2D21781D377ACF373068CB5918C1B34D87A03C0FC9F1",
+      "gitBlobSha1": "b7195bea515cc110d2767d81981e15e2165d2830",
+      "gitFiltersPreserveBytes": true
+    },
+    {
+      "sourceName": "StreamingAssets/UnityServicesProjectConfiguration.json",
+      "path": "public/unity/StreamingAssets/UnityServicesProjectConfiguration.json",
+      "bytes": 1124,
+      "sha256": "3B47F5BB704C2BDD4AB4476016631B94FB5544B344141CB642B4139C0EDE3981",
+      "gitBlobSha1": "03b0cadb0234b9b768f934b9850abfb720bcd9b1",
+      "gitFiltersPreserveBytes": true
+    }
+  ],
+  "limits": [
+    "No commit, push, deployment or outgoing message.",
+    "Generated index.html and TemplateData were not copied.",
+    "Old public assets and cache source retained in work/puzzle-gifts-before-modes-v2."
+  ]
+}
