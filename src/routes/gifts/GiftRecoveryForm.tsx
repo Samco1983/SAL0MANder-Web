@@ -26,8 +26,8 @@ export function GiftRecoveryForm({ initialError = '' }: { initialError?: string 
     <form className={styles.recovery} onSubmit={submit}>
       <label htmlFor="gift-recovery">Gift link or backup code</label>
       <p id="gift-recovery-help">
-        Paste the full link or SAL0-GIFT: code from the sender. This helps when clicking a link
-        fails; the game website still needs to be reachable.
+        Paste the full message, gift link, or SAL0-GIFT: code from the sender. This helps when
+        clicking a link fails; the game website still needs to be reachable.
       </p>
       <textarea
         id="gift-recovery"
