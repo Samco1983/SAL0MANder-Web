@@ -156,14 +156,29 @@ export function giftBackupCode(gift: Gift): string {
 /** Validate pasted data locally; never visit or reuse a supplied origin. */
 export function restoreGiftLink(input: string, origin: string, basePath = readBasePath()): string {
   try {
-    if (input.length > MAX_GIFT_URL_LENGTH || /[\p{Cc}\p{Cf}]/u.test(input)) throw new Error()
+    // Shared messages contain ordinary line breaks. Never remove characters from a payload,
+    // and still reject invisible format characters or other control characters anywhere.
+    if (
+      input.length > MAX_GIFT_URL_LENGTH ||
+      /[\p{Cc}\p{Cf}]/u.test(input.replace(/[\t\r\n]/g, ''))
+    )
+      throw new Error()
     const text = input.trim()
+    const candidates = text
+      .split(/\s+/u)
+      .filter((token) => /(?:[a-z][a-z\d+.-]*:\/\/|SAL0-GIFT:|#gift=)/iu.test(token))
+    // Include other URL protocols and incomplete gift tokens in the count. A message with
+    // competing links must not silently pick the first plausible gift.
+    if (candidates.length !== 1) throw new Error()
+    const token = candidates[0]!
     let hash: string
-    if (text.startsWith(PREFIX)) hash = text
-    else if (text.startsWith(GIFT_BACKUP_PREFIX))
-      hash = PREFIX + text.slice(GIFT_BACKUP_PREFIX.length)
+    if (token.startsWith(PREFIX)) {
+      if (token !== text) throw new Error()
+      hash = token
+    } else if (token.startsWith(GIFT_BACKUP_PREFIX))
+      hash = PREFIX + token.slice(GIFT_BACKUP_PREFIX.length)
     else {
-      const source = new URL(text)
+      const source = new URL(token)
       if (
         !['http:', 'https:'].includes(source.protocol) ||
         source.username ||
@@ -173,7 +188,7 @@ export function restoreGiftLink(input: string, origin: string, basePath = readBa
         throw new Error()
       hash = source.hash
     }
-    const gift = decodeGift(hash, text.length)
+    const gift = decodeGift(hash, token.length)
     return buildGiftLink(gift, origin, basePath)
   } catch {
     throw new Error(

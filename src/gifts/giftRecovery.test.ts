@@ -79,7 +79,7 @@ it('rejects control characters, trailing data, raw unprefixed payloads and unkno
     hash + '&extra=1',
     giftBackupCode(gift) + '.',
     hash.slice(6),
-    full + '\n',
+    full.slice(0, -12) + '\n' + full.slice(-12),
     '\u0000' + hash,
     hash + '\u200b',
     unknown,
@@ -121,4 +121,72 @@ it('keeps one full URL in the email and adds recovery instructions without repea
   expect(body).toContain('choose Open a gift')
   expect(body).not.toContain('SAL0-GIFT:')
   expect(draft.pathname).toBe('')
+})
+
+it.each(gifts)(
+  'recovers Gift v$version $mode from our native-share and email message text',
+  (gift) => {
+    const url = buildGiftLink(gift, 'https://sender.example')
+    const email = new URL(giftEmailDraft(url)).searchParams.get('body')!
+    for (const input of [
+      'I made you a puzzle gift. No sign-in needed. ' + url,
+      'I made you a puzzle gift. No sign-in needed.\r\n' + url,
+      email,
+      ` \r\n\t${url}\r\n `,
+      `Your gift is ready.\n${giftBackupCode(gift)}\nHave fun!`,
+    ]) {
+      const restored = new URL(restoreGiftLink(input, 'https://local.example', '/our-site'))
+      expect(restored.origin).toBe('https://local.example')
+      expect(restored.pathname).toBe('/our-site/gifts/play')
+      expect(decodeGift(restored.hash, restored.href.length)).toEqual(gift)
+    }
+  },
+)
+
+it('rejects ambiguous messages rather than choosing one link or repairing split payloads', () => {
+  const url = buildGiftLink(gifts[3]!, 'https://sender.example')
+  const second = buildGiftLink(gifts[4]!, 'https://other.example')
+  const code = giftBackupCode(gifts[3]!)
+  for (const input of [
+    `${url}\n${second}`,
+    `${url} ${url}`,
+    `(${url}) or ${second}`,
+    `gift:${code} or ${second}`,
+    `${url}\n${code}`,
+    `${code} ${code}`,
+    `${url}\nSAL0-GIFT:broken`,
+    `More at https://other.example/\nYour gift: ${url}`,
+    `Try ftp://other.example/ or ${url}`,
+    `Here is your gift: ${url.slice(0, -15)}\n${url.slice(-15)}`,
+    `Your backup: ${code.slice(0, -15)}\t${code.slice(-15)}`,
+    `Here is your gift: ${url}.`,
+    `Your backup: ${code}&extra=1`,
+    `Here is a fragment: ${encodeGift(gifts[3]!)}`,
+  ]) {
+    expect(() => restoreGiftLink(input, 'https://local.example')).toThrow(/complete gift link/)
+  }
+})
+
+it('does not weaken unsafe input or version limits when a gift is surrounded by prose', () => {
+  const gift = gifts[2]!
+  const hash = encodeGift(gift)
+  const url = buildGiftLink(gift, 'https://sender.example')
+  for (const input of [
+    `A\u0000message ${url}`,
+    `A\u200bmessage ${url}`,
+    `A\u202emessage ${url}`,
+    `Your gift: https://name:password@elsewhere.example/gifts/play${hash}`,
+    `Your gift: file:///gifts/play${hash}`,
+    `Your gift: ftp://elsewhere.example/gifts/play${hash}`,
+    `Your gift: javascript:https://elsewhere.example/gifts/play${hash}`,
+    `Your gift: https://elsewhere.example/not-a-gift${hash}`,
+    `Your gift: https://elsewhere.example/gifts/play#gift=broken`,
+    `${'x'.repeat(3000)}\n${url}`,
+    `Your gift: https://sender.example/${'x'.repeat(1900)}/gifts/play${hash}`,
+  ]) {
+    expect(() => restoreGiftLink(input, 'https://local.example')).toThrow(/complete gift link/)
+  }
+  expect(() =>
+    restoreGiftLink(`Your gift: ${url}`, 'https://local.example', '/' + 'x'.repeat(2000)),
+  ).toThrow()
 })

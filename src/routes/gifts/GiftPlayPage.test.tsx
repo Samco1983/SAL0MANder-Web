@@ -78,7 +78,7 @@ it('keeps the local base path and handles repeated valid submits as one navigati
   expect(stage).not.toHaveBeenCalled()
 })
 
-it.each(['link', 'fragment', 'backup'])(
+it.each(['link', 'fragment', 'backup', 'shared message'])(
   'recovers a pasted %s without auto-opening or visiting its source origin',
   async (form) => {
     const user = userEvent.setup()
@@ -86,11 +86,15 @@ it.each(['link', 'fragment', 'backup'])(
     expect(screen.getByRole('heading', { name: 'Open a gift' })).toBeVisible()
     expect(screen.queryByRole('alert')).toBeNull()
     const input =
-      form === 'link'
-        ? buildGiftLink(gift, 'https://elsewhere.example', '/elsewhere')
-        : form === 'backup'
-          ? giftBackupCode(gift)
-          : encodeGift(gift)
+      form === 'shared message'
+        ? 'I made you a puzzle gift. No sign-in needed.\r\n' +
+          buildGiftLink(gift, 'https://elsewhere.example', '/elsewhere') +
+          '\r\nEnjoy!'
+        : form === 'link'
+          ? buildGiftLink(gift, 'https://elsewhere.example', '/elsewhere')
+          : form === 'backup'
+            ? giftBackupCode(gift)
+            : encodeGift(gift)
     await user.click(screen.getByRole('textbox', { name: 'Gift link or backup code' }))
     await user.paste(input)
     await user.click(screen.getByRole('button', { name: 'Open this gift' }))
