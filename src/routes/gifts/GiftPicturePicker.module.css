@@ -99,3 +99,27 @@
     height: 130px;
   }
 }
+
+.option {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.option .picture {
+  width: 100%;
+  flex: 1;
+}
+.photoToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  min-height: 44px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.photoToggle input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-accent);
+}

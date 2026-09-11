@@ -66,6 +66,15 @@ export type PuzzlePicture = {
   /** Rendered aspect, so the grid can reserve space and not shift as images load. */
   readonly width: number
   readonly height: number
+  /** Optional familiar search names and alternate spellings. */
+  readonly searchTerms?: readonly string[]
+  /** Verified photographic sources only; generated or unverified artwork has no photo credit. */
+  readonly photoCredit?: {
+    readonly author: string
+    readonly source: string
+    readonly license: string
+    readonly licenseUrl: string
+  }
 }
 
 /**
@@ -223,5 +232,73 @@ export const PUZZLE_LIBRARY: readonly PuzzlePicture[] = [
     alt: 'Realistic generated landscape of a black steam locomotive and red passenger carriages crossing a curved stone viaduct, with autumn trees, mountains and a waterfall.',
     width: 640,
     height: 954,
+  },
+  {
+    key: 'sleeping-puppies',
+    searchTerms: ['puppy', 'puppies', 'dogs'],
+    shape: 'Landscape',
+    name: 'Sleeping puppies',
+    category: 'Animals',
+    src: '/images/library/photos/sleeping-puppies.webp',
+    alt: 'Photograph of four small tan, brown and white puppies curled together asleep inside a cardboard box, with their paws and tails overlapping.',
+    width: 960,
+    height: 720,
+    photoCredit: {
+      author: 'Saral Shots',
+      source: 'https://commons.wikimedia.org/wiki/File:Sleeping_puppies.jpg',
+      license: 'CC0 1.0',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    },
+  },
+  {
+    key: 'puggle-puppy',
+    searchTerms: ['puppy', 'puppies', 'dogs'],
+    shape: 'Landscape',
+    name: 'Puggle puppy in flowers',
+    category: 'Animals',
+    src: '/images/library/photos/puggle-puppy.webp',
+    alt: 'Photograph of a tan puggle puppy with floppy brown ears and a dark muzzle sitting in green grass among bright yellow dandelion flowers.',
+    width: 960,
+    height: 720,
+    photoCredit: {
+      author: 'Jennagu',
+      source: 'https://commons.wikimedia.org/wiki/File:Puggle_puppy.jpg',
+      license: 'Public domain',
+      licenseUrl: 'https://commons.wikimedia.org/wiki/File:Puggle_puppy.jpg#Licensing',
+    },
+  },
+  {
+    key: 'orange-indy-race-car',
+    searchTerms: ['racecar', 'racecars', 'race cars', 'racing', 'IndyCar'],
+    shape: 'Landscape',
+    name: 'Orange Indy race car',
+    category: 'Vehicles',
+    src: '/images/library/photos/orange-indy-race-car.webp',
+    alt: 'Photograph of Pato O’Ward’s orange and black number 5 open-wheel race car rounding the gray Mid-Ohio track, bordered by green grass.',
+    width: 960,
+    height: 540,
+    photoCredit: {
+      author: 'YellowstoneTrinity / William Zhang',
+      source: 'https://commons.wikimedia.org/wiki/File:OWard_MidOhio_2024_FastSix.jpg',
+      license: 'CC0 1.0',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    },
+  },
+  {
+    key: 'red-indy-race-car',
+    searchTerms: ['racecar', 'racecars', 'race cars', 'racing', 'IndyCar'],
+    shape: 'Landscape',
+    name: 'Red Indy race car',
+    category: 'Vehicles',
+    src: '/images/library/photos/red-indy-race-car.webp',
+    alt: 'Photograph of Scott McLaughlin’s red and black number 3 open-wheel race car speeding past green grass and a safety barrier at Mid-Ohio.',
+    width: 960,
+    height: 540,
+    photoCredit: {
+      author: 'YellowstoneTrinity / William Zhang',
+      source: 'https://commons.wikimedia.org/wiki/File:Scott_McLaughlin_MidOhio_2024.jpg',
+      license: 'CC0 1.0',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    },
   },
 ] as const

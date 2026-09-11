@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "verifiedOn": "2026-09-10",
+  "method": "Source-page licensing and authorship checked; downloaded photographs visually inspected. EXIF orientation applied, full composition retained, resized to maximum 960 pixels with Lanczos and encoded RGB WebP quality 82/method 6. No image generation, inpainting, object replacement, puzzle edges or photographic-content edits.",
+  "entries": [
+    {
+      "key": "sleeping-puppies",
+      "src": "/images/library/photos/sleeping-puppies.webp",
+      "width": 960,
+      "height": 720,
+      "bytes": 48560,
+      "sha256": "e23085c03dea2c2e48896270ddbfbfa2c1c88e8047bfa4b08dc3dade311283aa",
+      "photoCredit": {
+        "author": "Saral Shots",
+        "source": "https://commons.wikimedia.org/wiki/File:Sleeping_puppies.jpg",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "sourceRevision": "https://commons.wikimedia.org/w/index.php?title=File:Sleeping_puppies.jpg&oldid=855881858",
+      "sourceDimensions": [1040, 780],
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/5/56/Sleeping_puppies.jpg",
+      "downloadedDimensions": [1040, 780],
+      "downloadedBytes": 78403,
+      "downloadedSha256": "2dbc534295af243d9b19adb7ab1c8af00a6f842450c8d809aae4797e1685794f",
+      "licensePageSha256": "837c3f8603791d950733c67d89ca57174a22a978349c069b0591770c3e331544",
+      "sourceEvidence": "Own-work photographic file with explicit CC0 1.0 licensing declaration. Race-car pages also identify Sony camera capture; Puggle page identifies Canon capture.",
+      "inspected": true
+    },
+    {
+      "key": "puggle-puppy",
+      "src": "/images/library/photos/puggle-puppy.webp",
+      "width": 960,
+      "height": 720,
+      "bytes": 156524,
+      "sha256": "64b363c43c75efe12cd9b96b7f519b4788971a3cedf590134782121e9e82a683",
+      "photoCredit": {
+        "author": "Jennagu",
+        "source": "https://commons.wikimedia.org/wiki/File:Puggle_puppy.jpg",
+        "license": "Public domain",
+        "licenseUrl": "https://commons.wikimedia.org/wiki/File:Puggle_puppy.jpg#Licensing"
+      },
+      "sourceRevision": "https://commons.wikimedia.org/w/index.php?title=File:Puggle_puppy.jpg&oldid=1251866012",
+      "sourceDimensions": [2048, 1536],
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/6/66/Puggle_puppy.jpg",
+      "downloadedDimensions": [2048, 1536],
+      "downloadedBytes": 1185500,
+      "downloadedSha256": "efa13301ab138805e5e47b90fee994b66ffae156bc1e04a946bc766b720bb066",
+      "licensePageSha256": "b05210a5fa80ce4458144f335fb261790b906c09a42d43ac0e57dfa958061400",
+      "sourceEvidence": "Own-work photographic file with explicit Public domain licensing declaration. Race-car pages also identify Sony camera capture; Puggle page identifies Canon capture.",
+      "inspected": true
+    },
+    {
+      "key": "orange-indy-race-car",
+      "src": "/images/library/photos/orange-indy-race-car.webp",
+      "width": 960,
+      "height": 540,
+      "bytes": 74514,
+      "sha256": "91e952fa1fbd791814dfe5c2a66e9c8a72e854145f7f1ea735c14451c2328325",
+      "photoCredit": {
+        "author": "YellowstoneTrinity / William Zhang",
+        "source": "https://commons.wikimedia.org/wiki/File:OWard_MidOhio_2024_FastSix.jpg",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "sourceRevision": "https://commons.wikimedia.org/w/index.php?title=File:OWard_MidOhio_2024_FastSix.jpg&oldid=1222549180",
+      "sourceDimensions": [8697, 4892],
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d6/OWard_MidOhio_2024_FastSix.jpg",
+      "downloadedDimensions": [8697, 4892],
+      "downloadedBytes": 22889885,
+      "downloadedSha256": "e781f6807a5b5e054af222aa7d959d00b4f1c34067e65f9a103e5a39c08154e2",
+      "licensePageSha256": "4df02f951c168cd8bef054aa64eba2a1ed5bc210e582eb116bf86af3c4fe111a",
+      "sourceEvidence": "Own-work photographic file with explicit CC0 1.0 licensing declaration. Race-car pages also identify Sony camera capture; Puggle page identifies Canon capture.",
+      "inspected": true
+    },
+    {
+      "key": "red-indy-race-car",
+      "src": "/images/library/photos/red-indy-race-car.webp",
+      "width": 960,
+      "height": 540,
+      "bytes": 84586,
+      "sha256": "88c0f55f05b55f0f1f645d0b334aca509f601917046005e0b09336aa6e21ad32",
+      "photoCredit": {
+        "author": "YellowstoneTrinity / William Zhang",
+        "source": "https://commons.wikimedia.org/wiki/File:Scott_McLaughlin_MidOhio_2024.jpg",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "sourceRevision": "https://commons.wikimedia.org/w/index.php?title=File:Scott_McLaughlin_MidOhio_2024.jpg&oldid=1179370856",
+      "sourceDimensions": [8363, 4704],
+      "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Scott_McLaughlin_MidOhio_2024.jpg/960px-Scott_McLaughlin_MidOhio_2024.jpg",
+      "downloadedDimensions": [960, 540],
+      "downloadedBytes": 131214,
+      "downloadedSha256": "1f67dd3880f6fb4f2913abcb8e4f6ad16d1b1a9f4dbe2d8cf8d4f4353be07b78",
+      "licensePageSha256": "9fc65368348aaa7f72c16550a35f893853d415db6754c9311286e432c7efc0ec",
+      "sourceEvidence": "Own-work photographic file with explicit CC0 1.0 licensing declaration. Race-car pages also identify Sony camera capture; Puggle page identifies Canon capture.",
+      "inspected": true
+    }
+  ],
+  "addedBytes": 364184
+}

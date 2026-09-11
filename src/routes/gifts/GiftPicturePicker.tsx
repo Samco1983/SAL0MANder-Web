@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { PhotoCredit } from '@components/ui/PhotoCredit'
 import { PUZZLE_LIBRARY, PUZZLE_PICTURE_CATEGORIES } from '@content/puzzleLibrary'
 import styles from './GiftPicturePicker.module.css'
 
@@ -12,12 +13,16 @@ export function GiftPicturePicker({
   const id = useId()
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
+  const [photosOnly, setPhotosOnly] = useState(false)
   const search = query.trim().toLowerCase()
   const pictures = PUZZLE_LIBRARY.filter(
     (picture) =>
+      (!photosOnly || Boolean(picture.photoCredit)) &&
       (!category || picture.category === category) &&
       (!search ||
-        `${picture.name} ${picture.alt} ${picture.category}`.toLowerCase().includes(search)),
+        `${picture.name} ${picture.alt} ${picture.category} ${picture.searchTerms?.join(' ') ?? ''}`
+          .toLowerCase()
+          .includes(search)),
   )
   const selected = PUZZLE_LIBRARY.find((picture) => picture.key === selectedKey)
 
@@ -30,7 +35,7 @@ export function GiftPicturePicker({
             id={`${id}-search`}
             type="search"
             value={query}
-            placeholder="Try dinosaurs, birds or castles"
+            placeholder="Try puppies, race cars or dinosaurs"
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
@@ -48,17 +53,26 @@ export function GiftPicturePicker({
           </select>
         </label>
       </div>
+      <label className={styles.photoToggle}>
+        <input
+          type="checkbox"
+          checked={photosOnly}
+          onChange={(event) => setPhotosOnly(event.target.checked)}
+        />
+        Real photos only
+      </label>
       <p className={styles.summary} aria-live="polite">
         {pictures.length} of {PUZZLE_LIBRARY.length} pictures
         {selected ? ` · Selected picture: ${selected.name}` : ' · Choose one for your gift'}
       </p>
-      {query || category ? (
+      {query || category || photosOnly ? (
         <button
           className={styles.clear}
           type="button"
           onClick={() => {
             setQuery('')
             setCategory('')
+            setPhotosOnly(false)
           }}
         >
           Show all pictures
@@ -67,25 +81,29 @@ export function GiftPicturePicker({
       {pictures.length === 0 ? <p>No pictures match. Try another search or theme.</p> : null}
       <div className={styles.grid}>
         {pictures.map((picture) => (
-          <button
-            key={picture.key}
-            type="button"
-            className={styles.picture}
-            aria-label={`Choose ${picture.name}`}
-            aria-pressed={picture.key === selectedKey}
-            onClick={() => onSelect(picture.key)}
-          >
-            <img
-              src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}${picture.src}`}
-              alt={picture.alt}
-              width={picture.width}
-              height={picture.height}
-              loading="lazy"
-              decoding="async"
-            />
-            <span className={styles.name}>{picture.name}</span>
-            {picture.key === selectedKey ? <span className={styles.selected}>Selected</span> : null}
-          </button>
+          <div className={styles.option} key={picture.key}>
+            <button
+              type="button"
+              className={styles.picture}
+              aria-label={`Choose ${picture.name}`}
+              aria-pressed={picture.key === selectedKey}
+              onClick={() => onSelect(picture.key)}
+            >
+              <img
+                src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}${picture.src}`}
+                alt={picture.alt}
+                width={picture.width}
+                height={picture.height}
+                loading="lazy"
+                decoding="async"
+              />
+              <span className={styles.name}>{picture.name}</span>
+              {picture.key === selectedKey ? (
+                <span className={styles.selected}>Selected</span>
+              ) : null}
+            </button>
+            <PhotoCredit credit={picture.photoCredit} />
+          </div>
         ))}
       </div>
     </div>

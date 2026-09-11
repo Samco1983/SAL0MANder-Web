@@ -1,4 +1,5 @@
-import { existsSync, statSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -45,8 +46,8 @@ describe('the puzzle picture library', () => {
       total += bytes
       expect(bytes, `${picture.src} is ${Math.round(bytes / 1024)} KB`).toBeLessThan(200 * 1024)
     }
-    // Fifteen lazy-loaded options, reusing six previews already shipped on the same origin.
-    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(1280 * 1024)
+    // Nineteen lazy-loaded options, including four licensed photos totaling less than 360 KiB.
+    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(1536 * 1024)
   })
 
   /**
@@ -84,6 +85,13 @@ describe('the puzzle picture library', () => {
       saturn: '/images/library/landscape/photo/saturn_nebula_astrophotography.webp',
       'dragon-castle': '/images/library/portrait/cartoon/floating_island_castle_dragon.webp',
       'highland-castle': '/images/library/portrait/photo/scottish_highland_stone_fortress.webp',
+      'autumn-woodland': '/images/library/custom-wide/cartoon/enchanted_autumn_woodland.webp',
+      'dinosaur-valley': '/images/library/custom-wide/cartoon/dinosaur_jurassic_valley.webp',
+      'alpine-lake': '/images/library/custom-wide/photo/alpine_lake_wildflowers.webp',
+      'rainforest-macaws': '/images/library/custom-wide/photo/amazon_rainforest_macaws.webp',
+      'steampunk-airship': '/images/library/custom-tall/cartoon/steampunk_flying_airship.webp',
+      'mountain-steam-train':
+        '/images/library/custom-tall/photo/steam_locomotive_mountain_viaduct.webp',
     }
     for (const [key, src] of Object.entries(existing)) {
       expect(PUZZLE_LIBRARY.find((picture) => picture.key === key)?.src).toBe(src)
@@ -101,6 +109,50 @@ describe('the puzzle picture library', () => {
         category,
       ).toBe(true)
     }
+  })
+
+  it('flags only the verified puppy and race-car photographs for the real-photo filter', () => {
+    const photos = PUZZLE_LIBRARY.filter((picture) => picture.photoCredit)
+    expect(photos.map((picture) => picture.key)).toEqual([
+      'sleeping-puppies',
+      'puggle-puppy',
+      'orange-indy-race-car',
+      'red-indy-race-car',
+    ])
+    expect(photos.filter((picture) => picture.category === 'Animals')).toHaveLength(2)
+    expect(photos.filter((picture) => picture.category === 'Vehicles')).toHaveLength(2)
+    for (const photo of photos) {
+      expect(photo.alt).toMatch(/^Photograph of /)
+      expect(photo.photoCredit?.author).not.toBe('')
+      expect(photo.photoCredit?.source).toMatch(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/)
+      expect(photo.photoCredit?.licenseUrl).toMatch(/^https:\/\//)
+      expect(['CC0 1.0', 'Public domain']).toContain(photo.photoCredit?.license)
+    }
+  })
+
+  it('keeps credited photographs tied to their inspected and licensed asset receipt', () => {
+    const manifest = JSON.parse(
+      readFileSync('docs/coordination/GIFT-REAL-PHOTO-SOURCES-2026-09-10.json', 'utf8'),
+    )
+    const photos = PUZZLE_LIBRARY.filter((picture) => picture.photoCredit)
+    expect(manifest.entries).toHaveLength(photos.length)
+    let addedBytes = 0
+    for (const photo of photos) {
+      const entry = manifest.entries.find((item: { key: string }) => item.key === photo.key)
+      expect(entry).toBeDefined()
+      expect(entry.src).toBe(photo.src)
+      expect(entry.photoCredit).toEqual(photo.photoCredit)
+      expect([entry.width, entry.height]).toEqual([photo.width, photo.height])
+      expect(entry.inspected).toBe(true)
+      const data = readFileSync(join('public', photo.src))
+      expect(data.toString('ascii', 0, 4)).toBe('RIFF')
+      expect(data.toString('ascii', 8, 12)).toBe('WEBP')
+      expect(data.length).toBe(entry.bytes)
+      expect(createHash('sha256').update(data).digest('hex')).toBe(entry.sha256)
+      addedBytes += data.length
+    }
+    expect(addedBytes).toBe(manifest.addedBytes)
+    expect(addedBytes).toBeLessThan(360 * 1024)
   })
 
   /**

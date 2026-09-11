@@ -58,3 +58,48 @@ it('keeps picture selection operable with a normal keyboard button action', asyn
   expect(airship).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByText(/Selected picture: Sunset airship/)).toBeVisible()
 })
+
+it('filters to verified photos and keeps the selected artwork when filters are cleared', async () => {
+  const user = userEvent.setup()
+  const onSelect = vi.fn()
+  render(<GiftPicturePicker selectedKey="red-panda" onSelect={onSelect} />)
+  const real = PUZZLE_LIBRARY.filter((picture) => picture.photoCredit)
+  expect(real.length).toBeGreaterThanOrEqual(4)
+  await user.click(screen.getByRole('checkbox', { name: 'Real photos only' }))
+  expect(screen.getAllByRole('button', { name: /^Choose / })).toHaveLength(real.length)
+  expect(screen.queryByRole('button', { name: 'Choose Forest guardian' })).toBeNull()
+  for (const picture of real) {
+    expect(screen.getByRole('button', { name: 'Choose ' + picture.name })).toBeVisible()
+    expect(
+      screen
+        .getAllByRole('link', { name: picture.photoCredit!.author })
+        .some((link) => link.getAttribute('href') === picture.photoCredit!.source),
+    ).toBe(true)
+  }
+  await user.click(screen.getByRole('button', { name: 'Show all pictures' }))
+  expect(screen.getByRole('button', { name: 'Choose Red panda forest' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  expect(onSelect).not.toHaveBeenCalled()
+})
+
+it('finds both puppy and race-car photos using common search spellings', async () => {
+  const user = userEvent.setup()
+  render(<GiftPicturePicker selectedKey="" onSelect={vi.fn()} />)
+  const search = screen.getByRole('searchbox', { name: 'Find a picture' })
+  for (const query of ['puppy', 'puppies']) {
+    await user.clear(search)
+    await user.type(search, query)
+    expect(screen.getByRole('button', { name: 'Choose Sleeping puppies' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Choose Puggle puppy in flowers' })).toBeVisible()
+    expect(screen.getAllByRole('button', { name: /^Choose / })).toHaveLength(2)
+  }
+  for (const query of ['racecar', 'race cars']) {
+    await user.clear(search)
+    await user.type(search, query)
+    expect(screen.getByRole('button', { name: 'Choose Orange Indy race car' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Choose Red Indy race car' })).toBeVisible()
+    expect(screen.getAllByRole('button', { name: /^Choose / })).toHaveLength(2)
+  }
+})

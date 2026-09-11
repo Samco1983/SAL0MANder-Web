@@ -1,3 +1,4 @@
+import { PhotoCredit } from '@components/ui/PhotoCredit'
 import { env } from '@config/env'
 import { paths, buildPath } from '@config/routes'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
@@ -399,6 +400,7 @@ export function HomePage() {
                 decoding="async"
                 className={styles.galleryImage}
               />
+              <PhotoCredit credit={picture.photoCredit} />
             </li>
           ))}
         </ul>
