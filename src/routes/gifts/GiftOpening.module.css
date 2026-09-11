@@ -1,0 +1,347 @@
+.reveal {
+  position: relative;
+  margin-block: var(--space-5);
+  padding: var(--space-4) var(--space-3) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(
+      ellipse at 50% 35%,
+      color-mix(in srgb, var(--color-accent) 12%, transparent),
+      transparent 70%
+    ),
+    var(--color-surface);
+  overflow: hidden;
+  isolation: isolate;
+}
+.scene {
+  position: relative;
+  height: 280px;
+  max-width: 340px;
+  margin: 0 auto;
+  pointer-events: none;
+}
+.glow {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  left: calc(50% - 110px);
+  top: 15px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-accent) 35%, transparent),
+    transparent 70%
+  );
+  opacity: 0.35;
+}
+.parcel {
+  position: absolute;
+  width: 180px;
+  height: 135px;
+  bottom: 25px;
+  left: calc(50% - 90px);
+  filter: drop-shadow(0 12px 12px color-mix(in srgb, var(--color-text) 14%, transparent));
+}
+.front {
+  position: absolute;
+  inset: 24px 0 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(
+    125deg,
+    color-mix(in srgb, var(--color-accent) 80%, white),
+    var(--color-accent)
+  );
+  border: 2px solid color-mix(in srgb, var(--color-accent) 75%, var(--color-text));
+  border-radius: 5px 5px 14px 14px;
+}
+.front::before {
+  content: '';
+  position: absolute;
+  inset: 0 42%;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+}
+.front > span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--color-accent);
+  background: var(--color-surface);
+  font-size: 26px;
+  box-shadow: 0 3px 7px #0002;
+}
+.lid {
+  position: absolute;
+  z-index: 3;
+  top: 12px;
+  left: -8px;
+  width: 196px;
+  height: 33px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--color-accent) 83%, white);
+  border: 2px solid color-mix(in srgb, var(--color-accent) 75%, var(--color-text));
+  transform-origin: 15% 80%;
+}
+.lid::before {
+  content: '';
+  position: absolute;
+  inset: 0 42%;
+  background: var(--color-surface);
+  opacity: 0.85;
+}
+.lid span::before,
+.lid span::after {
+  content: '';
+  position: absolute;
+  width: 43px;
+  height: 27px;
+  top: -30px;
+  border: 7px solid color-mix(in srgb, var(--color-accent) 45%, var(--color-surface));
+}
+.lid span::before {
+  left: 48px;
+  border-radius: 55% 55% 5% 55%;
+  transform: rotate(18deg);
+}
+.lid span::after {
+  right: 48px;
+  border-radius: 55% 55% 55% 5%;
+  transform: rotate(-18deg);
+}
+[data-wrapper='envelope'] .parcel {
+  height: 124px;
+  width: 190px;
+  left: calc(50% - 95px);
+}
+[data-wrapper='envelope'] .front {
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(
+    32deg,
+    color-mix(in srgb, var(--color-accent) 22%, var(--color-surface)) 49%,
+    color-mix(in srgb, var(--color-accent) 45%, var(--color-surface)) 50%
+  );
+}
+[data-wrapper='envelope'] .front::before {
+  inset: 0;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+}
+[data-wrapper='envelope'] .front > span {
+  margin-top: 26px;
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+[data-wrapper='envelope'] .lid {
+  inset: 0;
+  width: 100%;
+  height: 79px;
+  border: 0;
+  border-radius: 6px 6px 0 0;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: color-mix(in srgb, var(--color-accent) 65%, var(--color-surface));
+  transform-origin: center top;
+}
+[data-wrapper='envelope'] .lid::before,
+[data-wrapper='envelope'] .lid span {
+  display: none;
+}
+.piece {
+  position: absolute;
+  top: 168px;
+  left: calc(50% - 31px);
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 55%, var(--color-surface));
+  border-radius: 8px;
+  background-color: var(--color-surface);
+  background-size: 300% 300%;
+  color: var(--color-accent);
+  font-size: 27px;
+  font-weight: 800;
+  box-shadow: 0 4px 10px #0002;
+  opacity: 0;
+  transform: translate(0, 40px) scale(0.2);
+  z-index: 4;
+}
+.piece:nth-child(even) {
+  background-color: color-mix(in srgb, var(--color-accent) 13%, var(--color-surface));
+}
+.sparks {
+  position: absolute;
+  top: 125px;
+  left: 50%;
+  z-index: 5;
+}
+.sparks i {
+  position: absolute;
+  font-size: 22px;
+  color: var(--color-accent);
+  opacity: 0;
+  font-style: normal;
+}
+.openGift {
+  min-height: 50px;
+  padding: var(--space-3) var(--space-6);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-on-accent, #fff);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.openGift:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 4px;
+}
+.openGift:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+.hint,
+.caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin: var(--space-3) 0 0;
+}
+.caption {
+  font-weight: 700;
+}
+.contents > p {
+  overflow-wrap: anywhere;
+}
+[data-state='opening'] .parcel {
+  animation: shake 240ms ease-in-out both;
+}
+[data-state='opening'] .lid {
+  animation: lidPop 560ms 220ms ease-out both;
+}
+[data-state='opening'][data-wrapper='envelope'] .lid {
+  animation-name: flapOpen;
+}
+[data-state='opening'] .front {
+  animation: parcelFade 650ms 220ms both;
+}
+[data-state='opening'] .piece {
+  animation: pieceBurst 660ms calc(160ms + var(--delay)) cubic-bezier(0.2, 0.65, 0.3, 1) both;
+}
+[data-state='opening'] .glow {
+  animation: flash 850ms ease-out both;
+}
+[data-state='opening'] .sparks i {
+  animation: sparkle 650ms calc(180ms + var(--delay)) ease-out both;
+}
+[data-state='open'] .piece {
+  opacity: 1;
+  transform: translate(var(--x), var(--y));
+}
+[data-state='open'] .parcel {
+  visibility: hidden;
+}
+[data-state='open'] .glow {
+  opacity: 0.7;
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-5deg) translateY(-3px);
+  }
+  65% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes lidPop {
+  0% {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-20px, -135px) rotate(-26deg);
+    opacity: 0;
+  }
+}
+@keyframes flapOpen {
+  0% {
+    transform: perspective(500px) rotateX(0);
+  }
+  65% {
+    transform: perspective(500px) rotateX(170deg);
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(500px) rotateX(180deg);
+    opacity: 0;
+  }
+}
+@keyframes parcelFade {
+  0%,
+  35% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(30px) scale(0.8);
+    opacity: 0;
+  }
+}
+@keyframes pieceBurst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 40px) scale(0.2);
+  }
+  24% {
+    opacity: 1;
+  }
+  56% {
+    transform: translate(var(--burst-x), var(--burst-y)) rotate(var(--twist)) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(var(--x), var(--y)) rotate(0) scale(1);
+  }
+}
+@keyframes flash {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.5);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.55);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+@keyframes sparkle {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateY(20px) scale(0.3);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateY(150px) scale(0.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal *,
+  .reveal *::before,
+  .reveal *::after {
+    animation: none !important;
+  }
+}

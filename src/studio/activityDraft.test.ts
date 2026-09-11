@@ -63,10 +63,10 @@ describe('a new draft', () => {
     expect(d.config.schemaVersion).toBe(2)
   })
 
-  it('starts with drag-and-place, not Mystery Reveal', () => {
-    // Unity's field default is false. The demos set it true, but a teacher
-    // starting fresh should get the mode they did not have to ask for.
-    expect(newDraft('act_x', NOW).config.autoPlaceCorrectPieces).toBe(false)
+  it('starts new activities in Mystery Pictures with automatic reveal', () => {
+    const draft = newDraft('act_x', NOW)
+    expect(draft.config.activityType).toBe('MysteryReveal')
+    expect(draft.config.autoPlaceCorrectPieces).toBe(true)
   })
 
   it('starts with the picture guide hidden so pieces reveal the picture', () => {

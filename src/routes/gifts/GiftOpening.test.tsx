@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
-import { GiftOpening } from './GiftOpening'
+import { GiftOpening, GIFT_OPENING_MS } from './GiftOpening'
 
 afterEach(() => {
   cleanup()
@@ -44,7 +44,7 @@ it('finishes one short opening and cleans pending timers on unmount', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Open gift box' }))
   expect(screen.getByRole('button', { name: 'Unwrapping…' })).toBeDisabled()
   expect(vi.getTimerCount()).toBe(1)
-  act(() => vi.advanceTimersByTime(450))
+  act(() => vi.advanceTimersByTime(GIFT_OPENING_MS))
   expect(screen.getByRole('button', { name: 'Open puzzle' })).toHaveFocus()
   first.unmount()
   const otherTimers = vi.getTimerCount()

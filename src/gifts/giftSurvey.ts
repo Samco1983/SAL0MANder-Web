@@ -67,6 +67,22 @@ export const GIFT_SURVEY = [
   },
 ] as const
 
+/** Composer-only ideas. Keep these separate from the stable puzzle alternatives above. */
+export const GIFT_SURVEY_IDEAS = {
+  color: { icon: '🎨', shortLabel: 'Color', extra: ['Teal', 'Gold'] },
+  'ice-cream': { icon: '🍦', shortLabel: 'Ice cream', extra: ['Cookie dough', 'Salted caramel'] },
+  movie: { icon: '🎬', shortLabel: 'Movie', extra: ['Back to the Future', 'Spirited Away'] },
+  animal: { icon: '🐾', shortLabel: 'Animal', extra: ['Fox', 'Otter'] },
+  season: { icon: '🍂', shortLabel: 'Season', extra: [] },
+  snack: { icon: '🍿', shortLabel: 'Snack', extra: ['Chips', 'Cheese and crackers'] },
+  drink: { icon: '🥤', shortLabel: 'Drink', extra: ['Coffee', 'Sparkling water'] },
+  music: { icon: '🎵', shortLabel: 'Music', extra: ['R&B', 'Hip-hop'] },
+  weekend: { icon: '🌻', shortLabel: 'Free time', extra: ['Painting', 'Beach day'] },
+} as const satisfies Record<
+  (typeof GIFT_SURVEY)[number]['id'],
+  { icon: string; shortLabel: string; extra: readonly string[] }
+>
+
 export const MAX_GIFT_ANSWER_CHARACTERS = 40
 export const MAX_GIFT_ANSWER_BYTES = 64
 export function normalizeGiftAnswer(value: string): string {

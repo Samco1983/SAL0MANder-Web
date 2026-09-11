@@ -4,7 +4,7 @@ import { paths } from '@config/routes'
 import { onPreviewMessage } from '@unity/previewBridge'
 import { onSlideMessage } from '@unity/slideBridge'
 import { onPreviewAttemptMessage } from '@unity/previewAttemptBridge'
-import { GIFT_OCCASIONS, type GiftPresentation } from '@/gifts/giftPresentation'
+import { giftGreeting, type GiftPresentation } from '@/gifts/giftPresentation'
 import styles from './PuzzleGifts.module.css'
 
 /** Mount with a requestId key: replay receives a fresh latch without restarting Unity. */
@@ -91,7 +91,7 @@ export function GiftCelebration({
     }
   }, [requestId, channel])
   if (!finished) return null
-  const occasion = GIFT_OCCASIONS.find((item) => item.id === presentation.occasion)!
+  const message = giftGreeting(presentation)
   const decoration =
     presentation.celebration === 'hearts'
       ? '♥'
@@ -111,7 +111,7 @@ export function GiftCelebration({
         ))}
       </div>
       <p role="status">
-        <strong>Puzzle complete!</strong> {occasion.message}
+        <strong>Puzzle complete!</strong> {message}
       </p>
       <LinkButton to={paths.gifts} variant="secondary" size="sm">
         Make a gift
