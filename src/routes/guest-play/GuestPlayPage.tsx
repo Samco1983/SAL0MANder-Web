@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { env } from '@config/env'
 import { buildPath, paths } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
@@ -10,7 +10,11 @@ import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
 import { correlateAttempt, isUsableFinishedPayload, onUnityMessage } from '@unity/bridge'
-import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
+import { DEMO_MATH_COURSES, findDemoLevel } from '@content/demoLevels'
+import { ModeDemoChoices } from '@routes/demos/ModeDemoChoices'
+import { DemoLevelControls } from './DemoLevelControls'
+import { LearningOffers } from '@components/learning/LearningOffers'
+import { ShareCodeSchema } from '@contracts/v1'
 import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
@@ -76,7 +80,7 @@ function UndeliveredResult({
       <p className={styles.undeliveredBody}>
         {retryable
           ? 'You finished — nothing is lost yet. Saving it to your teacher did not go through, so try again when the connection is back. Keep this tab open until it saves.'
-          : "You finished — nothing is lost yet. Keep this tab open until it can be saved — closing or reloading it before then will lose the result."}
+          : 'You finished — nothing is lost yet. Keep this tab open until it can be saved — closing or reloading it before then will lose the result.'}
       </p>
       {retryable ? (
         <Button className={styles.retry} onClick={retry}>
@@ -98,7 +102,17 @@ function UndeliveredResult({
  */
 export function GuestPlayPage() {
   const { activityId } = useParams<{ activityId: string }>()
+  // Old demo links now lead to the single game; real authored/backend activities retain their flow.
+  if (!env.api.isConfigured && findDemoLevel(activityId)?.series === 'matching') {
+    return <Navigate to={paths.slideDemo} replace />
+  }
+  return <GuestActivityPage />
+}
+
+function GuestActivityPage() {
+  const { activityId } = useParams<{ activityId: string }>()
   const state = useGuestActivity(activityId)
+  const demoLevel = !env.api.isConfigured ? findDemoLevel(activityId) : undefined
   // Minted lazily on the device; not authentication, carries no PII.
   const identity = getGuestIdentity()
 
@@ -150,7 +164,9 @@ export function GuestPlayPage() {
 
       // Guard 1: a mode from a superseded boot, or with no attempt id at all,
       // must not latch — and therefore must not create a session.
-      const correlation = correlateAttempt(message, { clientAttemptId: attemptId })
+      const correlation = correlateAttempt(message, {
+        clientAttemptId: attemptId,
+      })
       if (correlation !== 'match') {
         if (!env.isProd) console.warn('[guest-play] mode-selected dropped:', correlation, message)
         return
@@ -210,7 +226,10 @@ export function GuestPlayPage() {
    * mode guard uses one: re-subscribing when the session id arrives would drop
    * a result landing in the gap.
    */
-  const correlationRef = useRef<{ attemptId: string | undefined; sessionId: string | undefined }>({
+  const correlationRef = useRef<{
+    attemptId: string | undefined
+    sessionId: string | undefined
+  }>({
     attemptId: undefined,
     sessionId: undefined,
   })
@@ -270,7 +289,8 @@ export function GuestPlayPage() {
         { requireSession: correlationRef.current.sessionId !== undefined },
       )
       if (correlation !== 'match') {
-        if (!env.isProd) console.warn('[guest-play] session-finished dropped:', correlation, message)
+        if (!env.isProd)
+          console.warn('[guest-play] session-finished dropped:', correlation, message)
         return
       }
 
@@ -339,6 +359,11 @@ export function GuestPlayPage() {
           state.status === 'error' ? null : (
             <UnityStage
               audience="student"
+              controls={
+                demoLevel && state.status === 'ready' ? (
+                  <DemoLevelControls level={demoLevel} completed={session.status === 'finished'} />
+                ) : undefined
+              }
               {...(activityId ? { activityId } : {})}
               {...(boot ? { boot } : {})}
               {...(sessionStarted ? { sessionStarted } : {})}
@@ -353,7 +378,9 @@ export function GuestPlayPage() {
               </p>
             ) : null}
 
-            {state.status === 'error' ? <LinkFailure error={state.error} retry={state.retry} /> : null}
+            {state.status === 'error' ? (
+              <LinkFailure error={state.error} retry={state.retry} />
+            ) : null}
 
             {session.status === 'result-undeliverable' ? (
               <UndeliveredResult
@@ -372,7 +399,9 @@ export function GuestPlayPage() {
                 <p className={styles.description}>{state.bundle.summary.description}</p>
                 {/* No `title` — the heading is directly above; repeating it
                     here would just be noise on this surface. */}
-                {activityId ? <SharePanel activityId={activityId} baseUrl={env.publicBaseUrl} /> : null}
+                {activityId ? (
+                  <SharePanel activityId={activityId} baseUrl={env.publicBaseUrl} />
+                ) : null}
               </>
             ) : null}
 
@@ -402,26 +431,16 @@ export function GuestPlayPage() {
   )
 }
 
-/** `/play` with no activity — a share link is what normally lands here. */
+/** The regular practice entry also helps students recover a shortened link. */
 export function GuestPlayIndexPage() {
-  /*
-    Who actually arrives here: a student whose share link was cut off. The
-    routing tests already prove a truncated /play/ lands on this page rather
-    than the 404, so this is a real arrival, not a developer browsing.
-
-    It used to show them `/play/<activity-id>` — URL syntax with angle
-    brackets, to a child — and a single link back to where they just came from.
-    A dead end dressed as an explanation.
-  */
-
-  // Only offered while there is no backend. The demo lives in the mock
-  // transport, so promising it against a real API would be offering an
-  // activity that may not exist — a worse dead end than the one being fixed,
-  // because this one looks like it works.
+  // These activities ship with the local catalog. An external API may not have them.
   const canDemo = !env.api.isConfigured
   const [shareCode, setShareCode] = useState('')
   const navigate = useNavigate()
-  const cleanedShareCode = shareCode.trim().toUpperCase()
+  const candidate = shareCode.trim()
+  const parsedCode = ShareCodeSchema.safeParse(candidate)
+  // Only class codes are case-insensitive. Activity IDs must retain their exact spelling.
+  const cleanedShareCode = parsedCode.success ? parsedCode.data : candidate
 
   function submitShareCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -431,48 +450,89 @@ export function GuestPlayIndexPage() {
 
   return (
     <AppShell>
-      <div className={styles.centeredInner}>
-        <h1 className={styles.centeredTitle}>This link looks incomplete</h1>
-        <p className={styles.centeredBody}>
-          Share links carry the name of the activity, and this one arrived without it — often
-          because a chat app or a class page cut it short. Nothing is wrong on your end. Ask your
-          teacher to send the whole link again.
-        </p>
-        <form className={styles.codeForm} onSubmit={submitShareCode}>
-          <label className={styles.codeLabel} htmlFor="guest-share-code">
-            Enter a class code
-          </label>
-          <p className={styles.centeredBody}>
-            Use the class code from your teacher or paste the missing end of the link.
+      <div className={styles.practicePage}>
+        <header className={styles.practiceHeader}>
+          <p className={styles.eyebrow}>
+            Free beta · A little practice. A picture worth revealing.
           </p>
-          <div className={styles.codeControls}>
-            <input
-              id="guest-share-code"
-              className={styles.codeInput}
-              value={shareCode}
-              onChange={(event) => setShareCode(event.currentTarget.value)}
-              autoCapitalize="characters"
-              autoComplete="off"
-              spellCheck="false"
-              inputMode="text"
-            />
-            <Button type="submit" disabled={!cleanedShareCode}>
-              Open
-            </Button>
-          </div>
-        </form>
+          <h1 className={styles.centeredTitle}>Puzzle Practice</h1>
+          <p className={styles.centeredBody}>
+            Choose an activity or open one from your teacher. No account needed to play.
+          </p>
+        </header>
         {canDemo ? (
           <>
-            <p className={styles.centeredBody}>In the meantime, you can try a sample puzzle.</p>
-            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
-              Try a sample activity
-            </LinkButton>
+            <ModeDemoChoices />
+            <section className={styles.activitySection} aria-labelledby="practice-choices-title">
+              <h2 id="practice-choices-title">Choose a math topic</h2>
+              <p className={styles.centeredBody}>
+                In the game, choose Mystery Reveal to uncover the picture as you answer. You can
+                also choose a puzzle with pieces to place. Each math topic has three levels:
+                Warm-up, Practice, and Challenge, with four, nine, then sixteen pieces.
+              </p>
+              <div className={styles.activityGrid}>
+                {DEMO_MATH_COURSES.map((activity, index) => (
+                  <LinkButton
+                    key={activity.id}
+                    to={buildPath.guestPlay(activity.id)}
+                    variant="secondary"
+                    className={styles.activityChoice}
+                  >
+                    <span className={styles.activityNumber} aria-hidden="true">
+                      0{index + 1}
+                    </span>
+                    <strong>{activity.title}</strong>
+                    <span className={styles.activityDescription}>{activity.description}</span>
+                    <span className={styles.activityAction}>Play this activity →</span>
+                  </LinkButton>
+                ))}
+              </div>
+            </section>
           </>
         ) : null}
-        <LinkButton to={paths.giftPlay} variant="secondary">
-          Open a gift
+        <div className={styles.practiceExtras}>
+          <LinkButton to={paths.learn} variant="secondary">
+            Try a math lesson
+          </LinkButton>
+          <LinkButton to={paths.gifts} variant="secondary">
+            Make a puzzle gift
+          </LinkButton>
+          <LinkButton to={paths.giftPlay} variant="secondary">
+            Open a gift
+          </LinkButton>
+        </div>
+        <LearningOffers compact />
+        <section className={styles.classCodeSection} aria-labelledby="class-code-title">
+          <h2 id="class-code-title">Have an activity from your teacher?</h2>
+          <p id="class-code-help" className={styles.centeredBody}>
+            Use the class code from your teacher or paste the missing end of the link. If a link was
+            cut short, ask your teacher to send the whole link again.
+          </p>
+          <form className={styles.codeForm} onSubmit={submitShareCode}>
+            <label className={styles.codeLabel} htmlFor="guest-share-code">
+              Class code or activity ID
+            </label>
+            <div className={styles.codeControls}>
+              <input
+                id="guest-share-code"
+                className={styles.codeInput}
+                value={shareCode}
+                onChange={(event) => setShareCode(event.currentTarget.value)}
+                aria-describedby="class-code-help"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck="false"
+                inputMode="text"
+              />
+              <Button type="submit" disabled={!cleanedShareCode}>
+                Open activity
+              </Button>
+            </div>
+          </form>
+        </section>
+        <LinkButton to={paths.home} variant="secondary">
+          Back to home
         </LinkButton>
-        <LinkButton to={paths.home}>Back to home</LinkButton>
       </div>
     </AppShell>
   )

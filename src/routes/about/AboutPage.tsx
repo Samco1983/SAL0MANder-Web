@@ -3,7 +3,26 @@ import { buildPath, paths } from '@config/routes'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 import { AppShell } from '@components/layout/AppShell'
 import { LinkButton } from '@components/ui/Button'
+import { PhotoCredit } from '@components/ui/PhotoCredit'
+import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import styles from './AboutPage.module.css'
+
+// Keep this list aligned with Unity's DemoPictureCatalog. Rendering credits does not load photos.
+const DEMO_PHOTO_KEYS = new Set([
+  'sleeping-puppies',
+  'puggle-puppy',
+  'orange-indy-race-car',
+  'red-indy-race-car',
+  'photo-lion-cub',
+  'photo-tiger-looking',
+  'photo-bear-cub',
+  'photo-rainbow-ice-cream',
+  'photo-cat-laptop-yawn',
+  'photo-golden-dog',
+  'photo-mountain-lake-dusk',
+  'photo-tropical-beach',
+])
+const DEMO_PHOTOS = PUZZLE_LIBRARY.filter((picture) => DEMO_PHOTO_KEYS.has(picture.key))
 
 /**
  * Why this exists, in the author's own words.
@@ -90,7 +109,9 @@ export function AboutPage() {
             to go next.
           </p>
 
-          <h2 className={styles.sectionTitle}>It started with math. It was never meant to stop there.</h2>
+          <h2 className={styles.sectionTitle}>
+            It started with math. It was never meant to stop there.
+          </h2>
 
           <p>
             Math is the classroom I know best, so it is where I started. But the question underneath
@@ -133,8 +154,29 @@ export function AboutPage() {
             somebody else takes further, then something meaningful happened.
           </p>
 
-          <p>That&apos;s the kind of progress I believe in, and I&apos;m going to keep building toward it.</p>
+          <p>
+            That&apos;s the kind of progress I believe in, and I&apos;m going to keep building
+            toward it.
+          </p>
         </article>
+
+        <section className={styles.section} aria-labelledby="demo-photo-credits">
+          <h2 className={styles.sectionTitle} id="demo-photo-credits">
+            Demo photo credits
+          </h2>
+          <p>
+            These photographs appear in the demo picture rotation. The source and licence links
+            identify each photographer and the terms for their image. The game copies are resized
+            JPEG versions of the credited library images; puzzle pieces are drawn by the game.
+          </p>
+          <ul className={styles.list}>
+            {DEMO_PHOTOS.map((picture) => (
+              <li key={picture.key}>
+                <strong>{picture.name}</strong> <PhotoCredit credit={picture.photoCredit} />
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <section className={styles.section} aria-labelledby="contact">
           <h2 className={styles.sectionTitle} id="contact">
@@ -155,7 +197,9 @@ export function AboutPage() {
         </section>
 
         <footer className={styles.footer}>
-          <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Try an activity</LinkButton>
+          <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
+            Try an activity
+          </LinkButton>
           <LinkButton to={paths.privacy} variant="secondary">
             Privacy &amp; student data
           </LinkButton>

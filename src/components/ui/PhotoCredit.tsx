@@ -7,6 +7,12 @@ export function PhotoCredit({ credit }: { credit?: PuzzlePicture['photoCredit'] 
   return (
     <span className={styles.credit}>
       Photo:{' '}
+      {credit.title ? (
+        <>
+          {credit.title}
+          {' · '}
+        </>
+      ) : null}
       <a href={credit.source} target="_blank" rel="noopener noreferrer">
         {credit.author}
       </a>
@@ -14,6 +20,7 @@ export function PhotoCredit({ credit }: { credit?: PuzzlePicture['photoCredit'] 
       <a href={credit.licenseUrl} target="_blank" rel="noopener noreferrer">
         {credit.license}
       </a>
+      {credit.modifications ? ` · ${credit.modifications}` : null}
     </span>
   )
 }

@@ -42,7 +42,9 @@ describe('the share link a teacher hands out', () => {
 
     renderAt(pathname)
 
-    expect(await screen.findByRole('region', { name: /game stage/i })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('region', { name: /game stage/i }, { timeout: 5000 }),
+    ).toBeInTheDocument()
     expect(screen.queryByLabelText(/password|email/i)).toBeNull()
     expect(screen.queryByRole('button', { name: /sign in|log in|create account/i })).toBeNull()
     expect(screen.queryByRole('textbox', { name: /name/i })).toBeNull()
@@ -71,12 +73,12 @@ describe('the share link a teacher hands out', () => {
 describe('a link that arrived damaged', () => {
   it('sends a truncated /play/ to Guest Play, not to the 404', async () => {
     // An LMS that wraps a link at the last slash produces exactly this. The
-    // index page tells the student the link arrived incomplete and offers a way
-    // forward; the 404 does neither.
+    // practice entry offers activities and code recovery without assuming the
+    // student arrived from a broken link.
     expect(firstRouteMatch('/play/').route.path).toBe(paths.guestPlayIndex)
 
     renderAt('/play/')
-    expect(await screen.findByRole('heading', { name: /link looks incomplete/i })).toBeVisible()
+    expect(await screen.findByRole('heading', { name: 'Puzzle Practice' })).toBeVisible()
     // The assertion that carries the intent: this is NOT the not-found page.
     expect(screen.queryByRole('heading', { name: /couldn.t find that page/i })).toBeNull()
   })

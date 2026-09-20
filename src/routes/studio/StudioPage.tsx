@@ -14,11 +14,18 @@ import {
   type ActivityDraft,
 } from '@studio/activityDraft'
 import { loadDrafts, saveDrafts } from '@studio/draftStorage'
-import { copyBackupDrafts, createDraftBackup, DraftBackupError, readDraftBackupFile } from '@studio/draftBackup'
+import {
+  copyBackupDrafts,
+  createDraftBackup,
+  DraftBackupError,
+  readDraftBackupFile,
+} from '@studio/draftBackup'
 import { ImagePanel } from './ImagePanel'
 import { OptionsPanel } from './OptionsPanel'
 import { QuestionsPanel } from './QuestionsPanel'
 import { StudioPreview } from './StudioPreview'
+import { useLocalPhoto } from '@/media/useLocalPhoto'
+import { customGiftPicture } from '@/gifts/giftPicture'
 import styles from './StudioPage.module.css'
 
 /**
@@ -70,7 +77,10 @@ const GRADES = ['3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th',
 
 const TYPE_LABELS: Record<(typeof ACTIVITY_TYPES)[number], { name: string; blurb: string }> = {
   Learning: { name: 'Learning puzzle', blurb: 'Answer a question, then place the piece yourself.' },
-  MysteryReveal: { name: 'Mystery Pictures', blurb: 'Start here: each right answer uncovers part of the picture automatically.' },
+  MysteryReveal: {
+    name: 'Mystery Pictures',
+    blurb: 'Start here: each right answer uncovers part of the picture automatically.',
+  },
   Classic: { name: 'Classic puzzle', blurb: 'Just the jigsaw. No questions.' },
   Both: { name: 'Both', blurb: 'Students choose which way to play.' },
 }
@@ -78,8 +88,17 @@ const TYPE_LABELS: Record<(typeof ACTIVITY_TYPES)[number], { name: string; blurb
 export function StudioPage() {
   const [searchParams] = useSearchParams()
   const [drafts, setDrafts] = useState<ActivityDraft[]>(() => loadDrafts())
-  const [activeId, setActiveId] = useState<string | null>(() => loadDrafts()[0]?.config.activityId ?? null)
-  const [tab, setTab] = useState<TabId>(() => searchParams.get('tab') === 'questions' ? 'questions' : 'overview')
+  const [activeId, setActiveIdState] = useState<string | null>(
+    () => loadDrafts()[0]?.config.activityId ?? null,
+  )
+  const localPhoto = useLocalPhoto()
+  function setActiveId(id: string | null) {
+    localPhoto.clear()
+    setActiveIdState(id)
+  }
+  const [tab, setTab] = useState<TabId>(() =>
+    searchParams.get('tab') === 'questions' ? 'questions' : 'overview',
+  )
   const [saveState, setSaveState] = useState<'saved' | 'saving' | 'failed'>('saved')
   const [backupMessage, setBackupMessage] = useState<{ error: boolean; text: string } | null>(null)
   const [importing, setImporting] = useState(false)
@@ -132,7 +151,11 @@ export function StudioPage() {
       if (!current) return
       const changed = mutate(current)
       const next = { ...changed, meta: { ...changed.meta, updatedAt: new Date().toISOString() } }
-      replaceDrafts(currentDrafts.current.map((d) => d.config.activityId === next.config.activityId ? next : d))
+      replaceDrafts(
+        currentDrafts.current.map((d) =>
+          d.config.activityId === next.config.activityId ? next : d,
+        ),
+      )
       if (timer.current) clearTimeout(timer.current)
       timer.current = setTimeout(flush, 500)
     },
@@ -173,9 +196,18 @@ export function StudioPage() {
       link.remove()
       // Give the browser time to begin the download before releasing its data.
       window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-      setBackupMessage({ error: false, text: 'Backup download started. Keep the file somewhere you can find it again.' })
+      setBackupMessage({
+        error: false,
+        text: 'Backup download started. Keep the file somewhere you can find it again.',
+      })
     } catch (error) {
-      setBackupMessage({ error: true, text: error instanceof DraftBackupError ? error.message : 'The backup could not be downloaded. Keep this page open and try again.' })
+      setBackupMessage({
+        error: true,
+        text:
+          error instanceof DraftBackupError
+            ? error.message
+            : 'The backup could not be downloaded. Keep this page open and try again.',
+      })
     }
   }
 
@@ -191,7 +223,9 @@ export function StudioPage() {
       // next set before changing the editor, so a refused write is reversible.
       const next = [...imported, ...currentDrafts.current]
       if (!saveDrafts(next)) {
-        throw new DraftBackupError('Your browser could not save the imported activities. Existing activities have not been changed. Download a backup of your work and try again.')
+        throw new DraftBackupError(
+          'Your browser could not save the imported activities. Existing activities have not been changed. Download a backup of your work and try again.',
+        )
       }
       if (timer.current) clearTimeout(timer.current)
       currentDrafts.current = next
@@ -200,17 +234,53 @@ export function StudioPage() {
       setSaveState('saved')
       setActiveId(imported[0]!.config.activityId)
       setTab('overview')
-      setBackupMessage({ error: false, text: `Imported ${imported.length === 1 ? '1 activity as a new copy' : `${imported.length} activities as new copies`}. Your existing activities are still here.` })
+      setBackupMessage({
+        error: false,
+        text: `Imported ${imported.length === 1 ? '1 activity as a new copy' : `${imported.length} activities as new copies`}. Your existing activities are still here.`,
+      })
     } catch (error) {
       if (attempt !== importAttempt.current) return
-      setBackupMessage({ error: true, text: error instanceof DraftBackupError ? error.message : 'This backup could not be imported. Your activities have not been changed.' })
+      setBackupMessage({
+        error: true,
+        text:
+          error instanceof DraftBackupError
+            ? error.message
+            : 'This backup could not be imported. Your activities have not been changed.',
+      })
     } finally {
       if (attempt === importAttempt.current) setImporting(false)
     }
   }
 
   const rows = draft ? readiness(draft) : []
-  const picture = PUZZLE_LIBRARY.find((p) => p.key === draft?.meta.imageKey)
+  const localPicture = useMemo(
+    () =>
+      localPhoto.photo
+        ? {
+            ...customGiftPicture(localPhoto.photo),
+            name: 'Local photo',
+            alt: 'Your local photo preview',
+          }
+        : null,
+    [localPhoto.photo],
+  )
+  const picture = localPicture ?? PUZZLE_LIBRARY.find((p) => p.key === draft?.meta.imageKey)
+  // A transient override only: photo bytes and selection never enter draft autosave or backups.
+  const previewDraft = useMemo(
+    () =>
+      draft && localPicture
+        ? {
+            ...draft,
+            config: { ...draft.config, boardShape: localPicture.shape },
+            meta: { ...draft.meta, imageKey: 'custom' },
+          }
+        : draft,
+    [draft, localPicture],
+  )
+  const customPicture = useMemo(
+    () => (localPhoto.photo ? { key: 'custom', pngBase64: localPhoto.photo.pngBase64 } : undefined),
+    [localPhoto.photo],
+  )
 
   return (
     <AppShell>
@@ -231,7 +301,11 @@ export function StudioPage() {
               {saveState === 'saving' && 'Saving…'}
               {saveState === 'failed' && 'Not saved — keep this page open and retry'}
             </span>
-            {saveState === 'failed' && <Button variant="secondary" onClick={flush}>Retry save</Button>}
+            {saveState === 'failed' && (
+              <Button variant="secondary" onClick={flush}>
+                Retry save
+              </Button>
+            )}
             <Button variant="secondary" disabled={!draft} onClick={() => setTab('preview')}>
               Preview details
             </Button>
@@ -243,8 +317,14 @@ export function StudioPage() {
 
         <section className={styles.backups} aria-label="Activity backups">
           <div className={styles.barRight}>
-            <Button variant="secondary" disabled={drafts.length === 0} onClick={downloadBackup}>Download backup</Button>
-            <Button variant="secondary" disabled={importing} onClick={() => backupInput.current?.click()}>
+            <Button variant="secondary" disabled={drafts.length === 0} onClick={downloadBackup}>
+              Download backup
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={importing}
+              onClick={() => backupInput.current?.click()}
+            >
               {importing ? 'Importing…' : 'Import backup'}
             </Button>
             <input
@@ -260,8 +340,19 @@ export function StudioPage() {
               }}
             />
           </div>
-          <p className={styles.hint}>Keep a copy of all your activities, including notes, or move them to another browser. Imports add new copies. Maximum file size: 5 MB.</p>
-          {backupMessage && <p className={styles.backupMessage} role={backupMessage.error ? 'alert' : 'status'} data-error={backupMessage.error}>{backupMessage.text}</p>}
+          <p className={styles.hint}>
+            Keep a copy of all your activities, including notes, or move them to another browser.
+            Imports add new copies. Maximum file size: 5 MB.
+          </p>
+          {backupMessage && (
+            <p
+              className={styles.backupMessage}
+              role={backupMessage.error ? 'alert' : 'status'}
+              data-error={backupMessage.error}
+            >
+              {backupMessage.text}
+            </p>
+          )}
         </section>
 
         <div className={styles.body}>
@@ -282,7 +373,10 @@ export function StudioPage() {
                       type="button"
                       className={styles.railItem}
                       aria-current={d.config.activityId === activeId ? 'true' : undefined}
-                      onClick={() => { flush(); setActiveId(d.config.activityId) }}
+                      onClick={() => {
+                        flush()
+                        setActiveId(d.config.activityId)
+                      }}
                     >
                       <span className={styles.railItemTitle}>
                         {d.config.title.trim() || 'Untitled activity'}
@@ -338,129 +432,170 @@ export function StudioPage() {
                   >
                     {tab === 'overview' && (
                       <div className={styles.overview}>
-                      <section className={styles.form} aria-label="Activity details">
-                        <h2 className={styles.sectionTitle}>Activity overview</h2>
-                        <label className={styles.field}>
-                          <span className={styles.label}>Activity title</span>
-                          <input
-                            className={styles.input}
-                            value={draft.config.title}
-                            placeholder="Solar system puzzle"
-                            onChange={(e) => setConfig({ title: e.target.value })}
-                          />
-                        </label>
-
-                        <div className={styles.fieldRow}>
+                        <section className={styles.form} aria-label="Activity details">
+                          <h2 className={styles.sectionTitle}>Activity overview</h2>
                           <label className={styles.field}>
-                            <span className={styles.label}>Subject</span>
-                            <select
+                            <span className={styles.label}>Activity title</span>
+                            <input
                               className={styles.input}
-                              value={draft.meta.subject}
-                              onChange={(e) => setMeta({ subject: e.target.value })}
-                            >
-                              <option value="">Choose a subject</option>
-                              {SUBJECTS.map((s) => (
-                                <option key={s} value={s}>
-                                  {s}
-                                </option>
-                              ))}
-                            </select>
+                              value={draft.config.title}
+                              placeholder="Solar system puzzle"
+                              onChange={(e) => setConfig({ title: e.target.value })}
+                            />
                           </label>
-                          <label className={styles.field}>
-                            <span className={styles.label}>Grade level</span>
-                            <select
-                              className={styles.input}
-                              value={draft.meta.gradeLevel}
-                              onChange={(e) => setMeta({ gradeLevel: e.target.value })}
-                            >
-                              <option value="">Choose a grade</option>
-                              {GRADES.map((g) => (
-                                <option key={g} value={g}>
-                                  {g} grade
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        </div>
 
-                        <label className={styles.field}>
-                          <span className={styles.label}>Description</span>
-                          <textarea
-                            className={styles.textarea}
-                            rows={3}
-                            value={draft.meta.description}
-                            placeholder="What will students practise?"
-                            onChange={(e) => setMeta({ description: e.target.value })}
-                          />
-                        </label>
-
-                        <fieldset className={styles.fieldset}>
-                          <legend className={styles.label}>How students play</legend>
-                          <div className={styles.choices}>
-                            {ACTIVITY_TYPES.map((t) => (
-                              <label key={t} className={styles.choice} data-selected={draft.config.activityType === t}>
-                                <input
-                                  type="radio"
-                                  name="activityType"
-                                  checked={draft.config.activityType === t}
-                                  onChange={() =>
-                                    setConfig({
-                                      activityType: t,
-                                      // Mystery reveal IS auto-place; they are
-                                      // the same switch under two names.
-                                      autoPlaceCorrectPieces: t === 'MysteryReveal',
-                                    })
-                                  }
-                                />
-                                <span className={styles.choiceName}>{TYPE_LABELS[t].name}</span>
-                                <span className={styles.choiceBlurb}>{TYPE_LABELS[t].blurb}</span>
-                              </label>
-                            ))}
+                          <div className={styles.fieldRow}>
+                            <label className={styles.field}>
+                              <span className={styles.label}>Subject</span>
+                              <select
+                                className={styles.input}
+                                value={draft.meta.subject}
+                                onChange={(e) => setMeta({ subject: e.target.value })}
+                              >
+                                <option value="">Choose a subject</option>
+                                {SUBJECTS.map((s) => (
+                                  <option key={s} value={s}>
+                                    {s}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className={styles.field}>
+                              <span className={styles.label}>Grade level</span>
+                              <select
+                                className={styles.input}
+                                value={draft.meta.gradeLevel}
+                                onChange={(e) => setMeta({ gradeLevel: e.target.value })}
+                              >
+                                <option value="">Choose a grade</option>
+                                {GRADES.map((g) => (
+                                  <option key={g} value={g}>
+                                    {g} grade
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
                           </div>
-                        </fieldset>
 
-                        <label className={styles.field}>
-                          <span className={styles.label}>Your notes</span>
-                          <span className={styles.hint}>Only you can see these.</span>
-                          <textarea
-                            className={styles.textarea}
-                            rows={2}
-                            value={draft.meta.notes}
-                            onChange={(e) => setMeta({ notes: e.target.value })}
-                          />
-                        </label>
+                          <label className={styles.field}>
+                            <span className={styles.label}>Description</span>
+                            <textarea
+                              className={styles.textarea}
+                              rows={3}
+                              value={draft.meta.description}
+                              placeholder="What will students practise?"
+                              onChange={(e) => setMeta({ description: e.target.value })}
+                            />
+                          </label>
 
-                        <div className={styles.dangerRow}>
-                          <Button variant="secondary" onClick={() => removeActivity(draft.config.activityId)}>
-                            Delete this activity
-                          </Button>
-                        </div>
-                      </section>
-                      <section className={styles.summary} aria-label="Activity summary">
-                        <h2 className={styles.sectionTitle}>Activity summary</h2>
-                        {picture ? <img className={styles.summaryImage} src={picture.src} alt={picture.alt} /> :
-                          <Button variant="secondary" onClick={() => setTab('image')}>Choose puzzle image</Button>}
-                        <dl className={styles.summaryDetails}>
-                          <div><dt>Room type</dt><dd>Jigsaw puzzle</dd></div>
-                          <div><dt>Puzzle image</dt><dd>{picture?.name ?? 'Not selected'}</dd></div>
-                          <div><dt>Piece count</dt><dd>{draft.config.pieceCountPreset} pieces · {draft.config.boardShape}</dd></div>
-                          <div><dt>Questions</dt><dd>{draft.questions.length} questions</dd></div>
-                          <div><dt>Student mode</dt><dd>{TYPE_LABELS[draft.config.activityType].name}</dd></div>
-                          <div><dt>Status</dt><dd>Local draft</dd></div>
-                        </dl>
-                      </section>
+                          <fieldset className={styles.fieldset}>
+                            <legend className={styles.label}>How students play</legend>
+                            <div className={styles.choices}>
+                              {ACTIVITY_TYPES.map((t) => (
+                                <label
+                                  key={t}
+                                  className={styles.choice}
+                                  data-selected={draft.config.activityType === t}
+                                >
+                                  <input
+                                    type="radio"
+                                    name="activityType"
+                                    checked={draft.config.activityType === t}
+                                    onChange={() =>
+                                      setConfig({
+                                        activityType: t,
+                                        // Mystery reveal IS auto-place; they are
+                                        // the same switch under two names.
+                                        autoPlaceCorrectPieces: t === 'MysteryReveal',
+                                      })
+                                    }
+                                  />
+                                  <span className={styles.choiceName}>{TYPE_LABELS[t].name}</span>
+                                  <span className={styles.choiceBlurb}>{TYPE_LABELS[t].blurb}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </fieldset>
+
+                          <label className={styles.field}>
+                            <span className={styles.label}>Your notes</span>
+                            <span className={styles.hint}>Only you can see these.</span>
+                            <textarea
+                              className={styles.textarea}
+                              rows={2}
+                              value={draft.meta.notes}
+                              onChange={(e) => setMeta({ notes: e.target.value })}
+                            />
+                          </label>
+
+                          <div className={styles.dangerRow}>
+                            <Button
+                              variant="secondary"
+                              onClick={() => removeActivity(draft.config.activityId)}
+                            >
+                              Delete this activity
+                            </Button>
+                          </div>
+                        </section>
+                        <section className={styles.summary} aria-label="Activity summary">
+                          <h2 className={styles.sectionTitle}>Activity summary</h2>
+                          {picture ? (
+                            <img
+                              className={styles.summaryImage}
+                              src={picture.src}
+                              alt={picture.alt}
+                            />
+                          ) : (
+                            <Button variant="secondary" onClick={() => setTab('image')}>
+                              Choose puzzle image
+                            </Button>
+                          )}
+                          <dl className={styles.summaryDetails}>
+                            <div>
+                              <dt>Room type</dt>
+                              <dd>Jigsaw puzzle</dd>
+                            </div>
+                            <div>
+                              <dt>Puzzle image</dt>
+                              <dd>
+                                {localPicture
+                                  ? 'Local photo · not uploaded or approved'
+                                  : (picture?.name ?? 'Not selected')}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Piece count</dt>
+                              <dd>
+                                {draft.config.pieceCountPreset} pieces · {draft.config.boardShape}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Questions</dt>
+                              <dd>{draft.questions.length} questions</dd>
+                            </div>
+                            <div>
+                              <dt>Student mode</dt>
+                              <dd>{TYPE_LABELS[draft.config.activityType].name}</dd>
+                            </div>
+                            <div>
+                              <dt>Status</dt>
+                              <dd>Local draft</dd>
+                            </div>
+                          </dl>
+                        </section>
                       </div>
                     )}
 
                     {tab === 'questions' && (
-                      <QuestionsPanel
-                        draft={draft}
-                        onChange={(next) => update(() => next)}
-                      />
+                      <QuestionsPanel draft={draft} onChange={(next) => update(() => next)} />
                     )}
 
                     {tab === 'image' && (
-                      <ImagePanel draft={draft} onChange={(next) => update(() => next)} />
+                      <ImagePanel
+                        draft={draft}
+                        localPhoto={localPhoto}
+                        onChange={(next) => update(() => next)}
+                      />
                     )}
 
                     {tab === 'options' && (
@@ -468,7 +603,12 @@ export function StudioPage() {
                     )}
 
                     {tab === 'preview' && (
-                      <StudioPreview key={draft.config.activityId} draft={draft} />
+                      <StudioPreview
+                        key={`${draft.config.activityId}:${localPhoto.revision}`}
+                        draft={previewDraft!}
+                        photoPreparing={localPhoto.preparing}
+                        customPicture={customPicture}
+                      />
                     )}
                   </div>
 
@@ -481,10 +621,24 @@ export function StudioPage() {
                   <aside className={styles.checklist} aria-label="Before you publish">
                     <nav className={styles.quickActions} aria-label="Quick actions">
                       <h2 className={styles.checklistTitle}>Quick actions</h2>
-                      <Button variant="ghost" onClick={() => setTab('questions')}>Edit questions</Button>
-                      <Button variant="ghost" onClick={() => setTab('image')}>Change puzzle image</Button>
-                      <Button variant="ghost" onClick={() => { setTab('options'); setMeta({ optionsReviewed: true }) }}>Student settings</Button>
-                      <Button variant="ghost" onClick={() => setTab('preview')}>Preview details</Button>
+                      <Button variant="ghost" onClick={() => setTab('questions')}>
+                        Edit questions
+                      </Button>
+                      <Button variant="ghost" onClick={() => setTab('image')}>
+                        Change puzzle image
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setTab('options')
+                          setMeta({ optionsReviewed: true })
+                        }}
+                      >
+                        Student settings
+                      </Button>
+                      <Button variant="ghost" onClick={() => setTab('preview')}>
+                        Preview details
+                      </Button>
                     </nav>
                     <h2 className={styles.checklistTitle}>Readiness checklist</h2>
                     <ul className={styles.checkRows}>
@@ -519,7 +673,8 @@ export function StudioPage() {
 
         <p className={styles.footnote}>
           Activities are saved in this browser. Download a backup to keep a separate copy or import
-          it on another device. Publishing to a class needs the {env.appName} account system, which is not built yet.
+          it on another device. Publishing to a class needs the {env.appName} account system, which
+          is not built yet.
         </p>
       </div>
     </AppShell>

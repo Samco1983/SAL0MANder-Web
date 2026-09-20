@@ -70,7 +70,7 @@ export function useSlideSession(
       setTimeout(() => {
         terminal.current = true
         setMessage(
-          'This game build could not open Slide & Solve. Try again with the current game build.',
+          'This game build could not open Swap & Solve. Try again with the current game build.',
         )
         setStatus('error')
       }, 20000),

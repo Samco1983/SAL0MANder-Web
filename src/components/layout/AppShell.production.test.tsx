@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
+import { PUBLIC_TUTORING_BOOKING_URL } from '@config/classroom'
 
 vi.mock('@config/env', () => ({
   env: {
@@ -48,7 +49,7 @@ describe('AppShell in production', () => {
     expect(menu).toHaveAttribute('aria-expanded', 'true')
     const nav = screen.getByRole('navigation', { name: 'Main' })
     expect(nav.id).toBe(menu.getAttribute('aria-controls'))
-    within(nav).getByRole('link', { name: 'Play' }).focus()
+    within(nav).getByRole('link', { name: 'Puzzle Practice' }).focus()
     await user.keyboard('{Escape}')
     expect(menu).toHaveAttribute('aria-expanded', 'false')
     expect(menu).toHaveFocus()
@@ -66,7 +67,9 @@ describe('AppShell in production', () => {
     const menu = screen.getByRole('button', { name: 'Menu' })
     await user.click(menu)
     await user.click(
-      within(screen.getByRole('navigation', { name: 'Main' })).getByRole('link', { name: 'Play' }),
+      within(screen.getByRole('navigation', { name: 'Main' })).getByRole('link', {
+        name: 'Puzzle Practice',
+      }),
     )
     expect(menu).toHaveAttribute('aria-expanded', 'false')
   })
@@ -110,7 +113,11 @@ describe('AppShell in production', () => {
 
     // What a teacher should still see.
     expect(within(nav).getByRole('link', { name: 'Home' })).toBeInTheDocument()
-    expect(within(nav).getByRole('link', { name: 'Play' })).toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Puzzle Practice' })).toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Book Tutoring' })).toHaveAttribute(
+      'href',
+      PUBLIC_TUTORING_BOOKING_URL,
+    )
     expect(within(nav).getByRole('link', { name: 'Puzzle Gifts' })).toHaveAttribute(
       'href',
       '/gifts',

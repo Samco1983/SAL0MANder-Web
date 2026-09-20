@@ -16,9 +16,15 @@ const renderPage = () =>
 describe('privacy page', () => {
   it('states the claims a district actually asks about', () => {
     renderPage()
-    expect(screen.getByText(/no advertising anywhere/i)).toBeInTheDocument()
-    expect(screen.getByText(/no analytics services/i)).toBeInTheDocument()
-    expect(screen.getByText(/never ask a student for their real name/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/public puzzle pages do not include an advertising network/i),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', {
+        name: 'Guest puzzle play needs no account',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Guest puzzle play does not ask for a student/i)).toBeInTheDocument()
     expect(screen.getByText(/there is no sign-up/i)).toBeInTheDocument()
   })
 
@@ -48,7 +54,9 @@ describe('privacy page', () => {
    */
   it('gives teachers and district staff a working contact route', () => {
     renderPage()
-    const contacts = screen.getAllByRole('link', { name: 'samco1983@gmail.com' })
+    const contacts = screen.getAllByRole('link', {
+      name: 'samco1983@gmail.com',
+    })
     expect(contacts).toHaveLength(2)
     contacts.forEach((contact) => {
       expect(contact).toHaveAttribute('href', 'mailto:samco1983@gmail.com')
@@ -74,7 +82,28 @@ describe('privacy page', () => {
 
   it('lists what is stored rather than describing it vaguely', () => {
     renderPage()
-    expect(screen.getByRole('heading', { name: /what is stored on the device/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /what is stored on the device/i }),
+    ).toBeInTheDocument()
     expect(screen.getByText(/the nickname a player chose/i)).toBeInTheDocument()
   })
+})
+
+it('distinguishes guest play from remote tutoring records and provider services', () => {
+  const { container } = renderPage()
+  const text = container.textContent ?? ''
+  expect(text).toMatch(/Firebase Authentication/)
+  expect(text).toMatch(/Stripe handles card checkout/)
+  expect(text).toMatch(/Google Meet or Zoom/)
+  expect(text).toMatch(/Clearing browser data does not delete server-stored/)
+  expect(text).toMatch(/retention and deletion questions/i)
+  expect(text).toMatch(/If a play-session backend is configured/)
+  expect(text).not.toMatch(/grants access to nothing|contains no personal information/i)
+  expect(text).not.toMatch(
+    /loads no content from any outside company|comes from this one domain|student work is practice, not a record/i,
+  )
+  expect(screen.getByRole('link', { name: 'school technical summary' })).toHaveAttribute(
+    'href',
+    '/districts/',
+  )
 })

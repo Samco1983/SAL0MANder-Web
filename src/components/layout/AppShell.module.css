@@ -1,5 +1,6 @@
 .shell {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas: 'banner' 'header' 'main' 'footer';
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   min-height: 100dvh;
@@ -232,4 +233,49 @@
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+}
+
+.tutoringWordmark {
+  display: grid;
+  font-size: 1.125rem;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+.tutoringWordmark span {
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: var(--weight-medium);
+  margin-top: 0.2rem;
+}
+.bookingCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+.bookingCta:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+@media (max-width: 40rem) {
+  .bookingCta {
+    margin-left: auto;
+    max-width: 7rem;
+    text-align: center;
+  }
+}
+
+/* Let enlarged tutoring controls wrap instead of widening the entire page. */
+@media (max-width: 40rem) {
+  .shell[data-site='tutoring'] .header {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
 }

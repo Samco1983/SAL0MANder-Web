@@ -15,44 +15,74 @@ function Player({ preview, onEnd }: { preview: PreviewBoot; onEnd: () => void })
     return () => element?.close()
   }, [])
   return (
-    <dialog ref={dialog} className={styles.player} aria-label="Activity preview" onCancel={(event) => event.preventDefault()}>
+    <dialog
+      ref={dialog}
+      className={styles.player}
+      aria-label="Activity preview"
+      onCancel={(event) => event.preventDefault()}
+    >
       <header className={styles.toolbar}>
-        <div><strong>{preview.config.title}</strong><p>Student preview · Progress is temporary. Reloading starts a fresh attempt.</p></div>
-        <Button variant="secondary" onClick={onEnd}>End preview</Button>
+        <div>
+          <strong>{preview.config.title}</strong>
+          <p>Student preview · Progress is temporary. Reloading starts a fresh attempt.</p>
+        </div>
+        <Button variant="secondary" onClick={onEnd}>
+          End preview
+        </Button>
       </header>
       <UnityStage preview={preview} audience="student" />
     </dialog>
   )
 }
 
-export function StudioPreview({ draft }: { draft: ActivityDraft }) {
+export function StudioPreview({
+  draft,
+  customPicture,
+  photoPreparing = false,
+}: {
+  draft: ActivityDraft
+  customPicture?: { key: string; pngBase64: string }
+  photoPreparing?: boolean
+}) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [preview, setPreview] = useState<PreviewBoot | null>(null)
   const [preparing, setPreparing] = useState(false)
   const [error, setError] = useState('')
   const pending = useRef<AbortController | null>(null)
-  useEffect(() => () => pending.current?.abort(), [])
-  const problems = previewProblems(draft)
+  useEffect(() => () => pending.current?.abort(), [draft, customPicture])
+  const problems = previewProblems(draft, customPicture)
 
   async function start() {
+    if (photoPreparing || problems.length > 0) return
     pending.current?.abort()
     const controller = new AbortController()
     pending.current = controller
     setPreparing(true)
     setError('')
     try {
-      const prepared = await preparePreview(draft, `preview_${newId()}`, controller.signal)
+      const prepared = await preparePreview(
+        draft,
+        `preview_${newId()}`,
+        controller.signal,
+        customPicture,
+      )
       if (controller.signal.aborted) return
       // Keep the route in sync before mounting the preview. UnityStage passes
       // the separate immutable instance flag that protects student saves.
-      setSearchParams((current) => {
-        const next = new URLSearchParams(current)
-        next.set('teacherPreview', '1')
-        return next
-      }, { replace: true })
+      setSearchParams(
+        (current) => {
+          const next = new URLSearchParams(current)
+          next.set('teacherPreview', '1')
+          return next
+        },
+        { replace: true },
+      )
       setPreview(prepared)
     } catch (cause) {
-      if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'The preview could not be prepared. Try again.')
+      if (!controller.signal.aborted)
+        setError(
+          cause instanceof Error ? cause.message : 'The preview could not be prepared. Try again.',
+        )
     } finally {
       if (!controller.signal.aborted) setPreparing(false)
     }
@@ -60,24 +90,50 @@ export function StudioPreview({ draft }: { draft: ActivityDraft }) {
 
   function end() {
     setPreview(null)
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current)
-      next.delete('teacherPreview')
-      return next
-    }, { replace: true })
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        next.delete('teacherPreview')
+        return next
+      },
+      { replace: true },
+    )
   }
 
   return (
     <section className={styles.panel} aria-label="Student preview">
       <h2>Try your activity</h2>
       <p>Play with your selected picture, questions and student options in the real game.</p>
-      <p>Preview progress is temporary. Resume later is unavailable here. Your draft remains in Teacher Studio; Download backup saves a separate copy.</p>
-      {problems.length > 0 && <ul>{problems.map((problem) => <li key={problem}>{problem}</li>)}</ul>}
+      <p>
+        Preview progress is temporary. Resume later is unavailable here. Your draft remains in
+        Teacher Studio; Download backup saves a separate copy.
+      </p>
+      {customPicture && (
+        <p>
+          Your local photo is used only for this preview. It is not uploaded or approved for
+          sharing, and it is excluded from saved drafts and backups.
+        </p>
+      )}
+      {photoPreparing && <p role="status">Finish preparing your local photo before playing.</p>}
+      {problems.length > 0 && (
+        <ul>
+          {problems.map((problem) => (
+            <li key={problem}>{problem}</li>
+          ))}
+        </ul>
+      )}
       {error && <p role="alert">{error}</p>}
-      <Button disabled={preparing || problems.length > 0} onClick={() => void start()}>{preparing ? 'Preparing picture…' : 'Play preview'}</Button>
+      <Button
+        disabled={preparing || photoPreparing || problems.length > 0}
+        onClick={() => void start()}
+      >
+        {preparing ? 'Preparing picture…' : 'Play preview'}
+      </Button>
       {/* Router navigation may commit after the prepared snapshot. Never mount
           Unity until this route reflects the active preview. */}
-      {preview && searchParams.get('teacherPreview') === '1' && <Player key={preview.requestId} preview={preview} onEnd={end} />}
+      {preview && searchParams.get('teacherPreview') === '1' && (
+        <Player key={preview.requestId} preview={preview} onEnd={end} />
+      )}
     </section>
   )
 }

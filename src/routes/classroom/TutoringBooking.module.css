@@ -1,0 +1,107 @@
+.booking {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+  scroll-margin-top: 6rem;
+}
+.booking > div {
+  min-width: 0;
+}
+.booking h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin-block: 0 var(--space-3);
+}
+.booking h3 {
+  font-size: var(--text-lg);
+  margin-top: 0;
+}
+.eyebrow {
+  color: var(--color-accent);
+  font-weight: var(--weight-bold);
+  margin-top: 0;
+}
+.price {
+  font-size: 2.5rem;
+  font-weight: var(--weight-bold);
+  margin-block: var(--space-4);
+}
+.price span {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+.action {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: var(--weight-bold);
+}
+.action:focus-visible,
+.backup summary:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+.steps {
+  display: grid;
+  gap: var(--space-5);
+  padding-left: 1.5rem;
+}
+.steps li {
+  padding-left: var(--space-2);
+}
+.steps li::marker {
+  color: var(--color-accent);
+  font-weight: var(--weight-bold);
+}
+.steps strong,
+.steps span {
+  display: block;
+}
+.steps span {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  margin-top: var(--space-1);
+}
+.group {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+  font-size: var(--text-sm);
+}
+.backup {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+}
+.backup summary {
+  min-height: 44px;
+  padding-block: var(--space-3);
+  cursor: pointer;
+}
+.rawLink {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 48rem) {
+  .booking {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .action {
+    width: 100%;
+  }
+}

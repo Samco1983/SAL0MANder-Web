@@ -20,7 +20,7 @@ export const SlideBootSchema = z.strictObject({
     key: z
       .string()
       .max(128)
-      .refine((key) => PUZZLE_LIBRARY.some((picture) => picture.key === key)),
+      .refine((key) => key === 'custom' || PUZZLE_LIBRARY.some((picture) => picture.key === key)),
     pngBase64: z
       .string()
       .min(4)
@@ -87,9 +87,13 @@ export async function prepareSlide(
   imageKey: string,
   id: string,
   signal: AbortSignal,
+  customPicture?: { key: string; pngBase64: string },
 ): Promise<SlideBoot> {
   requestId.parse(id)
-  const picture = await prepareLibraryPicture(imageKey, signal)
+  signal.throwIfAborted()
+  if (customPicture && (imageKey !== 'custom' || customPicture.key !== 'custom'))
+    throw new Error('The custom picture does not match this puzzle.')
+  const picture = customPicture ?? (await prepareLibraryPicture(imageKey, signal))
   signal.throwIfAborted()
   return SlideBootSchema.parse({
     type: 'slide-boot',

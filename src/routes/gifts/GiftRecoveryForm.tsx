@@ -2,7 +2,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@components/ui/Button'
 import { paths } from '@config/routes'
-import { restoreGiftLink } from '@/gifts/giftLink'
+import { restoreSharedGiftLink } from '@/gifts/savedGiftLink'
 import styles from './PuzzleGifts.module.css'
 
 export function GiftRecoveryForm({ initialError = '' }: { initialError?: string }) {
@@ -14,10 +14,13 @@ export function GiftRecoveryForm({ initialError = '' }: { initialError?: string 
     event.preventDefault()
     if (submitted.current || !text.trim()) return
     try {
-      const local = new URL(restoreGiftLink(text, window.location.origin))
+      const local = new URL(restoreSharedGiftLink(text, window.location.origin))
       submitted.current = true
       // React Router supplies the local base path. The pasted origin is never navigated.
-      void navigate({ pathname: paths.giftPlay, hash: local.hash }, { replace: true })
+      void navigate(
+        { pathname: paths.giftPlay, search: local.search, hash: local.hash },
+        { replace: true },
+      )
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'This gift could not be opened.')
     }
@@ -26,8 +29,8 @@ export function GiftRecoveryForm({ initialError = '' }: { initialError?: string 
     <form className={styles.recovery} onSubmit={submit}>
       <label htmlFor="gift-recovery">Gift link or backup code</label>
       <p id="gift-recovery-help">
-        Paste the full message, gift link, or SAL0-GIFT: code from the sender. This helps when
-        clicking a link fails; the game website still needs to be reachable.
+        Paste the full message, gift link, SAL0-SAVED: code, or SAL0-GIFT: code from the sender.
+        This helps when clicking a link fails; the game website still needs to be reachable.
       </p>
       <textarea
         id="gift-recovery"

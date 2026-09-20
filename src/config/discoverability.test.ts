@@ -142,6 +142,7 @@ describe('what a crawler reads', () => {
   })
 
   it('keeps internal surfaces out of the index', () => {
+    expect(robots).toMatch(/^Allow: \/play\/\$$/m)
     expect(robots).toMatch(/^Disallow: \/console$/m)
     expect(robots).toMatch(/^Disallow: \/unity$/m)
   })

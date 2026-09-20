@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 import { paths } from '@config/routes'
+import { env } from '@config/env'
 import { HomePage } from '@routes/home/HomePage'
 import { NotFoundPage } from '@routes/not-found/NotFoundPage'
 import { RouteError } from './RouteError'
@@ -39,8 +40,23 @@ const AccessibilityPage = lazy(() =>
 const GuestPlayIndexPage = lazy(() =>
   import('@routes/guest-play/GuestPlayPage').then((m) => ({ default: m.GuestPlayIndexPage })),
 )
+const SlideDemoPage = lazy(() =>
+  import('@routes/demos/SlideDemoPage').then((m) => ({ default: m.SlideDemoPage })),
+)
 const StudioPage = lazy(() =>
   import('@routes/studio/StudioPage').then((m) => ({ default: m.StudioPage })),
+)
+const ClassroomPage = lazy(() =>
+  import('@routes/classroom/ClassroomPage').then((m) => ({ default: m.ClassroomPage })),
+)
+const GroupBookingPage = lazy(() =>
+  import('@routes/classes/GroupBookingPage').then((m) => ({ default: m.GroupBookingPage })),
+)
+const LearnPage = lazy(() =>
+  import('@routes/learn/LearnPage').then((m) => ({ default: m.LearnPage })),
+)
+const SoundLibraryPage = lazy(() =>
+  import('@routes/sounds/SoundLibraryPage').then((m) => ({ default: m.SoundLibraryPage })),
 )
 const PuzzleGiftsPage = lazy(() =>
   import('@routes/gifts/PuzzleGiftsPage').then((m) => ({ default: m.PuzzleGiftsPage })),
@@ -77,41 +93,57 @@ const unityHostElement = split(<UnityHostPage />)
  * nothing about the table that ships. Exporting the array lets a test mount
  * *these* routes in a memory router.
  */
-export const routes: RouteObject[] = [
-  { path: paths.home, element: <HomePage />, errorElement: <RouteError /> },
-  {
-    path: paths.studio,
-    element: split(<StudioPage />),
-    errorElement: <RouteError />,
-  },
-  {
-    path: paths.guestPlayIndex,
-    element: split(<GuestPlayIndexPage />),
-    errorElement: <RouteError />,
-  },
-  { path: paths.guestPlay, element: split(<GuestPlayPage />), errorElement: <RouteError /> },
-  { path: paths.gifts, element: split(<PuzzleGiftsPage />), errorElement: <RouteError /> },
-  { path: paths.giftPlay, element: split(<GiftPlayPage />), errorElement: <RouteError /> },
-  { path: paths.about, element: split(<AboutPage />), errorElement: <RouteError /> },
-  { path: paths.terms, element: split(<TermsPage />), errorElement: <RouteError /> },
-  { path: paths.privacy, element: split(<PrivacyPage />), errorElement: <RouteError /> },
-  { path: paths.districts, element: split(<DistrictsPage />), errorElement: <RouteError /> },
-  {
-    path: paths.accessibility,
-    element: split(<AccessibilityPage />),
-    errorElement: <RouteError />,
-  },
-  { path: paths.profile, element: split(<ProfilePage />), errorElement: <RouteError /> },
-  { path: paths.unity, element: unityHostElement, errorElement: <RouteError /> },
-  // A saved link to the former standalone export now uses the same host,
-  // without redirecting away its query string or fragment.
-  { path: `${paths.unity}/index.html`, element: unityHostElement, errorElement: <RouteError /> },
-  { path: paths.console, element: split(<ConsolePage />), errorElement: <RouteError /> },
-  // The catch-all needs a boundary too: without one, a throw inside
-  // NotFoundPage renders React Router's default blank screen — the exact
-  // outcome RouteError exists to prevent.
-  { path: paths.notFound, element: <NotFoundPage />, errorElement: <RouteError /> },
-]
+export function createRoutes(siteMode: 'puzzles' | 'tutoring' = env.siteMode): RouteObject[] {
+  return [
+    {
+      path: paths.home,
+      element: siteMode === 'tutoring' ? split(<ClassroomPage />) : <HomePage />,
+      errorElement: <RouteError />,
+    },
+    {
+      path: paths.classes,
+      element: split(<GroupBookingPage />),
+      errorElement: <RouteError />,
+    },
+    {
+      path: paths.studio,
+      element: split(<StudioPage />),
+      errorElement: <RouteError />,
+    },
+    {
+      path: paths.guestPlayIndex,
+      element: split(<GuestPlayIndexPage />),
+      errorElement: <RouteError />,
+    },
+    { path: paths.guestPlay, element: split(<GuestPlayPage />), errorElement: <RouteError /> },
+    { path: paths.slideDemo, element: split(<SlideDemoPage />), errorElement: <RouteError /> },
+    { path: paths.gifts, element: split(<PuzzleGiftsPage />), errorElement: <RouteError /> },
+    { path: paths.classroom, element: split(<ClassroomPage />), errorElement: <RouteError /> },
+    { path: paths.learn, element: split(<LearnPage />), errorElement: <RouteError /> },
+    { path: paths.sounds, element: split(<SoundLibraryPage />), errorElement: <RouteError /> },
+    { path: paths.giftPlay, element: split(<GiftPlayPage />), errorElement: <RouteError /> },
+    { path: paths.about, element: split(<AboutPage />), errorElement: <RouteError /> },
+    { path: paths.terms, element: split(<TermsPage />), errorElement: <RouteError /> },
+    { path: paths.privacy, element: split(<PrivacyPage />), errorElement: <RouteError /> },
+    { path: paths.districts, element: split(<DistrictsPage />), errorElement: <RouteError /> },
+    {
+      path: paths.accessibility,
+      element: split(<AccessibilityPage />),
+      errorElement: <RouteError />,
+    },
+    { path: paths.profile, element: split(<ProfilePage />), errorElement: <RouteError /> },
+    { path: paths.unity, element: unityHostElement, errorElement: <RouteError /> },
+    // A saved link to the former standalone export now uses the same host,
+    // without redirecting away its query string or fragment.
+    { path: `${paths.unity}/index.html`, element: unityHostElement, errorElement: <RouteError /> },
+    { path: paths.console, element: split(<ConsolePage />), errorElement: <RouteError /> },
+    // The catch-all needs a boundary too: without one, a throw inside
+    // NotFoundPage renders React Router's default blank screen — the exact
+    // outcome RouteError exists to prevent.
+    { path: paths.notFound, element: <NotFoundPage />, errorElement: <RouteError /> },
+  ]
+}
+export const routes = createRoutes()
 
 // `basename` strips the deploy prefix before matching, so every `path` above
 // stays written as if the app were at the root. Without it, project Pages

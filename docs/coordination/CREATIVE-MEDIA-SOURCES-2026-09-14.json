@@ -1,0 +1,81 @@
+{
+  "receiptType": "Asset provenance sidecar, following existing media-source receipts; not a new runtime pack schema",
+  "generatedWith": "Previously generated built-in image_gen art; previously authored deterministic local Python music. No media generated during this integration step.",
+  "publicationStatus": "Local optional catalog candidate; not deployed",
+  "pictures": [
+    {
+      "key": "art-red-panda-waterfall",
+      "shape": "Square",
+      "name": "Red panda waterfall · AI artwork",
+      "category": "Animals",
+      "src": "/images/library/rewards/art-red-panda-waterfall.webp",
+      "alt": "AI-generated realistic artwork of a curious red panda standing on a mossy rock beside a small forest waterfall, ferns, golden leaves and a clear stream.",
+      "width": 720,
+      "height": 720,
+      "searchTerms": [
+        "red panda",
+        "wildlife",
+        "waterfall",
+        "forest",
+        "stream",
+        "cute",
+        "scenic",
+        "nature",
+        "AI artwork"
+      ],
+      "bytes": 148208,
+      "sha256": "64780941ec3065706f2e0dbbcb66453f29038b7ba6dff41145f37c45a2e82fec",
+      "sourceFile": "red-panda-waterfall-realistic-ai-draft.png",
+      "sourceSha256": "44fce5ee65acfd376d846ea6a2801770da8ddcfe642e96cba9e9f622950560f1",
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "provenance": "AI-generated artwork with photographic appearance, not a real camera photograph.",
+      "masterLocation": "C:\\Users\\samco\\OneDrive\\Documents\\ChatGPT\\SAL0MANder\\work\\team-samco-audit-20260913\\creative\\red-panda-waterfall-realistic-ai-draft.png",
+      "prompt": "Use case: illustration-story\nAsset type: original square picture-puzzle draft for SAL0MANder, family-friendly, one cohesive 1:1 edge-to-edge scene.\nPrimary request: A curious red panda standing on a mossy rock beside a small forest waterfall and clear stream.\nScene/backdrop: a tranquil lush mountain forest, a small stepped waterfall spilling over slate stones into a shallow turquoise pool, ferns, broad green leaves, rounded river pebbles and a few warm golden fallen leaves. Distinct natural shapes and readable detail across all areas of the square, with varied stone, leaf and water patterns. No big empty sky or broad unbroken flat areas.\nSubject: one appealing red panda, rust-red fur, white cheek markings, dark legs, fluffy striped tail, natural four-legged anatomy, whole body and tail comfortably in frame, gently looking toward the stream. No human clothing.\nStyle/medium: polished original painted storybook illustration, tactile gouache-like brush texture, softly defined clean shapes, warm rust-orange animal against cool teal water and green foliage, gentle dappled daylight. Clearly illustrated AI-generated artwork, not a photograph.\nComposition/framing: medium-wide scene, the red panda readable near the center, waterfall behind it, foreground stones and ferns providing varied recognizable puzzle regions. Friendly quiet sense of discovery.\nConstraints: no letters, no words, no text, no logos, no watermark, no border, no puzzle grid or piece cut lines, no additional animals or people, no recognizable franchise characters. Generate exactly one square draft image.\n",
+      "editPrompt": "Use case: style-transfer\nInput image: the provided red-panda waterfall illustration is the edit target and exact composition reference.\nPrimary request: Transform the painted image into convincingly photographic, naturalistic AI-generated artwork suitable for an all-ages scenic picture puzzle. Preserve the square composition, red panda pose and position, waterfall, stream, rocks, foliage and autumn leaves. Keep the whole tail and body in frame and the friendly curious expression.\nChange only rendering style: replace all visible painted brushstrokes and stylized surfaces with natural individual fur strands, physically plausible wet and dry rock/moss textures, realistic translucent water ripples and whitewater, natural leaf surfaces and restrained dappled daylight. Realistic wildlife-photo visual language with readable moderate depth of field across the scene. No painterly, cartoon, oil, gouache, illustration or oversharpened HDR appearance.\nPreserve recognizable differentiated detail across all nine puzzle regions, natural four-legged red-panda anatomy, one animal, calm family-friendly scene. The result is AI artwork with photographic appearance, not evidence of a real animal encounter; label that in file metadata/manifest, not in visible text.\nConstraints: no text, no letters, no logo, no watermark, no border, no grid or puzzle-cut lines, no added animals or people, no costume. Exactly one corrected square image.\n",
+      "modifications": "Auto-oriented, resized within 720 pixels, encoded as WebP quality 66; no crop or scene change. 720px bounds even uncompressed RGBA for the existing Unity bridge. The unmodified master retains embedded provenance; derivative provenance is recorded here.",
+      "pipelineReference": "work/integrate-reward-media.mjs (existing conversion recipe)",
+      "inspected": true,
+      "inspection": "Selected master was visually inspected; runtime derivative inspected separately in this integration task. No game/device acceptance is implied.",
+      "unityDerivative": {
+        "file": "unity-derivative/art-red-panda-waterfall.png",
+        "width": 720,
+        "height": 720,
+        "bytes": 1602978,
+        "sha256": "26031b5d072cef666421f98272ccdfe41b335aea1dee0e360470879f9ffffda2",
+        "encoding": "Decoded from the selected runtime WebP then encoded as RGBA PNG. Not shipped twice under public/."
+      }
+    }
+  ],
+  "sounds": [
+    {
+      "key": "streamside_discovery",
+      "name": "Streamside Discovery",
+      "category": "victory",
+      "src": "/audio/rpg/victory/streamside_discovery.wav",
+      "durationSeconds": 18,
+      "previewSeconds": 12,
+      "bytes": 3175244,
+      "sha256": "5ce757951e26a72e06a85af6e521fe574f349717f3157e84bda23d3f98a14c97",
+      "sourceSha256": "5ce757951e26a72e06a85af6e521fe574f349717f3157e84bda23d3f98a14c97",
+      "provenance": "Original composition and deterministic local Python standard-library synthesis authored by Codex CM for Team Samco. No imported recordings, samples or music; no paid API or installation. Not generated by Gemini, Claude, Antigravity or Unity AI.",
+      "styleReference": "Final Fantasy VI (North American SNES Final Fantasy III), SNES-era JRPG expressive harmony and melodic adventure/wonder only; no copied tune or exact fanfare. Synthesized timbres, not exact SNES hardware emulation.",
+      "sourceLocation": "C:\\Users\\samco\\OneDrive\\Documents\\ChatGPT\\SAL0MANder\\work\\team-samco-audit-20260913\\creative\\streamside-discovery-snes-inspired-instrumental-draft.wav",
+      "sourceScript": "C:\\Users\\samco\\OneDrive\\Documents\\ChatGPT\\SAL0MANder\\work\\team-samco-audit-20260913\\creative\\generate_streamside_discovery.py",
+      "sourceScriptSha256": "63c680539109f121bf370802f3528f74e3325fa6f43dd6c67e2bd4beb014822d",
+      "modifications": "None; byte-identical WAV copy.",
+      "supportingOnly": true,
+      "fullVocalSongsCompleted": false,
+      "listeningVerified": false,
+      "scope": "Optional manual audition in existing /sounds. Existing player caps audition at 12 seconds. No default victory or picture-sound mapping changed.",
+      "sampleRateHz": 44100,
+      "channels": 2,
+      "pcmBits": 16,
+      "peakDbfs": -6.021,
+      "rmsDbfs": -18.343,
+      "clippedSamples": 0
+    }
+  ],
+  "defaults": "Existing catalog entries, order, default picture, default victory cue and PICTURE_SOUNDS mapping preserved.",
+  "unity": "No Unity source, asset resources, contract or build changed. Both existing preview and slide bridges accept prepared PNG."
+}

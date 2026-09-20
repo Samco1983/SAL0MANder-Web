@@ -5,36 +5,78 @@ import { newDraft } from '@studio/activityDraft'
 import { preparePreview, PreviewBootSchema } from '@unity/previewBridge'
 import { StudioPreview } from './StudioPreview'
 
-vi.mock('@unity/previewBridge', async (original) => ({ ...await original<typeof import('@unity/previewBridge')>(), preparePreview: vi.fn() }))
+vi.mock('@unity/previewBridge', async (original) => ({
+  ...(await original<typeof import('@unity/previewBridge')>()),
+  preparePreview: vi.fn(),
+}))
 vi.mock('@unity/UnityStage', async () => {
   const { useLocation } = await import('react-router-dom')
   const { useState } = await import('react')
-  return { UnityStage: function PreviewGame({ preview }: { preview: { config: { title: string } } }) {
-    const location = useLocation()
-    const [initialSearch] = useState(location.search)
-    return <div data-testid="preview-game" data-initial-search={initialSearch}>{preview.config.title} {location.search}</div>
-  } }
+  return {
+    UnityStage: function PreviewGame({ preview }: { preview: { config: { title: string } } }) {
+      const location = useLocation()
+      const [initialSearch] = useState(location.search)
+      return (
+        <div data-testid="preview-game" data-initial-search={initialSearch}>
+          {preview.config.title} {location.search}
+        </div>
+      )
+    },
+  }
 })
 const draft = newDraft('act_teacher', '2026-09-08T00:00:00Z')
 draft.config.title = 'Teacher-authored picture'
 draft.config.activityType = 'Classic'
 draft.meta.imageKey = 'coral-reef'
-const packet = PreviewBootSchema.parse({ type: 'preview-boot', previewVersion: 1, requestId: 'preview_test', config: draft.config, questions: [], picture: { key: 'coral-reef', pngBase64: 'aGVsbG8=' } })
+const packet = PreviewBootSchema.parse({
+  type: 'preview-boot',
+  previewVersion: 1,
+  requestId: 'preview_test',
+  config: draft.config,
+  questions: [],
+  picture: { key: 'coral-reef', pngBase64: 'aGVsbG8=' },
+})
 
 beforeEach(() => {
-  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { configurable: true, value: function (this: HTMLDialogElement) { this.setAttribute('open', '') } })
-  Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value: function (this: HTMLDialogElement) { this.removeAttribute('open') } })
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.setAttribute('open', '')
+    },
+  })
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.removeAttribute('open')
+    },
+  })
   vi.mocked(preparePreview).mockResolvedValue(packet)
 })
-afterEach(() => { cleanup(); Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal'); Reflect.deleteProperty(HTMLDialogElement.prototype, 'close'); vi.restoreAllMocks(); vi.clearAllMocks() })
-const open = (value = draft) => render(<MemoryRouter><StudioPreview draft={value} /></MemoryRouter>)
+afterEach(() => {
+  cleanup()
+  Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal')
+  Reflect.deleteProperty(HTMLDialogElement.prototype, 'close')
+  vi.restoreAllMocks()
+  vi.clearAllMocks()
+})
+const open = (value = draft) =>
+  render(
+    <MemoryRouter>
+      <StudioPreview draft={value} />
+    </MemoryRouter>,
+  )
 
 it('starts a prepared activity with the persistence marker present before Unity loads, and ends explicitly', async () => {
   open()
   expect(screen.queryByTestId('preview-game')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Play preview' }))
-  expect(await screen.findByTestId('preview-game')).toHaveTextContent('Teacher-authored picture ?teacherPreview=1')
-  expect(screen.getByTestId('preview-game')).toHaveAttribute('data-initial-search', '?teacherPreview=1')
+  expect(await screen.findByTestId('preview-game')).toHaveTextContent(
+    'Teacher-authored picture ?teacherPreview=1',
+  )
+  expect(screen.getByTestId('preview-game')).toHaveAttribute(
+    'data-initial-search',
+    '?teacherPreview=1',
+  )
   expect(await screen.findByRole('dialog')).toHaveAccessibleName('Activity preview')
   expect(screen.getByText(/Progress is temporary/)).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'End preview' }))
@@ -60,7 +102,12 @@ it('keeps the editor usable if image preparation fails', async () => {
 
 it('cancels pending preparation when the teacher leaves, and ignores its late result', async () => {
   let resolve: (value: typeof packet) => void = () => {}
-  vi.mocked(preparePreview).mockImplementationOnce(() => new Promise((done) => { resolve = done }))
+  vi.mocked(preparePreview).mockImplementationOnce(
+    () =>
+      new Promise((done) => {
+        resolve = done
+      }),
+  )
   const view = open()
   fireEvent.click(screen.getByRole('button', { name: 'Play preview' }))
   const signal = vi.mocked(preparePreview).mock.calls[0]![2]
@@ -68,4 +115,44 @@ it('cancels pending preparation when the teacher leaves, and ignores its late re
   expect(signal.aborted).toBe(true)
   await act(async () => resolve(packet))
   expect(screen.queryByTestId('preview-game')).not.toBeInTheDocument()
+})
+
+it('passes a local custom image through the existing preview bridge without fetching a library image', async () => {
+  const custom = { key: 'custom', pngBase64: 'bG9jYWw=' }
+  const localDraft = { ...draft, meta: { ...draft.meta, imageKey: 'custom' } }
+  render(
+    <MemoryRouter>
+      <StudioPreview draft={localDraft} customPicture={custom} />
+    </MemoryRouter>,
+  )
+  expect(screen.getByText(/not uploaded or approved/)).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Play preview' }))
+  await screen.findByTestId('preview-game')
+  expect(preparePreview).toHaveBeenCalledWith(
+    localDraft,
+    expect.any(String),
+    expect.any(AbortSignal),
+    custom,
+  )
+})
+
+it('does not start with a missing, mismatched or still-preparing local image', () => {
+  const localDraft = { ...draft, meta: { ...draft.meta, imageKey: 'custom' } }
+  const view = render(
+    <MemoryRouter>
+      <StudioPreview draft={localDraft} customPicture={{ key: 'other', pngBase64: 'bG9jYWw=' }} />
+    </MemoryRouter>,
+  )
+  expect(screen.getByRole('button', { name: 'Play preview' })).toBeDisabled()
+  view.rerender(
+    <MemoryRouter>
+      <StudioPreview
+        draft={localDraft}
+        customPicture={{ key: 'custom', pngBase64: 'bG9jYWw=' }}
+        photoPreparing
+      />
+    </MemoryRouter>,
+  )
+  expect(screen.getByRole('button', { name: 'Play preview' })).toBeDisabled()
+  expect(preparePreview).not.toHaveBeenCalled()
 })

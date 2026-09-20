@@ -6,7 +6,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { HomePage } from './HomePage'
 import { paths } from '@config/routes'
-import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
+import { PUBLIC_TUTORING_BOOKING_URL } from '@config/classroom'
+import { DEMO_MATH_COURSES as MOCK_DEMO_ACTIVITIES, DEMO_CLASSIC_COURSE } from '@content/demoLevels'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 
 /**
@@ -42,18 +43,32 @@ describe('the primary action', () => {
     const choices = screen.getByRole('navigation', { name: 'Start here' })
     const links = within(choices).getAllByRole('link')
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
-      `/play/${MOCK_DEMO_ACTIVITIES[0].id}`,
+      `/play/${MOCK_DEMO_ACTIVITIES[0]!.id}`,
+      PUBLIC_TUTORING_BOOKING_URL,
       paths.gifts,
       paths.giftPlay,
       paths.studio,
       '#pictures-title',
     ])
-    for (const name of ['Make a Puzzle Gift', 'Open a gift', 'Teacher Studio', 'Picture library']) {
+    for (const name of [
+      'Book Tutoring',
+      'Puzzle Gifts',
+      'Open a gift',
+      'Teacher Studio',
+      'Picture library',
+    ]) {
       expect(within(choices).getByRole('link', { name })).toBeVisible()
     }
-    const primary = within(choices).getByRole('link', { name: /Mystery Pictures.*Play a demo/i })
+    const primary = within(choices).getByRole('link', { name: /Puzzle Practice.*Play a demo/i })
     expect(primary).toHaveAccessibleDescription(/choose Mystery Reveal/i)
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Mystery Pictures')
+    expect(screen.getByText(/Free beta · Learning puzzles for the classroom/)).toBeVisible()
+    expect(
+      within(choices).getByRole('link', { name: 'Teacher Studio' }),
+    ).toHaveAccessibleDescription(
+      'Create and preview local drafts. Class publishing is not available.',
+    )
+    expect(document.body.textContent).not.toContain('still works next year')
     const picture = screen.getByAltText(/A forest guardian puzzle part-way through/i)
     expect(choices.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(document.getElementById('pictures-title')).toHaveTextContent(
@@ -72,11 +87,15 @@ describe('the primary action', () => {
     const choices = screen.getByRole('navigation', { name: 'Start here' })
     expect(within(choices).getByRole('link', { name: /play a demo/i })).toHaveAttribute(
       'href',
-      `/school/play/${MOCK_DEMO_ACTIVITIES[0].id}`,
+      `/school/play/${MOCK_DEMO_ACTIVITIES[0]!.id}`,
     )
-    expect(within(choices).getByRole('link', { name: 'Make a Puzzle Gift' })).toHaveAttribute(
+    expect(within(choices).getByRole('link', { name: 'Puzzle Gifts' })).toHaveAttribute(
       'href',
       '/school/gifts',
+    )
+    expect(within(choices).getByRole('link', { name: 'Book Tutoring' })).toHaveAttribute(
+      'href',
+      PUBLIC_TUTORING_BOOKING_URL,
     )
     expect(within(choices).getByRole('link', { name: 'Open a gift' })).toHaveAttribute(
       'href',
@@ -88,23 +107,28 @@ describe('the primary action', () => {
     )
   })
 
-  it('presents all four play styles with honest destinations', () => {
+  it('presents four games with one combined swap entry', () => {
     renderHome()
     const modes = screen.getByRole('region', { name: 'Choose how to play' })
     expect(
       within(modes)
         .getAllByRole('heading', { level: 3 })
         .map((heading) => heading.textContent),
-    ).toEqual(['Mystery Pictures', 'Learning Puzzle', 'Classic Jigsaw', 'Slide & Solve'])
+    ).toEqual(['Mystery Pictures', 'Learning Puzzle', 'Classic Jigsaw', 'Swap & Solve'])
     const options = within(modes).getAllByRole('link', { name: 'Open demo options' })
     expect(options).toHaveLength(3)
-    for (const link of options)
-      expect(link).toHaveAttribute('href', `/play/${MOCK_DEMO_ACTIVITIES[0].id}`)
-    expect(within(modes).getByRole('link', { name: 'Open gift maker' })).toHaveAttribute(
+    expect(options.map((link) => link.getAttribute('href'))).toEqual([
+      `/play/${MOCK_DEMO_ACTIVITIES[0]!.id}`,
+      `/play/${MOCK_DEMO_ACTIVITIES[0]!.id}`,
+      `/play/${DEMO_CLASSIC_COURSE.id}`,
+    ])
+    expect(within(modes).getByRole('link', { name: 'Try Swap & Solve demo' })).toHaveAttribute(
       'href',
-      paths.gifts,
+      paths.slideDemo,
     )
-    expect(modes).toHaveTextContent('Choose Slide & Solve in the gift maker')
+    expect(within(modes).queryByRole('link', { name: 'Try Matching demo' })).toBeNull()
+    expect(modes).toHaveTextContent('blank spaces around the picture')
+    expect(modes).not.toHaveTextContent('Choose Swap & Solve in the gift maker')
   })
 
   it('offers the existing gift recovery entry without a login', () => {
@@ -152,7 +176,7 @@ describe('the primary action', () => {
   it('sends Guest Play to a real activity path, not a placeholder', () => {
     renderHome()
     const href = screen.getByRole('link', { name: /play a demo/i }).getAttribute('href')
-    expect(href).toBe('/play/act_integer_operations')
+    expect(href).toBe('/play/act_demo_integer_1')
     expect(href).not.toMatch(/undefined|null|:activityId/)
   })
 
@@ -376,7 +400,7 @@ describe('the demo share panel', () => {
     const playHref = screen.getByRole('link', { name: /play a demo/i }).getAttribute('href')
     const shareInput = screen.getByLabelText(/share link/i) as HTMLInputElement
 
-    expect(playHref).toBe(`/play/${MOCK_DEMO_ACTIVITIES[0].id}`)
+    expect(playHref).toBe(`/play/${MOCK_DEMO_ACTIVITIES[0]!.id}`)
     expect(new URL(shareInput.value).pathname).toBe(playHref)
   })
 
@@ -385,7 +409,7 @@ describe('the demo share panel', () => {
 
     expect(screen.getByRole('link', { name: /see what a student sees/i })).toHaveAttribute(
       'href',
-      `/play/${MOCK_DEMO_ACTIVITIES[0].id}`,
+      `/play/${MOCK_DEMO_ACTIVITIES[0]!.id}`,
     )
   })
 
@@ -448,11 +472,13 @@ describe('keyboard', () => {
     renderHome()
     const guestPlay = screen.getByRole('link', { name: /play a demo/i })
 
-    // Bounded: if the primary action is more than a dozen stops in, it is
-    // buried, whatever it looks like on screen.
-    for (let i = 0; i < 12 && document.activeElement !== guestPlay; i += 1) {
-      await user.tab()
-    }
+    // The skip link bypasses the expandable site navigation. The next Tab
+    // must reach actual practice, independent of how many routes the site has.
+    await user.tab()
+    expect(screen.getByRole('link', { name: 'Skip to main content' })).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(screen.getByRole('main')).toHaveFocus()
+    await user.tab()
     expect(guestPlay).toHaveFocus()
   })
 

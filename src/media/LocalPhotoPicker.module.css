@@ -1,0 +1,26 @@
+.picker {
+  display: grid;
+  gap: 0.65rem;
+  margin-block: 1rem 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface);
+}
+.picker label {
+  font-weight: 700;
+}
+.picker p {
+  margin: 0;
+}
+.picker input {
+  max-width: 100%;
+  font: inherit;
+}
+.preview {
+  width: 100%;
+  max-width: 24rem;
+  max-height: 20rem;
+  object-fit: contain;
+  border-radius: 0.75rem;
+}

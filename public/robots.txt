@@ -21,6 +21,9 @@ Allow: /
 # Allow beats a broader Disallow, so these three are crawlable and arbitrary
 # share links are not. `discoverability.test.ts` fails if the two files drift.
 Disallow: /play/
+# The public chooser redirects to this exact directory entry on Pages.
+# Keep arbitrary activity share links excluded while allowing the landing page.
+Allow: /play/$
 Allow: /play/act_integer_operations
 Allow: /play/act_one_step_inequalities
 Allow: /play/act_linear_equations

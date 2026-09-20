@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readEnv } from './env'
+import { PUBLIC_TUTORING_BOOKING_URL } from './classroom'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -12,6 +13,82 @@ function quietly<T>(fn: () => T): T {
 }
 
 describe('readEnv defaults', () => {
+  it('labels Stripe test checkout only when the dedicated public test flag is enabled', () => {
+    expect(readEnv({}).groups.testMode).toBe(false)
+    expect(readEnv({ VITE_GROUP_DEMO: 'true' }).groups.testMode).toBe(false)
+    for (const value of ['true', '1']) {
+      const groups = readEnv({ VITE_GROUP_TEST_MODE: value }).groups
+      expect(groups.testMode).toBe(true)
+      expect(groups.demo).toBe(false)
+      expect(groups.selfEnrollment).toBe(false)
+    }
+    for (const value of ['false', '0', '']) {
+      expect(readEnv({ VITE_GROUP_TEST_MODE: value }).groups.testMode).toBe(false)
+    }
+    expect(quietly(() => readEnv({ VITE_GROUP_TEST_MODE: 'yes' })).groups.testMode).toBe(false)
+  })
+  it('keeps parent/adult enrollment off unless its own public flag is explicitly enabled', () => {
+    expect(readEnv({}).groups.selfEnrollment).toBe(false)
+    expect(readEnv({ VITE_GROUP_DEMO: 'true' }).groups.selfEnrollment).toBe(false)
+    expect(readEnv({ VITE_GROUP_SELF_ENROLLMENT: 'true' }).groups.selfEnrollment).toBe(true)
+    expect(readEnv({ VITE_GROUP_SELF_ENROLLMENT: '1' }).groups.selfEnrollment).toBe(true)
+    expect(readEnv({ VITE_GROUP_SELF_ENROLLMENT: 'false' }).groups.selfEnrollment).toBe(false)
+    expect(
+      quietly(() => readEnv({ VITE_GROUP_SELF_ENROLLMENT: 'yes' })).groups.selfEnrollment,
+    ).toBe(false)
+  })
+  it('uses the puzzle home unless tutoring mode is explicitly selected', () => {
+    expect(readEnv({}).siteMode).toBe('puzzles')
+    expect(readEnv({ VITE_SITE_MODE: 'tutoring' }).siteMode).toBe('tutoring')
+    expect(quietly(() => readEnv({ VITE_SITE_MODE: 'other' })).siteMode).toBe('puzzles')
+  })
+  it('defaults only the public booking page, leaves private Meet/API unset and validates overrides', () => {
+    expect(readEnv({}).gifts.apiBaseUrl).toBe('')
+    expect(readEnv({}).classroom).toEqual({
+      invitation: null,
+      bookingUrl: PUBLIC_TUTORING_BOOKING_URL,
+      payment: { cents: null, required: false },
+    })
+    expect(readEnv({ VITE_CLASSROOM_BOOKING_URL: '' }).classroom.bookingUrl).toBe('')
+    expect(
+      readEnv({ VITE_GIFT_API_BASE_URL: 'https://api.example.com/lessons///' }).gifts.apiBaseUrl,
+    ).toBe('https://api.example.com/lessons')
+    expect(readEnv({ VITE_GIFT_API_BASE_URL: 'http://127.0.0.1:8787' }).gifts.apiBaseUrl).toBe(
+      'http://127.0.0.1:8787',
+    )
+    expect(readEnv({ VITE_GIFT_API_BASE_URL: 'http://[::1]:8787/' }).gifts.apiBaseUrl).toBe(
+      'http://[::1]:8787',
+    )
+    const configured = readEnv({
+      VITE_CLASSROOM_JOIN_URL: 'https://meet.google.com/abc-defg-hij',
+      VITE_CLASSROOM_BOOKING_URL: 'https://calendar.app.google/AbCdEfGh12345678',
+    })
+    expect(configured.classroom.invitation?.meetingCode).toBe('abc-defg-hij')
+    expect(configured.classroom.bookingUrl).toBe('https://calendar.app.google/AbCdEfGh12345678')
+    expect(
+      readEnv({
+        VITE_CLASSROOM_JOIN_URL: 'https://zoom.us/j/123456789',
+        VITE_CLASSROOM_BOOKING_URL: 'https://scheduler.zoom.us/tutor/math',
+      }).classroom,
+    ).toEqual({ invitation: null, bookingUrl: '', payment: { cents: null, required: false } })
+    expect(readEnv({}).sites).toEqual({ tutoring: '', puzzles: '' })
+    expect(
+      readEnv({
+        VITE_TUTORING_SITE_BASE_URL: 'https://salomandermath.com/',
+        VITE_PUZZLE_SITE_BASE_URL: 'https://sal0mander.com/',
+      }).sites,
+    ).toEqual({ tutoring: 'https://salomandermath.com', puzzles: 'https://sal0mander.com' })
+  })
+  it.each([
+    'http://example.com',
+    'https://user:secret@example.com',
+    'https://example.com?secret=bad',
+    'https://example.com#fragment',
+    'javascript:alert(1)',
+    'https://example.com/\npath',
+  ])('keeps unsafe gift API configuration disabled: %s', (url) => {
+    expect(readEnv({ VITE_GIFT_API_BASE_URL: url }).gifts.apiBaseUrl).toBe('')
+  })
   it('runs against the mock transport when nothing is configured', () => {
     const env = readEnv({})
     expect(env.api.isConfigured).toBe(false)

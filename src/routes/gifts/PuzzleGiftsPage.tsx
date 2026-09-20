@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { AppShell } from '@components/layout/AppShell'
 import { Button, LinkButton } from '@components/ui/Button'
 import { SharePanel } from '@components/share/SharePanel'
@@ -16,6 +17,11 @@ import {
   type GiftMode,
 } from '@/gifts/giftLink'
 import { GIFT_SURVEY } from '@/gifts/giftSurvey'
+import { giftComposerDefaults } from '@/gifts/giftComposer'
+import { GiftCustomSchema } from '@/gifts/giftCustom'
+import { configuredGiftStore, buildSavedGiftLink, savedGiftId } from '@/gifts/savedGiftLink'
+import { useLocalPhoto } from '@/media/useLocalPhoto'
+import { LocalPhotoPicker } from '@/media/LocalPhotoPicker'
 import { giftOriginCopy } from '@/gifts/giftOrigin'
 import {
   DEFAULT_GIFT_PRESENTATION,
@@ -28,11 +34,27 @@ import {
 import { GiftPicturePicker } from './GiftPicturePicker'
 import { GiftSurveyForm } from './GiftSurveyForm'
 import styles from './PuzzleGifts.module.css'
+import messageStyles from './GiftMessageIdeas.module.css'
 
 export function PuzzleGiftsPage() {
+  const location = useLocation()
+  const defaults = giftComposerDefaults(location.search)
   const originCopy = giftOriginCopy(window.location.origin)
-  const [imageKey, setImageKey] = useState('')
-  const [mode, setMode] = useState<GiftMode>('mystery')
+  const [imageKey, setImageKey] = useState(defaults.imageKey)
+  const localPhoto = useLocalPhoto()
+  const customPhoto = localPhoto.photo
+  const photoBusy = localPhoto.preparing
+  const [saving, setSaving] = useState(false)
+  const [expiresAt, setExpiresAt] = useState('')
+  const savePending = useRef<AbortController | null>(null)
+  const service = configuredGiftStore()
+  useEffect(
+    () => () => {
+      savePending.current?.abort()
+    },
+    [],
+  )
+  const [mode, setMode] = useState<GiftMode>(defaults.mode)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [presentation, setPresentation] = useState<GiftPresentation>(DEFAULT_GIFT_PRESENTATION)
   const occasionCheck =
@@ -46,8 +68,19 @@ export function PuzzleGiftsPage() {
   const [sharing, setSharing] = useState(false)
   const giftGeneration = useRef(0)
   const questionMode = mode === 'learning' || mode === 'mystery'
-  const candidate = GiftSchema.safeParse({
-    version: mode === 'sliding' ? 3 : 2,
+  const isCustom = imageKey === 'custom' && customPhoto !== null
+  const candidate = (isCustom ? GiftCustomSchema : GiftSchema).safeParse({
+    version: isCustom ? 4 : mode === 'sliding' ? 3 : 2,
+    ...(isCustom
+      ? {
+          image: {
+            id: '0'.repeat(32),
+            width: customPhoto.width,
+            height: customPhoto.height,
+            contentType: 'image/png',
+          },
+        }
+      : {}),
     catalogVersion: 2,
     mode,
     imageKey,
@@ -57,10 +90,18 @@ export function PuzzleGiftsPage() {
     ...presentation,
   })
   const picked = PUZZLE_LIBRARY.find((picture) => picture.key === imageKey)
-  const backup = url ? giftBackupCode(decodeGift(new URL(url).hash, url.length)) : ''
+  const savedId = url ? savedGiftId(new URL(url).search) : null
+  const backup = savedId
+    ? `SAL0-SAVED:${savedId}`
+    : url
+      ? giftBackupCode(decodeGift(new URL(url).hash, url.length))
+      : ''
 
   function changed() {
     giftGeneration.current++
+    savePending.current?.abort()
+    setSaving(false)
+    setExpiresAt('')
     setUrl('')
     setError('')
     setShareStatus('')
@@ -70,14 +111,43 @@ export function PuzzleGiftsPage() {
     if (next === 'classic' || next === 'sliding' || !questionMode) setAnswers({})
     setMode(next)
   }
-  function generate() {
-    if (!candidate.success) return
+  function choosePhoto(file: File) {
+    changed()
+    setImageKey('custom')
+    void localPhoto.choose(file)
+  }
+  async function generate() {
+    if (!candidate.success || saving || photoBusy || imageKey === 'custom') return
+    const generation = ++giftGeneration.current
+    const controller = new AbortController()
+    savePending.current?.abort()
+    savePending.current = controller
+    setSaving(true)
+    setUrl('')
+    setError('')
+    setShareStatus('')
+    setExpiresAt('')
     try {
-      giftGeneration.current++
-      setUrl(buildGiftLink(candidate.data, window.location.origin))
-      setError('')
+      const gift = candidate.data
+      let nextUrl: string
+      let expiry = ''
+      if (service) {
+        const receipt = await service.save(gift, controller.signal)
+        nextUrl = buildSavedGiftLink(receipt.id, window.location.origin)
+        expiry = receipt.expiresAt
+      } else {
+        if (gift.version === 4) throw new Error('Photo gifts need saved sharing.')
+        nextUrl = buildGiftLink(gift, window.location.origin)
+      }
+      if (!controller.signal.aborted && giftGeneration.current === generation) {
+        setUrl(nextUrl)
+        setExpiresAt(expiry)
+      }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'The gift link could not be created.')
+      if (!controller.signal.aborted)
+        setError(cause instanceof Error ? cause.message : 'The gift link could not be created.')
+    } finally {
+      if (!controller.signal.aborted) setSaving(false)
     }
   }
   async function share() {
@@ -105,6 +175,20 @@ export function PuzzleGiftsPage() {
           <h1>Puzzle Gifts</h1>
           <p>Pick a picture, choose how it plays, and give someone a puzzle to open.</p>
           <p className={styles.quiet}>{originCopy.summary}</p>
+          {defaults.imageKey && picked && (
+            <div>
+              <p>{picked.name} is ready. Make this gift your own.</p>
+              <Button
+                onClick={() =>
+                  document
+                    .getElementById(questionMode ? 'gift-favorite' : 'gift-occasion-text')
+                    ?.focus()
+                }
+              >
+                Personalize this gift
+              </Button>
+            </div>
+          )}
           <LinkButton to={paths.giftPlay} variant="secondary">
             Open a gift
           </LinkButton>
@@ -112,10 +196,21 @@ export function PuzzleGiftsPage() {
 
         <section className={styles.section} aria-labelledby="gift-picture-heading">
           <h2 id="gift-picture-heading">1. Pick their picture</h2>
+          <LocalPhotoPicker
+            id="gift-own-photo"
+            state={localPhoto}
+            onChoose={choosePhoto}
+            onClear={() => {
+              changed()
+              localPhoto.clear()
+              setImageKey('')
+            }}
+          />
           <GiftPicturePicker
             selectedKey={imageKey}
             onSelect={(key) => {
               changed()
+              localPhoto.clear()
               setImageKey(key)
             }}
           />
@@ -170,6 +265,7 @@ export function PuzzleGiftsPage() {
         {questionMode ? (
           <GiftSurveyForm
             answers={answers}
+            onContinue={() => document.getElementById('gift-occasion-text')?.focus()}
             onAnswer={(id, value) => {
               changed()
               setAnswers((current) => ({ ...current, [id]: value }))
@@ -178,7 +274,7 @@ export function PuzzleGiftsPage() {
         ) : (
           <p className={styles.section}>
             {mode === 'sliding'
-              ? 'Slide rows and columns around the 3 × 3 picture grid. No questions are included.'
+              ? 'Swap any two squares to rebuild the picture. Start with blank spaces, then try full 3×3 and 4×4 pictures across eight levels. Your chosen gift picture stays with the recipient. No questions are included.'
               : 'Classic Jigsaw is ready with all nine pieces. No questions are included.'}
           </p>
         )}
@@ -229,6 +325,27 @@ export function PuzzleGiftsPage() {
                 }))
               }}
             />
+            <div className={messageStyles.ideas} role="group" aria-label="Quick message ideas">
+              {[
+                'Quest complete. Smile unlocked!',
+                'You are my favorite player two.',
+                'Small steps. Epic wins.',
+                'Powered by kindness. Built to win.',
+                'You make ordinary days legendary.',
+                'Achievement unlocked: being awesome.',
+              ].map((message) => (
+                <button
+                  key={message}
+                  type="button"
+                  onClick={() => {
+                    changed()
+                    setPresentation((current) => ({ ...current, occasionText: message }))
+                  }}
+                >
+                  {message}
+                </button>
+              ))}
+            </div>
             <p id="gift-occasion-count" className={styles.quiet}>
               {[...(presentation.occasionText ?? '')].length} / {MAX_OCCASION_CHARACTERS} characters
             </p>
@@ -287,9 +404,11 @@ export function PuzzleGiftsPage() {
         <section className={styles.section} aria-labelledby="gift-share-heading">
           <h2 id="gift-share-heading">Ready to give</h2>
           <p>
-            {picked
-              ? `${picked.name} · ${GIFT_MODES.find((option) => option.id === mode)!.name}`
-              : 'Choose a picture to get started.'}
+            {isCustom
+              ? `Your photo · ${GIFT_MODES.find((option) => option.id === mode)!.name}`
+              : picked
+                ? `${picked.name} · ${GIFT_MODES.find((option) => option.id === mode)!.name}`
+                : 'Choose a picture to get started.'}
           </p>
           <p className={styles.quiet}>
             Anyone with the link can read your picks and answers. Play progress is temporary.{' '}
@@ -302,12 +421,27 @@ export function PuzzleGiftsPage() {
               {occasionCheck && !occasionCheck.success ? 'Check your occasion message.' : ''}
             </p>
           )}
+          {imageKey === 'custom' && (
+            <p>
+              Choose a library picture to create a shareable gift. Your local photo is not approved
+              for sharing.
+            </p>
+          )}
           {error && <p role="alert">{error}</p>}
-          <Button disabled={!candidate.success} onClick={generate}>
-            Create gift link
+          <Button
+            disabled={!candidate.success || saving || photoBusy || imageKey === 'custom'}
+            onClick={() => void generate()}
+          >
+            {saving ? 'Saving your gift…' : 'Create gift link'}
           </Button>
           {url && (
             <div className={styles.generated}>
+              {expiresAt && (
+                <p>
+                  Saved gift available until {new Date(expiresAt).toLocaleDateString()}. Keep the
+                  backup code too.
+                </p>
+              )}
               <div className={styles.actions}>
                 <a
                   href={url}

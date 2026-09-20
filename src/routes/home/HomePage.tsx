@@ -1,7 +1,11 @@
 import { PhotoCredit } from '@components/ui/PhotoCredit'
 import { env } from '@config/env'
+import { LearningOffers } from '@components/learning/LearningOffers'
+import { learningOfferLinks } from '@config/learningOffers'
 import { paths, buildPath } from '@config/routes'
-import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
+import { MOCK_DEMO_ACTIVITIES as LEGACY_DEMOS } from '@api/mockTransport'
+import { DEMO_MATH_COURSES, DEMO_CLASSIC_COURSE } from '@content/demoLevels'
+
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { AppShell } from '@components/layout/AppShell'
 import { SharePanel } from '@components/share/SharePanel'
@@ -9,6 +13,8 @@ import { LinkButton } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { Link } from 'react-router-dom'
 import styles from './HomePage.module.css'
+
+const MOCK_DEMO_ACTIVITIES = env.api?.isConfigured ? LEGACY_DEMOS : DEMO_MATH_COURSES
 
 /**
  * The public front door — and the page a web filter's reviewer reads.
@@ -31,10 +37,10 @@ import styles from './HomePage.module.css'
  * ## Every claim on this page is one the repository can defend
  *
  * No COPPA, FERPA, WCAG, or standards-alignment claim appears, because nothing
- * here establishes one. The numbers are checkable: zero student accounts
- * (`src/auth/guestIdentity.ts`), zero ad and analytics scripts (nothing in
- * `index.html` but the app's own module), one domain (the bundle contacts no
- * external host). A page that overstates is the thing a district checks first.
+ * here establishes one. Guest activity play has no account requirement, and
+ * library images and game files are bundled with the site. Optional tutoring,
+ * sign-in, payments and meetings have distinct service connections described
+ * on the privacy page. Keep those scopes separate.
  */
 /**
  * The hero picture, and the nine cells drawn over it.
@@ -105,11 +111,14 @@ function StartIcon({ kind }: { kind: 'mystery' | 'gift' | 'open' | 'studio' | 'p
 }
 
 export function HomePage() {
+  const tutoring = learningOfferLinks()
   return (
     <AppShell>
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>{env.appName} · Learning puzzles for the classroom</p>
+          <p className={styles.eyebrow}>
+            {env.appName} · Free beta · Learning puzzles for the classroom
+          </p>
           <h1 className={styles.title}>
             Mystery Pictures<span>Answer. Reveal a picture.</span>
           </h1>
@@ -128,7 +137,7 @@ export function HomePage() {
           >
             <StartIcon kind="mystery" />
             <span className={styles.startText}>
-              <strong id="start-mystery-title">Mystery Pictures</strong>
+              <strong id="start-mystery-title">Puzzle Practice</strong>
               <span id="start-mystery-description">
                 In the demo, choose Mystery Reveal for automatic picture reveals.
               </span>
@@ -137,6 +146,26 @@ export function HomePage() {
               </span>
             </span>
           </Link>
+          <a
+            href={tutoring.tutoring}
+            target={tutoring.hasBooking ? '_blank' : undefined}
+            rel={tutoring.hasBooking ? 'noopener noreferrer' : undefined}
+            title={tutoring.hasBooking ? 'Opens Google booking in a new tab' : undefined}
+            className={styles.startTile}
+            aria-labelledby="start-tutoring-title"
+            aria-describedby="start-tutoring-description"
+          >
+            <StartIcon kind="studio" />
+            <span className={styles.startText}>
+              <strong id="start-tutoring-title">
+                {tutoring.hasBooking ? 'Book Tutoring' : 'Ask about tutoring'}
+              </strong>
+              <span id="start-tutoring-description">
+                Grades 6–12 math for families and adult learners. Plan a private lesson or request a
+                small group.
+              </span>
+            </span>
+          </a>
           <Link
             to={paths.gifts}
             className={styles.startTile}
@@ -145,7 +174,7 @@ export function HomePage() {
           >
             <StartIcon kind="gift" />
             <span className={styles.startText}>
-              <strong id="start-gift-title">Make a Puzzle Gift</strong>
+              <strong id="start-gift-title">Puzzle Gifts</strong>
               <span id="start-gift-description">Choose a picture and a way to play.</span>
             </span>
           </Link>
@@ -170,7 +199,9 @@ export function HomePage() {
             <StartIcon kind="studio" />
             <span className={styles.startText}>
               <strong id="start-studio-title">Teacher Studio</strong>
-              <span id="start-studio-description">Create and preview your own activity.</span>
+              <span id="start-studio-description">
+                Create and preview local drafts. Class publishing is not available.
+              </span>
             </span>
           </Link>
           <a
@@ -256,6 +287,8 @@ export function HomePage() {
         </dl>
       </section>
 
+      <LearningOffers />
+
       <section className={styles.section} aria-labelledby="play-styles-title">
         <h2 className={styles.sectionTitle} id="play-styles-title">
           Choose how to play
@@ -264,6 +297,7 @@ export function HomePage() {
           <Card title="Mystery Pictures">
             Answer a question and watch part of the picture appear automatically. Choose
             <strong> Mystery Reveal</strong> in the demo.
+            {!env.api?.isConfigured && ' Three levels build from warm-up to challenge.'}
             <div className={styles.cardAction}>
               <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
                 Open demo options
@@ -279,19 +313,24 @@ export function HomePage() {
             </div>
           </Card>
           <Card title="Classic Jigsaw">
-            Put the picture together with every piece available and no questions. Choose Classic in
-            the demo.
+            Put the picture together with every piece available and no questions.
+            {!env.api?.isConfigured &&
+              ' Build from four pieces to nine, then sixteen across three levels.'}
             <div className={styles.cardAction}>
-              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
+              <LinkButton
+                to={
+                  env.api?.isConfigured ? paths.gifts : buildPath.guestPlay(DEMO_CLASSIC_COURSE.id)
+                }
+              >
                 Open demo options
               </LinkButton>
             </div>
           </Card>
-          <Card title="Slide & Solve">
-            Shift whole rows and columns to rebuild the picture. Choose Slide &amp; Solve in the
-            gift maker.
+          <Card title="Swap & Solve">
+            Tap two squares to swap them. Start with blank spaces around the picture, then work up
+            to full 3×3 and 4×4 pictures across eight levels.
             <div className={styles.cardAction}>
-              <LinkButton to={paths.gifts}>Open gift maker</LinkButton>
+              <LinkButton to={paths.slideDemo}>Try Swap &amp; Solve demo</LinkButton>
             </div>
           </Card>
         </div>
@@ -411,16 +450,13 @@ export function HomePage() {
         {/*
           Headed by what a person is trying to do, not by the feature's name.
 
-          The card these replaced said images "live in cloud storage and are
-          served from a CDN" — which is not true today and is exactly the kind
-          of third-party claim a district technology officer would go looking
-          for. Everything is served from this one domain, which is a better
-          answer anyway.
+          These cards describe the guest classroom puzzle journey. Optional
+          tutoring has additional account, payment and meeting providers.
         */}
         <div className={styles.grid}>
           <Card title="Share it">
-            Send one link through Google Classroom, Canvas, Schoology, Teams, or a printed QR code.
-            The link stays the same, so a worksheet printed today still works next year.
+            Share an existing demo or a catalog picture gift through Google Classroom, Canvas,
+            Schoology, Teams, or a printed QR code.
           </Card>
           <Card title="Students play">
             They open the link and start solving. No email, no password, no account — and no class
@@ -428,12 +464,13 @@ export function HomePage() {
           </Card>
           <Card title="Answer, and the picture appears">
             In Mystery Pictures, each correct answer reveals part of the image automatically.
-            Learning Puzzle gives students the earned piece to place. Use either style with your
-            math, science, or vocabulary questions.
+            Learning Puzzle gives students the earned piece to place. Preview your own questions in
+            Teacher Studio as a local draft; class publishing is not available in this beta.
           </Card>
           <Card title="Nothing to configure">
-            Everything loads from this one website. No plugins, no extensions, no separate accounts,
-            and no other companies involved.
+            Guest puzzles use the site&apos;s bundled library images and game files, with no plugin,
+            extension or account needed to play. Optional tutoring, payments and live meetings use
+            additional services explained on our privacy page.
             <div className={styles.cardAction}>
               <LinkButton to={paths.privacy} variant="secondary">
                 What we collect
