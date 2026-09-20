@@ -1,0 +1,833 @@
+{
+  "lessonPackVersion": 1,
+  "id": "ca-g7-math-equations",
+  "locale": "en-US",
+  "grade": 7,
+  "subject": "Mathematics",
+  "title": "Balance the Story: Two-Step Equations",
+  "originality": "Original prompts, scenarios, explanations and teaching guidance authored for this pilot. No EngageNY or Illustrative Mathematics lesson text used. Alignment is not endorsement or official adoption.",
+  "standards": [
+    {
+      "id": "7.EE.4.a",
+      "publisher": "California Department of Education",
+      "title": "CDE CA CCSS Mathematics, PDF page 56",
+      "url": "https://www.cde.ca.gov/be/st/ss/documents/ccssmathstandardaug2013.pdf#page=56",
+      "accessedDate": "2026-09-11",
+      "alignmentSummary": "Targets story equations of the forms px + q = r and p(x + q) = r, with rational numbers and arithmetic/algebra comparisons."
+    }
+  ],
+  "activityDraft": {
+    "config": {
+      "schemaVersion": 2,
+      "activityId": "ca-g7-math-equations",
+      "title": "Balance the Story: Two-Step Equations",
+      "activityType": "MysteryReveal",
+      "imagePresetIndex": 0,
+      "pieceCountPreset": 12,
+      "boardShape": "Landscape",
+      "showBoardGuide": false,
+      "enableCameraZoomAndPan": false,
+      "allowRestart": true,
+      "allowResumeLater": true,
+      "allowHints": true,
+      "allowCompletedPictureView": false,
+      "autoPlaceCorrectPieces": true
+    },
+    "meta": {
+      "subject": "Mathematics",
+      "gradeLevel": "7",
+      "description": "I can define a variable, solve a story equation with rational numbers, and check the result in the original situation.",
+      "notes": "Original pilot; teacher chooses a picture and reviews options. Teacher-led differentiation; no automatic adaptation. See the separate teacherGuide and questionNotes.",
+      "imageKey": "",
+      "optionsReviewed": false,
+      "createdAt": "2026-09-11T00:00:00Z",
+      "updatedAt": "2026-09-11T00:00:00Z"
+    },
+    "questions": [
+      {
+        "id": "ca-g7-math-equations-q01",
+        "questionText": "A craft order has a $6 delivery charge plus $4 per kit. The total is $30. If x is the number of kits, solve 4x + 6 = 30.",
+        "hintText": "Undo the delivery charge before dividing by the kit price.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q01-a",
+            "text": "x = 6",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g7-math-equations-q01-b",
+            "text": "x = 9",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q01-c",
+            "text": "x = 24",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q01-d",
+            "text": "x = 7.5",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q02",
+        "questionText": "Five identical party bags each have x stickers plus 2 bonus stickers. There are 45 stickers altogether. Solve 5(x + 2) = 45.",
+        "hintText": "Divide into five bags before removing each bag’s bonus.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q02-a",
+            "text": "x = 9",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q02-b",
+            "text": "x = 7",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g7-math-equations-q02-c",
+            "text": "x = 8.6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q02-d",
+            "text": "x = 11",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q03",
+        "questionText": "A game card starts with $40. Each ride costs $3, and $13 remains. Let x be the number of rides. Solve 40 − 3x = 13.",
+        "hintText": "Find how much money was spent, then divide by the ride cost.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q03-a",
+            "text": "x = -9",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q03-b",
+            "text": "x = 27",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q03-c",
+            "text": "x = 9",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g7-math-equations-q03-d",
+            "text": "x = 13",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q04",
+        "questionText": "A rental costs $4 plus $2.50 per hour. The total is $19. For hours h, solve 2.5h + 4 = 19.",
+        "hintText": "Remove the fixed cost first.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q04-a",
+            "text": "h = 7.6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q04-b",
+            "text": "h = 15",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q04-c",
+            "text": "h = 9.2",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q04-d",
+            "text": "h = 6",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q05",
+        "questionText": "Three strips are each cut from a ribbon of length x centimeters by removing 2 centimeters. Their total length is 18 centimeters. Solve 3(x − 2) = 18.",
+        "hintText": "Each shortened strip is 18 ÷ 3 centimeters long.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q05-a",
+            "text": "x = 8",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g7-math-equations-q05-b",
+            "text": "x = 4",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q05-c",
+            "text": "x = 6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q05-d",
+            "text": "x = 20/3",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q06",
+        "questionText": "A jug already contains 4 liters. It receives another 2/3 liter each minute until it holds 18 liters. Solve (2/3)t + 4 = 18 for minutes t.",
+        "hintText": "After removing the initial amount, divide by 2/3.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q06-a",
+            "text": "t = 28/3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q06-b",
+            "text": "t = 21",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g7-math-equations-q06-c",
+            "text": "t = 27",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q06-d",
+            "text": "t = 14",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q07",
+        "questionText": "A model temperature begins at 6 degrees and drops 4 degrees each hour. It reaches -10 degrees. Solve 6 − 4t = -10.",
+        "hintText": "The total drop is 16 degrees.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q07-a",
+            "text": "t = -4",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q07-b",
+            "text": "t = 1",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q07-c",
+            "text": "t = 4",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g7-math-equations-q07-d",
+            "text": "t = 16",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q08",
+        "questionText": "A total of x beads is shared equally among 5 bags. Then 3 beads are added to each bag, making 7 per bag. Solve x/5 + 3 = 7.",
+        "hintText": "Undo the added beads, then undo sharing.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q08-a",
+            "text": "x = 4",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q08-b",
+            "text": "x = 50",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q08-c",
+            "text": "x = 0.8",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q08-d",
+            "text": "x = 20",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q09",
+        "questionText": "Four boards each measure x + 1.5 meters. Their total length is 26 meters. Solve 4(x + 1.5) = 26.",
+        "hintText": "Divide by four before subtracting the extra 1.5 meters.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q09-a",
+            "text": "x = 5",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g7-math-equations-q09-b",
+            "text": "x = 6.5",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q09-c",
+            "text": "x = 8",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q09-d",
+            "text": "x = 6.125",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q10",
+        "questionText": "Seven identical books cost x dollars each. After a $9 discount, the total is $26. Solve 7x − 9 = 26.",
+        "hintText": "Restore the discount to find the original total.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q10-a",
+            "text": "x = 17/7",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q10-b",
+            "text": "x = 5",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g7-math-equations-q10-c",
+            "text": "x = 35",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q10-d",
+            "text": "x = 26/7",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q11",
+        "questionText": "A model takes half of a length x + 6 centimeters and gives 8 centimeters. Solve 0.5(x + 6) = 8.",
+        "hintText": "Undo taking half before subtracting 6.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q11-a",
+            "text": "x = 4",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q11-b",
+            "text": "x = 16",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q11-c",
+            "text": "x = 10",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g7-math-equations-q11-d",
+            "text": "x = 22",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g7-math-equations-q12",
+        "questionText": "Two equal ribbon lengths of x inches, plus a 7-inch section, total 16 inches. Solve 2x + 7 = 16.",
+        "hintText": "The two equal sections share what remains after removing 7.",
+        "choices": [
+          {
+            "id": "ca-g7-math-equations-q12-a",
+            "text": "x = 9",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q12-b",
+            "text": "x = 11.5",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q12-c",
+            "text": "x = 4",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g7-math-equations-q12-d",
+            "text": "x = 4.5",
+            "isCorrect": true
+          }
+        ]
+      }
+    ]
+  },
+  "questionNotes": [
+    {
+      "questionId": "ca-g7-math-equations-q01",
+      "skill": "fixed charge and equal groups",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q01-a",
+      "explanation": "Subtract 6: 4x = 24. Divide by 4: x = 6. Check 4 × 6 + 6 = 30.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q01-a",
+          "reason": "Subtract 6: 4x = 24. Divide by 4: x = 6. Check 4 × 6 + 6 = 30."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q01-b",
+          "reason": "This adds the charge to the total before dividing."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q01-c",
+          "reason": "This stops before dividing by 4."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q01-d",
+          "reason": "This divides the total without removing the fixed charge."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "4*x+6",
+        "right": "30"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q02",
+      "skill": "grouped equation",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q02-b",
+      "explanation": "45 ÷ 5 = 9 stickers per bag; 9 − 2 = 7 regular stickers.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q02-a",
+          "reason": "This includes the bonus stickers in x."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q02-b",
+          "reason": "45 ÷ 5 = 9 stickers per bag; 9 − 2 = 7 regular stickers."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q02-c",
+          "reason": "Subtracting only 2 from 45 removes one bonus rather than five bonuses."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q02-d",
+          "reason": "This adds the bonus after dividing instead of subtracting it."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "5*(x+2)",
+        "right": "45"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q03",
+      "skill": "decreasing quantity",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q03-c",
+      "explanation": "$40 − $13 = $27 spent; $27 ÷ $3 = 9 rides.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q03-a",
+          "reason": "This loses the negative sign when solving -3x = -27."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q03-b",
+          "reason": "This gives dollars spent, not the number of rides."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q03-c",
+          "reason": "$40 − $13 = $27 spent; $27 ÷ $3 = 9 rides."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q03-d",
+          "reason": "This confuses the remaining dollars with the number of rides."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "40-3*x",
+        "right": "13"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q04",
+      "skill": "decimal coefficients",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q04-d",
+      "explanation": "2.5h = 15, so h = 15 ÷ 2.5 = 6 hours.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q04-a",
+          "reason": "This divides $19 by the hourly rate without removing the fixed cost."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q04-b",
+          "reason": "This is the remaining dollar amount, not hours."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q04-c",
+          "reason": "This adds $4 to the total before dividing."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q04-d",
+          "reason": "2.5h = 15, so h = 15 ÷ 2.5 = 6 hours."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "2.5*x+4",
+        "right": "19"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q05",
+      "skill": "restore a removed amount",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q05-a",
+      "explanation": "x − 2 = 6, so x = 8. Three strips of 8 − 2 centimeters total 18.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q05-a",
+          "reason": "x − 2 = 6, so x = 8. Three strips of 8 − 2 centimeters total 18."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q05-b",
+          "reason": "This subtracts 2 again rather than restoring the removed length."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q05-c",
+          "reason": "This is the shortened length, not the original length."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q05-d",
+          "reason": "This adds back only 2 centimeters to all three strips together."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "3*(x-2)",
+        "right": "18"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q06",
+      "skill": "fractional coefficient",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q06-b",
+      "explanation": "(2/3)t = 14, so t = 14 × 3/2 = 21 minutes.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q06-a",
+          "reason": "This multiplies 14 by 2/3 instead of dividing."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q06-b",
+          "reason": "(2/3)t = 14, so t = 14 × 3/2 = 21 minutes."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q06-c",
+          "reason": "This forgets the initial 4 liters."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q06-d",
+          "reason": "This is the added volume, not elapsed minutes."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "(2/3)*x+4",
+        "right": "18"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q07",
+      "skill": "negative values in context",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q07-c",
+      "explanation": "-4t = -16, so t = 4 hours. Check 6 − 4 × 4 = -10.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q07-a",
+          "reason": "This does not divide both negative quantities correctly."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q07-b",
+          "reason": "This uses a drop of 4 rather than 16 degrees."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q07-c",
+          "reason": "-4t = -16, so t = 4 hours. Check 6 − 4 × 4 = -10."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q07-d",
+          "reason": "This is the temperature drop, not the number of hours."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "6-4*x",
+        "right": "-10"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q08",
+      "skill": "division equation",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q08-d",
+      "explanation": "x/5 = 4, so x = 20 beads before the additions.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q08-a",
+          "reason": "This is the number in one bag before the additions."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q08-b",
+          "reason": "This adds 3 to 7 before multiplying."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q08-c",
+          "reason": "This divides by 5 again instead of undoing division."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q08-d",
+          "reason": "x/5 = 4, so x = 20 beads before the additions."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "x/5+3",
+        "right": "7"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q09",
+      "skill": "grouped decimal amount",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q09-a",
+      "explanation": "x + 1.5 = 6.5, so x = 5 meters.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q09-a",
+          "reason": "x + 1.5 = 6.5, so x = 5 meters."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q09-b",
+          "reason": "This is the full length of each board, not x."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q09-c",
+          "reason": "This adds 1.5 after dividing."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q09-d",
+          "reason": "This subtracts just one 1.5-meter amount from the total before dividing."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "4*(x+1.5)",
+        "right": "26"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q10",
+      "skill": "discount equation",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q10-b",
+      "explanation": "7x = 35, so x = 5 dollars per book.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q10-a",
+          "reason": "This subtracts the discount again."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q10-b",
+          "reason": "7x = 35, so x = 5 dollars per book."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q10-c",
+          "reason": "This is the original total, not the price of one book."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q10-d",
+          "reason": "This ignores the discount."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "7*x-9",
+        "right": "26"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q11",
+      "skill": "inverse operations in order",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q11-c",
+      "explanation": "x + 6 = 16, so x = 10 centimeters.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q11-a",
+          "reason": "This subtracts 6 from 8 before undoing the factor 0.5."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q11-b",
+          "reason": "This stops before subtracting 6."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q11-c",
+          "reason": "x + 6 = 16, so x = 10 centimeters."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q11-d",
+          "reason": "This adds 6 after undoing the half."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "0.5*(x+6)",
+        "right": "8"
+      }
+    },
+    {
+      "questionId": "ca-g7-math-equations-q12",
+      "skill": "rational solution",
+      "standardIds": [
+        "7.EE.4.a"
+      ],
+      "answerChoiceId": "ca-g7-math-equations-q12-d",
+      "explanation": "2x = 9, so each equal length is 9 ÷ 2 = 4.5 inches.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g7-math-equations-q12-a",
+          "reason": "This is the combined length of both equal sections."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q12-b",
+          "reason": "This adds 7 instead of subtracting it."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q12-c",
+          "reason": "This rounds a valid fractional length unnecessarily."
+        },
+        {
+          "choiceId": "ca-g7-math-equations-q12-d",
+          "reason": "2x = 9, so each equal length is 9 ÷ 2 = 4.5 inches."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "2*x+7",
+        "right": "16"
+      }
+    }
+  ],
+  "teacherGuide": {
+    "learningTarget": "I can define a variable, solve a story equation with rational numbers, and check the result in the original situation.",
+    "suggestedMinutes": 35,
+    "prerequisites": [
+      "Rational-number arithmetic",
+      "A variable as an unknown quantity",
+      "Equality means equal values"
+    ],
+    "materials": [
+      "Paper or whiteboard",
+      "Pencil",
+      "Optional calculator for checking after explaining a method"
+    ],
+    "miniLesson": "Model three equal packs and a $5 fee totaling $26: 3x + 5 = 26. Remove the fee to get 21, then share into three packs to get x = 7. Compare that arithmetic story to the same operations on both sides of the equation.",
+    "sequence": [
+      "0–5 min: discuss the learning target and check prerequisites.",
+      "5–10 min: model the example with a drawing or observation.",
+      "10–25 min: use questions in chunks of 3–4; ask for explanations and pause for needed support.",
+      "25–35 min: complete the performance task independently, then discuss the rubric. Extend or split the lesson if the learner needs more thinking time."
+    ],
+    "easierVariants": [
+      "Use a bar drawing for the fixed amount and equal groups.",
+      "Start with positive whole-number questions 1–3 before decimals/fractions.",
+      "Provide an inverse-operation checklist, but ask the learner why the operation preserves equality."
+    ],
+    "harderVariants": [
+      "For questions 5, 6 and 9, show both a grouped solution and a distributed solution.",
+      "Invent a new context with a rational solution and define the variable’s unit.",
+      "Critique an incorrect solution and identify the first non-equivalent step."
+    ],
+    "manualDecisionGuide": [
+      "If two questions in a chunk reveal the same misconception, pause and model it using the corresponding distractor reasoning.",
+      "If answers are correct but the learner cannot explain, stay with the model rather than increasing speed or difficulty.",
+      "If the learner explains two examples and the performance task well, offer a harder variant. These are teacher suggestions, not a validated mastery cutoff."
+    ],
+    "performanceTask": "A club buys four identical notebooks plus a $3 service fee for $25. Define n, write an equation, solve using algebra and an arithmetic explanation, and substitute your result. Then explain whether n = 6 could fit the story.",
+    "performanceRubric": [
+      "Defines n as the dollar price per notebook and writes 4n + 3 = 25.",
+      "Obtains n = 5.5 using equivalent operations and a matching arithmetic argument.",
+      "Checks 4(5.5) + 3 = 25 and rejects n = 6 because it totals $27."
+    ],
+    "assessmentLimits": "This pilot targets equations, not the inequality subpart 7.EE.4.b. A correct choice should be followed by reasoning, units and substitution.",
+    "adaptation": {
+      "mode": "teacher-led",
+      "automaticAdaptation": false,
+      "note": "A teacher or tutor chooses support, sequence and variants from observed work. This content does not implement an adaptive algorithm or diagnose a learner."
+    },
+    "progressiveHelp": [
+      {
+        "level": 1,
+        "action": "Ask the learner to identify the unknown and show a first attempt. If needed, read the question-specific hint; do not reveal the correct choice."
+      },
+      {
+        "level": 2,
+        "action": "Draw the fixed amount and equal groups, or write one equivalent equation after an inverse operation. Have the learner perform the next step and explain why both sides stay equal."
+      },
+      {
+        "level": 3,
+        "action": "Revisit the different-number worked example in miniLesson, then return to the original question and let the learner finish. Discuss the answer-key explanation only after an attempt."
+      }
+    ],
+    "independentExit": {
+      "prompt": "A club buys four identical notebooks plus a $3 service fee for $25. Define n, write an equation, solve using algebra and an arithmetic explanation, and substitute your result. Then explain whether n = 6 could fit the story.",
+      "conditions": "Use a fresh sheet. No answer key, hints or AI answer generation during this check; normal access accommodations and the teacher’s agreed arithmetic tools remain available. Record independent work separately from supported practice.",
+      "review": "After the learner finishes, discuss the rubric. If support was needed, label the work supported and use a different analogous task later; do not call it independent mastery."
+    }
+  },
+  "deliveryStatus": {
+    "contentPrepared": true,
+    "automaticallyAdaptive": false,
+    "unityImportTested": false,
+    "studentTrialCompleted": false,
+    "publicationApprovedByThisPack": false
+  }
+}

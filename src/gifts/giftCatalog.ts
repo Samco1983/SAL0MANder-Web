@@ -18,8 +18,9 @@ export const GIFT_MODES = [
   },
   {
     id: 'sliding',
-    name: 'Slide & Solve',
-    description: 'Slide rows and columns around a 3 × 3 grid to restore the picture. No questions.',
+    name: 'Swap & Solve',
+    description:
+      'Swap any two squares. Start with blank spaces, then try full 3×3 and 4×4 pictures. Eight levels; no questions.',
   },
 ] as const
 

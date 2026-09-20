@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import type { PuzzlePicture } from '@content/puzzleLibrary'
+import { giftPictureSrc } from '@/gifts/giftPicture'
 import type { GiftPresentation } from '@/gifts/giftPresentation'
 import styles from './GiftOpening.module.css'
 
@@ -8,10 +9,12 @@ export const GIFT_OPENING_MS = 900
 export function GiftOpening({
   wrapper,
   picture,
+  onUnwrap,
   children,
 }: {
   wrapper: GiftPresentation['wrapper']
   picture?: PuzzlePicture
+  onUnwrap?: (wrapper: GiftPresentation['wrapper']) => void
   children: ReactNode
 }) {
   const [state, setState] = useState<'wrapped' | 'opening' | 'open'>('wrapped')
@@ -23,6 +26,7 @@ export function GiftOpening({
   }, [state])
   function unwrap() {
     if (state !== 'wrapped') return
+    onUnwrap?.(wrapper)
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setState('open')
     else {
       setState('opening')
@@ -74,7 +78,7 @@ export function GiftOpening({
                     '--delay': `${index * 8}ms`,
                     ...(picture
                       ? {
-                          backgroundImage: `url("${import.meta.env.BASE_URL.replace(/\/$/, '')}${picture.src}")`,
+                          backgroundImage: `url("${giftPictureSrc(picture)}")`,
                           backgroundPosition: `${column * 50}% ${row * 50}%`,
                         }
                       : {}),

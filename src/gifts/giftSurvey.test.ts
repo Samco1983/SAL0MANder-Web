@@ -42,4 +42,16 @@ it('preserves known existing gift alternatives while new ideas remain composer-o
     'Vanilla',
     'Strawberry',
   ])
+  expect(surveyChoices('ice-cream', 'Butter pecan').map((choice) => choice.text)).toEqual([
+    'Chocolate',
+    'Butter pecan',
+    'Vanilla',
+    'Strawberry',
+  ])
+  expect(surveyChoices('animal', 'Dachshund').map((choice) => choice.text)).toEqual([
+    'Dog',
+    'Cat',
+    'Panda',
+    'Dachshund',
+  ])
 })

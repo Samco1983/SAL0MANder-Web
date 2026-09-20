@@ -87,6 +87,31 @@ if (paths.length === 0) {
  * this script was written to fix.
  */
 const META = {
+  '/play': {
+    title: 'Play free puzzle games — SAL0MANder beta',
+    description:
+      'Try Mystery Pictures, Learning Puzzle, Classic Jigsaw and Swap & Solve. Free play without an account, with optional tutoring and practice resources from Sam.',
+  },
+  '/demos/slide': {
+    title: 'Swap & Solve — free picture puzzle beta',
+    description:
+      'Swap picture squares through eight free levels. Start with one swap and work toward full picture boards. No account needed.',
+  },
+  '/learn': {
+    title: 'Sample math lessons — SAL0MANder',
+    description:
+      'Explore original grade 6, 7, 8 and Algebra I pilot lessons with worked examples, supported practice and independent checks. A starting point, not a complete curriculum.',
+  },
+  '/sounds': {
+    title: 'Sound library — SAL0MANder',
+    description:
+      'Listen to original puzzle gift effects and source-credited animal and nature recordings. Choose a sound to preview; nothing plays automatically.',
+  },
+  '/classroom': {
+    title: 'Private tutoring and small groups — SAL0MANder',
+    description:
+      'Grades 6–12 math tutoring for families and adult learners. Request a private lesson or small group, join Google Meet with your tutor’s invitation, and explore puzzle practice.',
+  },
   '/gifts': {
     title: 'Make a puzzle gift — SAL0MANder',
     description:
@@ -100,12 +125,12 @@ const META = {
   '/about': {
     title: 'About SAL0MANder — who makes it and why',
     description:
-      'SAL0MANder is a free classroom practice tool built by a teacher. Students answer questions to uncover a jigsaw puzzle. No accounts, no sign-in, no ads.',
+      'SAL0MANder is a classroom practice tool built by a teacher. Students answer questions to uncover a jigsaw puzzle. Guest puzzle play needs no account. Demo photo credits included.',
   },
   '/privacy': {
-    title: 'Privacy — what SAL0MANder does not collect',
+    title: 'Privacy — guest play and optional tutoring data',
     description:
-      'SAL0MANder asks students for no name, email or password, and creates no student accounts. What is stored, where it is stored, and how to have it removed.',
+      'How SAL0MANder uses information in account-free guest puzzle play, optional tutoring accounts, saved preparation, payments and live meetings. Storage and contact details.',
   },
   '/accessibility': {
     title: 'Accessibility — SAL0MANder learning puzzles',

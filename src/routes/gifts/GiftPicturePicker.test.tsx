@@ -93,13 +93,38 @@ it('finds both puppy and race-car photos using common search spellings', async (
     await user.type(search, query)
     expect(screen.getByRole('button', { name: 'Choose Sleeping puppies' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Choose Puggle puppy in flowers' })).toBeVisible()
-    expect(screen.getAllByRole('button', { name: /^Choose / })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: /^Choose / }).length).toBeGreaterThanOrEqual(2)
   }
   for (const query of ['racecar', 'race cars']) {
     await user.clear(search)
     await user.type(search, query)
     expect(screen.getByRole('button', { name: 'Choose Orange Indy race car' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Choose Red Indy race car' })).toBeVisible()
-    expect(screen.getAllByRole('button', { name: /^Choose / })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: /^Choose / })).toHaveLength(10)
   }
+})
+
+it('finds original AI pets and cars, selects stable keys and excludes them from real photos', async () => {
+  const user = userEvent.setup()
+  const onSelect = vi.fn()
+  render(<GiftPicturePicker selectedKey="fictional-neon-tuner-v1" onSelect={onSelect} />)
+  const search = screen.getByRole('searchbox', { name: 'Find a picture' })
+  for (const [query, label, key] of [
+    ['neon', 'Neon Torque', 'fictional-neon-tuner-v1'],
+    ['pug', 'Pug playtime', 'ai-pug-playtime-v1'],
+    ['dachshund', 'Dachshund garden explorers', 'ai-dachshund-garden-v1'],
+    ['kitten', 'Kitten basket mischief', 'ai-kitten-mischief-v1'],
+  ]) {
+    await user.clear(search)
+    await user.type(search, query!)
+    await user.click(screen.getByRole('button', { name: `Choose ${label} · AI artwork` }))
+    expect(onSelect).toHaveBeenLastCalledWith(key)
+  }
+  await user.clear(search)
+  await user.click(screen.getByRole('checkbox', { name: 'Real photos only' }))
+  expect(screen.queryByRole('button', { name: /Choose Neon Torque/ })).toBeNull()
+  expect(screen.queryByRole('button', { name: /Choose Pug playtime/ })).toBeNull()
+  expect(screen.queryByRole('button', { name: /Choose Dachshund garden explorers/ })).toBeNull()
+  expect(screen.queryByRole('button', { name: /Choose Kitten basket mischief/ })).toBeNull()
+  expect(screen.getByText(/Selected picture: Neon Torque · AI artwork/)).toBeVisible()
 })

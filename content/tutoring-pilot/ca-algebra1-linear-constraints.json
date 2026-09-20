@@ -1,0 +1,853 @@
+{
+  "lessonPackVersion": 1,
+  "id": "ca-algebra1-linear-constraints",
+  "locale": "en-US",
+  "grade": null,
+  "subject": "Mathematics",
+  "title": "Solve and Justify: Linear Constraints",
+  "originality": "Original prompts, scenarios, explanations and teaching guidance authored for this pilot. No EngageNY or Illustrative Mathematics lesson text used. Alignment is not endorsement or official adoption.",
+  "standards": [
+    {
+      "id": "A-REI.3",
+      "publisher": "California Department of Education",
+      "title": "CDE CA CCSS Mathematics, PDF page 72",
+      "url": "https://www.cde.ca.gov/be/st/ss/documents/ccssmathstandardaug2013.pdf#page=72",
+      "accessedDate": "2026-09-11",
+      "alignmentSummary": "Algebra I course alignment: one-variable linear equations/inequalities, including letter coefficients; no single high-school grade is assigned."
+    }
+  ],
+  "activityDraft": {
+    "config": {
+      "schemaVersion": 2,
+      "activityId": "ca-algebra1-linear-constraints",
+      "title": "Solve and Justify: Linear Constraints",
+      "activityType": "MysteryReveal",
+      "imagePresetIndex": 0,
+      "pieceCountPreset": 12,
+      "boardShape": "Landscape",
+      "showBoardGuide": false,
+      "enableCameraZoomAndPan": false,
+      "allowRestart": true,
+      "allowResumeLater": true,
+      "allowHints": true,
+      "allowCompletedPictureView": false,
+      "autoPlaceCorrectPieces": true
+    },
+    "meta": {
+      "subject": "Mathematics",
+      "gradeLevel": "Algebra I",
+      "description": "I can solve linear equations and inequalities, explain boundary inclusion and rearrange formulas when the required divisor is nonzero.",
+      "notes": "Original pilot; teacher chooses a picture and reviews options. Teacher-led differentiation; no automatic adaptation. See the separate teacherGuide and questionNotes.",
+      "imageKey": "",
+      "optionsReviewed": false,
+      "createdAt": "2026-09-11T00:00:00Z",
+      "updatedAt": "2026-09-11T00:00:00Z"
+    },
+    "questions": [
+      {
+        "id": "ca-algebra1-linear-constraints-q01",
+        "questionText": "Solve (3x − 2)/4 = 5 over the real numbers.",
+        "hintText": "Multiply both sides by 4 before undoing the subtraction.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q01-a",
+            "text": "x = 22/3",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q01-b",
+            "text": "x = 6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q01-c",
+            "text": "x = 7/3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q01-d",
+            "text": "x = 22",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q02",
+        "questionText": "Solve 0.6x − 1.2 = 2.4.",
+        "hintText": "Add 1.2 to each side, then divide by 0.6.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q02-a",
+            "text": "x = 2",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q02-b",
+            "text": "x = 6",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q02-c",
+            "text": "x = 3.6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q02-d",
+            "text": "x = 2.16",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q03",
+        "questionText": "Solve 2 − 3x ≤ 11.",
+        "hintText": "After subtracting 2, divide by a negative number and reverse the inequality.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q03-a",
+            "text": "x ≤ -3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q03-b",
+            "text": "x ≥ 3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q03-c",
+            "text": "x ≥ -3",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q03-d",
+            "text": "x > -3",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q04",
+        "questionText": "Solve 4x + 7 > 19.",
+        "hintText": "Subtract 7, then divide by positive 4.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q04-a",
+            "text": "x ≥ 3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q04-b",
+            "text": "x < 3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q04-c",
+            "text": "x > 6.5",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q04-d",
+            "text": "x > 3",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q05",
+        "questionText": "Solve -2(x − 4) < 10.",
+        "hintText": "Distribute carefully or divide by -2 and reverse the sign.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q05-a",
+            "text": "x > -1",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q05-b",
+            "text": "x < -1",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q05-c",
+            "text": "x > 9",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q05-d",
+            "text": "x ≥ -1",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q06",
+        "questionText": "Solve (x + 1)/3 ≥ 2.",
+        "hintText": "Multiply by positive 3, then subtract 1.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q06-a",
+            "text": "x ≤ 5",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q06-b",
+            "text": "x ≥ 5",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q06-c",
+            "text": "x ≥ 7",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q06-d",
+            "text": "x > 5",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q07",
+        "questionText": "For ax + b = c, assume a ≠ 0. Which expression gives x?",
+        "hintText": "Undo adding b before dividing by a.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q07-a",
+            "text": "x = (c + b)/a",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q07-b",
+            "text": "x = c − b/a",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q07-c",
+            "text": "x = (c − b)/a",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q07-d",
+            "text": "x = a(c − b)",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q08",
+        "questionText": "A rectangle satisfies P = 2l + 2w. Solve for w in terms of P and l.",
+        "hintText": "Remove 2l, then divide the entire remaining expression by 2.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q08-a",
+            "text": "w = P − 2l",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q08-b",
+            "text": "w = (P − l)/2",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q08-c",
+            "text": "w = P/2 + l",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q08-d",
+            "text": "w = P/2 − l",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q09",
+        "questionText": "A cost model is C = F + pn, with p ≠ 0. Solve for n.",
+        "hintText": "F is the fixed amount; remove it before dividing by p.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q09-a",
+            "text": "n = (C − F)/p",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q09-b",
+            "text": "n = (C + F)/p",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q09-c",
+            "text": "n = C − F/p",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q09-d",
+            "text": "n = p(C − F)",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q10",
+        "questionText": "Solve 5 − 2x ≥ x + 14.",
+        "hintText": "Collect the x terms and constants while keeping the relation equivalent.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q10-a",
+            "text": "x ≥ -3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q10-b",
+            "text": "x ≤ -3",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q10-c",
+            "text": "x ≤ 3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q10-d",
+            "text": "x < -3",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q11",
+        "questionText": "A class has $60. A booking fee is $18 and each ticket costs $7. Ticket count t must be a nonnegative whole number. What is the greatest t satisfying 18 + 7t ≤ 60?",
+        "hintText": "Remove the fee and compare the remaining budget with the ticket price.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q11-a",
+            "text": "5 tickets",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q11-b",
+            "text": "7 tickets",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q11-c",
+            "text": "6 tickets",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q11-d",
+            "text": "8 tickets",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-algebra1-linear-constraints-q12",
+        "questionText": "For a(x − 2) = b, assume a ≠ 0. Which expression gives x?",
+        "hintText": "Divide by a before restoring the subtracted 2.",
+        "choices": [
+          {
+            "id": "ca-algebra1-linear-constraints-q12-a",
+            "text": "x = (b + 2)/a",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q12-b",
+            "text": "x = b/a − 2",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q12-c",
+            "text": "x = 2 + ab",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-algebra1-linear-constraints-q12-d",
+            "text": "x = 2 + b/a",
+            "isCorrect": true
+          }
+        ]
+      }
+    ]
+  },
+  "questionNotes": [
+    {
+      "questionId": "ca-algebra1-linear-constraints-q01",
+      "skill": "linear equation with a denominator",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q01-a",
+      "explanation": "3x − 2 = 20; 3x = 22; x = 22/3.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q01-a",
+          "reason": "3x − 2 = 20; 3x = 22; x = 22/3."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q01-b",
+          "reason": "This subtracts 2 from 20 instead of adding it."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q01-c",
+          "reason": "This adds 2 to 5 before clearing the denominator."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q01-d",
+          "reason": "This stops before dividing by 3."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "(3*x-2)/4",
+        "right": "5"
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q02",
+      "skill": "decimal linear equation",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q02-b",
+      "explanation": "0.6x = 3.6; x = 3.6 ÷ 0.6 = 6.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q02-a",
+          "reason": "This subtracts 1.2 from 2.4 instead of adding it."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q02-b",
+          "reason": "0.6x = 3.6; x = 3.6 ÷ 0.6 = 6."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q02-c",
+          "reason": "This stops before dividing by 0.6."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q02-d",
+          "reason": "This multiplies by 0.6 instead of dividing."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "0.6*x-1.2",
+        "right": "2.4"
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q03",
+      "skill": "negative division in an inequality",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q03-c",
+      "explanation": "-3x ≤ 9, so dividing by -3 gives x ≥ -3.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q03-a",
+          "reason": "This fails to reverse the inequality when dividing by -3."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q03-b",
+          "reason": "This loses the negative sign in 9 ÷ -3."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q03-c",
+          "reason": "-3x ≤ 9, so dividing by -3 gives x ≥ -3."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q03-d",
+          "reason": "The original inequality includes equality, so the endpoint stays included."
+        }
+      ],
+      "verification": {
+        "kind": "inequality",
+        "left": "2-3*x",
+        "right": "11",
+        "relation": "<="
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q04",
+      "skill": "strict inequality",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q04-d",
+      "explanation": "4x > 12, so x > 3. Equality at 3 is not included.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q04-a",
+          "reason": "This incorrectly includes the boundary value."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q04-b",
+          "reason": "Dividing by positive 4 does not reverse the inequality."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q04-c",
+          "reason": "This adds 7 to 19 instead of subtracting it."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q04-d",
+          "reason": "4x > 12, so x > 3. Equality at 3 is not included."
+        }
+      ],
+      "verification": {
+        "kind": "inequality",
+        "left": "4*x+7",
+        "right": "19",
+        "relation": ">"
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q05",
+      "skill": "grouped negative inequality",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q05-a",
+      "explanation": "Dividing by -2 gives x − 4 > -5, so x > -1.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q05-a",
+          "reason": "Dividing by -2 gives x − 4 > -5, so x > -1."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q05-b",
+          "reason": "This fails to reverse the inequality when dividing by a negative."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q05-c",
+          "reason": "This loses the sign of 10 ÷ -2."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q05-d",
+          "reason": "This adds equality even though the original inequality is strict."
+        }
+      ],
+      "verification": {
+        "kind": "inequality",
+        "left": "-2*(x-4)",
+        "right": "10",
+        "relation": "<"
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q06",
+      "skill": "fraction inequality",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q06-b",
+      "explanation": "x + 1 ≥ 6, so x ≥ 5.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q06-a",
+          "reason": "Multiplication by positive 3 does not reverse the inequality."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q06-b",
+          "reason": "x + 1 ≥ 6, so x ≥ 5."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q06-c",
+          "reason": "This adds 1 instead of subtracting it."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q06-d",
+          "reason": "This drops an allowed equality endpoint."
+        }
+      ],
+      "verification": {
+        "kind": "inequality",
+        "left": "(x+1)/3",
+        "right": "2",
+        "relation": ">="
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q07",
+      "skill": "letter coefficients",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q07-c",
+      "explanation": "Subtract b from both sides to get ax = c − b, then divide by nonzero a.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q07-a",
+          "reason": "This adds b instead of undoing it."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q07-b",
+          "reason": "Both c and b must be in the numerator when dividing c − b by a."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q07-c",
+          "reason": "Subtract b from both sides to get ax = c − b, then divide by nonzero a."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q07-d",
+          "reason": "This multiplies by a instead of dividing."
+        }
+      ],
+      "verification": {
+        "kind": "literal",
+        "left": "a*x+b",
+        "right": "c",
+        "variable": "x",
+        "solution": "(c-b)/a",
+        "nonzero": "a"
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q08",
+      "skill": "rearrange a literal equation",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q08-d",
+      "explanation": "2w = P − 2l; w = (P − 2l)/2 = P/2 − l.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q08-a",
+          "reason": "This stops before dividing by 2."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q08-b",
+          "reason": "This removes only l rather than 2l."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q08-c",
+          "reason": "This adds l rather than subtracting it."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q08-d",
+          "reason": "2w = P − 2l; w = (P − 2l)/2 = P/2 − l."
+        }
+      ],
+      "verification": {
+        "kind": "literal",
+        "left": "2*l+2*w",
+        "right": "P",
+        "variable": "w",
+        "solution": "P/2-l",
+        "nonzero": null
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q09",
+      "skill": "literal cost model",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q09-a",
+      "explanation": "Subtract F to get pn = C − F, then divide by nonzero p.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q09-a",
+          "reason": "Subtract F to get pn = C − F, then divide by nonzero p."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q09-b",
+          "reason": "This adds the fixed amount rather than removing it."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q09-c",
+          "reason": "The full difference C − F must be divided by p."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q09-d",
+          "reason": "This multiplies by p instead of dividing."
+        }
+      ],
+      "verification": {
+        "kind": "literal",
+        "left": "F+p*n",
+        "right": "C",
+        "variable": "n",
+        "solution": "(C-F)/p",
+        "nonzero": "p"
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q10",
+      "skill": "variables on both sides of inequality",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q10-b",
+      "explanation": "-3x ≥ 9; divide by -3 and reverse the relation to get x ≤ -3.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q10-a",
+          "reason": "This fails to reverse the relation when dividing by -3."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q10-b",
+          "reason": "-3x ≥ 9; divide by -3 and reverse the relation to get x ≤ -3."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q10-c",
+          "reason": "This loses the negative sign of the boundary."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q10-d",
+          "reason": "This incorrectly removes the equality case."
+        }
+      ],
+      "verification": {
+        "kind": "inequality",
+        "left": "5-2*x",
+        "right": "x+14",
+        "relation": ">="
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q11",
+      "skill": "interpret an inequality in context",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q11-c",
+      "explanation": "7t ≤ 42, so t ≤ 6. Six costs exactly $60; seven costs $67.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q11-a",
+          "reason": "Five is affordable but is not the greatest allowed count."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q11-b",
+          "reason": "Seven tickets plus the fee exceeds the budget."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q11-c",
+          "reason": "7t ≤ 42, so t ≤ 6. Six costs exactly $60; seven costs $67."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q11-d",
+          "reason": "Dividing the full budget by 7 ignores the booking fee."
+        }
+      ],
+      "verification": {
+        "kind": "wholeMaximum",
+        "left": "18+7*x",
+        "right": "60",
+        "relation": "<="
+      }
+    },
+    {
+      "questionId": "ca-algebra1-linear-constraints-q12",
+      "skill": "parameter condition and solution",
+      "standardIds": [
+        "A-REI.3"
+      ],
+      "answerChoiceId": "ca-algebra1-linear-constraints-q12-d",
+      "explanation": "x − 2 = b/a, so x = 2 + b/a. The assumption a ≠ 0 permits the division.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q12-a",
+          "reason": "This adds 2 before dividing, instead of adding 2 after dividing."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q12-b",
+          "reason": "This subtracts 2 again."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q12-c",
+          "reason": "This multiplies b by a rather than dividing."
+        },
+        {
+          "choiceId": "ca-algebra1-linear-constraints-q12-d",
+          "reason": "x − 2 = b/a, so x = 2 + b/a. The assumption a ≠ 0 permits the division."
+        }
+      ],
+      "verification": {
+        "kind": "literal",
+        "left": "a*(x-2)",
+        "right": "b",
+        "variable": "x",
+        "solution": "2+b/a",
+        "nonzero": "a"
+      }
+    }
+  ],
+  "teacherGuide": {
+    "learningTarget": "I can solve linear equations and inequalities, explain boundary inclusion and rearrange formulas when the required divisor is nonzero.",
+    "suggestedMinutes": 35,
+    "prerequisites": [
+      "Linear equations and rational arithmetic",
+      "Order and negative numbers",
+      "Meaning of strict versus inclusive inequalities"
+    ],
+    "materials": [
+      "Paper or whiteboard",
+      "Pencil",
+      "Optional calculator for checking after explaining a method"
+    ],
+    "miniLesson": "Solve 8 − 2x ≤ 14 as -2x ≤ 6 and then x ≥ -3. Check -3 and 0, and test -4 to see why it is excluded. Then solve ax + b = c with a ≠ 0 and explain the division condition.",
+    "sequence": [
+      "0–5 min: discuss the learning target and check prerequisites.",
+      "5–10 min: model the example with a drawing or observation.",
+      "10–25 min: use questions in chunks of 3–4; ask for explanations and pause for needed support.",
+      "25–35 min: complete the performance task independently, then discuss the rubric. Extend or split the lesson if the learner needs more thinking time."
+    ],
+    "easierVariants": [
+      "Use a number line with an explicitly labeled open/closed endpoint.",
+      "Practice positive divisors first, then compare what multiplication by -1 does to an ordered pair.",
+      "Rearrange a numerical formula before replacing its constants with letters."
+    ],
+    "harderVariants": [
+      "Explain what changes in ax + b = c when a = 0; classify b = c versus b ≠ c.",
+      "Create two equivalent-looking inequality solutions with one incorrect boundary and disprove it by substitution.",
+      "Compare real-number solutions with allowed whole-number choices in a budget context."
+    ],
+    "manualDecisionGuide": [
+      "If two questions in a chunk reveal the same misconception, pause and model it using the corresponding distractor reasoning.",
+      "If answers are correct but the learner cannot explain, stay with the model rather than increasing speed or difficulty.",
+      "If the learner explains two examples and the performance task well, offer a harder variant. These are teacher suggestions, not a validated mastery cutoff."
+    ],
+    "performanceTask": "A studio charges a fixed fee F plus p dollars per hour, with p > 0. A customer has budget B. Define h ≥ 0, write F + ph ≤ B, and derive the allowed hours. Explain the case B < F. Then use F = 12, p = 4 and B = 30 to give the real-hour interval and the greatest whole-hour booking.",
+    "performanceRubric": [
+      "Derives h ≤ (B − F)/p without reversing the inequality because p > 0, together with h ≥ 0.",
+      "Explains that B < F leaves no feasible nonnegative h.",
+      "Finds 0 ≤ h ≤ 4.5 and a maximum whole-hour booking of 4; checks the costs."
+    ],
+    "assessmentLimits": "Course-labelled Algebra I; not a claim of uniform grade placement or coverage of every high-school course. A-REI.3.1 absolute-value inequalities and quadratic topics are outside this pack.",
+    "adaptation": {
+      "mode": "teacher-led",
+      "automaticAdaptation": false,
+      "note": "A teacher or tutor chooses support, sequence and variants from observed work. This content does not implement an adaptive algorithm or diagnose a learner."
+    },
+    "progressiveHelp": [
+      {
+        "level": 1,
+        "action": "Ask the learner to identify the unknown and show a first attempt. If needed, read the question-specific hint; do not reveal the correct choice."
+      },
+      {
+        "level": 2,
+        "action": "Identify the operation that isolates the target. For an inequality, state whether its divisor is positive or negative; for a formula, state which divisor must be nonzero. Leave the calculation to the learner."
+      },
+      {
+        "level": 3,
+        "action": "Revisit the different-number worked example in miniLesson, then return to the original question and let the learner finish. Discuss the answer-key explanation only after an attempt."
+      }
+    ],
+    "independentExit": {
+      "prompt": "A studio charges a fixed fee F plus p dollars per hour, with p > 0. A customer has budget B. Define h ≥ 0, write F + ph ≤ B, and derive the allowed hours. Explain the case B < F. Then use F = 12, p = 4 and B = 30 to give the real-hour interval and the greatest whole-hour booking.",
+      "conditions": "Use a fresh sheet. No answer key, hints or AI answer generation during this check; normal access accommodations and the teacher’s agreed arithmetic tools remain available. Record independent work separately from supported practice.",
+      "review": "After the learner finishes, discuss the rubric. If support was needed, label the work supported and use a different analogous task later; do not call it independent mastery."
+    }
+  },
+  "deliveryStatus": {
+    "contentPrepared": true,
+    "automaticallyAdaptive": false,
+    "unityImportTested": false,
+    "studentTrialCompleted": false,
+    "publicationApprovedByThisPack": false
+  },
+  "course": "Algebra I",
+  "audienceNote": "Course-based high-school pilot; CDE does not assign this pack to a single high-school grade."
+}

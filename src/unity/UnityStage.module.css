@@ -5,7 +5,7 @@
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto auto auto;
   place-items: center;
   background: var(--color-stage);
   color: var(--color-on-stage);
@@ -107,6 +107,18 @@
   overflow-wrap: anywhere;
 }
 
+.completion {
+  /* Keep the reward in the fullscreen subtree without covering the puzzle.
+     An empty completion component consumes no height while play is ongoing. */
+  grid-area: 2 / 1;
+  justify-self: stretch;
+  min-width: 0;
+  min-height: 0;
+  max-height: min(38dvh, 18rem);
+  overflow-y: auto;
+  color: var(--color-text);
+}
+
 /*
  * Full-screen control.
  *
@@ -114,8 +126,34 @@
  * dock, so a floating web button can hide or intercept a student's piece.
  * Keep this row in fullscreen too, including a reachable exit on touch devices.
  */
+.playerControls {
+  grid-area: 3 / 1;
+  justify-self: stretch;
+  min-width: 0;
+  min-height: 0;
+  max-height: min(28dvh, 9rem);
+  overflow: auto;
+  color: var(--color-text);
+}
+
+.fullscreenRecovery {
+  margin: auto;
+  max-width: min(30rem, calc(100vw - var(--space-8)));
+  max-height: calc(100dvh - var(--space-8));
+  overflow: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.fullscreenRecovery::backdrop {
+  background: rgb(0 0 0 / 60%);
+}
+
 .fullscreenControl {
-  grid-area: 2 / 1;
+  grid-area: 4 / 1;
   justify-self: stretch;
   display: flex;
   flex-wrap: wrap;
@@ -172,4 +210,31 @@
   height: 100vh;
   height: 100dvh;
   background: var(--color-stage);
+}
+
+/* Share one reserved toolbar row on short landscape screens. Keeping both
+   controls outside the canvas avoids covering the puzzle while reclaiming
+   enough height for Unity's Next level button. No player remount is needed. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .stage:has(> .playerControls):has(> .fullscreenControl) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+  }
+
+  .stage:has(> .playerControls):has(> .fullscreenControl) > .canvas,
+  .stage:has(> .playerControls):has(> .fullscreenControl) > .empty {
+    grid-area: 1 / 1 / 2 / 3;
+  }
+
+  .stage:has(> .playerControls):has(> .fullscreenControl) > .completion {
+    grid-area: 2 / 1 / 3 / 3;
+  }
+
+  .stage:has(> .playerControls):has(> .fullscreenControl) > .playerControls {
+    grid-area: 3 / 1;
+  }
+
+  .stage:has(> .playerControls):has(> .fullscreenControl) > .fullscreenControl {
+    grid-area: 3 / 2;
+  }
 }

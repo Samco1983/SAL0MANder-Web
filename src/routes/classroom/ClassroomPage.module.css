@@ -1,0 +1,174 @@
+.page {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-block: var(--space-6);
+}
+.hero {
+  max-width: 52rem;
+  margin-bottom: var(--space-8);
+}
+.hero h1 {
+  font-size: clamp(1.65rem, 4vw, 2.75rem);
+  line-height: 1.15;
+  margin-block: var(--space-3);
+  text-wrap: balance;
+}
+.hero p {
+  max-width: 45rem;
+}
+.eyebrow,
+.step {
+  color: var(--color-accent);
+  font-weight: var(--weight-medium);
+}
+.step {
+  margin-top: 0;
+  font-size: var(--text-sm);
+}
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+.side {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+.card {
+  padding: clamp(1rem, 3vw, 1.75rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  min-width: 0;
+  scroll-margin-top: 5rem;
+}
+.card h2 {
+  margin-block: var(--space-2);
+  font-size: var(--text-xl);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block: var(--space-4);
+}
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  text-align: center;
+}
+.action:focus-visible,
+.form input:focus-visible,
+.help summary:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+.form {
+  display: grid;
+  gap: var(--space-2);
+  margin-block: var(--space-5);
+}
+.form label {
+  font-weight: var(--weight-medium);
+}
+.form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+}
+.form button {
+  justify-self: start;
+}
+.form p {
+  margin: 0;
+}
+.quiet {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.join {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+.join a {
+  scroll-margin-top: 5rem;
+}
+.meetingId {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.codeCopy {
+  display: grid;
+  gap: var(--space-2);
+  margin-block: var(--space-3);
+}
+.codeCopy label {
+  display: grid;
+  gap: var(--space-2);
+}
+.codeCopy input {
+  max-width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+  min-height: 44px;
+}
+.codeCopy button {
+  justify-self: start;
+}
+.codeCopy input:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+.rawLink {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.help {
+  margin-top: var(--space-5);
+}
+.help summary {
+  cursor: pointer;
+  padding-block: var(--space-3);
+  min-height: 44px;
+}
+@media (max-width: 48rem) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero {
+    margin-bottom: var(--space-5);
+  }
+}
+
+/* Keep lesson controls usable with enlarged phone text. */
+.page :is(a, button) {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.form,
+.codeCopy,
+.codeCopy label {
+  grid-template-columns: minmax(0, 1fr);
+}

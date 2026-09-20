@@ -122,7 +122,7 @@ it('fails closed for an old player and ignores late acknowledgements after the t
   const host = createHost()
   await host.resolve()
   act(() => vi.advanceTimersByTime(20000))
-  expect(screen.getByRole('alert')).toHaveTextContent('Slide & Solve could not start')
+  expect(screen.getByRole('alert')).toHaveTextContent('Swap & Solve could not start')
   capable()
   ready()
   expect(host.send).not.toHaveBeenCalled()

@@ -8,10 +8,10 @@ import { decodeGift, restoreGiftLink } from '@/gifts/giftLink'
 import { giftOriginCopy } from '@/gifts/giftOrigin'
 import { PuzzleGiftsPage } from './PuzzleGiftsPage'
 
-function show() {
+function show(entry = '/gifts') {
   return render(
     <ThemeProvider>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[entry]}>
         <PuzzleGiftsPage />
       </MemoryRouter>
     </ThemeProvider>,
@@ -22,11 +22,8 @@ async function answerNine(user: ReturnType<typeof userEvent.setup>) {
   for (let index = 0; index < GIFT_SURVEY.length; index++) {
     const item = GIFT_SURVEY[index]!
     if (item.id === 'ice-cream')
-      await user.type(screen.getByRole('textbox', { name: item.ask }), 'Pistachio')
+      await user.type(screen.getByRole('textbox', { name: item.ask }), 'Pistachio{Enter}')
     else await user.click(screen.getByRole('button', { name: item.suggestions[0] }))
-    await user.click(
-      screen.getByRole('button', { name: index === 8 ? 'Review favorites' : 'Next favorite' }),
-    )
   }
 }
 function sharedGift() {
@@ -41,6 +38,36 @@ it('describes sharing for the current origin without a hardcoded unpublished cla
   expect(screen.getByText(copy.summary)).toBeVisible()
   expect(screen.getByText((content) => content.includes(copy.notice))).toBeVisible()
   expect(screen.queryByText(/Local prototype|not live public gifts yet/)).toBeNull()
+})
+
+it('prefills public picture and mode choices while starting a fresh unanswered gift', async () => {
+  const user = userEvent.setup()
+  show(
+    '/gifts?picture=salamander-forest&mode=learning&answers=someone-elses-favorites&occasionText=Private',
+  )
+  await user.click(screen.getByRole('button', { name: 'Personalize this gift' }))
+  expect(screen.getByRole('textbox', { name: GIFT_SURVEY[0].ask })).toHaveFocus()
+  expect(screen.getByRole('button', { name: 'Choose Forest guardian' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  expect(screen.getByRole('radio', { name: /Learning Puzzle/ })).toBeChecked()
+  expect(screen.getByRole('textbox', { name: GIFT_SURVEY[0].ask })).toHaveValue('')
+  expect(screen.getByRole('status')).toHaveTextContent('0 of 9 answered')
+  expect(screen.getByRole('textbox', { name: 'Your occasion or message' })).toHaveValue('')
+  expect(screen.getByRole('button', { name: 'Create gift link' })).toBeDisabled()
+  expect(screen.queryByRole('link', { name: 'Open gift' })).toBeNull()
+})
+
+it('ignores unknown or external prefill values without making a gift automatically', () => {
+  show('/gifts?picture=https%3A%2F%2Foutside.test%2Fprivate.png&mode=unknown')
+  expect(screen.getByRole('radio', { name: 'Mystery Pictures' })).toBeChecked()
+  expect(screen.getByRole('button', { name: 'Choose Forest guardian' })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  )
+  expect(screen.getByRole('button', { name: 'Create gift link' })).toBeDisabled()
+  expect(screen.queryByRole('link', { name: 'Open gift' })).toBeNull()
 })
 
 it('offers gift recovery and a complete selectable backup when clipboard access fails', async () => {
@@ -100,7 +127,7 @@ it('requires a picture and nine answers, supports reviewing edits, and preserves
   const user = userEvent.setup()
   show()
   expect(screen.getByRole('button', { name: 'Create gift link' })).toBeDisabled()
-  expect(screen.getByRole('radio', { name: /Slide & Solve/ })).toBeEnabled()
+  expect(screen.getByRole('radio', { name: /Swap & Solve/ })).toBeEnabled()
   await user.click(screen.getByRole('button', { name: /Forest guardian/ }))
   await answerNine(user)
   expect(screen.getByText('9 of 9 answered')).toBeVisible()
@@ -191,14 +218,16 @@ it('keeps manual sharing available when the device chooser is absent', async () 
   expect(screen.getByRole('button', { name: 'Copy link' })).toBeEnabled()
 })
 
-it('creates a picture-only Slide & Solve gift and clears the survey across mode changes', async () => {
+it('creates a picture-only Swap & Solve gift and clears the survey across mode changes', async () => {
   const user = userEvent.setup()
   show()
   await user.type(screen.getByRole('textbox', { name: GIFT_SURVEY[0].ask }), 'Teal')
   await user.click(screen.getByRole('button', { name: /Forest guardian/ }))
-  await user.click(screen.getByRole('radio', { name: /Slide & Solve/ }))
+  await user.click(screen.getByRole('radio', { name: /Swap & Solve/ }))
   expect(screen.queryByRole('textbox', { name: GIFT_SURVEY[0].ask })).toBeNull()
-  expect(screen.getByText(/Slide rows and columns around the 3 × 3 picture grid/)).toBeVisible()
+  expect(
+    screen.getByText(/Swap any two squares to rebuild the picture/),
+  ).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Create gift link' }))
   expect(sharedGift()).toMatchObject({ version: 3, mode: 'sliding', answers: [] })
   await user.click(screen.getByRole('radio', { name: /Mystery Pictures/ }))

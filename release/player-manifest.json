@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "release": "free-beta-20260919",
+  "buildName": "candidate-webgl",
+  "compression": "none",
+  "sourceInputsSha256": "6194f14ac7ecbbb8e5127925973a94762752e3cde4291e856c24ea1dffd22842",
+  "acceptedUnityBuildId": "sha256:258b4082171072cb4dc297572515289d784af70c734895606b0aecfb9598f3ab",
+  "nativeVerification": "Nine Editor runners passed; clean WebGL build has zero errors.",
+  "files": [
+    {
+      "path": "Build/candidate-webgl.data",
+      "bytes": 54733268,
+      "sha256": "615c46c755de47ced2cdfc2c0c9e2883b09bc5e2042e28b4cdc1634169b59462"
+    },
+    {
+      "path": "Build/candidate-webgl.framework.js",
+      "bytes": 437564,
+      "sha256": "e4d60ef4ca60c8f4c9a0778efae4b0e1d27b8604cec3b9bc8c6cdf3f75235c52"
+    },
+    {
+      "path": "Build/candidate-webgl.loader.js",
+      "bytes": 26982,
+      "sha256": "5ab5617f1dd348726824546b3ade12f73f7e3503e53e6a3e0f5adc12a9497b2f"
+    },
+    {
+      "path": "Build/candidate-webgl.wasm",
+      "bytes": 64040864,
+      "sha256": "6321c9e0e52d7d8d39aaf027f273fa05e0e43171c1438871deba681226cee733"
+    },
+    {
+      "path": "StreamingAssets/UnityServicesProjectConfiguration.json",
+      "bytes": 1124,
+      "sha256": "3b47f5bb704c2bdd4ab4476016631b94fb5544b344141cb642b4139c0ede3981"
+    },
+    {
+      "path": "TemplateData/MemoryProfiler.png",
+      "bytes": 665,
+      "sha256": "0ce87be20d0c24ab6cb73b57de2004da261cc2a641e69319c6ae3fe11fc85483"
+    },
+    {
+      "path": "TemplateData/favicon.ico",
+      "bytes": 2305,
+      "sha256": "9c13beb90ee8f70580d52a21d5233970d1c89e71e4a34a462c22610941c3c77f"
+    },
+    {
+      "path": "TemplateData/fullscreen-button.png",
+      "bytes": 175,
+      "sha256": "21221581673a54b8139d408d4a3f8d2b879e86827d4b6fc53b995ff7a99ee3e9"
+    },
+    {
+      "path": "TemplateData/progress-bar-empty-dark.png",
+      "bytes": 96,
+      "sha256": "bbee7131afe8a3365906240d89184dc86234c119467f390bc4bc6802328fdb4d"
+    },
+    {
+      "path": "TemplateData/progress-bar-empty-light.png",
+      "bytes": 109,
+      "sha256": "143696c060ad43d6c30f19ff5f49000927a139a2a1e4c9f45fafaa2b90d7d2be"
+    },
+    {
+      "path": "TemplateData/progress-bar-full-dark.png",
+      "bytes": 74,
+      "sha256": "3306a6244dcb3926fca38a28e3ced589df8ff1beed955eb17c0bbf01c918bc62"
+    },
+    {
+      "path": "TemplateData/progress-bar-full-light.png",
+      "bytes": 84,
+      "sha256": "12395ea785480c5cdf12fade6e6cbf49666d5bb1cef7240c113dbcba6bdc5c87"
+    },
+    {
+      "path": "TemplateData/sal0-responsive.css",
+      "bytes": 1257,
+      "sha256": "0a23a6112e4eed94bbe8e85933edf27db4b0bbf90c92fedf6f134323f0cdcf85"
+    },
+    {
+      "path": "TemplateData/style.css",
+      "bytes": 1448,
+      "sha256": "80acab5f9147ed15876d638d776c0f9c6b4c273c01c96d82d23b6c53ea96f9cf"
+    },
+    {
+      "path": "TemplateData/unity-logo-dark.png",
+      "bytes": 3042,
+      "sha256": "c1b72d26c096487dabc948b54bc203f8dac7ed4e3f5733918798e858acb4b159"
+    },
+    {
+      "path": "TemplateData/unity-logo-light.png",
+      "bytes": 3077,
+      "sha256": "002990aea0d946833cadc1519d5b7e50a4570bd537a0517dd79a59d3eec84da7"
+    },
+    {
+      "path": "TemplateData/unity-logo-title-footer.png",
+      "bytes": 1151,
+      "sha256": "9e8b3bdb67c2446d16362fe59449d892100931dbbadfe6a9d923a4142b57a79f"
+    },
+    {
+      "path": "TemplateData/webmemd-icon.png",
+      "bytes": 1670,
+      "sha256": "c56f5494640cedda273aad38d58e6ab9da625d5b3f4d875c0ff92c6192a569c2"
+    }
+  ],
+  "standaloneSourcePage": {
+    "path": "index.html",
+    "bytes": 6275,
+    "sha256": "90dc5800a452f339b3e41d045471efdc904889d6733668d5256b27b67b56dd04"
+  },
+  "standalonePageNote": "Pages uses the React wrapper at /unity/index.html. The native standalone HTML is part of the accepted source-package identity, not a deployed runtime payload."
+}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button } from '@components/ui/Button'
 import { resolveUnityBuildConfig } from './buildConfig'
 import {
@@ -47,6 +47,19 @@ type LoadState =
   | { status: 'ready' }
   | { status: 'error'; message: string }
 
+/** Exit only: a completion callback must never request fullscreen without a gesture. */
+async function exitDescendantFullscreen(stage: HTMLElement | null) {
+  const doc = document as Document & {
+    webkitFullscreenElement?: Element | null
+    webkitExitFullscreen?: () => Promise<void> | void
+  }
+  const active = doc.fullscreenElement ?? doc.webkitFullscreenElement ?? null
+  if (!stage || !active || active === stage || !stage.contains(active)) return
+  const exit = doc.exitFullscreen ?? doc.webkitExitFullscreen
+  if (!exit) throw new Error('Fullscreen exit is unavailable')
+  await exit.call(doc)
+}
+
 /**
  * Host surface for the Unity WebGL build.
  *
@@ -66,6 +79,9 @@ export function UnityStage({
   preview,
   previewAttempts = false,
   slide,
+  completion,
+  completionActive = false,
+  controls,
   audience = 'developer',
 }: {
   activityId?: string
@@ -85,6 +101,12 @@ export function UnityStage({
   previewAttempts?: boolean
   /** Picture-only cyclic sliding on its own protocol; never combined with another launch. */
   slide?: SlideBoot
+  /** Completion content stays inside the fullscreen stage, outside the live canvas. */
+  completion?: ReactNode
+  /** Reveal completion content if a compatible game build promoted its canvas alone. */
+  completionActive?: boolean
+  /** Player controls that must remain reachable when the stage is fullscreen. */
+  controls?: ReactNode
   /**
    * The canonical session, once the web has opened it. Sent on to Unity so it
    * can correlate anything it later emits — Unity cannot know this id, because
@@ -101,6 +123,32 @@ export function UnityStage({
   */
   const stageRef = useRef<HTMLDivElement | null>(null)
   const fullscreen = useFullscreen(stageRef)
+  const [completionExitFailed, setCompletionExitFailed] = useState(false)
+  const [completionExitRetry, setCompletionExitRetry] = useState(0)
+  const exitRecoveryRef = useRef<HTMLDialogElement | null>(null)
+
+  useEffect(() => {
+    setCompletionExitFailed(false)
+    if (!completionActive || !fullscreen.isFullscreen || fullscreen.isSelfFullscreen) return
+    let cancelled = false
+    void exitDescendantFullscreen(stageRef.current).catch(() => {
+      if (!cancelled) setCompletionExitFailed(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [completionActive, fullscreen.isFullscreen, fullscreen.isSelfFullscreen, completionExitRetry])
+
+  useEffect(() => {
+    if (!completionExitFailed || !exitRecoveryRef.current) return
+    // A dialog can enter the browser's top layer above a canvas-only fullscreen
+    // element. An inline alert alone would still be outside its visible subtree.
+    try {
+      exitRecoveryRef.current.showModal()
+    } catch {
+      exitRecoveryRef.current.setAttribute('open', '')
+    }
+  }, [completionExitFailed])
   const [state, setState] = useState<LoadState>({ status: 'unconfigured' })
   const config = resolveUnityBuildConfig()
 
@@ -354,7 +402,15 @@ export function UnityStage({
     // That is what makes retry unable to duplicate an instance.
   }, [config?.loaderUrl, retryToken, conflictingLaunch])
 
-  if (conflictingLaunch) return <div className={styles.stage} role="alert">This puzzle has conflicting launch settings. Close it and try again.</div>
+  const playerControls = controls ? <div className={styles.playerControls}>{controls}</div> : null
+  if (conflictingLaunch) return (
+    <div className={styles.stage}>
+      <p className={styles.empty} role="alert">
+        This puzzle has conflicting launch settings. Close it and try again.
+      </p>
+      {playerControls}
+    </div>
+  )
 
   if (!config) {
     if (audience === 'student') {
@@ -370,6 +426,7 @@ export function UnityStage({
               Nothing is wrong on your end — let your teacher know, and try again later.
             </p>
           </div>
+          {playerControls}
         </div>
       )
     }
@@ -388,6 +445,7 @@ export function UnityStage({
             {activityId ? ` · activity: ${activityId}` : ''}
           </p>
         </div>
+        {playerControls}
       </div>
     )
   }
@@ -415,6 +473,23 @@ export function UnityStage({
         style={privateLaunch && !launchReady ? { visibility: 'hidden' } : undefined}
         aria-label="SAL0MANder game"
       />
+      {completion ? <div className={styles.completion}>{completion}</div> : null}
+      {playerControls}
+      {completionExitFailed ? (
+        <dialog
+          ref={exitRecoveryRef}
+          className={styles.fullscreenRecovery}
+          aria-label="Your gift is ready"
+        >
+          <p role="alert">
+            Your gift is ready. Full screen could not close. Use your browser’s exit control,
+            or try again, to see your gift.
+          </p>
+          <Button variant="secondary" onClick={() => setCompletionExitRetry((n) => n + 1)}>
+            Try exiting full screen
+          </Button>
+        </dialog>
+      ) : null}
       {/*
         Hidden entirely where element fullscreen does not exist — iPhone Safari
         being the case that matters, since a button that silently does nothing
@@ -449,7 +524,7 @@ export function UnityStage({
       ) : null}
       {slide && state.status === 'ready' && !launchReady ? (
         <div className={`${styles.empty} ${styles.previewNotice}`} role={slideSession.status === 'error' ? 'alert' : 'status'}>
-          <h2 className={styles.emptyTitle}>{slideSession.status === 'error' ? 'Slide & Solve could not start' : 'Opening Slide & Solve…'}</h2>
+          <h2 className={styles.emptyTitle}>{slideSession.status === 'error' ? 'Swap & Solve could not start' : 'Opening Swap & Solve…'}</h2>
           <p className={styles.emptyBody}>{slideSession.status === 'error' ? slideSession.message : 'Preparing your picture puzzle.'}</p>
         </div>
       ) : null}

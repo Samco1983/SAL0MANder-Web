@@ -46,8 +46,11 @@ describe('the puzzle picture library', () => {
       total += bytes
       expect(bytes, `${picture.src} is ${Math.round(bytes / 1024)} KB`).toBeLessThan(200 * 1024)
     }
-    // Nineteen lazy-loaded options, including four licensed photos totaling less than 360 KiB.
-    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(1536 * 1024)
+    // Thirty-four original choices bring the lazy-loaded collection to about 9.19 MiB.
+    // Each requested preview still stays below 200 KiB; masters never ship here.
+    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(
+      10 * 1024 * 1024,
+    )
   })
 
   /**
@@ -111,22 +114,32 @@ describe('the puzzle picture library', () => {
     }
   })
 
-  it('flags only the verified puppy and race-car photographs for the real-photo filter', () => {
+  it('flags only source-verified photographs for the real-photo filter', () => {
     const photos = PUZZLE_LIBRARY.filter((picture) => picture.photoCredit)
     expect(photos.map((picture) => picture.key)).toEqual([
       'sleeping-puppies',
       'puggle-puppy',
       'orange-indy-race-car',
       'red-indy-race-car',
+      'photo-lion-cub',
+      'photo-tiger-looking',
+      'photo-bear-cub',
+      'photo-rainbow-ice-cream',
+      'photo-cat-laptop-yawn',
+      'photo-golden-dog',
+      'photo-mountain-lake-dusk',
+      'photo-tropical-beach',
     ])
-    expect(photos.filter((picture) => picture.category === 'Animals')).toHaveLength(2)
+    expect(photos.filter((picture) => picture.category === 'Animals')).toHaveLength(7)
     expect(photos.filter((picture) => picture.category === 'Vehicles')).toHaveLength(2)
     for (const photo of photos) {
       expect(photo.alt).toMatch(/^Photograph of /)
       expect(photo.photoCredit?.author).not.toBe('')
-      expect(photo.photoCredit?.source).toMatch(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/)
+      expect(['commons.wikimedia.org', 'isorepublic.com']).toContain(
+        new URL(photo.photoCredit!.source).hostname,
+      )
       expect(photo.photoCredit?.licenseUrl).toMatch(/^https:\/\//)
-      expect(['CC0 1.0', 'Public domain']).toContain(photo.photoCredit?.license)
+      expect(['CC0 1.0', 'Public domain', 'CC BY 2.0']).toContain(photo.photoCredit?.license)
     }
   })
 
@@ -135,10 +148,17 @@ describe('the puzzle picture library', () => {
       readFileSync('docs/coordination/GIFT-REAL-PHOTO-SOURCES-2026-09-10.json', 'utf8'),
     )
     const photos = PUZZLE_LIBRARY.filter((picture) => picture.photoCredit)
-    expect(manifest.entries).toHaveLength(photos.length)
+    const additional = JSON.parse(
+      readFileSync('docs/coordination/GIFT-REWARD-MEDIA-SOURCES-2026-09-11.json', 'utf8'),
+    )
+    const credited = [
+      ...manifest.entries,
+      ...additional.pictures.filter((entry: { photoCredit?: unknown }) => entry.photoCredit),
+    ]
+    expect(credited).toHaveLength(photos.length)
     let addedBytes = 0
     for (const photo of photos) {
-      const entry = manifest.entries.find((item: { key: string }) => item.key === photo.key)
+      const entry = credited.find((item: { key: string }) => item.key === photo.key)
       expect(entry).toBeDefined()
       expect(entry.src).toBe(photo.src)
       expect(entry.photoCredit).toEqual(photo.photoCredit)
@@ -151,8 +171,10 @@ describe('the puzzle picture library', () => {
       expect(createHash('sha256').update(data).digest('hex')).toBe(entry.sha256)
       addedBytes += data.length
     }
-    expect(addedBytes).toBe(manifest.addedBytes)
-    expect(addedBytes).toBeLessThan(360 * 1024)
+    expect(addedBytes).toBe(
+      credited.reduce((sum: number, entry: { bytes: number }) => sum + entry.bytes, 0),
+    )
+    expect(addedBytes).toBeLessThan(2048 * 1024)
   })
 
   /**

@@ -1,4 +1,5 @@
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { afterEach, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { PREVIEW_EVENT } from '@unity/previewBridge'
@@ -6,6 +7,70 @@ import { SLIDE_EVENT } from '@unity/slideBridge'
 import { PREVIEW_ATTEMPT_EVENT } from '@unity/previewAttemptBridge'
 import { DEFAULT_GIFT_PRESENTATION } from '@/gifts/giftPresentation'
 import { GiftCelebration } from './GiftCelebration'
+import userEvent from '@testing-library/user-event'
+import { StrictMode } from 'react'
+
+it('offers creating, viewing, replaying and closing only after completion; viewing never replays', async () => {
+  const user = userEvent.setup()
+  const replay = vi.fn()
+  const close = vi.fn()
+  const picture = PUZZLE_LIBRARY[0]!
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.setAttribute('open', '')
+    },
+  })
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.removeAttribute('open')
+      // Browsers queue this event; a StrictMode cleanup can be followed by reopening.
+      queueMicrotask(() => this.dispatchEvent(new Event('close')))
+    },
+  })
+  try {
+    render(
+      <StrictMode>
+        <MemoryRouter>
+          <GiftCelebration
+            requestId="actions"
+            presentation={DEFAULT_GIFT_PRESENTATION}
+            picture={picture}
+            mode="classic"
+            onReplay={replay}
+            onClose={close}
+          />
+        </MemoryRouter>
+      </StrictMode>,
+    )
+    expect(screen.queryByRole('button', { name: 'View picture' })).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Learning with Sam' })).toBeNull()
+    finish('actions')
+    expect(screen.getByRole('region', { name: 'Learning with Sam' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Return to puzzle' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Make a gift for someone' })).toHaveAttribute(
+      'href',
+      `/gifts?mode=classic&picture=${picture.key}`,
+    )
+    expect(replay).not.toHaveBeenCalled()
+    expect(close).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'View picture' }))
+    expect(screen.getByRole('dialog', { name: 'Your completed picture' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Back to celebration' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByRole('button', { name: 'View picture' })).toBeVisible()
+    expect(replay).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Play again' }))
+    expect(replay).toHaveBeenCalledTimes(1)
+    await user.click(screen.getByRole('button', { name: 'Close' }))
+    expect(close).toHaveBeenCalledTimes(1)
+  } finally {
+    cleanup()
+    Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal')
+    Reflect.deleteProperty(HTMLDialogElement.prototype, 'close')
+  }
+})
 
 function finish(requestId: string, type = 'preview-finished') {
   act(() =>
@@ -135,7 +200,10 @@ it('accepts only the current finish, latches duplicates, and stops decoration wh
   expect(screen.queryByRole('region', { name: 'Gift complete' })).toBeNull()
   finish('current')
   expect(screen.getByRole('status')).toHaveTextContent('Happy birthday!')
-  expect(screen.getByRole('link', { name: 'Make a gift' })).toHaveAttribute('href', '/gifts')
+  expect(screen.getByRole('link', { name: 'Make a gift for someone' })).toHaveAttribute(
+    'href',
+    '/gifts?mode=mystery',
+  )
   expect(vi.getTimerCount()).toBe(1)
   act(() => vi.advanceTimersByTime(2000))
   finish('current')
@@ -188,4 +256,69 @@ it('shows the personal occasion after completion as plain text', () => {
   expect(screen.queryByText('You got the job!')).toBeNull()
   finish('custom')
   expect(screen.getByRole('status')).toHaveTextContent('You got the job!')
+})
+
+it('conceals the reward picture and its sound until current completion and image load, once per attempt', () => {
+  vi.useFakeTimers()
+  const complete = vi.fn()
+  const reset = vi.fn()
+  const pictureVisible = vi.fn()
+  const picture = PUZZLE_LIBRARY[0]!
+  const props = {
+    requestId: 'reward',
+    channel: 'preview-attempt' as const,
+    presentation: { ...DEFAULT_GIFT_PRESENTATION, celebration: 'hearts' as const },
+    picture,
+    onComplete: complete,
+    onReset: reset,
+    onPictureVisible: pictureVisible,
+  }
+  const view = render(
+    <MemoryRouter>
+      <GiftCelebration {...props} />
+    </MemoryRouter>,
+  )
+  const emit = (type: string, attempt: number, requestId = 'reward') =>
+    act(() =>
+      window.dispatchEvent(
+        new CustomEvent(PREVIEW_ATTEMPT_EVENT, {
+          detail: { type, attemptVersion: 1, requestId, attempt },
+        }),
+      ),
+    )
+  expect(screen.queryByRole('img')).toBeNull()
+  expect(complete).not.toHaveBeenCalled()
+  emit('preview-attempt-ready', 1)
+  emit('preview-attempt-finished', 1, 'stale')
+  expect(screen.queryByRole('img')).toBeNull()
+  emit('preview-attempt-finished', 1)
+  expect(complete).toHaveBeenCalledExactlyOnceWith('hearts')
+  const firstImage = screen.getByRole('img', { name: picture.alt })
+  expect(pictureVisible).not.toHaveBeenCalled()
+  fireEvent.load(firstImage)
+  fireEvent.load(firstImage)
+  expect(pictureVisible).toHaveBeenCalledExactlyOnceWith(picture.key)
+  view.rerender(
+    <MemoryRouter>
+      <GiftCelebration
+        {...props}
+        presentation={{ ...props.presentation, occasionText: 'Well done!' }}
+      />
+    </MemoryRouter>,
+  )
+  emit('preview-attempt-finished', 1)
+  expect(complete).toHaveBeenCalledTimes(1)
+  emit('preview-attempt-ready', 2)
+  expect(screen.queryByRole('img')).toBeNull()
+  fireEvent.load(firstImage)
+  expect(pictureVisible).toHaveBeenCalledTimes(1)
+  emit('preview-attempt-finished', 2)
+  fireEvent.load(screen.getByRole('img'))
+  expect(complete).toHaveBeenCalledTimes(2)
+  expect(pictureVisible).toHaveBeenCalledTimes(2)
+  finish('reward', 'preview-error')
+  expect(screen.queryByRole('img')).toBeNull()
+  expect(reset).toHaveBeenCalledTimes(3)
+  view.unmount()
+  expect(reset).toHaveBeenCalledTimes(4)
 })

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { AboutPage } from './AboutPage'
@@ -78,7 +78,8 @@ describe('about page', () => {
     expect(
       screen.getByText(
         (_, el) =>
-          el?.tagName === 'P' && /don.t think .* is the answer to education/i.test(el.textContent ?? ''),
+          el?.tagName === 'P' &&
+          /don.t think .* is the answer to education/i.test(el.textContent ?? ''),
       ),
     ).toBeInTheDocument()
   })
@@ -87,4 +88,23 @@ describe('about page', () => {
     renderPage()
     expect(screen.getAllByRole('link', { name: 'samco1983@gmail.com' })).toHaveLength(2)
   })
+})
+
+it('publishes all twelve demo photo credits with source and licence links, without loading photos', () => {
+  renderPage()
+  const section = screen.getByRole('region', { name: 'Demo photo credits' })
+  const items = within(section).getAllByRole('listitem')
+  expect(items).toHaveLength(12)
+  const sources = new Set<string>()
+  for (const item of items) {
+    const links = within(item).getAllByRole('link')
+    expect(links).toHaveLength(2)
+    for (const link of links) {
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+      expect(link.getAttribute('href')).toMatch(/^https:/)
+    }
+    sources.add(links[0]!.getAttribute('href')!)
+  }
+  expect(sources.size).toBe(12)
+  expect(section.querySelector('img')).toBeNull()
 })

@@ -8,6 +8,40 @@
  * set of environment inputs stays enumerable and testable in one place.
  */
 import { z } from 'zod'
+import { readTutoringPayment } from './tutoringPayment'
+import {
+  readGoogleMeetInvitation,
+  readGoogleBookingUrl,
+  readSiteOrigin,
+  PUBLIC_TUTORING_BOOKING_URL,
+} from './classroom'
+
+function publicApiBase(value: string) {
+  if (
+    !value ||
+    value.length > 2048 ||
+    /[\s\\]/.test(value) ||
+    Array.from(value).some(
+      (character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127,
+    )
+  )
+    return ''
+  try {
+    const url = new URL(value)
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+    if (
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash ||
+      (url.protocol !== 'https:' && !(loopback && url.protocol === 'http:'))
+    )
+      return ''
+    return url.href.replace(/\/+$/, '')
+  } catch {
+    return ''
+  }
+}
 
 const boolish = z
   .enum(['true', 'false', '1', '0', ''])
@@ -43,11 +77,28 @@ const url = z
 
 const EnvSchema = z.object({
   VITE_APP_NAME: z.string().optional().default('SAL0MANder'),
+  VITE_SITE_MODE: z.enum(['puzzles', 'tutoring']).optional().default('puzzles'),
   VITE_APP_ENV: z
     .enum(['local', 'development', 'staging', 'production'])
     .optional()
     .default('local'),
   VITE_PUBLIC_BASE_URL: url,
+  VITE_GIFT_API_BASE_URL: z.string().optional().default('').transform(publicApiBase),
+  VITE_CLASSROOM_JOIN_URL: z.string().optional().default(''),
+  VITE_CLASSROOM_BOOKING_URL: z.string().optional().default(PUBLIC_TUTORING_BOOKING_URL),
+  VITE_TUTORING_SITE_BASE_URL: z.string().optional().default(''),
+  VITE_TUTORING_PRICE_USD: z.string().optional().default(''),
+  VITE_TUTORING_PAYMENTS_REQUIRED: boolish,
+  VITE_PUZZLE_SITE_BASE_URL: z.string().optional().default(''),
+
+  VITE_GROUP_API_BASE_URL: z.string().optional().default('').transform(publicApiBase),
+  VITE_GROUP_DEMO: boolish,
+  /** Public display flag only; the server must independently use Stripe test credentials. */
+  VITE_GROUP_TEST_MODE: boolish,
+  /** Public eligibility hint only. The server must independently enable verified Google enrollment. */
+  VITE_GROUP_SELF_ENROLLMENT: boolish,
+  VITE_FIREBASE_API_KEY: z.string().optional().default(''),
+  VITE_FIREBASE_APP_ID: z.string().optional().default(''),
 
   VITE_API_BASE_URL: url,
   VITE_API_CONTRACT_VERSION: z.string().optional().default('v1'),
@@ -158,8 +209,31 @@ export function readEnv(source: unknown) {
 
   return {
     appName: raw.VITE_APP_NAME,
+    siteMode: raw.VITE_SITE_MODE,
     appEnv: raw.VITE_APP_ENV,
     publicBaseUrl: raw.VITE_PUBLIC_BASE_URL,
+    gifts: { apiBaseUrl: raw.VITE_GIFT_API_BASE_URL },
+    sites: {
+      tutoring: readSiteOrigin(raw.VITE_TUTORING_SITE_BASE_URL, 'salomandermath.com'),
+      puzzles: readSiteOrigin(raw.VITE_PUZZLE_SITE_BASE_URL, 'sal0mander.com'),
+    },
+    groups: {
+      apiBase: raw.VITE_GROUP_API_BASE_URL,
+      demo: raw.VITE_GROUP_DEMO,
+      testMode: raw.VITE_GROUP_TEST_MODE,
+      selfEnrollment: raw.VITE_GROUP_SELF_ENROLLMENT,
+      firebaseApiKey: raw.VITE_FIREBASE_API_KEY,
+      firebaseAppId: raw.VITE_FIREBASE_APP_ID,
+    },
+    classroom: {
+      invitation: readGoogleMeetInvitation(raw.VITE_CLASSROOM_JOIN_URL),
+      bookingUrl: readGoogleBookingUrl(raw.VITE_CLASSROOM_BOOKING_URL),
+      payment: readTutoringPayment(
+        raw.VITE_TUTORING_PRICE_USD,
+        raw.VITE_TUTORING_PAYMENTS_REQUIRED,
+        readGoogleBookingUrl(raw.VITE_CLASSROOM_BOOKING_URL),
+      ),
+    },
 
     api: {
       baseUrl: raw.VITE_API_BASE_URL,

@@ -1,10 +1,14 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
+import type { ReactNode } from 'react'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { buildGiftLink, encodeGift, giftBackupCode, type Gift } from '@/gifts/giftLink'
 import { GiftPlayPage } from './GiftPlayPage'
+import { GiftFeedback } from '@/gifts/giftFeedback'
+import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
+import { PREVIEW_ATTEMPT_EVENT } from '@unity/previewAttemptBridge'
 
 const { prepare, prepareSlide, stage } = vi.hoisted(() => ({
   prepare: vi.fn(),
@@ -20,9 +24,14 @@ vi.mock('@unity/slideBridge', async (original) => ({
   prepareSlide,
 }))
 vi.mock('@unity/UnityStage', () => ({
-  UnityStage: (props: unknown) => {
+  UnityStage: (props: { completion?: ReactNode; controls?: ReactNode }) => {
     stage(props)
-    return <div aria-label="Actual Unity wrapper" />
+    return (
+      <div aria-label="Actual Unity wrapper">
+        {props.completion}
+        {props.controls}
+      </div>
+    )
   },
 }))
 const gift: Gift = {
@@ -48,7 +57,63 @@ async function openGift(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: 'Open gift box' }))
   await user.click(await screen.findByRole('button', { name: 'Open puzzle' }))
 }
+
+it('replays on request and cancels preparation when the recipient closes', async () => {
+  const user = userEvent.setup()
+  show()
+  await openGift(user)
+  await screen.findByLabelText('Actual Unity wrapper')
+  const finishAttempt = () =>
+    act(() => {
+      for (const type of ['preview-attempt-ready', 'preview-attempt-finished'])
+        window.dispatchEvent(
+          new CustomEvent(PREVIEW_ATTEMPT_EVENT, {
+            detail: { type, attemptVersion: 1, requestId: 'preview_gift', attempt: 1 },
+          }),
+        )
+    })
+  finishAttempt()
+  expect(prepare).toHaveBeenCalledTimes(1)
+  let resolveReplay!: (value: unknown) => void
+  prepare.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        resolveReplay = resolve
+      }),
+  )
+  await user.click(screen.getByRole('button', { name: 'Play again' }))
+  expect(prepare).toHaveBeenCalledTimes(2)
+  expect(screen.getByRole('button', { name: 'Starting again…' })).toBeDisabled()
+  const signal = prepare.mock.calls[1]![2] as AbortSignal
+  await user.click(screen.getByRole('button', { name: 'Close' }))
+  expect(signal.aborted).toBe(true)
+  await act(async () => resolveReplay({ requestId: 'replay_cancelled', config: { title: 'Gift' } }))
+  expect(screen.queryByLabelText('Actual Unity wrapper')).toBeNull()
+  expect(screen.getByRole('button', { name: 'Open gift box' })).toBeVisible()
+})
+
+it('keeps the completed gift available if preparing replay fails', async () => {
+  const user = userEvent.setup()
+  show()
+  await openGift(user)
+  const original = await screen.findByLabelText('Actual Unity wrapper')
+  act(() => {
+    for (const type of ['preview-attempt-ready', 'preview-attempt-finished'])
+      window.dispatchEvent(
+        new CustomEvent(PREVIEW_ATTEMPT_EVENT, {
+          detail: { type, attemptVersion: 1, requestId: 'preview_gift', attempt: 1 },
+        }),
+      )
+  })
+  prepare.mockRejectedValueOnce(new Error('The picture could not load. Try again.'))
+  await user.click(screen.getByRole('button', { name: 'Play again' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('The picture could not load')
+  expect(screen.getByLabelText('Actual Unity wrapper')).toBe(original)
+  expect(screen.getByRole('button', { name: 'View picture' })).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Play again' })).toBeEnabled()
+})
 beforeEach(() => {
+  localStorage.clear()
   prepare.mockReset()
   prepareSlide.mockReset()
   stage.mockReset()
@@ -57,6 +122,84 @@ beforeEach(() => {
 afterEach(() => {
   window.history.replaceState({}, '', '/')
   vi.unstubAllEnvs()
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+  localStorage.clear()
+})
+
+it('changes Gift effects and text without remounting Unity or preparing another game', async () => {
+  const user = userEvent.setup()
+  vi.stubGlobal('navigator', { ...navigator, vibrate: vi.fn() })
+  const play = vi.spyOn(GiftFeedback.prototype, 'play').mockResolvedValue(false)
+  const unlock = vi.spyOn(GiftFeedback.prototype, 'unlock').mockImplementation(() => {})
+  show()
+  expect(play).not.toHaveBeenCalled()
+  expect(unlock).not.toHaveBeenCalled()
+  await openGift(user)
+  const node = await screen.findByLabelText('Actual Unity wrapper')
+  const preview = stage.mock.calls.at(-1)?.[0].preview
+  expect(play).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ key: 'gift_box_pop' }))
+  await user.click(screen.getByRole('button', { name: 'Gift sounds on' }))
+  await user.click(screen.getByRole('button', { name: 'Vibration on' }))
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Gift text size' }), 'compact')
+  expect(screen.getByLabelText('Actual Unity wrapper')).toBe(node)
+  expect(node.closest('[data-gift-text]')).toHaveAttribute('data-gift-text', 'compact')
+  expect(stage.mock.calls.at(-1)?.[0].preview).toBe(preview)
+  expect(prepare).toHaveBeenCalledTimes(1)
+  await user.click(screen.getByRole('button', { name: 'Close puzzle' }))
+  expect(screen.queryByLabelText('Actual Unity wrapper')).toBeNull()
+  expect(screen.getByRole('button', { name: 'Gift sounds off' })).toBeVisible()
+})
+
+it('conceals a Mystery reward and its picture call until the current attempt genuinely completes', async () => {
+  const user = userEvent.setup()
+  const play = vi.spyOn(GiftFeedback.prototype, 'play').mockResolvedValue(true)
+  vi.spyOn(GiftFeedback.prototype, 'unlock').mockImplementation(() => {})
+  const picture = PUZZLE_LIBRARY.find((item) => item.key === 'puggle-puppy')!
+  show(
+    encodeGift({
+      ...gift,
+      mode: 'mystery',
+      imageKey: picture.key,
+      selections: [
+        { templateId: 'color', answerId: 'blue' },
+        { templateId: 'season', answerId: 'spring' },
+        { templateId: 'animal', answerId: 'dog' },
+        { templateId: 'ice-cream', answerId: 'vanilla' },
+      ],
+    }),
+  )
+  expect(screen.queryByAltText(picture.alt)).toBeNull()
+  await openGift(user)
+  await screen.findByLabelText('Actual Unity wrapper')
+  play.mockClear()
+  const emit = (type: string, attempt: number, requestId = 'preview_gift') =>
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent(PREVIEW_ATTEMPT_EVENT, {
+          detail: { type, attemptVersion: 1, requestId, attempt },
+        }),
+      )
+    })
+  emit('preview-attempt-ready', 1)
+  emit('preview-attempt-finished', 1, 'stale')
+  expect(screen.queryByAltText(picture.alt)).toBeNull()
+  expect(play).not.toHaveBeenCalled()
+  emit('preview-attempt-finished', 1)
+  const image = screen.getByAltText(picture.alt)
+  expect(screen.getByLabelText('Actual Unity wrapper')).toContainElement(
+    screen.getByRole('region', { name: 'Gift complete' }),
+  )
+  expect(play).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({ key: 'victory_warm_magic' }),
+  )
+  await act(async () => fireEvent.load(image))
+  expect(play).toHaveBeenLastCalledWith(expect.objectContaining({ key: 'dog-bark' }))
+  emit('preview-attempt-finished', 1)
+  expect(play).toHaveBeenCalledTimes(2)
+  emit('preview-attempt-ready', 2)
+  expect(screen.queryByAltText(picture.alt)).toBeNull()
+  expect(screen.queryByRole('region', { name: 'Gift complete' })).toBeNull()
 })
 
 it('keeps the local base path and handles repeated valid submits as one navigation with no launch', async () => {

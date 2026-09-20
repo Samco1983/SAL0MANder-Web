@@ -57,3 +57,20 @@ it('finishes one short opening and cleans pending timers on unmount', () => {
   second.unmount()
   expect(vi.getTimerCount()).toBe(otherTimers)
 })
+
+it('plays an opening callback only on the deliberate unwrap gesture', () => {
+  vi.useFakeTimers()
+  const unwrap = vi.fn()
+  const view = render(
+    <GiftOpening wrapper="box" onUnwrap={unwrap}>
+      <button>Open puzzle</button>
+    </GiftOpening>,
+  )
+  expect(unwrap).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: 'Open gift box' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Unwrapping…' }))
+  expect(unwrap).toHaveBeenCalledExactlyOnceWith('box')
+  view.unmount()
+  act(() => vi.runAllTimers())
+  expect(unwrap).toHaveBeenCalledTimes(1)
+})

@@ -1,0 +1,116 @@
+.page {
+  max-width: 74rem;
+  margin-inline: auto;
+  padding-block: var(--space-6);
+}
+.hero {
+  max-width: 50rem;
+  margin-bottom: var(--space-6);
+}
+.hero h1 {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  margin-block: var(--space-2);
+}
+.eyebrow,
+.category {
+  color: var(--color-accent);
+  font-weight: var(--weight-medium);
+}
+.quiet,
+.duration,
+.credit {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-4);
+}
+.filters label {
+  display: grid;
+  gap: var(--space-2);
+  font-weight: var(--weight-medium);
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+.filters input,
+.filters select {
+  min-height: 48px;
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+.filters input:focus-visible,
+.filters select:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  margin-top: var(--space-4);
+}
+.summary p {
+  margin-right: auto;
+}
+.status {
+  min-height: 1.5em;
+  margin-block: var(--space-4);
+  overflow-wrap: anywhere;
+}
+.grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-4);
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+.card h2 {
+  font-size: var(--text-lg);
+  margin-block: var(--space-2);
+  overflow-wrap: anywhere;
+}
+.card p {
+  margin-block: var(--space-1);
+}
+.category {
+  text-transform: capitalize;
+  font-size: var(--text-sm);
+}
+.card button {
+  margin-block: var(--space-4);
+  min-width: 6rem;
+}
+.credit {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: auto;
+  overflow-wrap: anywhere;
+}
+.credit a {
+  min-height: 28px;
+}
+.about {
+  margin-top: var(--space-8);
+  max-width: 50rem;
+  scroll-margin-top: 5rem;
+}

@@ -4,12 +4,12 @@ import { afterEach, beforeEach, vi } from 'vitest'
 
 afterEach(() => {
   cleanup()
-  localStorage.clear()
+  if (typeof window !== 'undefined') window.localStorage.clear()
 })
 
 beforeEach(() => {
   // jsdom implements neither matchMedia nor the crypto RNG the ID minter uses.
-  if (!window.matchMedia) {
+  if (typeof window !== 'undefined' && !window.matchMedia) {
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: vi.fn().mockImplementation((query: string) => ({

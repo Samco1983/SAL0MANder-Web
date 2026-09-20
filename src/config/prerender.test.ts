@@ -52,6 +52,60 @@ const run = (dir: string) =>
   execFileSync('node', ['scripts/prerender-routes.mjs', dir], { encoding: 'utf8' })
 
 describe('prerendering the public pages', () => {
+  it('builds a physical lesson entry with sample scope and the existing app base', () => {
+    const dir = fixture(['/', '/learn'])
+    const app = '/school/assets/learn-fixture.js'
+    writeFileSync(
+      join(dir, 'index.html'),
+      readFileSync(join(dir, 'index.html'), 'utf8').replace(
+        '</body>',
+        `<script type="module" src="${app}"></script></body>`,
+      ),
+    )
+    run(dir)
+    const html = readFileSync(join(dir, 'learn/index.html'), 'utf8')
+    expect(html).toContain(`src="${app}"`)
+    expect(html).toContain('<title>Sample math lessons — SAL0MANder</title>')
+    expect(html).toContain('https://sal0mander.com/learn/')
+    expect(html).toContain('not a complete curriculum')
+    expect(html).not.toContain('HOMEPAGE COPY')
+  })
+  it('builds a physical sound library entry with its own metadata and app base', () => {
+    const dir = fixture(['/', '/sounds'])
+    const app = '/school/assets/sounds-fixture.js'
+    writeFileSync(
+      join(dir, 'index.html'),
+      readFileSync(join(dir, 'index.html'), 'utf8').replace(
+        '</body>',
+        `<script type="module" src="${app}"></script></body>`,
+      ),
+    )
+    run(dir)
+    const html = readFileSync(join(dir, 'sounds/index.html'), 'utf8')
+    expect(html).toContain(`src="${app}"`)
+    expect(html).toContain('<title>Sound library — SAL0MANder</title>')
+    expect(html).toContain('https://sal0mander.com/sounds/')
+    expect(html).toContain('property="og:title" content="Sound library')
+    expect(html).not.toContain('HOMEPAGE COPY')
+  })
+  it('builds a physical classroom entry with its own metadata and the correct app base', () => {
+    const dir = fixture(['/', '/classroom'])
+    const app = '/school/assets/classroom-fixture.js'
+    writeFileSync(
+      join(dir, 'index.html'),
+      readFileSync(join(dir, 'index.html'), 'utf8').replace(
+        '</body>',
+        `<script type="module" src="${app}"></script></body>`,
+      ),
+    )
+    run(dir)
+    const html = readFileSync(join(dir, 'classroom/index.html'), 'utf8')
+    expect(html).toContain(`src="${app}"`)
+    expect(html).toContain('<title>Private tutoring and small groups — SAL0MANder</title>')
+    expect(html).toContain('https://sal0mander.com/classroom/')
+    expect(html).toContain('property="og:title" content="Private tutoring and small groups')
+    expect(html).not.toContain('HOMEPAGE COPY')
+  })
   it.each(['/', '/SAL0MANder-Web/'])(
     'serves fresh Unity and Gift hard loads through physical app entries under %s',
     async (base) => {

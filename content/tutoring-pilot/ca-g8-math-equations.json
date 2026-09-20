@@ -1,0 +1,833 @@
+{
+  "lessonPackVersion": 1,
+  "id": "ca-g8-math-equations",
+  "locale": "en-US",
+  "grade": 8,
+  "subject": "Mathematics",
+  "title": "Same Value: Equations on Both Sides",
+  "originality": "Original prompts, scenarios, explanations and teaching guidance authored for this pilot. No EngageNY or Illustrative Mathematics lesson text used. Alignment is not endorsement or official adoption.",
+  "standards": [
+    {
+      "id": "8.EE.7",
+      "publisher": "California Department of Education",
+      "title": "CDE CA CCSS Mathematics, PDF page 61",
+      "url": "https://www.cde.ca.gov/be/st/ss/documents/ccssmathstandardaug2013.pdf#page=61",
+      "accessedDate": "2026-09-11",
+      "alignmentSummary": "Covers solution types and rational-coefficient equations using distribution and like terms, corresponding to 8.EE.7.a–b."
+    }
+  ],
+  "activityDraft": {
+    "config": {
+      "schemaVersion": 2,
+      "activityId": "ca-g8-math-equations",
+      "title": "Same Value: Equations on Both Sides",
+      "activityType": "MysteryReveal",
+      "imagePresetIndex": 0,
+      "pieceCountPreset": 12,
+      "boardShape": "Landscape",
+      "showBoardGuide": false,
+      "enableCameraZoomAndPan": false,
+      "allowRestart": true,
+      "allowResumeLater": true,
+      "allowHints": true,
+      "allowCompletedPictureView": false,
+      "autoPlaceCorrectPieces": true
+    },
+    "meta": {
+      "subject": "Mathematics",
+      "gradeLevel": "8",
+      "description": "I can transform a linear equation and explain whether it has one, no or infinitely many real-number solutions.",
+      "notes": "Original pilot; teacher chooses a picture and reviews options. Teacher-led differentiation; no automatic adaptation. See the separate teacherGuide and questionNotes.",
+      "imageKey": "",
+      "optionsReviewed": false,
+      "createdAt": "2026-09-11T00:00:00Z",
+      "updatedAt": "2026-09-11T00:00:00Z"
+    },
+    "questions": [
+      {
+        "id": "ca-g8-math-equations-q01",
+        "questionText": "Solve 3x + 5 = x + 17.",
+        "hintText": "Collect x terms on one side and constants on the other.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q01-a",
+            "text": "x = 6",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g8-math-equations-q01-b",
+            "text": "x = 12",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q01-c",
+            "text": "x = 3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q01-d",
+            "text": "x = 11",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q02",
+        "questionText": "Solve 5x − 8 = 2x + 13.",
+        "hintText": "Remove 2x, then undo subtracting 8.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q02-a",
+            "text": "x = 5/3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q02-b",
+            "text": "x = 7",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g8-math-equations-q02-c",
+            "text": "x = 21",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q02-d",
+            "text": "x = 3",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q03",
+        "questionText": "Solve 4(x − 2) = 2x + 10.",
+        "hintText": "Distribute 4 to both terms inside the parentheses.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q03-a",
+            "text": "x = 6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q03-b",
+            "text": "x = 18",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q03-c",
+            "text": "x = 9",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g8-math-equations-q03-d",
+            "text": "x = 1",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q04",
+        "questionText": "How many real-number solutions does 2(x + 3) = 2x + 6 have?",
+        "hintText": "Expand the left side, then compare the two sides.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q04-a",
+            "text": "No solution",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q04-b",
+            "text": "Only x = 0",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q04-c",
+            "text": "Only x = 3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q04-d",
+            "text": "Infinitely many solutions",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q05",
+        "questionText": "How many real-number solutions does 3(x + 2) = 3x + 9 have?",
+        "hintText": "After distributing, subtract 3x from both sides.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q05-a",
+            "text": "No solution",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g8-math-equations-q05-b",
+            "text": "Infinitely many solutions",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q05-c",
+            "text": "Only x = 1",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q05-d",
+            "text": "Only x = 0",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q06",
+        "questionText": "Solve (1/2)x + 4 = (1/4)x + 7.",
+        "hintText": "Subtract one-quarter x from both sides.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q06-a",
+            "text": "x = 3/4",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q06-b",
+            "text": "x = 12",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g8-math-equations-q06-c",
+            "text": "x = 6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q06-d",
+            "text": "x = 44",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q07",
+        "questionText": "Solve 0.4x + 2 = 0.1x + 5.",
+        "hintText": "Subtract 0.1x and 2 from both sides.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q07-a",
+            "text": "x = 0.9",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q07-b",
+            "text": "x = 6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q07-c",
+            "text": "x = 10",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g8-math-equations-q07-d",
+            "text": "x = 30",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q08",
+        "questionText": "Solve 2(3x − 1) = 4x + 10.",
+        "hintText": "Distribute first; both terms inside are multiplied by 2.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q08-a",
+            "text": "x = 5.5",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q08-b",
+            "text": "x = 4",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q08-c",
+            "text": "x = 12",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q08-d",
+            "text": "x = 6",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q09",
+        "questionText": "Solve 7 − 2x = x + 1.",
+        "hintText": "Adding 2x to both sides keeps the x coefficient positive.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q09-a",
+            "text": "x = 2",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g8-math-equations-q09-b",
+            "text": "x = -2",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q09-c",
+            "text": "x = 6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q09-d",
+            "text": "x = 8/3",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q10",
+        "questionText": "How many real-number solutions does 3(x + 4) − x = 2(x + 6) have?",
+        "hintText": "Simplify both sides fully before deciding.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q10-a",
+            "text": "No solution",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q10-b",
+            "text": "Infinitely many solutions",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g8-math-equations-q10-c",
+            "text": "Only x = 0",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q10-d",
+            "text": "Only x = 6",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q11",
+        "questionText": "How many real-number solutions does 4(x + 1) = 4x − 3 have?",
+        "hintText": "Remove the matching variable terms after distributing.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q11-a",
+            "text": "Infinitely many solutions",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q11-b",
+            "text": "Only x = -7",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q11-c",
+            "text": "No solution",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g8-math-equations-q11-d",
+            "text": "Only x = 0",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g8-math-equations-q12",
+        "questionText": "Solve 5(x − 1) + 2 = 3(x + 3).",
+        "hintText": "Distribute on both sides, then collect constants.",
+        "choices": [
+          {
+            "id": "ca-g8-math-equations-q12-a",
+            "text": "x = 3",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q12-b",
+            "text": "x = 12",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q12-c",
+            "text": "x = -6",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g8-math-equations-q12-d",
+            "text": "x = 6",
+            "isCorrect": true
+          }
+        ]
+      }
+    ]
+  },
+  "questionNotes": [
+    {
+      "questionId": "ca-g8-math-equations-q01",
+      "skill": "variables on both sides",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q01-a",
+      "explanation": "Subtract x and 5 from both sides: 2x = 12, so x = 6.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q01-a",
+          "reason": "Subtract x and 5 from both sides: 2x = 12, so x = 6."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q01-b",
+          "reason": "This stops at 2x = 12."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q01-c",
+          "reason": "This adds the coefficients to make 4x rather than subtracting x."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q01-d",
+          "reason": "This adds the constants instead of subtracting 5."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "3*x+5",
+        "right": "x+17"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q02",
+      "skill": "maintain equivalent equations",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q02-b",
+      "explanation": "3x − 8 = 13; 3x = 21; x = 7.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q02-a",
+          "reason": "This subtracts 8 from 13 instead of adding it."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q02-b",
+          "reason": "3x − 8 = 13; 3x = 21; x = 7."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q02-c",
+          "reason": "This stops before dividing by 3."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q02-d",
+          "reason": "This adds the x coefficients instead of subtracting them."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "5*x-8",
+        "right": "2*x+13"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q03",
+      "skill": "distribute and solve",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q03-c",
+      "explanation": "4x − 8 = 2x + 10, so 2x = 18 and x = 9.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q03-a",
+          "reason": "This changes 4(x − 2) to 4x − 2, failing to distribute to the constant."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q03-b",
+          "reason": "This stops at 2x = 18."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q03-c",
+          "reason": "4x − 8 = 2x + 10, so 2x = 18 and x = 9."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q03-d",
+          "reason": "This moves -8 with the wrong sign."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "4*(x-2)",
+        "right": "2*x+10"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q04",
+      "skill": "identity",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q04-d",
+      "explanation": "Both sides become 2x + 6. Every real x makes the statement true.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q04-a",
+          "reason": "The simplified statement is always true, not a contradiction."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q04-b",
+          "reason": "Zero works, but every other real number also works."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q04-c",
+          "reason": "Three works, but it is not the only solution."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q04-d",
+          "reason": "Both sides become 2x + 6. Every real x makes the statement true."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "2*(x+3)",
+        "right": "2*x+6"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q05",
+      "skill": "contradiction",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q05-a",
+      "explanation": "The equation becomes 6 = 9, which is false for every x.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q05-a",
+          "reason": "The equation becomes 6 = 9, which is false for every x."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q05-b",
+          "reason": "Equal x coefficients alone are insufficient; the constants also must match."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q05-c",
+          "reason": "Substitution gives 9 on the left and 12 on the right."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q05-d",
+          "reason": "Substitution gives 6 on the left and 9 on the right."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "3*(x+2)",
+        "right": "3*x+9"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q06",
+      "skill": "rational coefficients",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q06-b",
+      "explanation": "(1/4)x = 3; multiply by 4 to get x = 12.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q06-a",
+          "reason": "This multiplies by 1/4 instead of dividing by it."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q06-b",
+          "reason": "(1/4)x = 3; multiply by 4 to get x = 12."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q06-c",
+          "reason": "This ignores the x term on the right."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q06-d",
+          "reason": "This adds 4 and 7 instead of subtracting 4."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "(1/2)*x+4",
+        "right": "(1/4)*x+7"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q07",
+      "skill": "decimal coefficients",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q07-c",
+      "explanation": "0.3x = 3, so x = 10.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q07-a",
+          "reason": "This multiplies 3 by 0.3 rather than dividing."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q07-b",
+          "reason": "This adds the x coefficients instead of subtracting."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q07-c",
+          "reason": "0.3x = 3, so x = 10."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q07-d",
+          "reason": "This divides by 0.1 instead of the combined coefficient 0.3."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "0.4*x+2",
+        "right": "0.1*x+5"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q08",
+      "skill": "distribution with both-side variables",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q08-d",
+      "explanation": "6x − 2 = 4x + 10; 2x = 12; x = 6.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q08-a",
+          "reason": "This distributes to 3x but not to -1."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q08-b",
+          "reason": "This subtracts 2 from 10 instead of adding it."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q08-c",
+          "reason": "This stops before dividing by 2."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q08-d",
+          "reason": "6x − 2 = 4x + 10; 2x = 12; x = 6."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "2*(3*x-1)",
+        "right": "4*x+10"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q09",
+      "skill": "negative x coefficient",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q09-a",
+      "explanation": "7 = 3x + 1; 6 = 3x; x = 2.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q09-a",
+          "reason": "7 = 3x + 1; 6 = 3x; x = 2."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q09-b",
+          "reason": "This changes the sign incorrectly when dividing."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q09-c",
+          "reason": "This stops at 3x = 6."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q09-d",
+          "reason": "This adds 1 to 7 instead of subtracting it."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "7-2*x",
+        "right": "x+1"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q10",
+      "skill": "identity after collecting terms",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q10-b",
+      "explanation": "Both sides simplify to 2x + 12, so the equation is true for every real x.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q10-a",
+          "reason": "Simplification produces matching expressions, not unequal constants."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q10-b",
+          "reason": "Both sides simplify to 2x + 12, so the equation is true for every real x."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q10-c",
+          "reason": "Zero works, but the expressions match for all real values."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q10-d",
+          "reason": "Six works, but there is no unique solution."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "3*(x+4)-x",
+        "right": "2*(x+6)"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q11",
+      "skill": "contradiction after distribution",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q11-c",
+      "explanation": "The equation becomes 4 = -3, a contradiction.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q11-a",
+          "reason": "The x terms match but the constants do not."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q11-b",
+          "reason": "Substitution gives -24 on the left and -31 on the right."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q11-c",
+          "reason": "The equation becomes 4 = -3, a contradiction."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q11-d",
+          "reason": "Substitution gives 4 on the left and -3 on the right."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "4*(x+1)",
+        "right": "4*x-3"
+      }
+    },
+    {
+      "questionId": "ca-g8-math-equations-q12",
+      "skill": "multi-step equivalence",
+      "standardIds": [
+        "8.EE.7"
+      ],
+      "answerChoiceId": "ca-g8-math-equations-q12-d",
+      "explanation": "5x − 3 = 3x + 9; 2x = 12; x = 6.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g8-math-equations-q12-a",
+          "reason": "This subtracts 3 from 9 after 5x − 3 = 3x + 9, instead of adding 3 to both sides."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q12-b",
+          "reason": "This stops before dividing by 2."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q12-c",
+          "reason": "This reverses the constant difference without also reversing the coefficient."
+        },
+        {
+          "choiceId": "ca-g8-math-equations-q12-d",
+          "reason": "5x − 3 = 3x + 9; 2x = 12; x = 6."
+        }
+      ],
+      "verification": {
+        "kind": "equation",
+        "left": "5*(x-1)+2",
+        "right": "3*(x+3)"
+      }
+    }
+  ],
+  "teacherGuide": {
+    "learningTarget": "I can transform a linear equation and explain whether it has one, no or infinitely many real-number solutions.",
+    "suggestedMinutes": 35,
+    "prerequisites": [
+      "Distributive property",
+      "Combining like terms",
+      "Rational-number operations and substitution"
+    ],
+    "materials": [
+      "Paper or whiteboard",
+      "Pencil",
+      "Optional calculator for checking after explaining a method"
+    ],
+    "miniLesson": "Compare 2x + 3 = x + 8, 2(x + 3) = 2x + 6 and 2(x + 3) = 2x + 7. Simplify to x = 5, 6 = 6 and 6 = 7. Discuss why matching variable terms do not always mean no solution.",
+    "sequence": [
+      "0–5 min: discuss the learning target and check prerequisites.",
+      "5–10 min: model the example with a drawing or observation.",
+      "10–25 min: use questions in chunks of 3–4; ask for explanations and pause for needed support.",
+      "25–35 min: complete the performance task independently, then discuss the rubric. Extend or split the lesson if the learner needs more thinking time."
+    ],
+    "easierVariants": [
+      "Use color or underlining for variable terms and constants; do not rely on color alone.",
+      "Show each equivalent equation on a new line and explain the operation on both sides.",
+      "Use whole-number questions before fractions; revisit a worked example when signs change incorrectly."
+    ],
+    "harderVariants": [
+      "Create one equation of each solution type and justify its simplified form.",
+      "Solve a rational-coefficient example using two different sequences of equivalent operations.",
+      "Ask why trying several values cannot prove an identity, but symbolic simplification can."
+    ],
+    "manualDecisionGuide": [
+      "If two questions in a chunk reveal the same misconception, pause and model it using the corresponding distractor reasoning.",
+      "If answers are correct but the learner cannot explain, stay with the model rather than increasing speed or difficulty.",
+      "If the learner explains two examples and the performance task well, offer a harder variant. These are teacher suggestions, not a validated mastery cutoff."
+    ],
+    "performanceTask": "Create three equations with variables on both sides: one with exactly x = 4 as its solution, one with no solution, and one with infinitely many solutions. At least one must include parentheses. Simplify each and justify its solution type.",
+    "performanceRubric": [
+      "Produces a one-solution equation and reduces it to x = 4.",
+      "Produces a contradiction with different constants and an identity with matching expressions.",
+      "Distributes and combines correctly, explaining why the transformed equations are equivalent."
+    ],
+    "assessmentLimits": "One-variable linear equations only. Systems, quadratics and full grade-eight coverage are outside this pilot. MCQ classification is supplemented by an equation-creation task.",
+    "adaptation": {
+      "mode": "teacher-led",
+      "automaticAdaptation": false,
+      "note": "A teacher or tutor chooses support, sequence and variants from observed work. This content does not implement an adaptive algorithm or diagnose a learner."
+    },
+    "progressiveHelp": [
+      {
+        "level": 1,
+        "action": "Ask the learner to identify the unknown and show a first attempt. If needed, read the question-specific hint; do not reveal the correct choice."
+      },
+      {
+        "level": 2,
+        "action": "Mark each term affected by distribution. Write a simplified equation without solving it for the learner; ask whether the remaining variable coefficients and constants match."
+      },
+      {
+        "level": 3,
+        "action": "Revisit the different-number worked example in miniLesson, then return to the original question and let the learner finish. Discuss the answer-key explanation only after an attempt."
+      }
+    ],
+    "independentExit": {
+      "prompt": "Create three equations with variables on both sides: one with exactly x = 4 as its solution, one with no solution, and one with infinitely many solutions. At least one must include parentheses. Simplify each and justify its solution type.",
+      "conditions": "Use a fresh sheet. No answer key, hints or AI answer generation during this check; normal access accommodations and the teacher’s agreed arithmetic tools remain available. Record independent work separately from supported practice.",
+      "review": "After the learner finishes, discuss the rubric. If support was needed, label the work supported and use a different analogous task later; do not call it independent mastery."
+    }
+  },
+  "deliveryStatus": {
+    "contentPrepared": true,
+    "automaticallyAdaptive": false,
+    "unityImportTested": false,
+    "studentTrialCompleted": false,
+    "publicationApprovedByThisPack": false
+  }
+}

@@ -1,15 +1,27 @@
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { newDraft, type ActivityDraft } from '@studio/activityDraft'
-import { GiftSchema, type Gift } from './giftLink'
+import { StoredGiftSchema, type StoredGift } from './giftStore'
 import { GIFT_MODES, giftTemplate } from './giftCatalog'
 import { surveyTemplate, surveyChoices, GIFT_SURVEY } from './giftSurvey'
 
 /** Pure in-memory adaptation. Never reads or writes Teacher Studio/student storage. */
-export function giftToDraft(input: Gift, activityId: string): ActivityDraft {
-  const gift = GiftSchema.parse(input)
+export function giftToDraft(input: StoredGift, activityId: string): ActivityDraft {
+  const gift = StoredGiftSchema.parse(input)
   if (gift.mode === 'sliding')
     throw new Error('Slide & Solve requires the separate sliding game launch.')
-  const picture = PUZZLE_LIBRARY.find((entry) => entry.key === gift.imageKey)!
+  const picture =
+    gift.version === 4
+      ? {
+          key: 'custom',
+          name: 'Your photo',
+          shape:
+            gift.image.width === gift.image.height
+              ? ('Square' as const)
+              : gift.image.width > gift.image.height
+                ? ('Landscape' as const)
+                : ('Portrait' as const),
+        }
+      : PUZZLE_LIBRARY.find((entry) => entry.key === gift.imageKey)!
   const draft = newDraft(activityId, '2026-01-01T00:00:00.000Z')
   const title = `${picture.name} · ${GIFT_MODES.find((mode) => mode.id === gift.mode)!.name}`
   return {
@@ -29,7 +41,7 @@ export function giftToDraft(input: Gift, activityId: string): ActivityDraft {
     },
     meta: { ...draft.meta, imageKey: picture.key, optionsReviewed: true },
     questions:
-      gift.version === 2
+      gift.version === 2 || gift.version === 4
         ? GIFT_SURVEY.flatMap((template) => {
             const answer = gift.answers.find((item) => item.templateId === template.id)
             return answer

@@ -29,6 +29,9 @@ jobs:
 
       - run: npm ci
 
+      - name: verify accepted player inputs
+        run: node scripts/verify-player-manifest.mjs public/unity
+
       - name: full local gate
         run: npm run verify
 
@@ -42,3 +45,15 @@ jobs:
 
       - name: deploy artifact gate
         run: npm run verify:artifact
+
+      - name: production free beta build
+        run: npm run build -- --mode free-beta
+
+      - name: production free beta artifact and player
+        env:
+          VITE_BASE_PATH: /
+        run: |
+          npm run pages:fallback
+          node scripts/verify-deploy-artifact.mjs dist /
+          node scripts/verify-deployed-site.mjs dist
+          node scripts/verify-player-manifest.mjs dist/unity

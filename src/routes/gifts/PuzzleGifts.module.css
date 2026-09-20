@@ -518,3 +518,39 @@
 .celebration > a {
   flex-shrink: 0;
 }
+
+/* A small gift viewport cannot fit its reward, toolbar and usable game at once.
+   Stack and scroll only the completed Slide gift; keep the canvas mounted. */
+@media (max-width: 35rem), (max-height: 32rem) {
+  .stage[data-slide-gift='true'] > [data-fullscreen]:has(> div > [aria-label='Gift complete']) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow-y: auto;
+  }
+  .stage[data-slide-gift='true'] > [data-fullscreen]:has(> div > [aria-label='Gift complete']) > canvas {
+    flex: 0 0 24rem;
+    height: 24rem !important;
+    min-height: 24rem;
+    max-height: none;
+  }
+  .stage[data-slide-gift='true'] > [data-fullscreen]:has(> div > [aria-label='Gift complete']) > div {
+    flex: 0 0 auto;
+  }
+  .stage[data-slide-gift='true'] > [data-fullscreen] > div:has(> [aria-label='Gift complete']) {
+    order: -1;
+    max-height: none;
+    overflow: visible;
+  }
+  .stage[data-slide-gift='true'] [aria-label='Gift complete'] {
+    max-height: none;
+    overflow: visible;
+  }
+}
+@media (max-height: 32rem) and (orientation: landscape) {
+  .stage[data-slide-gift='true'] > [data-fullscreen]:has(> div > [aria-label='Gift complete']) > canvas {
+    flex-basis: 14rem;
+    height: 14rem !important;
+    min-height: 14rem;
+  }
+}
