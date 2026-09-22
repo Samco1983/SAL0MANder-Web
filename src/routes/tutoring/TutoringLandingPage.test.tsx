@@ -16,6 +16,7 @@ function renderPage() {
 }
 
 describe('advertising-ready tutoring landing page', () => {
+  // Advertising traffic must reach a truthful, usable tutoring conversion path.
   it('shows the offer, prices, capacity, and Pacific availability', () => {
     renderPage()
     expect(
