@@ -1,0 +1,198 @@
+.page {
+  display: grid;
+  gap: 3rem;
+  padding: 1rem 0 3rem;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.8fr);
+  gap: 2rem;
+  align-items: start;
+  padding: 2.5rem;
+  border: 1px solid var(--color-border, #d7d7d7);
+  border-radius: 1.5rem;
+}
+
+.hero h1 {
+  max-width: 16ch;
+  margin: 0.4rem 0 1rem;
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  line-height: 0.98;
+}
+
+.eyebrow {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lead {
+  max-width: 65ch;
+  font-size: 1.2rem;
+  line-height: 1.65;
+}
+
+.focus,
+.note {
+  line-height: 1.6;
+}
+
+.heroActions,
+.cards,
+.steps,
+.providerGrid {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.primary,
+.secondary,
+.inlineLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.8rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.primary {
+  border: 0;
+  background: var(--color-accent, #ffb000);
+  color: #111;
+  cursor: pointer;
+}
+
+.secondary,
+.inlineLink {
+  border: 1px solid currentColor;
+}
+
+.promise,
+.card,
+.steps article,
+.providerGrid > div {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border, #d7d7d7);
+  border-radius: 1rem;
+}
+
+.promise {
+  font-size: 1.05rem;
+}
+
+.section {
+  display: grid;
+  gap: 1rem;
+}
+
+.section h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+}
+
+.cards > * {
+  flex: 1 1 18rem;
+}
+
+.price {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 900;
+}
+
+.schedule {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.schedule > div,
+.providerGrid > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.35fr) 1fr;
+  gap: 1rem;
+}
+
+.steps > * {
+  flex: 1 1 16rem;
+}
+
+.steps article > span {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 700;
+}
+
+.form input,
+.form select,
+.form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border, #b8b8b8);
+  border-radius: 0.65rem;
+  background: inherit;
+  color: inherit;
+  font: inherit;
+}
+
+.form textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.providerGrid > * {
+  flex: 1 1 20rem;
+}
+
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
+
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .wide {
+    grid-column: auto;
+  }
+
+  .schedule > div,
+  .providerGrid > div {
+    grid-template-columns: 1fr;
+  }
+
+  .primary,
+  .secondary {
+    width: 100%;
+  }
+}
