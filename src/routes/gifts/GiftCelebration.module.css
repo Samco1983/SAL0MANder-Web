@@ -1,0 +1,220 @@
+.celebration {
+  position: relative;
+  isolation: isolate;
+  /* Keep the isolated burst above the later positioned Unity stage, below app navigation. */
+  z-index: 1;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-block: 1px solid var(--color-border);
+  background: linear-gradient(115deg, var(--color-accent-soft), var(--color-surface));
+  max-height: min(38dvh, 18rem);
+  overflow-y: auto;
+}
+.picture {
+  width: clamp(5rem, 14vw, 9rem);
+  max-height: 9rem;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
+  flex: 0 0 auto;
+}
+.message {
+  min-width: 0;
+  flex: 1;
+}
+.message p {
+  margin: 0 0 var(--space-2);
+  overflow-wrap: anywhere;
+}
+.message strong {
+  display: block;
+  color: var(--color-accent);
+  font-size: calc(var(--text-lg) * var(--gift-text-scale, 1));
+}
+.message .pictureName {
+  color: var(--color-text-muted);
+  font-size: calc(var(--text-sm) * var(--gift-text-scale, 1));
+}
+.message a {
+  min-height: 44px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.actions button {
+  min-height: 44px;
+}
+.invitation {
+  font-size: calc(var(--text-sm) * var(--gift-text-scale, 1));
+}
+.pictureViewer {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(72rem, calc(100vw - 1.5rem));
+  max-width: none;
+  max-height: calc(100dvh - 1.5rem);
+  overflow: auto;
+  padding: var(--space-4);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.pictureViewer::backdrop {
+  background: color-mix(in srgb, var(--color-stage) 88%, transparent);
+}
+.viewerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.viewerHeader h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+.fullPicture {
+  display: block;
+  width: 100%;
+  max-height: calc(100dvh - 10rem);
+  object-fit: contain;
+  margin: auto;
+}
+.effects {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.17;
+}
+.effects span {
+  position: absolute;
+  left: var(--rest-x);
+  top: 45%;
+  color: var(--color-accent);
+  font-size: 1.25rem;
+}
+.effects[data-moving='true'] {
+  position: fixed;
+  inset: 6rem 0 1rem;
+  z-index: var(--z-overlay);
+  opacity: 1;
+}
+.effects[data-moving='true'] span {
+  left: 50%;
+  top: 78%;
+  font-size: clamp(1.8rem, 5vw, 3.3rem);
+  animation: giftBurst 2.2s var(--delay) cubic-bezier(0.15, 0.6, 0.3, 1) both;
+  filter: drop-shadow(0 3px 3px color-mix(in srgb, var(--color-text) 22%, transparent));
+}
+.effects[data-effect='hearts'] span {
+  color: var(--color-accent);
+}
+.effects[data-effect='hearts'] span:nth-child(even) {
+  color: var(--color-support);
+}
+.effects[data-effect='balloons'] span {
+  border-radius: 50%;
+}
+.effects[data-effect='balloons'] span::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 24px;
+  background: currentColor;
+  top: 75%;
+  left: 50%;
+}
+.effects[data-effect='confetti'] span:nth-child(3n) {
+  color: var(--color-support);
+}
+@keyframes giftBurst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.25);
+  }
+  12% {
+    opacity: 0.9;
+  }
+  65% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--burst-x), var(--burst-y)) rotate(var(--twist)) scale(1.15);
+  }
+}
+@media (max-height: 32rem) and (orientation: landscape) {
+  .celebration {
+    max-height: 31dvh;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+  }
+  .picture {
+    width: 4.5rem;
+    max-height: 5rem;
+  }
+  .message .pictureName {
+    display: none;
+  }
+  .message {
+    display: block;
+  }
+  .message p {
+    flex: 1;
+    margin: 0;
+  }
+  .message strong {
+    display: inline;
+    font-size: var(--text-md);
+  }
+  .message .invitation {
+    display: none;
+  }
+  .message a {
+    flex-shrink: 0;
+  }
+}
+@media (max-width: 35rem) {
+  .celebration {
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+  .picture {
+    width: 3.5rem;
+  }
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .actions a {
+    grid-column: 1 / -1;
+  }
+  .actions button {
+    padding-inline: var(--space-2);
+    white-space: normal;
+  }
+  .message .pictureName {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .effects[data-moving='true'] {
+    position: absolute;
+    inset: 0;
+    opacity: 0.17;
+  }
+  .effects span {
+    animation: none !important;
+  }
+}

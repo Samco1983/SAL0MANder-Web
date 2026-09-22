@@ -163,6 +163,23 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
 }
+.advanceToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+}
+.advanceToggle input {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-accent);
+}
+.moreIdeas {
+  margin-top: var(--space-2);
+}
 .textAnswer {
   box-sizing: border-box;
   width: 100%;
@@ -212,12 +229,14 @@
 }
 .reviewAnswer {
   display: grid;
+  flex: 1;
   gap: var(--space-1);
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.reviewAnswer strong {
+.reviewAnswer label {
   font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
   color: var(--color-text-muted);
 }
 .surveyLabel,
@@ -264,6 +283,13 @@
   }
   .actions button {
     padding-inline: var(--space-3);
+  }
+  .review li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .reviewAnswer {
+    width: 100%;
   }
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {

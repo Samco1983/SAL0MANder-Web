@@ -47,3 +47,25 @@ describe('DistrictsPage', () => {
     )
   })
 })
+
+it('separates guest hosts from optional tutoring and temporary previews', () => {
+  const { container } = renderPage()
+  const text = container.textContent ?? ''
+  expect(
+    screen.getByRole('heading', {
+      name: 'Guest puzzle play: domains to review',
+    }),
+  ).toBeInTheDocument()
+  expect(
+    screen.getByRole('heading', {
+      name: 'Optional tutoring and external services',
+    }),
+  ).toBeInTheDocument()
+  expect(screen.getByText('sal0mander-math.firebaseapp.com')).toBeInTheDocument()
+  expect(screen.getByText('sal0-tutoring-715251110700.us-west1.run.app')).toBeInTheDocument()
+  expect(text).toMatch(/WebAssembly and WebGL/)
+  expect(text).toMatch(/Do not allow all Firebase/)
+  expect(text).toMatch(/Experimental preview links are temporary test deployments/)
+  expect(text).not.toMatch(/\*\.(?:google|firebaseapp|web|run)\./)
+  expect(text).not.toMatch(/There are none\./)
+})

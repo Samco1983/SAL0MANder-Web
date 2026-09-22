@@ -13,6 +13,8 @@ export const paths = {
   guestPlay: '/play/:activityId',
   /** Guest Play with no activity yet (demo / picker). */
   guestPlayIndex: '/play',
+  /** Direct native Easy Slide sample; no gift form or student account. */
+  slideDemo: '/demos/slide',
   /** Privacy and data practices — teacher-facing, and read by filter reviewers. */
   privacy: '/privacy/',
   /** District technical and data summary — for IT administrators. */
@@ -23,6 +25,15 @@ export const paths = {
   about: '/about/',
   /** Teacher Studio — where a teacher builds an activity. Laptop-first. */
   studio: '/studio',
+  /** Advertising-ready public tutoring landing page. */
+  tutoring: '/tutoring',
+  /** Live tutoring invitation entry plus independent puzzle practice. */
+  classroom: '/classroom',
+  classes: '/classes',
+  /** Original sample lessons; no login, saved gradebook or full curriculum claim. */
+  learn: '/learn',
+  /** Explicit on-demand auditions of the shipped sound library. */
+  sounds: '/sounds',
   /** A separate, account-free gift composer and transient Unity recipient. */
   gifts: '/gifts',
   giftPlay: '/gifts/play',

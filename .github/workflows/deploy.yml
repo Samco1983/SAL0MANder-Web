@@ -82,7 +82,7 @@ jobs:
           # Emergency Pages-hosted WebGL build. Longer-term this can move back
           # to a CDN once Unity licensing is healthy enough for repeat builds.
           VITE_UNITY_BUILD_BASE_URL: /unity
-          VITE_UNITY_BUILD_NAME: sal0-unity-webgl
+          VITE_UNITY_BUILD_NAME: candidate-webgl
           # The build committed under public/unity is UNCOMPRESSED —
           # sal0-unity-webgl.{data,framework.js,wasm}, no .br suffix. env.ts
           # defaults this to 'br' because that is Unity's own default, so
@@ -94,8 +94,8 @@ jobs:
           # Public endpoint only; Cloudflare Access and the Worker hold auth,
           # Make, and GitHub credentials. Configure this repository variable
           # after the protected Worker has been deployed.
-          VITE_OPS_API_BASE_URL: ${{ vars.VITE_OPS_API_BASE_URL }}
-        run: npm run build
+          VITE_OPS_API_BASE_URL: ''
+        run: npm run build -- --mode free-beta
 
       # Pages has no server-side rewrite, so a deep link like /play/SUN-42 —
       # which is every teacher's share link — would 404 on a hard load. Serving
@@ -108,7 +108,7 @@ jobs:
       # game unreachable fails here instead of on a student's screen.
       - name: verify the Unity build the app will request is present
         env:
-          VITE_UNITY_BUILD_NAME: sal0-unity-webgl
+          VITE_UNITY_BUILD_NAME: candidate-webgl
           VITE_UNITY_BUILD_COMPRESSION: none
         run: |
           node -e '
@@ -206,6 +206,9 @@ jobs:
           '
           node scripts/verify-deploy-artifact.mjs dist "$VITE_BASE_PATH"
 
+      - name: verify the exact accepted game player
+        run: node scripts/verify-player-manifest.mjs dist/unity
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -232,3 +235,6 @@ jobs:
       # answered, not that a student got a lesson.
       - name: verify the PUBLISHED site, not our copy of it
         run: node scripts/verify-live-site.mjs "${{ steps.deployment.outputs.page_url }}"
+
+      - name: verify the published game identity
+        run: node scripts/verify-player-manifest.mjs "${{ steps.deployment.outputs.page_url }}" --site-root

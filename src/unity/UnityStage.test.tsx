@@ -90,6 +90,13 @@ describe('when no build is configured', () => {
     render(<UnityStage activityId="demo-activity" />)
     expect(screen.getByText(/demo-activity/)).toBeInTheDocument()
   })
+
+  it('keeps caller controls available when the game cannot start', () => {
+    render(<UnityStage audience="student" controls={<button>Close puzzle</button>} />)
+    expect(screen.getByRole('button', { name: 'Close puzzle' })).toBeVisible()
+    expect(canvas()).toBeNull()
+    expect(loaderScript()).toBeNull()
+  })
 })
 
 describe('booting a configured build', () => {
@@ -308,7 +315,9 @@ describe('bridge diagnostics', () => {
       shareCode: 'SUN-42',
     })
 
-    expect(screen.queryByRole('status', { name: /unity bridge diagnostics/i })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('status', { name: /unity bridge diagnostics/i }),
+    ).not.toBeInTheDocument()
     expect(screen.queryByText(/future-message/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/SUN-42/i)).not.toBeInTheDocument()
   })

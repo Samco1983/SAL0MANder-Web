@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { env } from '@config/env'
 import { paths } from '@config/routes'
+import { learningOfferLinks } from '@config/learningOffers'
 import { Wordmark } from '@components/brand/Wordmark'
 import { ThemeToggle } from './ThemeToggle'
 import styles from './AppShell.module.css'
@@ -20,9 +21,11 @@ type NavItem = { to: string; label: string; internal?: boolean }
 
 const NAV: NavItem[] = [
   { to: paths.home, label: 'Home' },
-  { to: paths.guestPlayIndex, label: 'Play' },
+  { to: paths.guestPlayIndex, label: 'Puzzle Practice' },
   { to: paths.gifts, label: 'Puzzle Gifts' },
-  { to: paths.studio, label: 'Teacher Studio' },
+  { to: paths.tutoring, label: 'Tutoring' },
+  { to: paths.learn, label: 'Math Lessons' },
+  { to: paths.studio, label: 'Teacher Studio drafts' },
   { to: paths.profile, label: 'Profile' },
   { to: paths.unity, label: 'WebGL Host', internal: true },
   { to: paths.console, label: 'Console', internal: true },
@@ -30,7 +33,20 @@ const NAV: NavItem[] = [
 
 /** What the public sees. In production, internal destinations are not listed. */
 export function visibleNav(isProd: boolean): NavItem[] {
-  return isProd ? NAV.filter((item) => !item.internal) : NAV
+  const tutoring = learningOfferLinks()
+  const items = NAV.filter((item) => {
+    if (item.to === paths.profile && !env.features?.accounts) return false
+    return env.siteMode !== 'tutoring' || (item.to !== paths.profile && item.to !== paths.studio)
+  })
+  return (isProd ? items.filter((item) => !item.internal) : items).map((item) => ({
+    ...item,
+    to:
+      item.to === paths.classroom
+        ? tutoring.tutoring
+        : (item.to === paths.guestPlayIndex || item.to === paths.gifts) && env.sites?.puzzles
+          ? env.sites.puzzles + item.to
+          : item.to,
+  }))
 }
 
 /**
@@ -49,6 +65,7 @@ export function AppShell({
   fill?: boolean
   contained?: boolean
 }) {
+  const tutoring = learningOfferLinks()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuId = useId()
   const menuButton = useRef<HTMLButtonElement>(null)
@@ -64,7 +81,7 @@ export function AppShell({
     return () => document.removeEventListener('keydown', closeOnEscape)
   }, [menuOpen])
   return (
-    <div className={styles.shell} data-fill={fill}>
+    <div className={styles.shell} data-fill={fill} data-site={env.siteMode}>
       <a
         className={`${styles.skipLink} sr-only`}
         href="#main"
@@ -94,9 +111,20 @@ export function AppShell({
 
       <header className={styles.header}>
         <Link to={paths.home} className={styles.brand} aria-label={`${env.appName} home`}>
-          <Wordmark />
+          {env.siteMode === 'tutoring' ? (
+            <span className={styles.tutoringWordmark}>
+              SAL0MANder<span>Math tutoring</span>
+            </span>
+          ) : (
+            <Wordmark />
+          )}
         </Link>
 
+        {env.siteMode === 'tutoring' ? (
+          <a className={styles.bookingCta} href={tutoring.tutoring}>
+            {tutoring.hasBooking ? 'Book a lesson' : 'Ask about tutoring'}
+          </a>
+        ) : null}
         <button
           type="button"
           className={styles.menuButton}
@@ -108,19 +136,30 @@ export function AppShell({
           {menuOpen ? 'Close menu' : 'Menu'}
         </button>
         <nav id={menuId} className={styles.nav} data-open={menuOpen} aria-label="Main">
-          {visibleNav(env.isProd).map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === paths.home}
-              onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {visibleNav(env.isProd).map((item) =>
+            item.to.startsWith('https://') || item.to.startsWith('mailto:') ? (
+              <a
+                key={item.to}
+                href={item.to}
+                className={styles.navLink}
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.label}
+              </a>
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === paths.home}
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
+                }
+              >
+                {item.label}
+              </NavLink>
+            ),
+          )}
           <ThemeToggle />
         </nav>
       </header>
@@ -145,7 +184,10 @@ export function AppShell({
               application", which describes the architecture to an engineer and
               tells a teacher nothing.
             */}
-            {env.appName} — learning puzzles for the classroom.
+            {env.appName} —{' '}
+            {env.siteMode === 'tutoring'
+              ? 'live math tutoring and puzzle practice.'
+              : 'learning puzzles for the classroom.'}
           </span>
 
           {/*
@@ -160,6 +202,9 @@ export function AppShell({
             never sees this.
           */}
           <nav className={styles.footerNav} aria-label="Site information">
+            <Link className={styles.footerLink} to={paths.sounds}>
+              Sound library
+            </Link>
             <Link className={styles.footerLink} to={paths.about}>
               About
             </Link>
@@ -169,13 +214,22 @@ export function AppShell({
             <Link className={styles.footerLink} to={paths.accessibility}>
               Accessibility
             </Link>
-            <Link className={styles.footerLink} to={paths.districts}>
-              District review
-            </Link>
+            {env.siteMode !== 'tutoring' ? (
+              <Link className={styles.footerLink} to={paths.districts}>
+                District review
+              </Link>
+            ) : null}
             <Link className={styles.footerLink} to={paths.terms}>
               Terms
             </Link>
-            <a className={styles.footerLink} href="mailto:samco1983@gmail.com">
+            <a
+              className={styles.footerLink}
+              href={
+                env.siteMode === 'tutoring'
+                  ? 'mailto:sal@salomandermath.com'
+                  : 'mailto:samco1983@gmail.com'
+              }
+            >
               Contact
             </a>
           </nav>

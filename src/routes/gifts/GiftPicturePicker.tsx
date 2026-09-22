@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { PhotoCredit } from '@components/ui/PhotoCredit'
+import { PictureCredit } from '@components/ui/PictureCredit'
 import { PUZZLE_LIBRARY, PUZZLE_PICTURE_CATEGORIES } from '@content/puzzleLibrary'
 import styles from './GiftPicturePicker.module.css'
 
@@ -102,7 +102,7 @@ export function GiftPicturePicker({
                 <span className={styles.selected}>Selected</span>
               ) : null}
             </button>
-            <PhotoCredit credit={picture.photoCredit} />
+            <PictureCredit picture={picture} />
           </div>
         ))}
       </div>

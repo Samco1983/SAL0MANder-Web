@@ -37,14 +37,21 @@ const renderIndex = () =>
 describe('with a real API configured', () => {
   it('does not offer the mock sample activity', () => {
     renderIndex()
-    expect(screen.queryByRole('link', { name: /sample activity/i })).toBeNull()
+    expect(screen.queryByRole('link', { name: /Play this activity/i })).toBeNull()
   })
 
-  it('still tells the student the link was incomplete', () => {
-    // The explanation is not conditional — only the demo offer is.
+  it('offers an ordinary practice entry and independent lessons without promising missing API activities', () => {
+    // Independent lesson content is available without the external activity catalog.
     renderIndex()
-    expect(screen.getByRole('heading', { name: /link looks incomplete/i })).toBeVisible()
-    expect(document.body.textContent ?? '').toMatch(/nothing is wrong on your end/i)
+    expect(screen.getByRole('heading', { name: 'Puzzle Practice' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Try a math lesson' })).toHaveAttribute(
+      'href',
+      '/learn',
+    )
+    expect(screen.getByRole('link', { name: 'Make a puzzle gift' })).toHaveAttribute(
+      'href',
+      '/gifts',
+    )
   })
 
   it('still offers a way back', () => {

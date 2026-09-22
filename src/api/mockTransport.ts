@@ -2,6 +2,7 @@ import type { z } from 'zod'
 import type { RequestOptions, Transport } from './transport'
 import { ApiError } from './errors'
 import { newId } from '@contracts/v1'
+import { findDemoLevel } from '@content/demoLevels'
 
 /**
  * In-memory transport used when no backend is configured (`VITE_API_BASE_URL`
@@ -47,8 +48,7 @@ export const MOCK_DEMO_ACTIVITIES = [
   {
     id: 'act_integer_operations',
     title: 'Integer Operations',
-    description:
-      'Adding, subtracting, multiplying and dividing positive and negative numbers.',
+    description: 'Adding, subtracting, multiplying and dividing positive and negative numbers.',
   },
   {
     id: 'act_one_step_inequalities',
@@ -66,10 +66,10 @@ export const MOCK_DEMO_ACTIVITIES = [
 export const DEMO_PIECE_COUNT = 9
 export const DEMO_BOARD_SHAPE = 'square' as const
 
-type DemoActivity = (typeof MOCK_DEMO_ACTIVITIES)[number]
+type DemoActivity = { id: string; title: string; description: string }
 
 function findDemoActivity(activityId: string): DemoActivity | undefined {
-  return MOCK_DEMO_ACTIVITIES.find((a) => a.id === activityId)
+  return MOCK_DEMO_ACTIVITIES.find((a) => a.id === activityId) ?? findDemoLevel(activityId)
 }
 
 /** Version ids are per-activity so two bundles can never look like one. */
@@ -118,7 +118,8 @@ function demoPlayBundle(activityId: string) {
     activityVersionId: activity ? demoVersionId(activityId) : DEMO_VERSION_ID,
     versionNumber: 1,
     title: activity?.title ?? 'Fractions Review',
-    description: activity?.description ?? 'A mock play bundle in the shape API_CONTRACT.md specifies.',
+    description:
+      activity?.description ?? 'A mock play bundle in the shape API_CONTRACT.md specifies.',
     authorDisplayName: 'Ms. Rivera',
     allowedPlayModes: ['learning-puzzle', 'classic-puzzle'],
     defaultPlayMode: 'learning-puzzle',
@@ -192,6 +193,7 @@ const LINK_FAILURES: Record<string, { serverCode: string; message: string }> = {
 
 function demoBundle(activityId: string) {
   const activity = findDemoActivity(activityId)
+  const level = findDemoLevel(activityId)
   return {
     summary: {
       id: activityId,
@@ -199,15 +201,20 @@ function demoBundle(activityId: string) {
       description:
         activity?.description ??
         'A placeholder activity served by the local mock backend so Guest Play can be built and tested before a real backend exists.',
-      mode: 'learning-puzzle' as const,
+      mode: level?.mode ?? ('learning-puzzle' as const),
       thumbnail: null,
-      authorDisplayName: 'Demo Teacher',
+      authorDisplayName: level ? 'SAL0MANder' : 'Demo Teacher',
     },
     version: {
       id: activity ? demoVersionId(activityId) : DEMO_VERSION_ID,
       activityId,
       versionNumber: 1,
-      payload: { schemaVersion: 1, body: { placeholder: true } },
+      payload: {
+        schemaVersion: 1,
+        body: level
+          ? { allowedPlayModes: [level.mode], defaultPlayMode: level.mode }
+          : { placeholder: true },
+      },
       media: [],
       createdAt: now(),
     },
@@ -251,7 +258,10 @@ export function createMockTransport(): Transport {
 
       const result = route(options, sessions)
       if (options.idempotencyKey) {
-        idempotency.set(options.idempotencyKey, { fingerprint, response: result })
+        idempotency.set(options.idempotencyKey, {
+          fingerprint,
+          response: result,
+        })
       }
 
       const parsed = schema.safeParse(result)
@@ -286,7 +296,11 @@ function route(options: RequestOptions, sessions: Map<string, unknown>): unknown
       })
     }
     if (code !== MOCK_SHARE_CODE) {
-      throw new ApiError({ code: 'not_found', message: `No share code ${code}`, status: 404 })
+      throw new ApiError({
+        code: 'not_found',
+        message: `No share code ${code}`,
+        status: 404,
+      })
     }
     return demoPlayBundle(DEMO_ACTIVITY_ID)
   }
@@ -315,7 +329,11 @@ function route(options: RequestOptions, sessions: Map<string, unknown>): unknown
       revoked link must be told, not quietly handed a different activity.
     */
     if (id !== DEMO_ACTIVITY_ID && !findDemoActivity(id)) {
-      throw new ApiError({ code: 'not_found', message: `No activity ${id}`, status: 404 })
+      throw new ApiError({
+        code: 'not_found',
+        message: `No activity ${id}`,
+        status: 404,
+      })
     }
     return demoBundle(id)
   }
@@ -340,7 +358,11 @@ function route(options: RequestOptions, sessions: Map<string, unknown>): unknown
     const id = decodeURIComponent(sessionResult[1] ?? '')
     const existing = sessions.get(id) as Record<string, unknown> | undefined
     if (!existing) {
-      throw new ApiError({ code: 'not_found', message: `No session ${id}`, status: 404 })
+      throw new ApiError({
+        code: 'not_found',
+        message: `No session ${id}`,
+        status: 404,
+      })
     }
     const updated = { ...existing, status: 'completed', completedAt: now() }
     sessions.set(id, updated)

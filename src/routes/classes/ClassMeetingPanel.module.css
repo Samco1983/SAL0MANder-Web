@@ -1,0 +1,86 @@
+.panel {
+  min-width: 0;
+  padding: var(--space-5);
+  margin-block: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+.panel h2 {
+  margin-top: 0;
+  font-size: var(--text-xl);
+}
+.panel p {
+  overflow-wrap: anywhere;
+}
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+.form label {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.form :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 1rem;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  max-width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-weight: var(--weight-medium);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.panel :is(a, button, input, select):focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+.panel button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.quiet {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.steps {
+  padding-left: var(--space-5);
+}
+.steps li + li {
+  margin-top: var(--space-2);
+}

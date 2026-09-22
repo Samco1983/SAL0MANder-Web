@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "createdDate": "2026-09-19",
+  "assets": [
+    {
+      "id": "fictional-canyon-racer-v1",
+      "title": "Canyon Circuit",
+      "aiGenerated": true,
+      "image": "/images/library/ai/fictional-canyon-racer-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "fictional-coastal-racer-v1",
+      "title": "Coastal Charge",
+      "aiGenerated": true,
+      "image": "/images/library/ai/fictional-coastal-racer-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "fictional-canyon-racer-side-v1",
+      "title": "Canyon Circuit: Side Profile",
+      "aiGenerated": true,
+      "image": "/images/library/ai/fictional-canyon-racer-side-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "fictional-midnight-gt-v1",
+      "title": "Midnight Current",
+      "aiGenerated": true,
+      "image": "/images/library/ai/fictional-midnight-gt-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "fictional-snow-rally-v1",
+      "title": "Snowline Rally",
+      "aiGenerated": true,
+      "image": "/images/library/ai/fictional-snow-rally-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "fictional-neon-tuner-v1",
+      "title": "Neon Torque",
+      "aiGenerated": true,
+      "image": "/images/library/ai/fictional-neon-tuner-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "fictional-sunset-muscle-v1",
+      "title": "Copper Thunder",
+      "aiGenerated": true,
+      "image": "/images/library/ai/fictional-sunset-muscle-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "fictional-silver-supercar-v1",
+      "title": "Silver Horizon",
+      "aiGenerated": true,
+      "image": "/images/library/ai/fictional-silver-supercar-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-pug-playtime-v1",
+      "title": "Pug playtime",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-pug-playtime-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-dachshund-garden-v1",
+      "title": "Dachshund garden explorers",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-dachshund-garden-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-kitten-mischief-v1",
+      "title": "Kitten basket mischief",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-kitten-mischief-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-golden-retriever-orchard-v1",
+      "title": "Orchard Sunbeam",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-golden-retriever-orchard-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-french-bulldog-box-v1",
+      "title": "Curious Little Unboxer",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-french-bulldog-box-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-corgi-beach-v1",
+      "title": "Corgi Coast Explorer",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-corgi-beach-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-beagle-porch-v1",
+      "title": "Porchside Pal",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-beagle-porch-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-german-shepherd-meadow-v1",
+      "title": "Meadow Guardian",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-german-shepherd-meadow-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-husky-snow-v1",
+      "title": "Snow Day Invitation",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-husky-snow-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-poodle-garden-v1",
+      "title": "Garden Nose Knows",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-poodle-garden-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-jack-russell-planter-v1",
+      "title": "The Planter Mystery",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-jack-russell-planter-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-maine-coon-window-v1",
+      "title": "Window-seat Maine Coon",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-maine-coon-window-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-ragdoll-quilt-v1",
+      "title": "Ragdoll quilt cuddle",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-ragdoll-quilt-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-siamese-linens-v1",
+      "title": "Siamese linen nest",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-siamese-linens-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-british-shorthair-rug-v1",
+      "title": "British Shorthair ball patrol",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-british-shorthair-rug-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-bengal-garden-v1",
+      "title": "Bengal garden explorer",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-bengal-garden-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-tuxedo-chair-v1",
+      "title": "Tuxedo chair mischief",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-tuxedo-chair-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-calico-drawer-v1",
+      "title": "Calico drawer hideaway",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-calico-drawer-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-fluffy-white-kitten-v1",
+      "title": "Snowy kitten blanket peek",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-fluffy-white-kitten-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-abyssinian-stretch-v1",
+      "title": "Abyssinian sunshine stretch",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-abyssinian-stretch-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-lion-savanna-v1",
+      "title": "Savanna Guardian",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-lion-savanna-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-elephant-family-v1",
+      "title": "Elephant Family",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-elephant-family-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-tiger-river-v1",
+      "title": "Tiger River",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-tiger-river-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-giant-panda-bamboo-v1",
+      "title": "Bamboo Snack Break",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-giant-panda-bamboo-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-red-panda-branch-v1",
+      "title": "Autumn Branch Nap",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-red-panda-branch-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    },
+    {
+      "id": "ai-bear-cub-creek-v1",
+      "title": "Creekside Cub",
+      "aiGenerated": true,
+      "image": "/images/library/ai/ai-bear-cub-creek-v1.webp",
+      "creator": "SAL0MANder · OpenAI image generation",
+      "description": "Original AI-generated concept artwork; not a documentary photograph.",
+      "modifications": "Resized and encoded for puzzle play; no cropping."
+    }
+  ]
+}

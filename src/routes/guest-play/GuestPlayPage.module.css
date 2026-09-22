@@ -120,7 +120,6 @@
   font: inherit;
   letter-spacing: 0;
   padding: 0 var(--space-3);
-  text-transform: uppercase;
 }
 
 .codeInput:focus-visible {
@@ -131,5 +130,75 @@
 @media (max-width: 520px) {
   .codeControls {
     grid-template-columns: 1fr;
+  }
+}
+
+.practicePage {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  display: grid;
+  gap: var(--space-6);
+}
+
+.practiceHeader {
+  max-width: 65ch;
+}
+.eyebrow {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+.activitySection h2,
+.classCodeSection h2 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-3);
+}
+.activityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.activityChoice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  height: 100%;
+  text-align: left;
+  white-space: normal;
+}
+.activityNumber {
+  font-size: var(--text-xl);
+  color: var(--color-text-subtle);
+}
+.activityDescription {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.activityAction {
+  margin-top: auto;
+  padding-top: var(--space-3);
+}
+.practiceExtras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.classCodeSection {
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.classCodeSection .codeForm {
+  margin-bottom: 0;
+}
+@media (max-width: 680px) {
+  .activityGrid {
+    grid-template-columns: 1fr;
+  }
+  .activityChoice {
+    padding: var(--space-4);
   }
 }

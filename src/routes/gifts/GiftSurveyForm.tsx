@@ -11,13 +11,18 @@ import styles from './GiftSurveyForm.module.css'
 export function GiftSurveyForm({
   answers,
   onAnswer,
+  onContinue,
 }: {
   answers: Record<string, string>
   onAnswer: (id: string, value: string) => void
+  onContinue?: () => void
 }) {
   const [step, setStep] = useState(0)
   const [review, setReview] = useState(false)
+  const [advanceAfterPick, setAdvanceAfterPick] = useState(true)
+  const [moreIdeas, setMoreIdeas] = useState(false)
   const input = useRef<HTMLInputElement>(null)
+  const reviewInputs = useRef<Array<HTMLInputElement | null>>([])
   const question = useRef<HTMLLabelElement>(null)
   const reviewHeading = useRef<HTMLHeadingElement>(null)
   const focusTarget = useRef<'answer' | 'question' | 'review' | null>(null)
@@ -30,6 +35,7 @@ export function GiftSurveyForm({
   )
   const completed = validAnswers.filter(Boolean).length
   const allAnswered = completed === GIFT_SURVEY.length
+  const suggestions = [...template.suggestions, ...ideas.extra]
 
   useEffect(() => {
     const target = focusTarget.current
@@ -48,11 +54,17 @@ export function GiftSurveyForm({
     }
     setStep(index)
     setReview(false)
+    setMoreIdeas(false)
   }
 
   function openReview() {
     focusTarget.current = 'review'
     setReview(true)
+  }
+
+  function advance(focus: 'question' | 'answer' = 'question') {
+    if (step === GIFT_SURVEY.length - 1) openReview()
+    else openQuestion(step + 1, focus)
   }
 
   return (
@@ -105,32 +117,73 @@ export function GiftSurveyForm({
           <p className={styles.quiet}>
             {allAnswered
               ? 'That’s you in nine answers. Change any pick, or choose the occasion below.'
-              : 'A few favorites still need a pick. You can answer them in any order.'}
+              : 'Fill in the missing favorites here, or choose Edit for more ideas.'}
           </p>
           <ul className={styles.review}>
-            {GIFT_SURVEY.map((item, index) => (
-              <li key={item.id}>
-                <span className={styles.reviewAnswer}>
-                  <strong>{item.label}</strong>
-                  <span>{answers[item.id] || 'Not answered yet'}</span>
-                  {!validAnswers[index] && answers[item.id] && (
-                    <span className={styles.invalid}>Needs a shorter, plain-text answer</span>
-                  )}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => openQuestion(index, 'answer')}
-                  aria-label={`Edit ${item.label.toLowerCase()}`}
-                >
-                  Edit
-                </Button>
-              </li>
-            ))}
+            {GIFT_SURVEY.map((item, index) => {
+              const answer = answers[item.id] ?? ''
+              const result = GiftAnswerTextSchema.safeParse(answer)
+              const errorId = `gift-review-${item.id}-error`
+              return (
+                <li key={item.id}>
+                  <div className={styles.reviewAnswer}>
+                    <label htmlFor={`gift-review-${item.id}`}>{item.label}</label>
+                    <input
+                      ref={(element) => {
+                        reviewInputs.current[index] = element
+                      }}
+                      id={`gift-review-${item.id}`}
+                      className={styles.textAnswer}
+                      value={answer}
+                      onChange={(event) => onAnswer(item.id, event.target.value)}
+                      onBlur={() => {
+                        if (result.success && result.data !== answer) onAnswer(item.id, result.data)
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key !== 'Enter' || event.nativeEvent.isComposing) return
+                        event.preventDefault()
+                        if (!result.success) return
+                        onAnswer(item.id, result.data)
+                        reviewInputs.current[index + 1]?.focus()
+                      }}
+                      placeholder="Add your favorite…"
+                      autoComplete="off"
+                      enterKeyHint={index === GIFT_SURVEY.length - 1 ? 'done' : 'next'}
+                      aria-invalid={Boolean(answer && !result.success)}
+                      aria-describedby={errorId}
+                    />
+                    <p
+                      id={errorId}
+                      className={answer && !result.success ? styles.invalid : styles.quiet}
+                      role={answer && !result.success ? 'alert' : undefined}
+                    >
+                      {!answer
+                        ? 'Not answered yet'
+                        : !result.success
+                          ? result.error.issues[0]?.message
+                          : ''}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => openQuestion(index, 'answer')}
+                    aria-label={`Edit ${item.label.toLowerCase()}`}
+                  >
+                    Edit
+                  </Button>
+                </li>
+              )
+            })}
           </ul>
           {!allAnswered && (
             <Button type="button" onClick={() => openQuestion(validAnswers.indexOf(false))}>
               Continue favorites
+            </Button>
+          )}
+          {allAnswered && onContinue && (
+            <Button type="button" onClick={onContinue}>
+              Choose the occasion
             </Button>
           )}
         </div>
@@ -141,8 +194,7 @@ export function GiftSurveyForm({
             event.preventDefault()
             if (!parsed.success) return
             onAnswer(template.id, parsed.data)
-            if (step === GIFT_SURVEY.length - 1) openReview()
-            else openQuestion(step + 1)
+            advance()
           }}
         >
           <div className={styles.promptTop}>
@@ -159,27 +211,6 @@ export function GiftSurveyForm({
           >
             {template.ask}
           </label>
-          <div className={styles.suggestions} role="group" aria-label="Answer suggestions">
-            {[...template.suggestions, ...ideas.extra].map((suggestion) => {
-              const selected =
-                parsed.success && giftAnswerKey(parsed.data) === giftAnswerKey(suggestion)
-              return (
-                <button
-                  key={suggestion}
-                  type="button"
-                  className={styles.suggestion}
-                  aria-pressed={selected}
-                  onClick={() => onAnswer(template.id, suggestion)}
-                >
-                  <span className={styles.choiceMark} aria-hidden="true">
-                    {selected ? '✓' : '+'}
-                  </span>
-                  {suggestion}
-                </button>
-              )
-            })}
-          </div>
-          <p className={styles.typeHint}>Or make it your own</p>
           <input
             ref={input}
             id="gift-favorite"
@@ -187,9 +218,16 @@ export function GiftSurveyForm({
             type="text"
             value={value}
             onChange={(event) => onAnswer(template.id, event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter' || event.nativeEvent.isComposing) return
+              event.preventDefault()
+              if (!parsed.success) return
+              onAnswer(template.id, parsed.data)
+              advance('answer')
+            }}
             placeholder="Type your favorite…"
             autoComplete="off"
-            enterKeyHint="next"
+            enterKeyHint={step === GIFT_SURVEY.length - 1 ? 'done' : 'next'}
             aria-describedby="gift-answer-help gift-answer-error"
             aria-invalid={Boolean(value && !parsed.success)}
           />
@@ -216,6 +254,55 @@ export function GiftSurveyForm({
               {step === GIFT_SURVEY.length - 1 ? 'Review favorites' : 'Next favorite'}
             </Button>
           </div>
+          <label className={styles.advanceToggle}>
+            <input
+              type="checkbox"
+              checked={advanceAfterPick}
+              onChange={(event) => setAdvanceAfterPick(event.target.checked)}
+            />
+            Move to next after a pick
+          </label>
+          <p className={styles.typeHint}>Or tap an idea</p>
+          <div
+            id="gift-answer-suggestions"
+            className={styles.suggestions}
+            role="group"
+            aria-label="Answer suggestions"
+          >
+            {(moreIdeas ? suggestions : suggestions.slice(0, 8)).map((suggestion) => {
+              const selected =
+                parsed.success && giftAnswerKey(parsed.data) === giftAnswerKey(suggestion)
+              return (
+                <button
+                  key={suggestion}
+                  type="button"
+                  className={styles.suggestion}
+                  aria-pressed={selected}
+                  onClick={() => {
+                    onAnswer(template.id, suggestion)
+                    if (advanceAfterPick) advance()
+                  }}
+                >
+                  <span className={styles.choiceMark} aria-hidden="true">
+                    {selected ? '✓' : '+'}
+                  </span>
+                  {suggestion}
+                </button>
+              )
+            })}
+          </div>
+          {suggestions.length > 8 && (
+            <Button
+              type="button"
+              variant="ghost"
+              className={styles.moreIdeas}
+              aria-expanded={moreIdeas}
+              aria-controls="gift-answer-suggestions"
+              onClick={() => setMoreIdeas((current) => !current)}
+            >
+              {moreIdeas ? 'Fewer ideas' : 'More ideas'}
+            </Button>
+          )}
         </form>
       )}
     </section>

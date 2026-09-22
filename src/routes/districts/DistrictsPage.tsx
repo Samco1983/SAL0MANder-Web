@@ -17,7 +17,7 @@ export function DistrictsPage() {
             below describes what the software does today. If you need something this page does not
             answer, the contact address at the bottom reaches a person.
           </p>
-          <p className={styles.updated}>Last reviewed September 8, 2026</p>
+          <p className={styles.updated}>Last reviewed September 15, 2026</p>
         </header>
 
         <section className={styles.section} aria-labelledby="classification">
@@ -32,11 +32,16 @@ export function DistrictsPage() {
             Current demonstrations cover integer operations, one-step inequalities, and linear
             equations.
           </p>
+          <p>
+            The site also offers question-free Classic and Swap &amp; Solve puzzles and personalised
+            puzzle gifts. These recreational modes are distinct from teacher-authored question
+            practice; not every puzzle measures academic learning.
+          </p>
         </section>
 
         <section className={styles.section} aria-labelledby="allowlist">
           <h2 className={styles.sectionTitle} id="allowlist">
-            Domains to allow
+            Guest puzzle play: domains to review
           </h2>
           <p className={styles.callout}>
             <code className={styles.code}>sal0mander.com</code>
@@ -50,9 +55,11 @@ export function DistrictsPage() {
             administrator to do half the job and believe it was finished.
           */}
           <p>
-            The public website and current game files are served over HTTPS from this site. No
-            browser extension, downloaded application, administrator access, camera, or microphone
-            is required. Images, fonts, and game assets are bundled with the site.
+            For guest puzzle play on these hosts, the website and current game files use HTTPS. No
+            browser extension, installed application, administrator access, camera, or microphone is
+            required for the puzzle. Library images, fonts, and game assets are bundled with the
+            site. Optional tutoring, sign-in, payments and live meetings use additional services
+            described below.
           </p>
           <p>
             If your filter categorises by reputation rather than by allowlist, the category to
@@ -65,17 +72,18 @@ export function DistrictsPage() {
 
         <section className={styles.section} aria-labelledby="accounts">
           <h2 className={styles.sectionTitle} id="accounts">
-            Student accounts
+            Guest play and optional accounts
           </h2>
           <p>
-            There are none. Students do not register, do not sign in, and are never asked for a
-            name, an email address, or a password at any point between opening a teacher&apos;s link
-            and playing.
+            Guest puzzle play does not require an account. Students can open a teacher&apos;s
+            activity link and play without providing a real name, email address or password.
+            Optional tutoring features have a separate parent, adult learner or tutor sign-in; those
+            features are not required to play a guest activity.
           </p>
           <p>
-            A student may optionally choose a nickname so that a shared classroom device can keep
-            more than one person&apos;s progress apart. Teachers are asked to have their class use
-            nicknames rather than real names, and nothing verifies or checks the value.
+            A student may optionally choose a nickname as a display label. It is not a verified
+            identity or a separate account. Teachers are asked to use nicknames rather than real
+            names.
           </p>
         </section>
 
@@ -84,8 +92,9 @@ export function DistrictsPage() {
             What is stored, and where
           </h2>
           <p>
-            Website preferences and teacher drafts stay in the browser&apos;s local storage on the
-            device where they were entered. The website keys include:
+            Guest preferences, local puzzle progress and local Teacher Studio drafts use browser
+            storage on the device where they were entered. This is separate from saved tutoring
+            records. The website keys include:
           </p>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
@@ -101,8 +110,9 @@ export function DistrictsPage() {
                     <code className={styles.code}>sal0mander.guest.token</code>
                   </td>
                   <td>
-                    A random string generated on the device, so a session can be resumed. Not a
-                    login, contains no personal information, and grants access to nothing.
+                    A random guest session identifier generated on the device. A configured
+                    play-session backend can receive it with activity and attempt information; it is
+                    not a verified account identity.
                   </td>
                 </tr>
                 <tr>
@@ -141,11 +151,70 @@ export function DistrictsPage() {
             clearing site data does not remove those files.
           </p>
           <p>
-            Clearing the browser&apos;s site data removes locally stored values and drafts. See the{' '}
+            Clearing the browser&apos;s site data removes locally stored values and drafts; it does
+            not delete tutoring account records, payments or uploaded schoolwork. See the{' '}
             <a className={styles.link} href={paths.privacy}>
               privacy page
             </a>{' '}
             for the plain-language explanation.
+          </p>
+        </section>
+
+        <section className={styles.section} aria-labelledby="optional-services">
+          <h2 className={styles.sectionTitle} id="optional-services">
+            Optional tutoring and external services
+          </h2>
+          <p>
+            Tutoring can use Google sign-in through Firebase Authentication, a SAL0MANder backend
+            hosted on Google Cloud, and Stripe checkout. The backend stores account and learner
+            identifiers, bookings, payment status and assigned practice. Optional lesson background
+            and uploaded schoolwork are available to the account owner and authorised tutors. These
+            are not device-only records.
+          </p>
+          <p>
+            Live video, audio and lesson chat open in Google Meet or Zoom. The tutor selects the
+            meeting provider and manages admission. These services have their own privacy settings
+            and network requirements; cameras and microphones may be requested in the meeting.
+            SAL0MANder does not record the call or save its live chat in this website.
+          </p>
+        </section>
+
+        <section className={styles.section} aria-labelledby="it-review">
+          <h2 className={styles.sectionTitle} id="it-review">
+            Practical school IT review
+          </h2>
+          <ol className={styles.list}>
+            <li>
+              Start with the exact activity URL and test guest play on a managed student device.
+              Review the two puzzle hosts above individually, including the www redirect.
+            </li>
+            <li>
+              Check JavaScript, WebAssembly and WebGL, hardware acceleration, and HTTPS downloads
+              under the site&apos;s /unity path. Test the first download and a repeat visit on the
+              school network. A successful website load alone does not verify the game.
+            </li>
+            <li>
+              Review optional tutoring separately. Its current TEST deployment uses{' '}
+              <code className={styles.code}>sal0mander-math.firebaseapp.com</code>, with the booking
+              API at{' '}
+              <code className={styles.code}>sal0-tutoring-715251110700.us-west1.run.app</code>.
+              Google sign-in loads its SDK from <code className={styles.code}>www.gstatic.com</code>{' '}
+              and uses <code className={styles.code}>accounts.google.com</code>; checkout opens{' '}
+              <code className={styles.code}>checkout.stripe.com</code>. These are starting points
+              for a feature-specific network review, not a complete provider allowlist.
+            </li>
+            <li>
+              If a lesson needs Calendar, Meet or Zoom, review the exact booking or meeting URL
+              separately and use that provider&apos;s current network guidance. Request only the
+              additional hosts that the chosen feature requires. Do not allow all Firebase, Google
+              or Cloud Run domains with a wildcard just for SAL0MANder.
+            </li>
+          </ol>
+          <p>
+            Experimental preview links are temporary test deployments. Review each exact preview
+            hostname separately; approval of the public site does not automatically cover a preview.
+            A page marked TEST may simulate bookings or payments and is not confirmation of a paid
+            lesson. School approval and filter classification remain decisions for your district.
           </p>
         </section>
 
@@ -165,8 +234,8 @@ export function DistrictsPage() {
           </h2>
           <ul className={styles.list}>
             <li>
-              A current version of Chrome, Edge, Firefox, or Safari. ChromeOS and managed
-              Chromebooks are supported.
+              A current browser with WebGL and WebAssembly available. Test the actual managed
+              Chromebook, Windows, macOS, iPad or phone configuration before classroom use.
             </li>
             <li>
               JavaScript enabled, and WebGL available — the activity renders in the browser and
@@ -176,8 +245,8 @@ export function DistrictsPage() {
               HTTPS access to <code className={styles.code}>sal0mander.com</code>.
             </li>
             <li>
-              Local storage permitted. If it is blocked, activities still run; the student simply
-              cannot resume or keep a nickname.
+              Browser storage permitted if local progress, nicknames or teacher drafts need to
+              persist. Clearing or restricting storage can remove that continuity.
             </li>
             <li>
               Nothing to install. No extension, no plugin, no application, and no administrator

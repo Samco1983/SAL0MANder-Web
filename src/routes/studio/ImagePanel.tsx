@@ -1,5 +1,8 @@
+import { PictureCredit } from '@components/ui/PictureCredit'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { BOARD_SHAPES, PIECE_COUNTS, type ActivityDraft } from '@studio/activityDraft'
+import { LocalPhotoPicker } from '@/media/LocalPhotoPicker'
+import type { LocalPhotoState } from '@/media/useLocalPhoto'
 import styles from './ImagePanel.module.css'
 
 /**
@@ -28,14 +31,16 @@ import styles from './ImagePanel.module.css'
 export function ImagePanel({
   draft,
   onChange,
+  localPhoto,
 }: {
   draft: ActivityDraft
   onChange: (next: ActivityDraft) => void
+  localPhoto: LocalPhotoState
 }) {
   const setConfig = (patch: Partial<ActivityDraft['config']>) =>
     onChange({ ...draft, config: { ...draft.config, ...patch } })
 
-  const selected = draft.meta.imageKey
+  const selected = localPhoto.photo || localPhoto.preparing ? 'custom' : draft.meta.imageKey
   const fitting = PUZZLE_LIBRARY.filter((p) => p.shape === draft.config.boardShape)
 
   return (
@@ -47,7 +52,9 @@ export function ImagePanel({
             className={styles.select}
             value={draft.config.boardShape}
             onChange={(e) =>
-              setConfig({ boardShape: e.target.value as (typeof BOARD_SHAPES)[number] })
+              setConfig({
+                boardShape: e.target.value as (typeof BOARD_SHAPES)[number],
+              })
             }
           >
             {BOARD_SHAPES.map((s) => (
@@ -76,14 +83,17 @@ export function ImagePanel({
             ))}
           </select>
           <span className={styles.hint}>
-            Each piece takes one correct answer, so this is also how many
-            questions the activity needs.
+            Each piece takes one correct answer, so this is also how many questions the activity
+            needs.
           </span>
         </label>
       </div>
 
       <h3 className={styles.heading}>
-        Pictures {fitting.length > 0 && <span className={styles.count}>· {fitting.length} fit this board</span>}
+        Pictures{' '}
+        {fitting.length > 0 && (
+          <span className={styles.count}>· {fitting.length} fit this board</span>
+        )}
       </h3>
 
       <ul className={styles.grid}>
@@ -98,7 +108,8 @@ export function ImagePanel({
                 data-selected={isSelected}
                 data-fits={fits}
                 aria-pressed={isSelected}
-                onClick={() =>
+                onClick={() => {
+                  localPhoto.clear()
                   onChange({
                     ...draft,
                     // Choosing a picture sets the board it was made for. The
@@ -107,7 +118,7 @@ export function ImagePanel({
                     config: { ...draft.config, boardShape: picture.shape },
                     meta: { ...draft.meta, imageKey: picture.key },
                   })
-                }
+                }}
               >
                 <img
                   className={styles.thumb}
@@ -123,21 +134,21 @@ export function ImagePanel({
                   {fits ? picture.shape : `${picture.shape} board`}
                 </span>
               </button>
+              <PictureCredit picture={picture} />
             </li>
           )
         })}
       </ul>
 
-      {/*
-        Stated plainly rather than hidden behind a disabled control. A teacher
-        who is told upload is "coming soon" with no reason assumes it is
-        abandoned; one who is told what has to exist first can plan around it.
-      */}
-      <p className={styles.upload}>
-        Uploading your own picture is switched off until picture storage exists.
-        Anything uploaded will be resized automatically — a phone photo is
-        roughly a hundred times larger than a puzzle needs, and every student
-        would download all of it.
+      <LocalPhotoPicker
+        id="studio-own-photo"
+        state={localPhoto}
+        onChoose={(file) => void localPhoto.choose(file)}
+        onClear={localPhoto.clear}
+      />
+      <p>
+        Use the Preview tab to try this photo locally. It is excluded from saved drafts and backups.
+        Switching activities clears it.
       </p>
     </section>
   )

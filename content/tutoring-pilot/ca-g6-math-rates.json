@@ -1,0 +1,833 @@
+{
+  "lessonPackVersion": 1,
+  "id": "ca-g6-math-rates",
+  "locale": "en-US",
+  "grade": 6,
+  "subject": "Mathematics",
+  "title": "Rate Detectives: Find One, Then Scale",
+  "originality": "Original prompts, scenarios, explanations and teaching guidance authored for this pilot. No EngageNY or Illustrative Mathematics lesson text used. Alignment is not endorsement or official adoption.",
+  "standards": [
+    {
+      "id": "6.RP.3",
+      "publisher": "California Department of Education",
+      "title": "CDE CA CCSS Mathematics, PDF page 49",
+      "url": "https://www.cde.ca.gov/be/st/ss/documents/ccssmathstandardaug2013.pdf#page=49",
+      "accessedDate": "2026-09-11",
+      "alignmentSummary": "Focuses on equivalent-ratio tables and unit-rate problems in 6.RP.3.a–b; percent and conversion subparts are not covered."
+    }
+  ],
+  "activityDraft": {
+    "config": {
+      "schemaVersion": 2,
+      "activityId": "ca-g6-math-rates",
+      "title": "Rate Detectives: Find One, Then Scale",
+      "activityType": "MysteryReveal",
+      "imagePresetIndex": 0,
+      "pieceCountPreset": 12,
+      "boardShape": "Landscape",
+      "showBoardGuide": false,
+      "enableCameraZoomAndPan": false,
+      "allowRestart": true,
+      "allowResumeLater": true,
+      "allowHints": true,
+      "allowCompletedPictureView": false,
+      "autoPlaceCorrectPieces": true
+    },
+    "meta": {
+      "subject": "Mathematics",
+      "gradeLevel": "6",
+      "description": "I can find and label a unit rate, use it to scale a ratio, and compare rates fairly.",
+      "notes": "Original pilot; teacher chooses a picture and reviews options. Teacher-led differentiation; no automatic adaptation. See the separate teacherGuide and questionNotes.",
+      "imageKey": "",
+      "optionsReviewed": false,
+      "createdAt": "2026-09-11T00:00:00Z",
+      "updatedAt": "2026-09-11T00:00:00Z"
+    },
+    "questions": [
+      {
+        "id": "ca-g6-math-rates-q01",
+        "questionText": "Three equal sticker sheets contain 18 stickers altogether. How many stickers are on one sheet?",
+        "hintText": "Divide the sticker count by the sheet count.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q01-a",
+            "text": "6 stickers",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g6-math-rates-q01-b",
+            "text": "15 stickers",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q01-c",
+            "text": "54 stickers",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q01-d",
+            "text": "1/6 sticker",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q02",
+        "questionText": "Seven identical notebooks cost $21 with no extra fees. What is the price per notebook?",
+        "hintText": "Find dollars for one notebook.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q02-a",
+            "text": "$14",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q02-b",
+            "text": "$3",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g6-math-rates-q02-c",
+            "text": "$147",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q02-d",
+            "text": "$7",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q03",
+        "questionText": "A recipe uses 5 lemons for 2 pitchers. At the same ratio, how many lemons are needed for 6 pitchers?",
+        "hintText": "Six pitchers is three times two pitchers.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q03-a",
+            "text": "9 lemons",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q03-b",
+            "text": "30 lemons",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q03-c",
+            "text": "15 lemons",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g6-math-rates-q03-d",
+            "text": "12 lemons",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q04",
+        "questionText": "A printer produces 12 labels in 4 minutes at a constant rate. How many labels does it produce in 9 minutes?",
+        "hintText": "Find labels per minute, then scale to nine minutes.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q04-a",
+            "text": "17 labels",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q04-b",
+            "text": "108 labels",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q04-c",
+            "text": "36 labels",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q04-d",
+            "text": "27 labels",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q05",
+        "questionText": "Apples cost $10 for 4 pounds. At the same price per pound, what do 6 pounds cost?",
+        "hintText": "Ten divided by four is the price of one pound.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q05-a",
+            "text": "$15",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g6-math-rates-q05-b",
+            "text": "$12",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q05-c",
+            "text": "$24",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q05-d",
+            "text": "$60",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q06",
+        "questionText": "A reader finishes 150 pages in 5 days, reading the same number each day. How many pages will the reader finish in 8 days at that rate?",
+        "hintText": "Use pages per day, not days per page.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q06-a",
+            "text": "153 pages",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q06-b",
+            "text": "240 pages",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g6-math-rates-q06-c",
+            "text": "1200 pages",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q06-d",
+            "text": "30 pages",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q07",
+        "questionText": "Cyclist A rides 24 miles in 2 hours. Cyclist B rides 33 miles in 3 hours. Each keeps a constant speed. Which cyclist has the greater miles-per-hour rate?",
+        "hintText": "Compare both distances for one hour.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q07-a",
+            "text": "Cyclist B: 11 miles per hour",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q07-b",
+            "text": "Cyclist B: 33 miles per hour",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q07-c",
+            "text": "Cyclist A: 12 miles per hour",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g6-math-rates-q07-d",
+            "text": "They have equal rates.",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q08",
+        "questionText": "Six identical tickets cost $45. There are no booking fees or discounts. What do 4 tickets cost?",
+        "hintText": "Find the price for one ticket or scale six tickets by two-thirds.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q08-a",
+            "text": "$43",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q08-b",
+            "text": "$180",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q08-c",
+            "text": "$7.50",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q08-d",
+            "text": "$30",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q09",
+        "questionText": "A pattern uses 3 blue beads for every 2 white beads. How many blue beads go with 8 white beads?",
+        "hintText": "Eight is four times the white-bead amount in the ratio.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q09-a",
+            "text": "12 blue beads",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g6-math-rates-q09-b",
+            "text": "9 blue beads",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q09-c",
+            "text": "24 blue beads",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q09-d",
+            "text": "16 blue beads",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q10",
+        "questionText": "Pack A has 8 markers for $12. Pack B has 5 markers for $10. All markers are identical. Which pack has the lower price per marker?",
+        "hintText": "Compare dollars per marker, not pack totals.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q10-a",
+            "text": "Pack B: $2.00 per marker",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q10-b",
+            "text": "Pack A: $1.50 per marker",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g6-math-rates-q10-c",
+            "text": "Pack B, because $10 is less than $12.",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q10-d",
+            "text": "Both cost the same per marker.",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q11",
+        "questionText": "A constant-rate table lists 0 minutes → 0 meters, 2 minutes → 14 meters and 5 minutes → 35 meters. What distance belongs at 8 minutes?",
+        "hintText": "Check that both nonzero rows give the same meters per minute.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q11-a",
+            "text": "38 meters",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q11-b",
+            "text": "40 meters",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q11-c",
+            "text": "56 meters",
+            "isCorrect": true
+          },
+          {
+            "id": "ca-g6-math-rates-q11-d",
+            "text": "112 meters",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "id": "ca-g6-math-rates-q12",
+        "questionText": "A pump moves 3 liters in 8 minutes at a constant rate. How many minutes does it need for 12 liters?",
+        "hintText": "Twelve liters is four times three liters.",
+        "choices": [
+          {
+            "id": "ca-g6-math-rates-q12-a",
+            "text": "17 minutes",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q12-b",
+            "text": "96 minutes",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q12-c",
+            "text": "4 minutes",
+            "isCorrect": false
+          },
+          {
+            "id": "ca-g6-math-rates-q12-d",
+            "text": "32 minutes",
+            "isCorrect": true
+          }
+        ]
+      }
+    ]
+  },
+  "questionNotes": [
+    {
+      "questionId": "ca-g6-math-rates-q01",
+      "skill": "unit rate",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q01-a",
+      "explanation": "18 ÷ 3 = 6 stickers per sheet.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q01-a",
+          "reason": "18 ÷ 3 = 6 stickers per sheet."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q01-b",
+          "reason": "Subtracting 3 does not share the stickers equally among three sheets."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q01-c",
+          "reason": "Multiplying gives the number for three times as many sheets, not one sheet."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q01-d",
+          "reason": "This reverses stickers per sheet into sheets per sticker."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "18/3"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q02",
+      "skill": "unit price",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q02-b",
+      "explanation": "21 ÷ 7 = 3 dollars per notebook.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q02-a",
+          "reason": "Subtracting the notebook count from the price does not give a unit rate."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q02-b",
+          "reason": "21 ÷ 7 = 3 dollars per notebook."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q02-c",
+          "reason": "This multiplies when the total should be divided into seven equal prices."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q02-d",
+          "reason": "Seven is the number of notebooks, not their unit price."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "21/7"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q03",
+      "skill": "equivalent ratios",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q03-c",
+      "explanation": "Multiply both quantities by 3: 2 × 3 = 6 pitchers and 5 × 3 = 15 lemons.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q03-a",
+          "reason": "Adding 4 to both quantities does not preserve the ratio."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q03-b",
+          "reason": "This treats 5 lemons as the amount for one pitcher."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q03-c",
+          "reason": "Multiply both quantities by 3: 2 × 3 = 6 pitchers and 5 × 3 = 15 lemons."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q03-d",
+          "reason": "This uses 2 lemons per pitcher instead of the given 5 for 2."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "5*6/2"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q04",
+      "skill": "constant rate",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q04-d",
+      "explanation": "12 ÷ 4 = 3 labels per minute; 3 × 9 = 27 labels.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q04-a",
+          "reason": "Adding 5 labels when time increases by 5 minutes ignores the rate."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q04-b",
+          "reason": "This treats the four-minute total as a one-minute rate."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q04-c",
+          "reason": "This uses 4 labels per minute, reversing the meaning of the given 4."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q04-d",
+          "reason": "12 ÷ 4 = 3 labels per minute; 3 × 9 = 27 labels."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "12*9/4"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q05",
+      "skill": "fractional unit price",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q05-a",
+      "explanation": "$10 ÷ 4 = $2.50 per pound; $2.50 × 6 = $15.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q05-a",
+          "reason": "$10 ÷ 4 = $2.50 per pound; $2.50 × 6 = $15."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q05-b",
+          "reason": "Adding 2 dollars because the weight increased by 2 pounds does not preserve the price rate."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q05-c",
+          "reason": "This multiplies the two weights instead of using the price."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q05-d",
+          "reason": "This treats $10 as the price of one pound."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "10*6/4"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q06",
+      "skill": "extend a ratio table",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q06-b",
+      "explanation": "150 ÷ 5 = 30 pages per day; 30 × 8 = 240 pages.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q06-a",
+          "reason": "Adding three pages for three extra days ignores 30 pages per day."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q06-b",
+          "reason": "150 ÷ 5 = 30 pages per day; 30 × 8 = 240 pages."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q06-c",
+          "reason": "This treats the five-day total as a daily rate."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q06-d",
+          "reason": "This is the one-day amount, not the eight-day amount."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "150*8/5"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q07",
+      "skill": "compare rates",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q07-c",
+      "explanation": "A rides 24 ÷ 2 = 12 miles per hour; B rides 33 ÷ 3 = 11. Compare unit rates, not total distances.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q07-a",
+          "reason": "Eleven miles per hour is less than twelve, even though B rode farther overall."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q07-b",
+          "reason": "Thirty-three is the three-hour distance, not a one-hour rate."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q07-c",
+          "reason": "A rides 24 ÷ 2 = 12 miles per hour; B rides 33 ÷ 3 = 11. Compare unit rates, not total distances."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q07-d",
+          "reason": "Their unit rates are 12 and 11, which differ."
+        }
+      ],
+      "verification": {
+        "kind": "compare",
+        "expressions": [
+          "24/2",
+          "33/3"
+        ],
+        "winner": 0,
+        "winnerText": "Cyclist A: 12 miles per hour",
+        "comparison": "max"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q08",
+      "skill": "scale down a ratio",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q08-d",
+      "explanation": "$45 ÷ 6 = $7.50 per ticket; $7.50 × 4 = $30.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q08-a",
+          "reason": "Subtracting 2 dollars does not remove the cost of two tickets."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q08-b",
+          "reason": "This treats the six-ticket total as a single-ticket price."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q08-c",
+          "reason": "This is the price of one ticket, not four."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q08-d",
+          "reason": "$45 ÷ 6 = $7.50 per ticket; $7.50 × 4 = $30."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "45*4/6"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q09",
+      "skill": "part-to-part ratio",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q09-a",
+      "explanation": "Scale both parts by 4: 2 × 4 = 8 white and 3 × 4 = 12 blue.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q09-a",
+          "reason": "Scale both parts by 4: 2 × 4 = 8 white and 3 × 4 = 12 blue."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q09-b",
+          "reason": "Adding 6 to both parts changes the ratio."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q09-c",
+          "reason": "This treats 3 blue as the amount for each white bead."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q09-d",
+          "reason": "This uses 2 blue per white, not the stated ratio."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "3*8/2"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q10",
+      "skill": "compare unit prices",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q10-b",
+      "explanation": "A costs 12 ÷ 8 = $1.50 per marker; B costs 10 ÷ 5 = $2.00 per marker.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q10-a",
+          "reason": "Two dollars per marker is greater than one dollar fifty."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q10-b",
+          "reason": "A costs 12 ÷ 8 = $1.50 per marker; B costs 10 ÷ 5 = $2.00 per marker."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q10-c",
+          "reason": "The packs contain different numbers of markers, so total price alone is insufficient."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q10-d",
+          "reason": "Their unit prices differ by fifty cents."
+        }
+      ],
+      "verification": {
+        "kind": "compare",
+        "expressions": [
+          "12/8",
+          "10/5"
+        ],
+        "winner": 0,
+        "winnerText": "Pack A: $1.50 per marker",
+        "comparison": "min"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q11",
+      "skill": "read an equivalent-ratio table",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q11-c",
+      "explanation": "14 ÷ 2 = 35 ÷ 5 = 7 meters per minute; 7 × 8 = 56 meters.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q11-a",
+          "reason": "Adding 3 meters to the five-minute row ignores the rate of 7 meters per minute."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q11-b",
+          "reason": "This uses 5 meters per minute rather than the table’s rate."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q11-c",
+          "reason": "14 ÷ 2 = 35 ÷ 5 = 7 meters per minute; 7 × 8 = 56 meters."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q11-d",
+          "reason": "This treats 14 meters as the one-minute distance."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "14*8/2"
+      }
+    },
+    {
+      "questionId": "ca-g6-math-rates-q12",
+      "skill": "find time from a rate",
+      "standardIds": [
+        "6.RP.3"
+      ],
+      "answerChoiceId": "ca-g6-math-rates-q12-d",
+      "explanation": "Multiply both quantities by 4: 3 × 4 = 12 liters and 8 × 4 = 32 minutes.",
+      "choiceReasoning": [
+        {
+          "choiceId": "ca-g6-math-rates-q12-a",
+          "reason": "Adding 9 to both quantities does not keep the liters-to-minutes ratio."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q12-b",
+          "reason": "This treats 8 minutes as the time for each liter."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q12-c",
+          "reason": "Four is the scale factor, not the total time."
+        },
+        {
+          "choiceId": "ca-g6-math-rates-q12-d",
+          "reason": "Multiply both quantities by 4: 3 × 4 = 12 liters and 8 × 4 = 32 minutes."
+        }
+      ],
+      "verification": {
+        "kind": "arithmetic",
+        "expression": "8*12/3"
+      }
+    }
+  ],
+  "teacherGuide": {
+    "learningTarget": "I can find and label a unit rate, use it to scale a ratio, and compare rates fairly.",
+    "suggestedMinutes": 35,
+    "prerequisites": [
+      "Equal groups, multiplication and division",
+      "Meaning of a fraction as division",
+      "Tracking units"
+    ],
+    "materials": [
+      "Paper or whiteboard",
+      "Pencil",
+      "Optional calculator for checking after explaining a method"
+    ],
+    "miniLesson": "Model 20 badges for 4 groups. Make a two-row table: groups 1, 4, 7; badges 5, 20, 35. Explain why both quantities must scale together, then label 5 badges per group.",
+    "sequence": [
+      "0–5 min: discuss the learning target and check prerequisites.",
+      "5–10 min: model the example with a drawing or observation.",
+      "10–25 min: use questions in chunks of 3–4; ask for explanations and pause for needed support.",
+      "25–35 min: complete the performance task independently, then discuss the rubric. Extend or split the lesson if the learner needs more thinking time."
+    ],
+    "easierVariants": [
+      "Begin with whole-number unit rates in questions 1, 2 and 4.",
+      "Provide a ratio table with a one-unit column and allow a drawing or calculator for arithmetic after the ratio is set up.",
+      "Read price/quantity labels aloud and ask the learner to finish “___ per ___” before dividing."
+    ],
+    "harderVariants": [
+      "Explain questions 7 and 10 with two methods, such as unit rates and common totals.",
+      "Create a constant-rate table and an almost-matching table; identify the row that breaks the pattern.",
+      "Ask which assumptions are needed: identical items, no extra fees and constant rate."
+    ],
+    "manualDecisionGuide": [
+      "If two questions in a chunk reveal the same misconception, pause and model it using the corresponding distractor reasoning.",
+      "If answers are correct but the learner cannot explain, stay with the model rather than increasing speed or difficulty.",
+      "If the learner explains two examples and the performance task well, offer a harder variant. These are teacher suggestions, not a validated mastery cutoff."
+    ],
+    "performanceTask": "A supply shop sells 6 identical folders for $9 and another sells 10 for $16, without extra fees. Make a ratio table or double number line, compare cost per folder, and find the cost of 18 folders at the first shop. Explain why the cheaper pack total alone cannot decide the better unit price.",
+    "performanceRubric": [
+      "Finds $1.50 per folder and $1.60 per folder with correct units.",
+      "Shows a valid table/diagram and obtains $27 for 18 folders at the first shop.",
+      "Explains the comparison and preserves multiplicative ratios rather than additive differences."
+    ],
+    "assessmentLimits": "This is a grade-six ratios/rates pilot, not coverage of all grade-six standards or a full 6–12 curriculum. Grade placement is a teacher decision.",
+    "adaptation": {
+      "mode": "teacher-led",
+      "automaticAdaptation": false,
+      "note": "A teacher or tutor chooses support, sequence and variants from observed work. This content does not implement an adaptive algorithm or diagnose a learner."
+    },
+    "progressiveHelp": [
+      {
+        "level": 1,
+        "action": "Ask the learner to identify the unknown and show a first attempt. If needed, read the question-specific hint; do not reveal the correct choice."
+      },
+      {
+        "level": 2,
+        "action": "Build a two-row ratio table with quantity labels. Include a one-unit column and leave the target blank; ask the learner which division and multiplication fill it."
+      },
+      {
+        "level": 3,
+        "action": "Revisit the different-number worked example in miniLesson, then return to the original question and let the learner finish. Discuss the answer-key explanation only after an attempt."
+      }
+    ],
+    "independentExit": {
+      "prompt": "A supply shop sells 6 identical folders for $9 and another sells 10 for $16, without extra fees. Make a ratio table or double number line, compare cost per folder, and find the cost of 18 folders at the first shop. Explain why the cheaper pack total alone cannot decide the better unit price.",
+      "conditions": "Use a fresh sheet. No answer key, hints or AI answer generation during this check; normal access accommodations and the teacher’s agreed arithmetic tools remain available. Record independent work separately from supported practice.",
+      "review": "After the learner finishes, discuss the rubric. If support was needed, label the work supported and use a different analogous task later; do not call it independent mastery."
+    }
+  },
+  "deliveryStatus": {
+    "contentPrepared": true,
+    "automaticallyAdaptive": false,
+    "unityImportTested": false,
+    "studentTrialCompleted": false,
+    "publicationApprovedByThisPack": false
+  }
+}

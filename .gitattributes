@@ -1,2 +1,5 @@
 /public/unity/Build/** -text
 /public/unity/StreamingAssets/** -text
+
+# Preserve the exact browser-accepted generated player bytes.
+/public/unity/** -text
