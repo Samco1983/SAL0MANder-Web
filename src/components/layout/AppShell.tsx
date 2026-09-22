@@ -23,7 +23,7 @@ const NAV: NavItem[] = [
   { to: paths.home, label: 'Home' },
   { to: paths.guestPlayIndex, label: 'Puzzle Practice' },
   { to: paths.gifts, label: 'Puzzle Gifts' },
-  { to: paths.classroom, label: 'Book Tutoring' },
+  { to: paths.tutoring, label: 'Tutoring' },
   { to: paths.learn, label: 'Math Lessons' },
   { to: paths.studio, label: 'Teacher Studio drafts' },
   { to: paths.profile, label: 'Profile' },
