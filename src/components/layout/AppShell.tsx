@@ -23,7 +23,7 @@ const NAV: NavItem[] = [
   { to: paths.home, label: 'Home' },
   { to: paths.guestPlayIndex, label: 'Puzzle Practice' },
   { to: paths.gifts, label: 'Puzzle Gifts' },
-  { to: paths.tutoring, label: 'Book Tutoring' },
+  { to: paths.tutoring, label: 'Tutoring' },
   { to: paths.learn, label: 'Math Lessons' },
   { to: paths.studio, label: 'Teacher Studio drafts' },
   { to: paths.profile, label: 'Profile' },
@@ -40,7 +40,6 @@ export function visibleNav(isProd: boolean): NavItem[] {
   })
   return (isProd ? items.filter((item) => !item.internal) : items).map((item) => ({
     ...item,
-    label: item.to === paths.tutoring && !tutoring.hasBooking ? 'Ask about tutoring' : item.label,
     to:
       item.to === paths.classroom
         ? tutoring.tutoring
