@@ -25,6 +25,8 @@ export const paths = {
   about: '/about/',
   /** Teacher Studio — where a teacher builds an activity. Laptop-first. */
   studio: '/studio',
+  /** Advertising-ready public tutoring landing page. */
+  tutoring: '/tutoring',
   /** Live tutoring invitation entry plus independent puzzle practice. */
   classroom: '/classroom',
   classes: '/classes',
