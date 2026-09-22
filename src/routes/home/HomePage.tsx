@@ -1,7 +1,6 @@
 import { PhotoCredit } from '@components/ui/PhotoCredit'
 import { env } from '@config/env'
 import { LearningOffers } from '@components/learning/LearningOffers'
-import { learningOfferLinks } from '@config/learningOffers'
 import { paths, buildPath } from '@config/routes'
 import { MOCK_DEMO_ACTIVITIES as LEGACY_DEMOS } from '@api/mockTransport'
 import { DEMO_MATH_COURSES, DEMO_CLASSIC_COURSE } from '@content/demoLevels'
@@ -111,7 +110,6 @@ function StartIcon({ kind }: { kind: 'mystery' | 'gift' | 'open' | 'studio' | 'p
 }
 
 export function HomePage() {
-  const tutoring = learningOfferLinks()
   return (
     <AppShell>
       <section className={styles.hero}>
@@ -146,26 +144,21 @@ export function HomePage() {
               </span>
             </span>
           </Link>
-          <a
-            href={tutoring.tutoring}
-            target={tutoring.hasBooking ? '_blank' : undefined}
-            rel={tutoring.hasBooking ? 'noopener noreferrer' : undefined}
-            title={tutoring.hasBooking ? 'Opens Google booking in a new tab' : undefined}
+          <Link
+            to={paths.tutoring}
             className={styles.startTile}
             aria-labelledby="start-tutoring-title"
             aria-describedby="start-tutoring-description"
           >
             <StartIcon kind="studio" />
             <span className={styles.startText}>
-              <strong id="start-tutoring-title">
-                {tutoring.hasBooking ? 'Book Tutoring' : 'Ask about tutoring'}
-              </strong>
+              <strong id="start-tutoring-title">Math Tutoring</strong>
               <span id="start-tutoring-description">
-                Grades 6–12 math for families and adult learners. Plan a private lesson or request a
-                small group.
+                Live teacher-led help built around the student’s actual classwork. See pricing,
+                availability, and how to get started.
               </span>
             </span>
-          </a>
+          </Link>
           <Link
             to={paths.gifts}
             className={styles.startTile}
