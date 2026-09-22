@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
-import { PUBLIC_TUTORING_BOOKING_URL } from '@config/classroom'
 
 vi.mock('@config/env', () => ({
   env: {
@@ -114,9 +113,9 @@ describe('AppShell in production', () => {
     // What a teacher should still see.
     expect(within(nav).getByRole('link', { name: 'Home' })).toBeInTheDocument()
     expect(within(nav).getByRole('link', { name: 'Puzzle Practice' })).toBeInTheDocument()
-    expect(within(nav).getByRole('link', { name: 'Book Tutoring' })).toHaveAttribute(
+    expect(within(nav).getByRole('link', { name: 'Tutoring' })).toHaveAttribute(
       'href',
-      PUBLIC_TUTORING_BOOKING_URL,
+      '/tutoring',
     )
     expect(within(nav).getByRole('link', { name: 'Puzzle Gifts' })).toHaveAttribute(
       'href',
