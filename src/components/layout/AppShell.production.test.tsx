@@ -113,7 +113,7 @@ describe('AppShell in production', () => {
     // What a teacher should still see.
     expect(within(nav).getByRole('link', { name: 'Home' })).toBeInTheDocument()
     expect(within(nav).getByRole('link', { name: 'Puzzle Practice' })).toBeInTheDocument()
-    expect(within(nav).getByRole('link', { name: 'Tutoring' })).toHaveAttribute(
+    expect(within(nav).getByRole('link', { name: 'Book Tutoring' })).toHaveAttribute(
       'href',
       '/tutoring',
     )
