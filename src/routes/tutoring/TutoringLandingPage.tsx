@@ -72,7 +72,7 @@ export function TutoringLandingPage() {
       'I will attach any worksheet/photo/PDF separately if needed.',
     ].join('\n')
 
-    return `mailto:sal@salomandermath.com?subject=${encodeURIComponent(
+    return `mailto:samco1983@gmail.com?subject=${encodeURIComponent(
       `Tutoring request — ${type}`,
     )}&body=${encodeURIComponent(body)}`
   }, [details, type])
@@ -219,7 +219,7 @@ export function TutoringLandingPage() {
             file, or claim a Google Meet session is confirmed.
           </p>
 
-          <form className={styles.form} onSubmit={sendRequest}>
+          <form className={styles.form} onSubmit={sendRequest} aria-labelledby="request-title">
             <label>
               Tutoring type
               <select value={type} onChange={(event) => setType(event.target.value as TutoringType)}>
