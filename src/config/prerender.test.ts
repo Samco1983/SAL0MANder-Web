@@ -88,6 +88,16 @@ describe('prerendering the public pages', () => {
     expect(html).toContain('property="og:title" content="Sound library')
     expect(html).not.toContain('HOMEPAGE COPY')
   })
+  it('builds a physical tutoring landing entry with advertising metadata', () => {
+    const dir = fixture(['/', '/tutoring'])
+    run(dir)
+    const html = readFileSync(join(dir, 'tutoring/index.html'), 'utf8')
+    expect(html).toContain('<title>Online math tutoring — SAL0MANder</title>')
+    expect(html).toContain('https://sal0mander.com/tutoring/')
+    expect(html).toContain('Small groups are $20 per student')
+    expect(html).not.toContain('HOMEPAGE COPY')
+  })
+
   it('builds a physical classroom entry with its own metadata and the correct app base', () => {
     const dir = fixture(['/', '/classroom'])
     const app = '/school/assets/classroom-fixture.js'
