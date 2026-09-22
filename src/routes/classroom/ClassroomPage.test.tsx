@@ -164,10 +164,10 @@ it('uses the configured scheduler and public puzzle site while keeping joining s
   classroom.bookingUrl = 'https://calendar.app.google/AbCdEfGh12345678'
   show()
   const nav = within(screen.getByRole('navigation', { name: 'Main' }))
-  const booking = nav.getByRole('link', { name: 'Book Tutoring' })
-  expect(booking).toHaveAttribute('href', classroom.bookingUrl)
-  expect(booking).not.toHaveAttribute('href', sites.tutoring)
-  expect(nav.getByRole('link', { name: 'Book Tutoring' })).not.toHaveAttribute('aria-current')
+  const tutoring = nav.getByRole('link', { name: 'Tutoring' })
+  expect(tutoring).toHaveAttribute('href', '/tutoring')
+  expect(tutoring).not.toHaveAttribute('href', classroom.bookingUrl)
+  expect(tutoring).not.toHaveAttribute('aria-current')
   expect(nav.getByRole('link', { name: 'Puzzle Practice' })).toHaveAttribute(
     'href',
     sites.puzzles + '/play',
