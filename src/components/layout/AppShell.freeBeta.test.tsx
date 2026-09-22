@@ -56,9 +56,9 @@ describe('free beta navigation', () => {
       'href',
       '/school/studio',
     )
-    expect(nav.getByRole('link', { name: 'Book Tutoring' })).toHaveAttribute(
+    expect(nav.getByRole('link', { name: 'Tutoring' })).toHaveAttribute(
       'href',
-      PUBLIC_TUTORING_BOOKING_URL,
+      '/school/tutoring',
     )
     expect(nav.getByRole('link', { name: 'Puzzle Practice' })).toHaveAttribute(
       'href',
@@ -79,10 +79,9 @@ describe('free beta navigation', () => {
       config.booking = booking
       config.siteMode = 'tutoring'
       const nav = show()
-      expect(nav.queryByRole('link', { name: 'Book Tutoring' })).toBeNull()
-      expect(nav.getByRole('link', { name: 'Ask about tutoring' })).toHaveAttribute(
+      expect(nav.getByRole('link', { name: 'Tutoring' })).toHaveAttribute(
         'href',
-        'mailto:sal@salomandermath.com?subject=Tutoring%20inquiry',
+        '/school/tutoring',
       )
       const persistent = screen
         .getAllByRole('link', { name: 'Ask about tutoring' })
