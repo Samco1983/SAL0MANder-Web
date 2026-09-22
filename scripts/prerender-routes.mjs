@@ -107,6 +107,11 @@ const META = {
     description:
       'Listen to original puzzle gift effects and source-credited animal and nature recordings. Choose a sound to preview; nothing plays automatically.',
   },
+  '/tutoring': {
+    title: 'Online math tutoring — SAL0MANder',
+    description:
+      'Live teacher-led online math tutoring tailored to a student’s actual classwork. Small groups are $20 per student and one-on-one sessions are $45 for 60 minutes.',
+  },
   '/classroom': {
     title: 'Private tutoring and small groups — SAL0MANder',
     description:
