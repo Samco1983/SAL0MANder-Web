@@ -49,6 +49,9 @@ const StudioPage = lazy(() =>
 const ClassroomPage = lazy(() =>
   import('@routes/classroom/ClassroomPage').then((m) => ({ default: m.ClassroomPage })),
 )
+const TutoringLandingPage = lazy(() =>
+  import('@routes/tutoring/TutoringLandingPage').then((m) => ({ default: m.TutoringLandingPage })),
+)
 const GroupBookingPage = lazy(() =>
   import('@routes/classes/GroupBookingPage').then((m) => ({ default: m.GroupBookingPage })),
 )
@@ -118,6 +121,7 @@ export function createRoutes(siteMode: 'puzzles' | 'tutoring' = env.siteMode): R
     { path: paths.guestPlay, element: split(<GuestPlayPage />), errorElement: <RouteError /> },
     { path: paths.slideDemo, element: split(<SlideDemoPage />), errorElement: <RouteError /> },
     { path: paths.gifts, element: split(<PuzzleGiftsPage />), errorElement: <RouteError /> },
+    { path: paths.tutoring, element: split(<TutoringLandingPage />), errorElement: <RouteError /> },
     { path: paths.classroom, element: split(<ClassroomPage />), errorElement: <RouteError /> },
     { path: paths.learn, element: split(<LearnPage />), errorElement: <RouteError /> },
     { path: paths.sounds, element: split(<SoundLibraryPage />), errorElement: <RouteError /> },
