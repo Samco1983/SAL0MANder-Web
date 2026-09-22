@@ -6,7 +6,6 @@ import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { HomePage } from './HomePage'
 import { paths } from '@config/routes'
-import { PUBLIC_TUTORING_BOOKING_URL } from '@config/classroom'
 import { DEMO_MATH_COURSES as MOCK_DEMO_ACTIVITIES, DEMO_CLASSIC_COURSE } from '@content/demoLevels'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 
@@ -44,14 +43,14 @@ describe('the primary action', () => {
     const links = within(choices).getAllByRole('link')
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       `/play/${MOCK_DEMO_ACTIVITIES[0]!.id}`,
-      PUBLIC_TUTORING_BOOKING_URL,
+      paths.tutoring,
       paths.gifts,
       paths.giftPlay,
       paths.studio,
       '#pictures-title',
     ])
     for (const name of [
-      'Book Tutoring',
+      'Math Tutoring',
       'Puzzle Gifts',
       'Open a gift',
       'Teacher Studio',
@@ -93,9 +92,9 @@ describe('the primary action', () => {
       'href',
       '/school/gifts',
     )
-    expect(within(choices).getByRole('link', { name: 'Book Tutoring' })).toHaveAttribute(
+    expect(within(choices).getByRole('link', { name: 'Math Tutoring' })).toHaveAttribute(
       'href',
-      PUBLIC_TUTORING_BOOKING_URL,
+      '/school/tutoring',
     )
     expect(within(choices).getByRole('link', { name: 'Open a gift' })).toHaveAttribute(
       'href',
