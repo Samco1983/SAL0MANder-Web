@@ -32,6 +32,10 @@ function firstRouteMatch(path: string) {
   return match!
 }
 
+// These checks exercise real lazy imports. Cold Windows checkouts may need
+// more than the default one-second DOM wait; still require the final surface.
+const lazyRouteWait = { timeout: 10_000 }
+
 describe('the share link a teacher hands out', () => {
   it('reaches playable content with no account prompt anywhere on the path', async () => {
     // Non-negotiable #3, asserted end to end through the shipped table: the URL
@@ -42,11 +46,13 @@ describe('the share link a teacher hands out', () => {
 
     renderAt(pathname)
 
-    expect(await screen.findByRole('region', { name: /game stage/i })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('region', { name: /game stage/i }, lazyRouteWait),
+    ).toBeInTheDocument()
     expect(screen.queryByLabelText(/password|email/i)).toBeNull()
     expect(screen.queryByRole('button', { name: /sign in|log in|create account/i })).toBeNull()
     expect(screen.queryByRole('textbox', { name: /name/i })).toBeNull()
-  })
+  }, 15_000)
 
   it('routes the built link to the Guest Play route and not the catch-all', () => {
     // A route table can render the right thing for the wrong reason. This pins
@@ -71,15 +77,16 @@ describe('the share link a teacher hands out', () => {
 describe('a link that arrived damaged', () => {
   it('sends a truncated /play/ to Guest Play, not to the 404', async () => {
     // An LMS that wraps a link at the last slash produces exactly this. The
-    // index page tells the student the link arrived incomplete and offers a way
-    // forward; the 404 does neither.
+    // public index offers a sample and class-code recovery, rather than a 404.
     expect(firstRouteMatch('/play/').route.path).toBe(paths.guestPlayIndex)
 
     renderAt('/play/')
-    expect(await screen.findByRole('heading', { name: /link looks incomplete/i })).toBeVisible()
+    expect(
+      await screen.findByRole('heading', { name: /try a sample puzzle/i }, lazyRouteWait),
+    ).toBeVisible()
     // The assertion that carries the intent: this is NOT the not-found page.
     expect(screen.queryByRole('heading', { name: /couldn.t find that page/i })).toBeNull()
-  })
+  }, 15_000)
 
   it('shows the not-found page for a path that matches nothing', async () => {
     renderAt('/teacher/dashboard')
@@ -98,8 +105,10 @@ describe('the route table itself', () => {
     expect(firstRouteMatch('/gifts').route.path).toBe(paths.gifts)
     expect(firstRouteMatch('/gifts/play').route.path).toBe(paths.giftPlay)
     renderAt('/gifts')
-    expect(await screen.findByRole('heading', { name: 'Puzzle Gifts' })).toBeVisible()
-  })
+    expect(
+      await screen.findByRole('heading', { name: 'Puzzle Gifts' }, lazyRouteWait),
+    ).toBeVisible()
+  }, 15_000)
   it('gives every route an error boundary, so no path can render blank', () => {
     // React Router renders its own bare "Unexpected Application Error" screen
     // for a route with no `errorElement`. A student mid-activity must never
