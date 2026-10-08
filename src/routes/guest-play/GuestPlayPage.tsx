@@ -441,7 +441,7 @@ export function GuestPlayIndexPage() {
             </h2>
             <p className={styles.centeredBody}>
               Answer a question, check the feedback, and reveal the picture as you solve it. No
-              account is needed.
+              account is needed. Cloud saves are not available for this demo.
             </p>
             <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
               Start the sample puzzle
