@@ -11,6 +11,7 @@ import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
 import { correlateAttempt, isUsableFinishedPayload, onUnityMessage } from '@unity/bridge'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
+import { ShareCodeSchema } from '@contracts/v1'
 import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
@@ -402,18 +403,8 @@ export function GuestPlayPage() {
   )
 }
 
-/** `/play` with no activity — a share link is what normally lands here. */
+/** Public Play entry, also useful when a teacher's link was cut short. */
 export function GuestPlayIndexPage() {
-  /*
-    Who actually arrives here: a student whose share link was cut off. The
-    routing tests already prove a truncated /play/ lands on this page rather
-    than the 404, so this is a real arrival, not a developer browsing.
-
-    It used to show them `/play/<activity-id>` — URL syntax with angle
-    brackets, to a child — and a single link back to where they just came from.
-    A dead end dressed as an explanation.
-  */
-
   // Only offered while there is no backend. The demo lives in the mock
   // transport, so promising it against a real API would be offering an
   // activity that may not exist — a worse dead end than the one being fixed,
@@ -421,7 +412,10 @@ export function GuestPlayIndexPage() {
   const canDemo = !env.api.isConfigured
   const [shareCode, setShareCode] = useState('')
   const navigate = useNavigate()
-  const cleanedShareCode = shareCode.trim().toUpperCase()
+  const candidate = shareCode.trim()
+  const parsedShareCode = ShareCodeSchema.safeParse(candidate)
+  // Teacher codes are case-insensitive; an activity id copied from a link is not.
+  const cleanedShareCode = parsedShareCode.success ? parsedShareCode.data : candidate
 
   function submitShareCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -432,26 +426,44 @@ export function GuestPlayIndexPage() {
   return (
     <AppShell>
       <div className={styles.centeredInner}>
-        <h1 className={styles.centeredTitle}>This link looks incomplete</h1>
+        <h1 className={styles.centeredTitle}>
+          {canDemo ? 'Try a sample puzzle' : 'Open a class activity'}
+        </h1>
         <p className={styles.centeredBody}>
-          Share links carry the name of the activity, and this one arrived without it — often
-          because a chat app or a class page cut it short. Nothing is wrong on your end. Ask your
-          teacher to send the whole link again.
+          {canDemo
+            ? 'Practice positive and negative numbers with a picture puzzle. For learners reviewing integer operations, or teachers trying the activity.'
+            : 'Use a class code from your teacher to open your activity.'}
         </p>
+        {canDemo ? (
+          <section className={styles.sampleIntro} aria-labelledby="sample-how-to-play">
+            <h2 id="sample-how-to-play" className={styles.codeLabel}>
+              How to play
+            </h2>
+            <p className={styles.centeredBody}>
+              Answer a question, check the feedback, and reveal the picture as you solve it. No
+              account is needed.
+            </p>
+            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
+              Start the sample puzzle
+            </LinkButton>
+          </section>
+        ) : null}
         <form className={styles.codeForm} onSubmit={submitShareCode}>
           <label className={styles.codeLabel} htmlFor="guest-share-code">
             Enter a class code
           </label>
-          <p className={styles.centeredBody}>
-            Use the class code from your teacher or paste the missing end of the link.
+          <p id="guest-share-code-help" className={styles.centeredBody}>
+            Use the class code from your teacher or paste the missing end of the link. If you do not
+            have it, ask your teacher to send the full link again.
           </p>
           <div className={styles.codeControls}>
             <input
               id="guest-share-code"
+              aria-describedby="guest-share-code-help"
               className={styles.codeInput}
               value={shareCode}
               onChange={(event) => setShareCode(event.currentTarget.value)}
-              autoCapitalize="characters"
+              autoCapitalize="none"
               autoComplete="off"
               spellCheck="false"
               inputMode="text"
@@ -461,18 +473,14 @@ export function GuestPlayIndexPage() {
             </Button>
           </div>
         </form>
-        {canDemo ? (
-          <>
-            <p className={styles.centeredBody}>In the meantime, you can try a sample puzzle.</p>
-            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
-              Try a sample activity
-            </LinkButton>
-          </>
-        ) : null}
-        <LinkButton to={paths.giftPlay} variant="secondary">
-          Open a gift
-        </LinkButton>
-        <LinkButton to={paths.home}>Back to home</LinkButton>
+        <div className={styles.entryActions}>
+          <LinkButton to={paths.giftPlay} variant="secondary">
+            Open a gift
+          </LinkButton>
+          <LinkButton to={paths.home} variant="secondary">
+            Back to home
+          </LinkButton>
+        </div>
       </div>
     </AppShell>
   )
