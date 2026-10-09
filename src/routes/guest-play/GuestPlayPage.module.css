@@ -144,3 +144,15 @@
     grid-template-columns: 1fr;
   }
 }
+
+.demoGrid { display: grid; gap: var(--space-4); margin-bottom: var(--space-6); text-align: left; }
+.demoCard { min-width: 0; padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+.demoCard a { max-width: 100%; white-space: normal; text-align: center; }
+.demoTitle { font-size: var(--text-lg); margin-bottom: var(--space-2); }
+.chooserNote, .demoNote { color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.6; }
+.demoGuide { margin: var(--space-4) 0; }
+.demoGuide summary { cursor: pointer; min-height: 44px; padding-block: var(--space-2); font-weight: 700; }
+.demoGuide ol { padding-left: var(--space-5); line-height: 1.6; }
+.demoGuide li + li { margin-top: var(--space-2); }
+.demoLink { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-2) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text); background: var(--color-surface); font-weight: 700; }
+.demoLink:focus-visible, .demoGuide summary:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 3px; }

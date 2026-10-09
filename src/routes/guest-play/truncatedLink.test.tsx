@@ -52,10 +52,10 @@ describe('what the student is told', () => {
   })
   it('welcomes a public visit with the sample, its audience and instructions', () => {
     renderIndex()
-    expect(screen.getByRole('heading', { level: 1, name: 'Try a sample puzzle' })).toBeVisible()
-    expect(screen.getByText(/learners reviewing integer operations/i)).toBeVisible()
-    expect(screen.getByRole('heading', { level: 2, name: 'How to play' })).toBeVisible()
-    expect(screen.getByText(/answer a question, check the feedback/i)).toBeVisible()
+    expect(screen.getByRole('heading', { level: 1, name: 'Choose a game demo' })).toBeVisible()
+    expect(screen.getByText(/build a picture, reveal a mystery/i)).toBeVisible()
+    expect(screen.getByRole('heading', { level: 2, name: 'Jigsaw — Learning Puzzle' })).toBeVisible()
+    expect(screen.getByText(/opens the shared puzzle chooser/i)).toBeVisible()
   })
 
   it('never shows URL syntax to a child', () => {
@@ -117,14 +117,20 @@ describe('a way forward, not only a way back', () => {
 
   it('offers a playable sample while there is no backend', () => {
     renderIndex()
-    const demo = screen.getByRole('link', { name: 'Start the sample puzzle' })
+    const demo = screen.getByRole('link', { name: 'Open chooser for Jigsaw' })
     expect(demo).toHaveAttribute('href', '/play/act_integer_operations')
+  })
+
+  it('keeps the second card honest about the shared chooser and uses a static graph navigation', () => {
+    renderIndex()
+    expect(screen.getByRole('link', { name: 'Open chooser for Mystery Reveal' })).toHaveAttribute('href', '/play/act_integer_operations')
+    expect(screen.getByRole('link', { name: 'Open Mystery Graph' })).toHaveAttribute('href', '/demos/mystery-graph/')
   })
 
   it('starts the existing sample directly without submitting the teacher form', async () => {
     const user = userEvent.setup()
     renderRoutedIndex()
-    await user.click(screen.getByRole('link', { name: 'Start the sample puzzle' }))
+    await user.click(screen.getByRole('link', { name: 'Open chooser for Jigsaw' }))
     expect(screen.getByText('Activity opened: act_integer_operations')).toBeVisible()
   })
 

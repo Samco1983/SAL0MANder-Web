@@ -14,7 +14,7 @@
     "react/react-in-jsx-scope": "off",
     "jsx-a11y/prefer-tag-over-role": "off"
   },
-  "ignorePatterns": ["dist", "coverage", "public/unity"],
+  "ignorePatterns": ["dist", "coverage", "public/unity", "public/demos/mystery-graph/player/Build"],
   "overrides": [
     {
       "files": ["**/*.test.ts", "**/*.test.tsx", "src/test/**"],
