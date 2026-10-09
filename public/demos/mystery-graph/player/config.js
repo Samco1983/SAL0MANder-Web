@@ -1,0 +1,1 @@
+window.MYSTERY_PLAYER = {"loader": "Build/player.loader.js", "config": {"dataUrl": "Build/player.data", "frameworkUrl": "Build/player.framework.js", "codeUrl": "Build/player.wasm", "streamingAssetsUrl": "StreamingAssets", "companyName": "SAL0MANder", "productName": "Mystery Reveal", "productVersion": "0.1-graph"}};

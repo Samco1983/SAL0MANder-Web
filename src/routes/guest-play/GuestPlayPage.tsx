@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { env } from '@config/env'
-import { buildPath, paths } from '@config/routes'
+import { buildPath, paths, readBasePath } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
 import { AppShell } from '@components/layout/AppShell'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
@@ -427,25 +427,59 @@ export function GuestPlayIndexPage() {
     <AppShell>
       <div className={styles.centeredInner}>
         <h1 className={styles.centeredTitle}>
-          {canDemo ? 'Try a sample puzzle' : 'Open a class activity'}
+          {canDemo ? 'Choose a game demo' : 'Open a class activity'}
         </h1>
         <p className={styles.centeredBody}>
           {canDemo
-            ? 'Practice positive and negative numbers with a picture puzzle. For learners reviewing integer operations, or teachers trying the activity.'
+            ? 'Build a picture, reveal a mystery, or plot your way into a spaceship battle. Choose a demo and read its short guide before you start.'
             : 'Use a class code from your teacher to open your activity.'}
         </p>
         {canDemo ? (
-          <section className={styles.sampleIntro} aria-labelledby="sample-how-to-play">
-            <h2 id="sample-how-to-play" className={styles.codeLabel}>
-              How to play
-            </h2>
-            <p className={styles.centeredBody}>
-              Answer a question, check the feedback, and reveal the picture as you solve it. No
-              account is needed. Cloud saves are not available for this demo.
-            </p>
-            <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
-              Start the sample puzzle
-            </LinkButton>
+          <section className={styles.demoGrid} aria-label="Game demos">
+            <article className={styles.demoCard}>
+              <h2 className={styles.demoTitle}>Jigsaw — Learning Puzzle</h2>
+              <p className={styles.centeredBody}>Answer questions to unlock pieces, then build the picture.</p>
+              <p className={styles.chooserNote}>Opens the shared puzzle chooser. Choose <strong>Learning Puzzle</strong>.</p>
+              <details className={styles.demoGuide}>
+                <summary>How to play Jigsaw</summary>
+                <ol>
+                  <li>Choose Learning Puzzle on the next screen.</li>
+                  <li>Choose an answer and press Submit. Read the feedback; you can try again.</li>
+                  <li>Drag an unlocked piece from the tray onto the picture. Use Rotate 45° if the piece needs turning.</li>
+                  <li>Keep answering and placing pieces until the picture is complete.</li>
+                </ol>
+              </details>
+              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open chooser for Jigsaw</LinkButton>
+            </article>
+            <article className={styles.demoCard}>
+              <h2 className={styles.demoTitle}>Mystery Reveal</h2>
+              <p className={styles.centeredBody}>Answer questions to uncover the picture. Pieces reveal automatically.</p>
+              <p className={styles.chooserNote}>Opens the same puzzle chooser. Choose <strong>Mystery Reveal</strong>.</p>
+              <details className={styles.demoGuide}>
+                <summary>How to play Mystery Reveal</summary>
+                <ol>
+                  <li>Choose Mystery Reveal on the next screen.</li>
+                  <li>Choose an answer and press Submit. Read the feedback and try again when needed.</li>
+                  <li>Correct answers reveal the picture. There is no dragging in this mode.</li>
+                </ol>
+              </details>
+              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open chooser for Mystery Reveal</LinkButton>
+            </article>
+            <article className={styles.demoCard}>
+              <h2 className={styles.demoTitle}>Mystery Graph</h2>
+              <p className={styles.centeredBody}>Plot points to build a picture, then fly into a spaceship boss battle.</p>
+              <details className={styles.demoGuide}>
+                <summary>How to play Mystery Graph</summary>
+                <ol>
+                  <li>Move across for x, then up or down for y. Lock each requested point and follow the next line.</li>
+                  <li>Complete the graph, then choose a battle difficulty.</li>
+                  <li>Fly with the arrow keys, WASD or drag. Regular shots fire automatically; hold Z or Charge, then release for a charged shot.</li>
+                  <li>Break the boss shield and complete the coordinate strikes. The game page includes the full controls.</li>
+                </ol>
+              </details>
+              <a className={styles.demoLink} href={`${readBasePath()}demos/mystery-graph/`}>Open Mystery Graph</a>
+            </article>
+            <p className={styles.demoNote}>No account is needed. The Jigsaw and Mystery Reveal sample uses integer-operation questions and has no cloud saves. Mystery Graph keeps graph progress in this browser; an unfinished battle restarts.</p>
           </section>
         ) : null}
         <form className={styles.codeForm} onSubmit={submitShareCode}>

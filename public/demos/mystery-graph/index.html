@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f8f5e9"><meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Plot a point. Connect a line. Discover ten original mystery pictures on an x-y grid.">
+<title>Mystery Graph — SAL0MANder</title>
+<link rel="stylesheet" href="styles.css"><script src="lobby.js" defer></script>
+</head><body>
+<main id="lobby">
+<a class="brand" href="../../play/">← All game demos</a>
+<a class="brand" href="./">SAL0MANDER <span>Coordinate adventures · Playtest</span></a>
+<div class="hero">
+<div class="hero-copy">
+<p class="eyebrow">A little precision. A little surprise.</p>
+<h1>Mystery Graph</h1>
+<p class="tagline">What will your points become?</p>
+<p class="intro">Follow the coordinates. Connect each line.<br>A hidden picture comes to life, one point at a time.</p>
+<button id="play" class="primary" type="button">Play Mystery Graph <span aria-hidden="true">↗</span></button>
+<p class="download">No login · The game downloads when you press Play</p>
+<p class="start-note">10 original levels · Whole numbers + integers</p>
+</div>
+<div class="scene" aria-hidden="true">
+<svg viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg">
+<defs><pattern id="grid" x="72" y="42" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M42 0H0V42" fill="none" stroke="#cdded3" stroke-width="1"/></pattern></defs>
+<rect width="480" height="330" rx="24" fill="#fffdf6"/>
+<rect x="30" y="42" width="420" height="252" fill="url(#grid)"/>
+<path d="M30 252H450M72 294V30" fill="none" stroke="#476c66" stroke-width="2"/>
+<path d="M443 246L450 252L443 258M66 37L72 30L78 37" fill="none" stroke="#476c66" stroke-width="2"/>
+<path d="M72 252H240V126" stroke="#de9c43" stroke-width="3" stroke-dasharray="6 6" fill="none"/>
+<circle cx="72" cy="252" r="4" fill="#234c48"/>
+<circle cx="240" cy="126" r="19" fill="#d7e9dd"/><circle cx="240" cy="126" r="7" fill="#127e80"/>
+<path d="M216 126H228M252 126H264M240 102V114M240 138V150" stroke="#127e80" stroke-width="2"/>
+<rect x="274" y="81" width="144" height="65" rx="13" fill="#e1efe4"/>
+<text x="346" y="106" text-anchor="middle" fill="#426e65" font-size="11" font-family="system-ui" letter-spacing="1.1">X FIRST, THEN Y</text>
+<text x="346" y="132" text-anchor="middle" fill="#193d46" font-size="23" font-weight="700" font-family="system-ui">(4, 3)</text>
+<g font-family="system-ui" font-size="12" fill="#476c66" text-anchor="middle"><text x="114" y="272">1</text><text x="156" y="272">2</text><text x="198" y="272">3</text><text x="240" y="272">4</text><text x="282" y="272">5</text><text x="324" y="272">6</text><text x="366" y="272">7</text><text x="408" y="272">8</text><text x="58" y="271">0</text><text x="57" y="214">1</text><text x="57" y="172">2</text><text x="57" y="130">3</text><text x="57" y="88">4</text><text x="57" y="46">5</text><text x="456" y="275">x</text><text x="57" y="26">y</text></g>
+<text x="150" y="238" text-anchor="middle" fill="#946521" font-size="12" font-family="system-ui">across 4</text>
+<text x="229" y="192" text-anchor="end" fill="#946521" font-size="12" font-family="system-ui">up 3</text>
+</svg>
+<p>One square. One unit. A world of possibility.</p>
+</div>
+</div>
+<section class="path" aria-label="Your coordinate adventure">
+<div><span class="step">01</span><h2>Find your point</h2><p>Move across for x, then up or down for y.</p></div>
+<div><span class="step">02</span><h2>Build the picture</h2><p>Correct points lock in. New lines begin with a pen lift.</p></div>
+<div><span class="step">03</span><h2>Bring it to life</h2><p>Complete a mysterious purple picture, then break its shell in flight to uncover its true colors.</p></div>
+</section>
+<section class="path" aria-label="Level progression"><div><span class="step">01–04</span><h2>Whole numbers</h2><p>Quadrant I. Plot 0 and positive coordinates.</p></div><div><span class="step">05–07</span><h2>Introduce integers</h2><p>Quadrants I &amp; II, then I &amp; IV. Learn negative x and negative y.</p></div><div><span class="step">08–10</span><h2>All four quadrants</h2><p>Use positive and negative integers together. Axis points belong to no quadrant.</p></div></section>
+<details class="instructions"><summary>How to play: graph, fly and face the boss</summary>
+<div class="instruction-grid"><div><h2>On the coordinate grid</h2><p>Tap or drag to a grid intersection and release to check it. Or use the on-screen <strong>x − / x + / y − / y +</strong> buttons, then <strong>Lock point</strong>.</p><p>With a keyboard, use the <strong>arrow keys</strong> to move and <strong>Enter</strong> to lock. <strong>Undo</strong> (or Backspace) removes the last point. A wrong point leaves your picture intact.</p><p>Every square is one unit. Some shapes close automatically after their last point. Start a fresh line when prompted.</p></div>
+<div><h2>Save your creation</h2><p>After completing the graph, break the purple glass to restore your creation's true colors. Fly in all directions with <strong>WASD / arrow keys</strong> or <strong>drag</strong>. Regular shots fire automatically. Hold the <strong>mouse button</strong>, <strong>Z</strong> or the <strong>charge button</strong>, then release to blast. <strong>Space</strong> or <strong>Pause</strong> pauses the fight.</p><p><strong>Easy</strong> starts with four shields and 12 seconds of larger, stronger rapid shots. <strong>Hard</strong> awards <strong>2×</strong>; <strong>Very Hard</strong> adds denser attacks and awards <strong>3×</strong>. Easy has two emergency bombs; other difficulties have one. Press <strong>X</strong> or Bomb to clear incoming fire. Use <strong>Missions → Music</strong> to choose separate plotting and battle tracks.</p><p>Major shield breaks freeze the arena and overlay a coordinate grid. Enter the numbered weak-point coordinates to launch a targeted strike, or skip back to flying. There is no countdown. Each broken glass section drops a power-up. Move to catch a <strong>cyan gem</strong> for larger, stronger rapid shots or a <strong>green gem</strong> for a shield. Break the whole shell to save the creation.</p><p><strong>Back</strong> closes the game. Your graph and earned progress stay in this browser; an unfinished battle restarts when you return.</p></div></div>
+</details>
+<p class="footnote">Play upright or sideways. 10 levels: whole numbers in Quadrant I; integers in Quadrants I–II, I–IV and all four quadrants.</p>
+</main>
+<section id="stage" hidden aria-label="Mystery Graph player">
+<header class="player-bar"><button id="back" type="button" aria-label="Back to lobby and close game">← Back</button><span>Mystery Graph</span><button id="fullscreen" type="button" hidden>Full screen</button></header>
+<div id="mount"></div><p id="orientation-note">Tap a point · or nudge, then Lock point</p><p id="screen-status" class="sr-only" role="status"></p>
+</section></body></html>

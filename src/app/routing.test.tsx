@@ -82,7 +82,7 @@ describe('a link that arrived damaged', () => {
 
     renderAt('/play/')
     expect(
-      await screen.findByRole('heading', { name: /try a sample puzzle/i }, lazyRouteWait),
+      await screen.findByRole('heading', { name: /choose a game demo/i }, lazyRouteWait),
     ).toBeVisible()
     // The assertion that carries the intent: this is NOT the not-found page.
     expect(screen.queryByRole('heading', { name: /couldn.t find that page/i })).toBeNull()
