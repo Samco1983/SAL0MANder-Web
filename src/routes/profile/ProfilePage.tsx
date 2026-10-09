@@ -16,7 +16,7 @@ export function ProfilePage() {
     <AppShell>
       <h1 className={styles.title}>Profile</h1>
 
-      <Card title="Playing as a guest">
+      <Card title="Playing as a guest" headingLevel={2}>
         <p className={styles.lede}>
           You can play shared activities without signing in or creating an account. Pick a sample
           activity below or use a link from your teacher.
