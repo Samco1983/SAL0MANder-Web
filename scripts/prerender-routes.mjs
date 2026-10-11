@@ -87,6 +87,10 @@ if (paths.length === 0) {
  * this script was written to fix.
  */
 const META = {
+  '/play': {
+    title: 'Play free learning games — SAL0MANder',
+    description: 'Try free learning games and puzzles. No account needed.',
+  },
   '/gifts': {
     title: 'Make a puzzle gift — SAL0MANder',
     description:
@@ -205,6 +209,13 @@ for (const path of paths) {
   writeFileSync(join(dir, 'index.html'), withMeta(path))
   console.log(`[prerender] ${path}/index.html${META[path] ? ` — "${META[path].title}"` : ''}`)
 }
+
+// The public Play picker needs a real entry even though activity URLs are
+// kept out of the sitemap by default. Keep robots and activity privacy intact.
+const playEntry = join(dist, 'play')
+mkdirSync(playEntry, { recursive: true })
+writeFileSync(join(playEntry, 'index.html'), withMeta('/play'))
+console.log('[prerender] /play/index.html - public game picker entry')
 
 // /unity contains the build assets, so its physical directory wins a Pages
 // hard load over the SPA fallback. Always put the same React shell there,

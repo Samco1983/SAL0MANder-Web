@@ -86,6 +86,9 @@ describe('prerendering the public pages', () => {
         writeFileSync(join(dir, pathname), `artifact: ${pathname}`)
       }
       run(dir)
+      expect(readFileSync(join(dir, 'play/index.html'), 'utf8')).toContain(
+        '<title>Play free learning games — SAL0MANder</title>',
+      )
 
       // Serve physical files, with directory-index redirects and no SPA fallback.
       // A memory router alone cannot catch a legacy public/index.html winning this request.
@@ -144,6 +147,13 @@ describe('prerendering the public pages', () => {
           expect(page).not.toContain('HOMEPAGE COPY')
           const canonicalPath = path.replace(/\/$/, '')
           expect(page).toContain(`href="https://sal0mander.com/${canonicalPath}/"`)
+        }
+        for (const path of ['play', 'play/']) {
+          const response = await fetch(`${origin}${base}${path}`)
+          expect(response.status).toBe(200)
+          const page = await response.text()
+          expect(page).toContain(`src="${entry}"`)
+          expect(page).toContain('<title>Play free learning games \u2014 SAL0MANder</title>')
         }
         for (const url of artifactUrls) {
           expect(new URL(url, origin).searchParams.get('v')).toBe(UNITY_RELEASE_REVISION)
