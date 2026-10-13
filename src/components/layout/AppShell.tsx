@@ -176,7 +176,7 @@ export function AppShell({
               Terms
             </Link>
             <a className={styles.footerLink} href="https://salomandermath.com/">
-              Need a tutor?
+              Math tutoring
             </a>
             <a className={styles.footerLink} href="mailto:samco1983@gmail.com">
               Contact
