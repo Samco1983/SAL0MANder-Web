@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   MissionGate,
+  githubDeploymentProof,
   githubMissionRequest,
   handleRequest,
 } from '../../../edge/mission-control/worker.js'
@@ -61,6 +62,8 @@ function environment() {
     TEAM_DOMAIN: 'https://sal0.cloudflareaccess.com',
     POLICY_AUD: 'mission-control-audience',
     PUBLIC_SITE_URL: 'https://samco1983.github.io/SAL0MANder-Web',
+    DEPLOYED_GIT_SHA: 'a'.repeat(40),
+    DEPLOYMENT_CANARY_ISSUE: '72',
     _storage: storage,
     MISSION_GATE: {} as {
       idFromName(name: string): string
@@ -236,6 +239,44 @@ describe('mission-control edge boundary', () => {
       verifyAccessToken: vi.fn().mockRejectedValue(new Error('bad signature')),
     })
     expect(result.status).toBe(401)
+  })
+
+  it('allows only a verified service identity to request deployment proof', async () => {
+    const deploymentProofRequest = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      body: {
+        deployedGitSha: 'a'.repeat(40),
+        repository: 'Samco1983/SAL0MANder-Web',
+        canaryIssue: 72,
+        issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/72',
+        commentCreated: true,
+        commentDeleted: true,
+      },
+    })
+    const proofRequest = request('/ops/deployment-proof', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expectedGitSha: 'a'.repeat(40) }),
+    })
+
+    const ownerResult = await handleRequest(proofRequest.clone(), environment(), {
+      ...verifiedAccess,
+      deploymentProofRequest,
+    })
+    const serviceResult = await handleRequest(proofRequest, environment(), {
+      verifyAccessToken: vi.fn().mockResolvedValue({ common_name: 'github-deploy' }),
+      deploymentProofRequest,
+    })
+
+    expect(ownerResult.status).toBe(403)
+    expect(serviceResult.status).toBe(200)
+    expect(await serviceResult.json()).toMatchObject({
+      deployedGitSha: 'a'.repeat(40),
+      commentCreated: true,
+      commentDeleted: true,
+    })
+    expect(deploymentProofRequest).toHaveBeenCalledTimes(1)
   })
 
   it('returns GitHub mission state without treating Make as the source', async () => {
@@ -1156,6 +1197,79 @@ describe('mission-control edge boundary', () => {
 
     expect(result).toEqual({ ok: false, status: 503, error: 'dispatcher_unavailable' })
     expect(fetchGitHub).not.toHaveBeenCalled()
+  })
+
+  it('proves the deployed Git SHA with a temporary GitHub comment and cleans it up', async () => {
+    const fetchGitHub = vi
+      .fn()
+      .mockResolvedValueOnce(
+        response({
+          id: 72001,
+          html_url: 'https://github.com/Samco1983/SAL0MANder-Web/issues/72#issuecomment-72001',
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+
+    const result = await githubDeploymentProof(
+      environment(),
+      { expectedGitSha: 'a'.repeat(40) },
+      fetchGitHub,
+    )
+
+    expect(result).toEqual({
+      ok: true,
+      status: 200,
+      body: {
+        deployedGitSha: 'a'.repeat(40),
+        repository: 'Samco1983/SAL0MANder-Web',
+        canaryIssue: 72,
+        issueUrl: 'https://github.com/Samco1983/SAL0MANder-Web/issues/72',
+        commentCreated: true,
+        commentDeleted: true,
+      },
+    })
+    expect(fetchGitHub).toHaveBeenCalledTimes(2)
+    expect(fetchGitHub.mock.calls[0]?.[0]).toBe(
+      'https://api.github.com/repos/Samco1983/SAL0MANder-Web/issues/72/comments',
+    )
+    expect(fetchGitHub.mock.calls[0]?.[1]?.method).toBe('POST')
+    expect(fetchGitHub.mock.calls[1]?.[0]).toBe(
+      'https://api.github.com/repos/Samco1983/SAL0MANder-Web/issues/comments/72001',
+    )
+    expect(fetchGitHub.mock.calls[1]?.[1]?.method).toBe('DELETE')
+  })
+
+  it('refuses deployment proof for a SHA other than the running Worker', async () => {
+    const fetchGitHub = vi.fn()
+
+    const result = await githubDeploymentProof(
+      environment(),
+      { expectedGitSha: 'b'.repeat(40) },
+      fetchGitHub,
+    )
+
+    expect(result).toEqual({ ok: false, status: 409, error: 'deployment_mismatch' })
+    expect(fetchGitHub).not.toHaveBeenCalled()
+  })
+
+  it('fails deployment proof when the temporary GitHub comment cannot be removed', async () => {
+    const fetchGitHub = vi
+      .fn()
+      .mockResolvedValueOnce(
+        response({
+          id: 72001,
+          html_url: 'https://github.com/Samco1983/SAL0MANder-Web/issues/72#issuecomment-72001',
+        }),
+      )
+      .mockResolvedValueOnce(response({ message: 'forbidden' }, 403))
+
+    const result = await githubDeploymentProof(
+      environment(),
+      { expectedGitSha: 'a'.repeat(40) },
+      fetchGitHub,
+    )
+
+    expect(result).toEqual({ ok: false, status: 502, error: 'canary_cleanup_failed' })
   })
 })
 
