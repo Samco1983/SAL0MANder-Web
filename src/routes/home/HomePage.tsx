@@ -130,7 +130,7 @@ export function HomePage() {
             <span className={styles.startText}>
               <strong id="start-mystery-title">Mystery Pictures</strong>
               <span id="start-mystery-description">
-                In the demo, choose Mystery Reveal for automatic picture reveals.
+                In the demo, choose Picture Reveal for automatic picture reveals.
               </span>
               <span className={styles.startAction} id="start-demo-action">
                 Play a demo <span aria-hidden="true">→</span>
@@ -263,7 +263,7 @@ export function HomePage() {
         <div className={styles.modeChoices}>
           <Card title="Mystery Pictures">
             Answer a question and watch part of the picture appear automatically. Choose
-            <strong> Mystery Reveal</strong> in the demo.
+            <strong> Picture Reveal</strong> in the demo.
             <div className={styles.cardAction}>
               <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>
                 Open demo options
@@ -321,7 +321,7 @@ export function HomePage() {
           Pick a lesson and start playing. No account or installation needed.
         </p>
         <p className={styles.demoShareText}>
-          Start with <strong>Mystery Pictures</strong>: choose <strong>Mystery Reveal</strong> in a
+          Start with <strong>Mystery Pictures</strong>: choose <strong>Picture Reveal</strong> in a
           lesson to have each earned piece appear automatically. Choose{' '}
           <strong>Learning Puzzle</strong> to answer questions, then drag and place each earned
           piece yourself. Both uncover the picture one piece at a time.

@@ -123,7 +123,7 @@ describe('a way forward, not only a way back', () => {
 
   it('keeps the second card honest about the shared chooser and uses a static graph navigation', () => {
     renderIndex()
-    expect(screen.getByRole('link', { name: 'Open chooser for Mystery Reveal' })).toHaveAttribute('href', '/play/act_integer_operations')
+    expect(screen.getByRole('link', { name: 'Open chooser for Picture Reveal' })).toHaveAttribute('href', '/play/act_integer_operations')
     expect(screen.getByRole('link', { name: 'Open Mystery Graph' })).toHaveAttribute('href', '/demos/mystery-graph/')
   })
 

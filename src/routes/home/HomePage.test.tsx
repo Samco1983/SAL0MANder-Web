@@ -52,7 +52,7 @@ describe('the primary action', () => {
       expect(within(choices).getByRole('link', { name })).toBeVisible()
     }
     const primary = within(choices).getByRole('link', { name: /Mystery Pictures.*Play a demo/i })
-    expect(primary).toHaveAccessibleDescription(/choose Mystery Reveal/i)
+    expect(primary).toHaveAccessibleDescription(/choose Picture Reveal/i)
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Mystery Pictures')
     const picture = screen.getByAltText(/A forest guardian puzzle part-way through/i)
     expect(choices.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -119,7 +119,7 @@ describe('the primary action', () => {
     const activities = screen.getByRole('region', { name: 'Activities you can try right now' })
     expect(activities).toHaveTextContent('Learning Puzzle')
     expect(activities).toHaveTextContent('drag and place each earned piece')
-    expect(activities).toHaveTextContent('Mystery Reveal')
+    expect(activities).toHaveTextContent('Picture Reveal')
     expect(activities).toHaveTextContent('each earned piece appear automatically')
     expect(activities).toHaveTextContent('Both uncover the picture one piece at a time')
     expect(activities).not.toHaveTextContent('Classic Puzzle')
