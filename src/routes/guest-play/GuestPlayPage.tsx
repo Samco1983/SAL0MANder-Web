@@ -452,21 +452,21 @@ export function GuestPlayIndexPage() {
               <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open chooser for Jigsaw</LinkButton>
             </article>
             <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Mystery Reveal</h2>
+              <h2 className={styles.demoTitle}>Picture Reveal</h2>
               <p className={styles.centeredBody}>Answer questions to uncover the picture. Pieces reveal automatically.</p>
-              <p className={styles.chooserNote}>Opens the same puzzle chooser. Choose <strong>Mystery Reveal</strong>.</p>
+              <p className={styles.chooserNote}>Opens the same puzzle chooser. Choose <strong>Picture Reveal</strong>.</p>
               <details className={styles.demoGuide}>
-                <summary>How to play Mystery Reveal</summary>
+                <summary>How to play Picture Reveal</summary>
                 <ol>
-                  <li>Choose Mystery Reveal on the next screen.</li>
+                  <li>Choose Picture Reveal on the next screen.</li>
                   <li>Choose an answer and press Submit. Read the feedback and try again when needed.</li>
                   <li>Correct answers reveal the picture. There is no dragging in this mode.</li>
                 </ol>
               </details>
-              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open chooser for Mystery Reveal</LinkButton>
+              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open chooser for Picture Reveal</LinkButton>
             </article>
             <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Mystery Graph</h2>
+              <h2 className={styles.demoTitle}>Mystery Graph: X–Y Plane</h2>
               <p className={styles.centeredBody}>Plot points to build a picture, then fly into a spaceship boss battle.</p>
               <details className={styles.demoGuide}>
                 <summary>How to play Mystery Graph</summary>
@@ -479,7 +479,7 @@ export function GuestPlayIndexPage() {
               </details>
               <a className={styles.demoLink} href={`${readBasePath()}demos/mystery-graph/`}>Open Mystery Graph</a>
             </article>
-            <p className={styles.demoNote}>No account is needed. The Jigsaw and Mystery Reveal sample uses integer-operation questions and has no cloud saves. Mystery Graph keeps graph progress in this browser; an unfinished battle restarts.</p>
+            <p className={styles.demoNote}>No account is needed. The Jigsaw and Picture Reveal sample uses integer-operation questions and has no cloud saves. Mystery Graph keeps graph progress in this browser; an unfinished battle restarts.</p>
           </section>
         ) : null}
         <form className={styles.codeForm} onSubmit={submitShareCode}>

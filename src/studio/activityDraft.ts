@@ -53,7 +53,7 @@ export const ActivityConfigSchema = z.object({
   allowResumeLater: z.boolean(),
   allowHints: z.boolean(),
   allowCompletedPictureView: z.boolean(),
-  /** True is Mystery Reveal: the earned piece places itself, no drag. */
+  /** True is Picture Reveal: the earned piece places itself, no drag. */
   autoPlaceCorrectPieces: z.boolean(),
 })
 export type ActivityConfig = z.infer<typeof ActivityConfigSchema>
