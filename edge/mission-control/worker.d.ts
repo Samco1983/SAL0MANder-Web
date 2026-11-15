@@ -7,6 +7,8 @@ export type MissionControlWorkerEnv = {
   TEAM_DOMAIN: string
   POLICY_AUD: string
   PUBLIC_SITE_URL?: string
+  DEPLOYED_GIT_SHA: string
+  DEPLOYMENT_CANARY_ISSUE: string
   MISSION_GATE: {
     idFromName(name: string): unknown
     get(id: unknown): { fetch(request: Request): Promise<Response> }
@@ -35,6 +37,7 @@ export function handleRequest(
     ) => Promise<Record<string, unknown>>
     fetchPublicApp?: typeof fetch
     missionRequest?: MissionRequest
+    deploymentProofRequest?: MissionRequest
   },
 ): Promise<Response>
 export class MissionGate {
@@ -46,6 +49,11 @@ export class MissionGate {
   fetch(request: Request): Promise<Response>
 }
 export function githubMissionRequest(
+  env: MissionControlWorkerEnv,
+  body: unknown,
+  fetchGitHub?: typeof fetch,
+): Promise<MissionRequestResult>
+export function githubDeploymentProof(
   env: MissionControlWorkerEnv,
   body: unknown,
   fetchGitHub?: typeof fetch,

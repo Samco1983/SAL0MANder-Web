@@ -1,0 +1,164 @@
+name: Deploy Mission Control Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'edge/mission-control/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-mission-control-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: verify Worker contract
+        run: npm test -- src/api/endpoints/missionControlWorker.test.ts
+
+      # A missing deployment setting must fail visibly. Quietly skipping a
+      # deploy recreates the original outage: merged source with stale runtime.
+      - name: require deployment configuration
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
+          POLICY_AUD: ${{ vars.CF_ACCESS_POLICY_AUD }}
+          OWNER_EMAILS: ${{ secrets.OWNER_EMAILS }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          missing=""
+          [ -z "${CLOUDFLARE_API_TOKEN:-}" ] && missing="$missing CLOUDFLARE_API_TOKEN(secret)"
+          [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID(variable)"
+          [ -z "${TEAM_DOMAIN:-}" ] && missing="$missing CF_ACCESS_TEAM_DOMAIN(variable)"
+          [ -z "${POLICY_AUD:-}" ] && missing="$missing CF_ACCESS_POLICY_AUD(variable)"
+          [ -z "${OWNER_EMAILS:-}" ] && missing="$missing OWNER_EMAILS(secret)"
+          [ -z "${CF_ACCESS_CLIENT_ID:-}" ] && missing="$missing CF_ACCESS_CLIENT_ID(secret)"
+          [ -z "${CF_ACCESS_CLIENT_SECRET:-}" ] && missing="$missing CF_ACCESS_CLIENT_SECRET(secret)"
+          if [ -n "$missing" ]; then
+            echo "::error::Mission Control deploy is not configured:$missing"
+            echo "Add the named values under Settings -> Secrets and variables -> Actions."
+            echo "Nothing was deployed; the running Worker is unchanged."
+            exit 1
+          fi
+
+      - name: render deployment config
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
+          POLICY_AUD: ${{ vars.CF_ACCESS_POLICY_AUD }}
+          OWNER_EMAILS: ${{ secrets.OWNER_EMAILS }}
+          DEPLOYED_GIT_SHA: ${{ github.sha }}
+        run: >-
+          python3 scripts/lib/sal0_worker_deploy.py
+          edge/mission-control/wrangler.example.toml
+          edge/mission-control/wrangler.toml
+
+      - name: require runtime GitHub secret
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.126.0 secret list --format json > /tmp/mission-control-secrets.json
+          node ../../scripts/verify-mission-control-deployment.mjs \
+            --secrets /tmp/mission-control-secrets.json
+
+      - name: capture active version before deploy
+        id: capture
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.126.0 deployments status --json \
+            > /tmp/mission-control-pre-deploy.json
+          node ../../scripts/verify-mission-control-deployment.mjs \
+            --capture-rollback \
+            /tmp/mission-control-pre-deploy.json \
+            /tmp/mission-control-rollback-target.json
+
+      - name: deploy exact checked-out Worker
+        id: deploy
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          echo "Deploying commit $GITHUB_SHA with Wrangler 4.126.0"
+          npx --yes wrangler@4.126.0 deploy --strict \
+            --tag "github-${GITHUB_SHA}" \
+            --message "github:${GITHUB_SHA}" \
+            2>&1 | tee /tmp/mission-control-deploy.txt
+
+      - name: prove exact production version and bindings
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.126.0 deployments status --json \
+            > /tmp/mission-control-deployment.json
+          version_id="$(node -e \
+            "const d=require('/tmp/mission-control-deployment.json'); \
+             if (!Array.isArray(d.versions) || d.versions.length !== 1 || \
+                 d.versions[0].percentage !== 100 || !d.versions[0].version_id) process.exit(1); \
+             process.stdout.write(d.versions[0].version_id)")"
+          npx --yes wrangler@4.126.0 versions view "$version_id" --json \
+            > /tmp/mission-control-version.json
+          node ../../scripts/verify-mission-control-deployment.mjs \
+            /tmp/mission-control-deployment.json \
+            /tmp/mission-control-version.json \
+            /tmp/mission-control-secrets.json \
+            "$GITHUB_SHA"
+
+      - name: prove known live route and GitHub write capability
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: node scripts/prove-live-mission-control.mjs "$GITHUB_SHA" 72
+
+      - name: restore prior Worker after post-deploy failure
+        if: ${{ failure() && steps.capture.outcome == 'success' }}
+        working-directory: edge/mission-control
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.126.0 deployments status --json \
+            > /tmp/mission-control-failed-deployment.json
+          version_id="$(node ../../scripts/verify-mission-control-deployment.mjs \
+            --rollback-version \
+            /tmp/mission-control-failed-deployment.json \
+            /tmp/mission-control-rollback-target.json)"
+          if [ "$version_id" != "already-restored" ]; then
+            npx --yes wrangler@4.126.0 rollback "$version_id" --yes \
+              --message "github:${GITHUB_SHA}:post-deploy-proof-failed"
+          fi
+          npx --yes wrangler@4.126.0 deployments status --json \
+            > /tmp/mission-control-restored-deployment.json
+          node ../../scripts/verify-mission-control-deployment.mjs \
+            --verify-rollback \
+            /tmp/mission-control-restored-deployment.json \
+            /tmp/mission-control-rollback-target.json
