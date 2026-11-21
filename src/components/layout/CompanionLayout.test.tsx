@@ -79,6 +79,27 @@ describe('CompanionLayout', () => {
     expect(screen.getByRole('button', { name: /show companion/i })).toBeInTheDocument()
     expect(screen.getByTestId('stage')).toBeInTheDocument()
   })
+
+  it('gives the mobile toggle its own row without changing the desktop overlay', () => {
+    const narrowStart = companionCss.indexOf('@media (max-width: 60rem)')
+    const desktopBlock = companionCss.slice(0, narrowStart)
+    const narrowBlock = companionCss.slice(narrowStart)
+
+    expect(desktopBlock).toMatch(/\.toggle\s*{[^}]*position:\s*absolute/s)
+    expect(narrowBlock).toMatch(/\.toggle\s*{[^}]*position:\s*static/s)
+  })
+
+  it('keeps the regular mobile sheet below half-height so stage status stays readable', () => {
+    const narrowBlock = companionCss.slice(companionCss.indexOf('@media (max-width: 60rem)'))
+    const companionRule = narrowBlock.slice(
+      narrowBlock.indexOf('.companion {'),
+      narrowBlock.indexOf(".layout[data-revealed='true']"),
+    )
+    const match = /max-height:\s*(\d+(?:\.\d+)?)%/.exec(companionRule)
+
+    expect(match, 'the regular mobile sheet must declare a max-height cap').not.toBeNull()
+    expect(Number(match![1])).toBeLessThanOrEqual(50)
+  })
 })
 
 describe('companion disclosure semantics', () => {
