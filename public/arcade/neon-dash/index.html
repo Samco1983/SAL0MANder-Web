@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111322"><title>Neon Dash — Voltage Works | SAL0MANder Arcade</title>
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <main id="cabinet">
+    <header><a href="../../.." aria-label="SAL0MANder home"><img src="sal0mander.png" alt="SAL0MANder"></a>
+      <span>ARCADE</span><div class="tools"><button id="sound" aria-pressed="true">Sound on</button><button id="pause" hidden>Pause</button><button id="full">Full screen</button></div>
+    </header>
+    <section id="stage" aria-label="Neon Dash game">
+      <canvas id="game" tabindex="0" aria-label="Voltage Works course. Tap or press Space to jump."></canvas>
+      <div id="hud" hidden><b id="sector"></b><div id="meter"><i id="fill"></i></div><span id="percent">0%</span><span id="prisms"></span><span id="shield" hidden>Shield</span></div>
+      <div id="message" role="status"></div>
+      <div id="overlay">
+        <div id="panel"><span id="eyebrow">STAGE 01 · VOLTAGE WORKS</span><h1 id="title">Neon <em>Dash</em></h1>
+          <p id="detail">Jump when a teal arrow reaches your cube. Collect five prisms for a shield. Reach halfway to save.</p>
+          <div id="actions"><button id="primary" disabled>Loading…</button><button id="secondary" hidden>Start over</button></div>
+        </div>
+      </div>
+    </section>
+    <footer><span>HYPERJUMP <small>/ stormypatio</small></span><span>Tap or Space to jump</span></footer>
+  </main>
+  <audio id="track" src="hyperjump.mp3" preload="metadata"></audio>
+  <script type="module" src="game.js"></script>
+</body></html>
