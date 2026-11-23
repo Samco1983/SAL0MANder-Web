@@ -457,8 +457,11 @@ describe('keyboard', () => {
     const guestPlay = screen.getByRole('link', { name: /play a demo/i })
 
     // Bounded: if the primary action is more than a dozen stops in, it is
-    // buried, whatever it looks like on screen.
-    for (let i = 0; i < 12 && document.activeElement !== guestPlay; i += 1) {
+    // buried, whatever it looks like on screen. Thirteen here, not twelve:
+    // this render is non-production, so the nav also lists the two internal
+    // destinations (WebGL Host, Console) a visitor never sees. In production
+    // the primary action is the eleventh stop.
+    for (let i = 0; i < 13 && document.activeElement !== guestPlay; i += 1) {
       await user.tab()
     }
     expect(guestPlay).toHaveFocus()
