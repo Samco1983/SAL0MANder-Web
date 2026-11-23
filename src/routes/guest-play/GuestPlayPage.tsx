@@ -431,11 +431,24 @@ export function GuestPlayIndexPage() {
         </h1>
         <p className={styles.centeredBody}>
           {canDemo
-            ? 'Build a picture, reveal a mystery, or plot your way into a spaceship battle. Choose a demo and read its short guide before you start.'
+            ? 'Fight for the last dumpling, build a picture, reveal a mystery, or plot your way into a spaceship battle. Pick a game and read its short guide before you start.'
             : 'Use a class code from your teacher to open your activity.'}
         </p>
         {canDemo ? (
           <section className={styles.demoGrid} aria-label="Game demos">
+            <article className={styles.demoCard}>
+              <h2 className={styles.demoTitle}>Moon Gate: The Last Dumpling</h2>
+              <p className={styles.centeredBody}>The master chef made one giant dumpling. Win three rounds and it is yours. Solo or local versus, with touch controls on phones and tablets.</p>
+              <details className={styles.demoGuide}>
+                <summary>How to play Moon Gate</summary>
+                <ol>
+                  <li>Choose Solo, Local versus or Tournament, then a difficulty.</li>
+                  <li>Move with the arrow keys or the touch pad; punch, kick, grab and guard.</li>
+                  <li>Two points win a round. Win three rounds to take the dumpling.</li>
+                </ol>
+              </details>
+              <a className={styles.demoLink} href={`${readBasePath()}arcade/moon-gate/`}>Play Moon Gate</a>
+            </article>
             <article className={styles.demoCard}>
               <h2 className={styles.demoTitle}>Jigsaw — Learning Puzzle</h2>
               <p className={styles.centeredBody}>Answer questions to unlock pieces, then build the picture.</p>
@@ -479,7 +492,27 @@ export function GuestPlayIndexPage() {
               </details>
               <a className={styles.demoLink} href={`${readBasePath()}demos/mystery-graph/`}>Open Mystery Graph</a>
             </article>
-            <p className={styles.demoNote}>No account is needed. The Jigsaw and Picture Reveal sample uses integer-operation questions and has no cloud saves. Mystery Graph keeps graph progress in this browser; an unfinished battle restarts.</p>
+            <article className={styles.demoCard}>
+              <h2 className={styles.demoTitle}>Neon Dash</h2>
+              <p className={styles.centeredBody}>Tap to jump through Voltage Works. Grab prisms to charge your shield and dodge spikes and saws.</p>
+              <a className={styles.demoLink} href={`${readBasePath()}arcade/neon-dash/`}>Play Neon Dash</a>
+            </article>
+            <article className={styles.demoCard}>
+              <h2 className={styles.demoTitle}>Space Rescue</h2>
+              <p className={styles.centeredBody}>Your ship has lost power. Restore it, fly the rescue run, and bring everyone home. Opens on SAL0MANder Math.</p>
+              <a className={styles.demoLink} href="https://salomandermath.com/games/function-defenders/space/">Play Space Rescue</a>
+            </article>
+            <article className={styles.demoCard}>
+              <h2 className={styles.demoTitle}>Origin Defenders</h2>
+              <p className={styles.centeredBody}>Robots march on the origin. Build turrets, hold the line, and fire the laser when they swarm. Opens on SAL0MANder Math.</p>
+              <a className={styles.demoLink} href="https://salomandermath.com/games/function-defenders/defense/">Play Origin Defenders</a>
+            </article>
+            <article className={styles.demoCard}>
+              <h2 className={styles.demoTitle}>Bunker Strike</h2>
+              <p className={styles.centeredBody}>Draw the right line to shield bunkers and break enemy factories. Opens on SAL0MANder Math.</p>
+              <a className={styles.demoLink} href="https://salomandermath.com/games/function-defenders/bunker/">Play Bunker Strike</a>
+            </article>
+            <p className={styles.demoNote}>No account is needed. The Jigsaw and Picture Reveal sample uses integer-operation questions and has no cloud saves. Mystery Graph keeps graph progress in this browser; an unfinished battle restarts. The whole collection is on the <a href={`${readBasePath()}arcade/`}>Arcade page</a>.</p>
           </section>
         ) : null}
         <form className={styles.codeForm} onSubmit={submitShareCode}>
