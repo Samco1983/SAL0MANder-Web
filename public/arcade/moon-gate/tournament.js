@@ -114,10 +114,11 @@
   setMode(humans.length === 2 ? 'versus' : 'solo');
   startMatch();
   match.tier = humans.length === 2 ? 0 : T.r * 2; // CPU reads more and waits less each round
+  if (window.MoonMask) { MoonMask.setOverride(0, black.human == null ? (black.face = black.face || MoonMask.random()) : null); MoonMask.setOverride(1, red.human == null ? (red.face = red.face || MoonMask.random()) : null); }
   names[0] = black.name; names[1] = red.name;
   const b = hudNames(); if (b[0]) b[0].textContent = black.name.toUpperCase(); if (b[1]) b[1].textContent = red.name.toUpperCase();
  }
- function restoreNames() { names[0] = 'Black'; names[1] = 'Red'; const b = hudNames(); if (b[0]) b[0].textContent = 'BLACK'; if (b[1]) b[1].textContent = 'RED'; }
+ function restoreNames() { if (window.MoonMask) { MoonMask.setOverride(0, null); MoonMask.setOverride(1, null); } names[0] = 'Black'; names[1] = 'Red'; const b = hudNames(); if (b[0]) b[0].textContent = 'BLACK'; if (b[1]) b[1].textContent = 'RED'; }
  function finishBout() {
   const m = T.current; m.w = T.seats[match.roundWinner]; restoreNames();
   toMenu(); $('cover').hidden = true; $('stage').classList.add('menu');
