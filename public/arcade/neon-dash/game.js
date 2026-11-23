@@ -10,7 +10,7 @@ const colors=['#70f1dd','#ffc478','#71caff','#ab99ff','#ff9281','#a3f6ac'];
 const SEAT=['#7cf3da','#ff8fd1','#ffd166','#8fb8ff','#b7ff8f','#ff9f6b','#c79bff'];
 const saveKey='sal0mander.voltage-works.half.v1', soundKey='sal0mander.voltage-works.sound', faceKey='sal0mander.neon-dash.face';
 // Faces: 0 = the original pilot cube, 1-6 = drawn cartoon faces. Only the number is ever shared online.
-const FACES=['Pilot','Smile','Shades','Cat','Robot','Alien','Star eyes'];
+const FACES=['Coach Sam','Smile','Shades','Cat','Robot','Alien','Star eyes'];
 function face(id,c,R=30){ctx.save();ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=R*.16;
  const eye=(x,y,r)=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();},smile=(y,w)=>{ctx.beginPath();ctx.arc(0,y,w,.15*Math.PI,.85*Math.PI);ctx.stroke();};
  if(id===2){ctx.fillRect(-R*.75,-R*.42,R*1.5,R*.34);ctx.fillRect(-R*.12,-R*.42,R*.24,R*.2);smile(R*.05,R*.42);}
@@ -21,7 +21,11 @@ function face(id,c,R=30){ctx.save();ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineCa
  else if(id===6){for(const s of[-1,1]){ctx.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,rr=i%2?R*.11:R*.27;ctx.lineTo(s*R*.38+Math.cos(a)*rr,-R*.12+Math.sin(a)*rr);}ctx.fill();}ctx.beginPath();ctx.arc(0,R*.15,R*.38,.1*Math.PI,.9*Math.PI);ctx.fill();}
  else{eye(-R*.35,-R*.12,R*.15);eye(R*.35,-R*.12,R*.15);smile(R*.05,R*.42);}
  ctx.restore();}
-let myFace=(()=>{const v=Number(read(faceKey));return Number.isInteger(v)&&v>=0&&v<FACES.length?v:0;})();
+// Coach Sam: the photo cube (face 0) is Samuel, the tutor. Kids pick cartoon faces; Sam records a run kids can race.
+// sal0mander.com (public games/classroom site) stays neutral. Coach Sam features only appear via the tutoring site's
+// link (?sam=1, for Sam's students) or Sam's own link (?coach=1, to record runs and race as SAM).
+const COACH_MODE=/[?&]coach=1\b/.test(location.search),SAM_LINK=COACH_MODE||/[?&]sam=1\b/.test(location.search);let samRun=null,rec=[],recFull=false,coachOutAt=0;
+let myFace=(()=>{const v=Number(read(faceKey));return Number.isInteger(v)&&v>=(COACH_MODE?0:1)&&v<FACES.length?v:(COACH_MODE?0:1);})();
 function read(key){try{return localStorage.getItem(key);}catch{return null;}}
 function save(key,value){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{/* Session play is still available. */}}
 let score,run,racers=[],kind='solo',checkpoint,mode='loading',attempt=0,last=0,acc=0,noticeEnd=0,countIn=0,width=0,height=0,shownHud='',muted=read(soundKey)==='off';
@@ -41,15 +45,40 @@ function syncTrack(){
 }
 track.addEventListener('loadedmetadata',syncTrack);
 function racer(seat,isMe,isLocal){return {r:new Circuit(score),seat,me:isMe,local:isLocal,color:SEAT[seat%SEAT.length],left:false,face:isMe?myFace:1+(seat%6)};}
-function ahead(a,b){return (b.r.finished-a.r.finished)||(b.r.time-a.r.time)||(b.r.prisms-a.r.prisms)||((b.perfect||0)-(a.perfect||0));}
+// Score decides who is ahead, live: distance (1 pt per 0.1% of the course) + 50 per prism + 10 per Perfect + 250 for finishing.
+function scoreOf(x){const r=x.r;return Math.floor(r.progress*1000)+r.prisms*50+(x.pp||0)+(x.gold||0)*100+(x.sp||0)+(r.finished?250:0);}
+// Spring bonus: a bounce pad (spring) launches you; tap jump within 0.1 s AFTER it fires for +75 (x2, x3, x4 in a row).
+// Tap too early and you jump over the spring instead. Missing a spring's timing resets the streak.
+function watchSprings(x){const r=x.r;x.springSeen=x.springSeen||new Set();for(let i=r.first;i<r.gates.length;i++){const g=r.gates[i];if(g.x>r.x+60)break;
+  if(g.kind==='pad'&&g.tripped&&!x.springSeen.has(i)){x.springSeen.add(i);if(x.springOpen!=null&&!x.springHit)x.springStreak=0;x.springOpen=r.tick;x.springHit=false;}}
+  if(x.springOpen!=null&&!x.springHit&&r.tick-x.springOpen>12){x.springStreak=0;x.springOpen=null;}}
+// Gold coins (+100): hard extras, same spots for everyone. Sky coins float at the very top of a jump in the calm stretches
+// between obstacles (you must jump on purpose ~0.3 s early); platform coins sit high above platforms (jump while on top).
+let COINS=[];
+// Stage 1 timing (seconds). Later stages tighten: Stage 2 {great:.05,perfect:.025}, Stage 3 {great:.033,perfect:.016}.
+const TIMING={great:.07,perfect:.033,critical:.025};let GOLD=new Set();
+// Positions chosen by simulation (course is fixed): each coin can be grabbed and survived by a skilled jump, and a player
+// who only jumps on the arrows gets none. 10 sit high above platforms, 2 float in the longest calm stretches.
+function buildCoins(){const L=[];for(const l of run.ledges||[])for(const f of [.3,.55,.8])L.push([l.x+l.w*f,l.h+42]);COINS=[...L,[8333,237],[15019,237],[21705,237],[28390,237],[35076,237],[41428,237],[45773,237],[52459,237],[56470,237],[65830,237],[5037,171],[37792,171]].map(([x,h])=>({x,h})).sort((a,b)=>a.x-b.x);}
+function grabCoins(x){const r=x.r;if(!alive(x)&&!r.finished)return;x.gotGold=x.gotGold||new Set();for(let i=0;i<COINS.length;i++){const c=COINS[i];if(c.x<r.x-60)continue;if(c.x>r.x+60)break;
+  if(!x.gotGold.has(i)&&Math.abs(r.x-c.x)<49&&Math.abs(r.y+CUBE/2-c.h)<52){x.gotGold.add(i);x.gold=(x.gold||0)+1;if(x.local||x.replay)x.coinFlash=performance.now();}}}
+function ahead(a,b){return scoreOf(b)-scoreOf(a);} // equal scores tie and share the place
 // Perfect jump: pressed within 70 ms of a teal arrow reaching your cube. Breaks ties when everyone survives.
-function jumpFor(x){const r=x.r;if(!r||r.dead||r.finished)return;r.jump();x.perfect=x.perfect||0;x.used=x.used||new Set();
-  for(const c of r.cues){if(c>r.time+.07)break;if(Math.abs(c-r.time)<=.07&&!x.used.has(c)){x.used.add(c);x.perfect++;x.flash=performance.now();break;}}}
+function jumpFor(x){const r=x.r;if(!r||r.dead||r.finished)return;
+  if(x.springOpen!=null&&!x.springHit&&r.tick-x.springOpen<=12){r.spring();x.springHit=true;x.springStreak=(x.springStreak||0)+1;x.sp=(x.sp||0)+75*Math.min(x.springStreak,4);x.springFlash=performance.now();}if(kind==='solo'&&x.me&&recFull)rec.push(r.tick);r.jump();x.perfect=x.perfect||0;x.used=x.used||new Set();
+  // Timing grades (rhythm-game style, from osu!/DDR): GREAT within TIMING.great of an arrow, PERFECT within TIMING.perfect.
+  // Gold arrows (the 5 big beat drops) also pay +100 CRITICAL within TIMING.critical. Streaks multiply up to x5.
+  let best=null;for(const c of r.cues){if(c>r.time+TIMING.great)break;const d=Math.abs(c-r.time);if(d<=TIMING.great&&!x.used.has(c)&&(!best||d<best.d))best={c,d};}
+  if(best){x.used.add(best.c);const perfect=best.d<=TIMING.perfect;x.streak=(x.streak||0)+1;const m=Math.min(x.streak,5);x.pp=(x.pp||0)+(perfect?20:10)*m;
+    if(perfect)x.perfect=(x.perfect||0)+1;else x.great=(x.great||0)+1;x.grade=perfect?'PERFECT':'GREAT';
+    if(GOLD.has(best.c)&&best.d<=TIMING.critical){x.pp+=100;x.crit=(x.crit||0)+1;x.grade='CRITICAL';}x.flash=performance.now();}else x.streak=0;}
 function standings(){return [...racers].sort(ahead);}
 // Place = 1 + number of racers strictly ahead, so tied racers share a place (and nobody 'leads' at 0%).
 function place(x){return 1+racers.filter(y=>ahead(y,x)<0).length;}
-function label(x){return kind==='online'?(x.me?'You':'Racer '+(x.seat+1)):'Player '+(x.seat+1);}
+function short(x){return x.coach?'SAM':(kind==='online'||kind==='coach')?(x.me?'YOU':'R'+(x.seat+1)):'P'+(x.seat+1);}
+function label(x){return x.coach?'Coach Sam':kind==='coach'?'You':kind==='online'?(x.me?'You':'Racer '+(x.seat+1)):'Player '+(x.seat+1);}
 function resultText(){
+  if(kind==='coach'){const m=me(),c=racers.find(x=>x.coach),d=ahead(m,c);return d<0?'You beat Coach Sam!':d===0?'Dead heat with Coach Sam!':'Coach Sam wins this time. Try again!';}
   const list=standings(),top=list[0],tie=list[1]&&ahead(list[0],list[1])===0;
   if(kind==='online'){const p=place(me()),shared=racers.some(y=>y!==me()&&place(y)===p);return p===1?(shared?'Tied for 1st!':'You win!'):'You came '+(shared?'joint ':'')+['','1st','2nd','3rd','4th','5th','6th','7th'][p]+' of '+list.length;}
   if(tie)return 'It’s a tie!';
@@ -58,9 +87,9 @@ function resultText(){
 function resultList(){const ol=$('ranks');ol.replaceChildren();for(const x of standings()){const li=document.createElement('li'),p=place(x),c=document.createElement('canvas');c.width=c.height=56;
   const keep=ctx;ctx=c.getContext('2d');ctx.fillStyle='#1b1630';ctx.beginPath();ctx.arc(28,28,26,0,Math.PI*2);ctx.fill();ctx.strokeStyle=x.color;ctx.lineWidth=4;ctx.stroke();ctx.translate(28,29);face(x.face>0?x.face:1,x.color,17);ctx.setTransform(1,0,0,1,0,0);if(p<=3)medal(44,14,10,p);ctx=keep;
   const name=document.createElement('b');name.textContent=(p<=3?['','1st','2nd','3rd'][p]:p+'th')+' · '+label(x);name.style.color=x.color;
-  const stat=document.createElement('span');stat.textContent=(x.r.finished?'finished':(Math.floor(x.r.progress*1000)/10).toFixed(1)+'%')+' · ◆ '+x.r.prisms+' · ★ '+(x.perfect||0)+(x.left?' · left':'');
+  const stat=document.createElement('span');stat.textContent=scoreOf(x)+' pts · '+(x.r.finished?'finished':(Math.floor(x.r.progress*1000)/10).toFixed(1)+'%')+' · ◆ '+x.r.prisms+' · ★ '+(x.perfect||0)+' perfect · '+(x.great||0)+' great'+(x.crit?' · '+x.crit+' critical':'')+' · gold '+(x.gold||0)+(x.left?' · left':'');
   if(x.me)li.className='mine';li.append(c,name,stat);ol.append(li);}}
-function resultDetail(){return standings().map(x=>place(x)+'. '+label(x)+' · '+(x.r.finished?'finished':(Math.floor(x.r.progress*1000)/10).toFixed(1)+'%')+' · ◆ '+x.r.prisms+(x.left?' (left)':'')).join('   ');}
+function resultDetail(){return standings().map(x=>place(x)+'. '+label(x)+' · '+scoreOf(x)+' pts · '+(x.r.finished?'finished':(Math.floor(x.r.progress*1000)/10).toFixed(1)+'%')+' · ◆ '+x.r.prisms+(x.left?' (left)':'')).join('   ');}
 function lobbyUI(show){
   $('lobby').hidden=!show;$('actions').hidden=show;$('keys2').hidden=show||!(mode==='title');
   if(!show)return;
@@ -93,27 +122,35 @@ function menu(state){
   web.hidden=paused||result;
   $('secondary').hidden=!again||paused||won||result;
   $('keys2').hidden=state!=='title';
+  const over=result||dead||won;$('coachCta').hidden=!(over&&SAM_LINK);
+  $('coach').hidden=!samRun||paused||(!over&&state!=='title');if(samRun)$('coach').textContent=result&&kind==='coach'?'Race Sam again':'Race Coach Sam';
+  if(result&&kind==='coach'){primary.textContent='Race Sam again';$('coach').hidden=true;}
+  $('saveRun').hidden=!(COACH_MODE&&kind==='solo'&&(dead||won)&&recFull);
 }
 function setSolo(){kind='solo';leaveNet();run=new Circuit(score);racers=[{r:run,seat:0,me:true,local:true,color:SEAT[0]}];}
 function start(fromHalf){
-  attempt++;if(kind!=='solo')setSolo();run.reset(fromHalf?checkpoint:null);racers[0].perfect=0;racers[0].used=new Set();countIn=fromHalf?1.5:0;
+  attempt++;if(kind!=='solo')setSolo();rec=[];recFull=!fromHalf;run.reset(fromHalf?checkpoint:null);racers[0].perfect=0;racers[0].great=0;racers[0].crit=0;racers[0].used=new Set();racers[0].pp=0;racers[0].streak=0;racers[0].gold=0;racers[0].gotGold=new Set();racers[0].sp=0;racers[0].springStreak=0;racers[0].springSeen=new Set();racers[0].springOpen=null;countIn=fromHalf?1.5:0;
   $('message').textContent=fromHalf?'Ready…':'';noticeEnd=0;play();
 }
+function startCoach(){attempt++;leaveNet();kind='coach';coachOutAt=0;const sam={r:new Circuit(score),seat:1,me:false,local:false,coach:true,replay:new Set(samRun.jumps),color:'#ffd166',face:0,perfect:0};
+  racers=[racer(0,true,true),sam];run=racers[0].r;countIn=1.5;$('message').textContent='';play();}
 function startLocal(){attempt++;leaveNet();kind='local';racers=[racer(0,true,true),racer(1,false,true)];run=racers[0].r;countIn=1.5;$('message').textContent='';play();}
 function startOnline(){
   attempt++;kind='online';racers=[];
   net.seats.forEach((taken,seat)=>{if(taken)racers.push(racer(seat,seat===net.you,seat===net.you));});
-  run=me().r;countIn=2;$('message').textContent='';play();
+  run=me().r;if(COACH_MODE&&myFace===0)me().coach=true;countIn=2;$('message').textContent='';play();
 }
 function play(){mode='play';acc=0;last=performance.now();$('overlay').hidden=true;$('hud').hidden=kind!=='solo';$('pause').hidden=kind==='online';canvas.focus({preventScroll:true});syncTrack();if(kind==='solo')hud();}
 function activate(){
   if(!score||mode==='play')return;
   if(mode==='paused')return play();
-  if(mode==='result'){if(kind==='local')return startLocal();if(kind==='online'){netSend({t:'again'});net.iAmReady=false;return menu('lobby');}}
+  if(mode==='result'){if(kind==='coach')return startCoach();if(kind==='local')return startLocal();if(kind==='online'){netSend({t:'again'});net.iAmReady=false;return menu('lobby');}}
   if(kind!=='solo')setSolo();
   start(!!checkpoint&&mode!=='won');
 }
 primary.onclick=activate;
+$('coach').onclick=()=>{if(score&&samRun)startCoach();};
+$('saveRun').onclick=()=>{const blob=new Blob([JSON.stringify({v:1,name:'Coach Sam',course:'voltage-works',jumps:rec,progress:+run.progress.toFixed(4),finished:run.finished,prisms:run.prisms,perfect:me().perfect||0,recordedAt:new Date().toISOString()})],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sam-run.json';a.click();$('saveRun').textContent='Saved: put sam-run.json next to game.js';};
 two.onclick=()=>{if(!score)return;if(mode==='result'&&kind==='local'){setSolo();start(false);}else startLocal();};
 $('secondary').onclick=()=>{checkpoint=null;save(saveKey,null);start(false);};
 $('pause').onclick=()=>{if(mode==='play'&&kind!=='online')menu('paused');};
@@ -152,12 +189,12 @@ function onNet(m){
   if(m.t==='s'){
     const x=racers.find(x=>x.seat===m.p&&!x.me);if(!x)return;const r=x.r;
     if(Number.isFinite(m.k))r.tick=(m.d||m.f)?m.k:Math.max(r.tick,m.k);/* a crash/finish report is exact */
-    if(Number.isFinite(m.y))r.y=m.y;if(Number.isFinite(m.a))r.angle=m.a;if(Number.isInteger(m.fc))x.face=m.fc;if(Number.isInteger(m.pf))x.perfect=m.pf;
+    if(Number.isFinite(m.y))r.y=m.y;if(Number.isFinite(m.a))r.angle=m.a;if(Number.isInteger(m.fc)){x.face=m.fc;x.coach=m.fc===0;}if(Number.isInteger(m.pf))x.perfect=m.pf;if(Number.isInteger(m.pp))x.pp=m.pp;if(Number.isInteger(m.gd))x.gold=m.gd;if(Number.isInteger(m.sp))x.sp=m.sp;
     if(Number.isFinite(m.pr))r.prisms=m.pr;r.shield=!!m.sh;if(m.d)r.dead=m.d;if(m.f)r.finished=true;
   }
 }
 web.onclick=()=>{if(!score)return;kind='online';menu('lobby');};
-function buildPicker(){const box=$('faces');box.replaceChildren();FACES.forEach((name,id)=>{const b=document.createElement('button');b.type='button';b.className='faceBtn';b.setAttribute('aria-label','Face: '+name);b.setAttribute('aria-pressed',String(id===myFace));b.title=name;
+function buildPicker(){const box=$('faces');box.replaceChildren();FACES.forEach((name,id)=>{if(id===0&&!COACH_MODE)return;const b=document.createElement('button');b.type='button';b.className='faceBtn';b.setAttribute('aria-label','Face: '+name);b.setAttribute('aria-pressed',String(id===myFace));b.title=name;
   const c=document.createElement('canvas');c.width=c.height=88;const g2=c.getContext('2d'),keep=ctx;
   if(id===0){g2.fillStyle='#70f1dd';g2.fillRect(0,0,88,88);if(pilot.complete&&pilot.naturalWidth){const s=Math.min(pilot.width,pilot.height);g2.drawImage(pilot,(pilot.width-s)/2,(pilot.height-s)/2,s,s,6,6,76,76);}else{g2.fillStyle='#14121f';g2.font='800 15px sans-serif';g2.textAlign='center';g2.fillText('PILOT',44,50);}}
   else{g2.fillStyle=SEAT[0];g2.fillRect(0,0,88,88);g2.fillStyle='#1b1630';g2.fillRect(8,8,72,72);g2.translate(44,46);ctx=g2;face(id,SEAT[0],30);ctx=keep;}
@@ -195,18 +232,21 @@ let sent=0;
 function step(){
   if(kind!=='solo'){
     for(const x of racers){
+      if(x.replay){if(alive(x)){if(x.replay.has(x.r.tick))jumpFor(x);x.r.advance();grabCoins(x);watchSprings(x);}continue;}
       if(!x.local||!alive(x))continue;
-      const r=x.r,oldShield=r.shield;r.advance();
+      const r=x.r,oldShield=r.shield;r.advance();grabCoins(x);watchSprings(x);
       if(x.me||kind==='local'){if(!oldShield&&r.shield)notify(label(x)+': shield charged');if(oldShield&&!r.shield)notify(label(x)+': shield absorbed the hit');}
     }
     // Remote racers who are still running move at the same constant speed, so step them forward locally between network updates.
-    for(const x of racers)if(!x.local&&alive(x))x.r.tick++;
-    if(kind==='online'){const r=me().r;if(++sent%4===0||r.dead||r.finished){if(!me().sentEnd)netSend({t:'s',fc:myFace,pf:me().perfect||0,k:r.tick,y:Math.round(r.y*10)/10,a:Math.round(r.angle),pr:r.prisms,sh:r.shield?1:0,d:r.dead||undefined,f:r.finished||undefined});if(r.dead||r.finished)me().sentEnd=true;}}
+    for(const x of racers)if(!x.local&&!x.replay&&alive(x))x.r.tick++;
+    // Racing Coach Sam: once you're out, watch Sam for 3 s, then fast-forward his recorded run to its real result.
+    if(kind==='coach'&&!alive(me())){coachOutAt=coachOutAt||performance.now();if(performance.now()-coachOutAt>3000)for(const c of racers)if(c.replay)while(alive(c)){if(c.replay.has(c.r.tick))jumpFor(c);c.r.advance();grabCoins(c);watchSprings(c);}}
+    if(kind==='online'){const r=me().r;if(++sent%4===0||r.dead||r.finished){if(!me().sentEnd)netSend({t:'s',fc:myFace,pf:me().perfect||0,pp:me().pp||0,gd:me().gold||0,sp:me().sp||0,k:r.tick,y:Math.round(r.y*10)/10,a:Math.round(r.angle),pr:r.prisms,sh:r.shield?1:0,d:r.dead||undefined,f:r.finished||undefined});if(r.dead||r.finished)me().sentEnd=true;}}
     if(noticeEnd&&focus().r.time>noticeEnd){$('message').textContent='';noticeEnd=0;}
     if(racers.every(x=>!alive(x)))menu('result');
     return;
   }
-  const oldShield=run.shield;run.advance();
+  const oldShield=run.shield;run.advance();grabCoins(me());watchSprings(me());
   if(run.tick===run.halfTick){checkpoint=run.snapshot();save(saveKey,JSON.stringify(checkpoint));notify('Halfway checkpoint saved');}
   if(!oldShield&&run.shield)notify('Prism shield charged');
   if(oldShield&&!run.shield)notify('Shield absorbed the hit');
@@ -215,9 +255,9 @@ function step(){
   if(run.finished){checkpoint=null;save(saveKey,null);menu('won');}
 }
 function hud(){
-  const pct=Math.floor(run.progress*100),key=[pct,run.section,run.prisms,run.shield,me().perfect||0].join('/');
+  const pct=Math.floor(run.progress*100),key=[pct,run.section,run.prisms,run.shield,me().perfect||0,me().gold||0,scoreOf(me())].join('/');
   if(key===shownHud)return;shownHud=key;
-  $('sector').textContent=sectors[run.section];$('percent').textContent=pct+'%';$('fill').style.width=pct+'%';$('prisms').textContent='◆ '+run.prisms+'/'+run.total+'  ★ '+(me().perfect||0);$('shield').hidden=!run.shield;
+  $('sector').textContent=sectors[run.section];$('percent').textContent=pct+'%';$('fill').style.width=pct+'%';$('prisms').textContent=scoreOf(me())+' pts  ◆ '+run.prisms+'/'+run.total+'  ★ '+(me().perfect||0)+'  gold '+(me().gold||0);$('shield').hidden=!run.shield;
 }
 function polygon(points,color,stroke){
   ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle=color;ctx.fill();
@@ -238,11 +278,13 @@ function drawRacer(x,cx,ground,ghost,useFace,depth=0,pip=false){
   ctx.save();ctx.globalAlpha=r.dead?.35:ghost?.75:1;
   if(r.shield){ctx.strokeStyle='#8fffea';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,59*k,0,Math.PI*2);ctx.stroke();}
   ctx.textAlign='center';ctx.textBaseline='middle';
-  if(!pip&&x.local&&x.flash&&performance.now()-x.flash<600){const t=(performance.now()-x.flash)/600;ctx.save();ctx.globalAlpha=1-t;ctx.fillStyle='#ffd166';ctx.font='900 22px Barlow,"Arial Black",sans-serif';ctx.fillText('PERFECT!',cx,cy-70-t*30);ctx.restore();}
+  if(!pip&&x.local&&x.flash&&performance.now()-x.flash<600){const t=(performance.now()-x.flash)/600;ctx.save();ctx.globalAlpha=1-t;ctx.fillStyle='#ffd166';ctx.font='900 22px Barlow,"Arial Black",sans-serif';ctx.fillStyle=x.grade==='CRITICAL'?'#ff8fd1':x.grade==='PERFECT'?'#ffd166':'#7cf3da';ctx.fillText((x.grade||'PERFECT')+(x.streak>1?' ×'+Math.min(x.streak,5):'!'),cx,cy-70-t*30);ctx.restore();}
+  if(!pip&&x.springFlash&&performance.now()-x.springFlash<700){const t=(performance.now()-x.springFlash)/700;ctx.save();ctx.globalAlpha=1-t;ctx.fillStyle='#7cf3da';ctx.font='900 22px Barlow,"Arial Black",sans-serif';ctx.fillText('SPRING '+(x.springStreak>1?'×'+Math.min(x.springStreak,4):'BONUS')+'!',cx,cy-130-t*30);ctx.restore();}
+  if(!pip&&x.coinFlash&&performance.now()-x.coinFlash<700){const t=(performance.now()-x.coinFlash)/700;ctx.save();ctx.globalAlpha=1-t;ctx.fillStyle='#ffd166';ctx.font='900 22px Barlow,"Arial Black",sans-serif';ctx.fillText('+100 GOLD',cx,cy-100-t*30);ctx.restore();}
   if(pip||(r.dead&&!x.local)){ctx.restore();return;}
   if(x.local){
     // Your own marker lives under the track (empty floor), so ghosts jumping over you never cover it.
-    const fy=ground+34+(kind==='local'?x.seat*34:0)-depth*15,tag=kind==='online'?'YOU':'P'+(x.seat+1);
+    const fy=ground+34+(kind==='local'?x.seat*34:0)-depth*15,tag=(kind==='online'||kind==='coach')?'YOU':'P'+(x.seat+1);
     ctx.fillStyle=x.color;polygon([[cx,fy-22],[cx-9,fy-10],[cx+9,fy-10]],x.color);
     ctx.font='800 17px Barlow,"Arial Black",sans-serif';const w=ctx.measureText(tag).width+22;
     ctx.beginPath();if(ctx.roundRect){ctx.roundRect(cx-w/2,fy-8,w,26,13);}else{ctx.rect(cx-w/2,fy-8,w,26);}ctx.fill();
@@ -252,7 +294,7 @@ function drawRacer(x,cx,ground,ghost,useFace,depth=0,pip=false){
     // Head badge = their face, full strength so you can always tell who is who.
     const by=cy-78*k;ctx.globalAlpha=r.dead?.45:1;ctx.fillStyle='#14121f';ctx.beginPath();ctx.arc(cx,by,21,0,Math.PI*2);ctx.fill();ctx.strokeStyle=x.color;ctx.lineWidth=3;ctx.stroke();
     ctx.save();ctx.translate(cx,by);face(x.face||1,x.color,15);ctx.restore();medal(cx+22,by-12,8,place(x));
-    ctx.fillStyle=x.color;ctx.font='800 12px Consolas,monospace';ctx.fillText(r.dead?'OUT':'R'+(x.seat+1),cx,by-31);
+    ctx.fillStyle=x.color;ctx.font='800 12px Consolas,monospace';ctx.fillText(r.dead?'OUT':short(x),cx,by-31);
   }
   ctx.restore();
 }
@@ -272,8 +314,8 @@ function scene(camX,vx,vy,vw,vh,d,mini){
   rect(0,ground,width,height-ground,'#19182b');line(0,ground,width,ground,col,4);
   for(let x=-160-(cam.x*.35%130);x<width+200;x+=130)line(x,ground,x+(x-width/2)*.4,height,'#37334e');
   for(let i=1;i<=6;i++){const y=ground+(height-ground)*(i/6)**2;line(0,y,width,y,'#37334e',1);}
-  for(const t of cam.cues){const x=origin+t*SPEED;if(x< -12)continue;if(x>width+12)break;
-    line(x,ground+7,x,ground-18,'#7ffce0',3);line(x-7,ground-11,x,ground-19,'#7ffce0',3);line(x,ground-19,x+7,ground-11,'#7ffce0',3);}
+  for(const t of cam.cues){const x=origin+t*SPEED;if(x< -12)continue;if(x>width+12)break;const ac=GOLD.has(t)?'#ffd166':'#7ffce0',w=GOLD.has(t)?5:3;
+    line(x,ground+7,x,ground-18,ac,w);line(x-7,ground-11,x,ground-19,ac,w);line(x,ground-19,x+7,ground-11,ac,w);}
   for(let i=cam.first;i<cam.gates.length;i++){
     const g=cam.gates[i],x=origin+g.x,y=ground-g.base;if(x>width+45)break;if(x+g.w< -60)continue;
     if(g.kind==='gap'){rect(x,ground-2,g.w,height-ground+2,'#090a17');line(x,ground,x,ground+53,col);line(x+g.w,ground,x+g.w,ground+53,col);}
@@ -283,6 +325,9 @@ function scene(camX,vx,vy,vw,vh,d,mini){
     if(g.kind==='pad'){rect(x,y-8,g.w,8,'#ffba8d');for(let n=0;n<3;n++)polygon([[x+n*14,y-13],[x+6+n*14,y-21],[x+12+n*14,y-13]],'#ffbb82');}
     if(g.prism&&!g.got){const cx=x+g.w/2,cy=y-(g.high?199:164);polygon([[cx,cy-13],[cx+11,cy],[cx,cy+13],[cx-11,cy]],'#ffb285','#fff4cd');}
   }
+  {const got=camX.gotGold||new Set();for(let i=0;i<COINS.length;i++){const c=COINS[i],cx=origin+c.x;if(cx<-30)continue;if(cx>width+30)break;if(got.has(i))continue;const cy=ground-c.h,s=1+Math.sin(cam.time*6+i)*.12;
+    ctx.save();ctx.translate(cx,cy);ctx.scale(s,1);ctx.fillStyle='#ffd166';ctx.beginPath();ctx.arc(0,0,15,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff4cd';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#b8860b';ctx.font='900 16px Barlow,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('S',0,1);ctx.restore();}}
+  for(const l of cam.ledges||[]){const lx=origin+l.x;if(lx>width+20||lx+l.w< -20)continue;const ly=ground-l.h;rect(lx,ly,l.w,12,'#3b2f63');rect(lx,ly,l.w,4,'#ff8fd1');ctx.save();ctx.globalAlpha=.25;rect(lx,ly+12,l.w,18,'#ff8fd1');ctx.restore();}
   if(kind==='solo'){const flag=origin+cam.halfX;
     if(flag>0&&flag<width){line(flag,ground,flag,ground-124,'#89ffe2',4);polygon([[flag,ground-124],[flag+60,ground-124],[flag+42,ground-100],[flag,ground-100]],'#89ffe2');}
     const r=run,cx=hero,cy=ground-r.y-CUBE/2;
@@ -324,14 +369,13 @@ function draw(){
     const px=x.camX,out=!alive(x)&&!x.r.finished,rank=place(x),tied=racers.some(y=>y!==x&&place(y)===rank);
     rect(px-2,py-2,pw+4,ph+head+4,rank===1?'#ffd166':x.color);rect(px,py,pw,head,'#0f1122');
     ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle=rank===1?'#ffd166':x.color;ctx.font=(small?'800 10px':'800 12px')+' Barlow,"Arial Black",sans-serif';
-    ctx.fillText((tied?'=':'')+['','1st','2nd','3rd','4th','5th','6th','7th'][rank]+' '+(kind==='online'?(x.me?'YOU':'R'+(x.seat+1)):'P'+(x.seat+1)),px+4,py+head/2);
+    ctx.fillText((tied?'=':'')+['','1st','2nd','3rd','4th','5th','6th','7th'][rank]+' '+short(x),px+4,py+head/2);
     ctx.textAlign='right';ctx.fillStyle='#e8e8f0';ctx.font=(small?'700 9px':'700 11px')+' Consolas,monospace';
-    ctx.fillText(x.r.finished?'FIN':out?'OUT':Math.floor(x.r.progress*100)+'%',px+pw-4,py+head/2);
+    ctx.fillText((out?'OUT ':x.r.finished?'FIN ':'')+scoreOf(x),px+pw-4,py+head/2);
     scene(x,px,py+head,pw,ph,d,true);ctx.setTransform(d,0,0,d,0,0);
     medal(px+pw-(small?11:15),py+head+(small?13:18),small?9:13,rank);
     if(out){ctx.save();ctx.globalAlpha=.55;rect(px,py+head,pw,ph,'#0b0c18');ctx.restore();ctx.fillStyle='#ffffff';ctx.font=(small?'800 12px':'800 16px')+' Barlow,"Arial Black",sans-serif';ctx.textAlign='center';ctx.fillText('OUT',px+pw/2,py+head+ph/2);}
   });
-
   ctx.textBaseline='middle';
   if(!alive(me())&&main!==me()&&alive(main)&&mode==='play'){ctx.fillStyle='#ffffff';ctx.font=(small?'800 13px':'800 18px')+' Barlow,"Arial Black",sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('You’re out · watching '+(kind==='online'?'R':'P')+(main.seat+1),12,ch-12);}
   else if(kind==='local'){ctx.textAlign='left';ctx.fillStyle='#c9c9d6';ctx.font='700 12px Consolas,monospace';ctx.fillText('P1: left half · Space/W    P2: right half · ↑/Enter',12,ph+head+28);}
@@ -354,7 +398,8 @@ function frame(now){
 }
 async function boot(){
   const response=await fetch('course.json');if(!response.ok)throw Error('course');
-  score=await response.json();setSolo();buildPicker();
+  score=await response.json();setSolo();buildCoins();GOLD=new Set(run.cues.filter(c=>run.accents.some(a=>Math.abs(a-c)<.001)));buildPicker();
+  if(SAM_LINK)try{const s=await (await fetch('sam-run.json',{cache:'no-cache'})).json();if(s&&Array.isArray(s.jumps)&&s.jumps.every(Number.isInteger))samRun=s;}catch{}
   try{const s=JSON.parse(read(saveKey));if(run.validSave(s))checkpoint=s;}catch{}
   menu('title');requestAnimationFrame(frame);
 }
