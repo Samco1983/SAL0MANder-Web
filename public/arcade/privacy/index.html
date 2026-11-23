@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111322">
+<title>Privacy and Safety | SAL0MANder Arcade</title>
+<style>
+:root{--bg:#0c0d18;--panel:#151729;--ink:#ecebf5;--muted:#b8b7c9;--teal:#7cf3da;--gold:#ffd166;--line:#2b2e48}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 56px}
+a{color:var(--teal)}h1{font-size:2rem;line-height:1.15;margin:.4rem 0 .3rem}h2{font-size:1.15rem;margin:1.8rem 0 .4rem;color:var(--gold)}
+.lead{color:var(--muted);margin:0 0 1rem}.back{display:inline-block;margin-bottom:8px;font-weight:600}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0}
+ul{padding-left:1.2rem;margin:.3rem 0}li{margin:.25rem 0}
+.kid{border-left:4px solid var(--teal)}.parent{border-left:4px solid var(--gold)}
+button{font:inherit;font-weight:700;min-height:44px;padding:.5rem 1rem;border-radius:10px;border:2px solid var(--gold);background:#242738;color:var(--ink);cursor:pointer}
+#cleared{color:var(--teal);font-weight:600;margin-left:8px}
+small{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="../">← SAL0MANder Arcade</a>
+<h1>Privacy and safety</h1>
+<p class="lead">The SAL0MANder games are free and made for kids. We built them so there is nothing about your child to collect, sell or leak.</p>
+
+<div class="card kid">
+<h2 style="margin-top:0">For kids</h2>
+<ul>
+<li>Nobody asks your name. You race as a cartoon face you pick or build.</li>
+<li>There is no chat and no messages. Nobody can talk to you in the games.</li>
+<li>Your best runs and your face are saved only on the device you play on.</li>
+<li>Never type your name, address, school or anything personal anywhere. The games never need it.</li>
+</ul>
+</div>
+
+<div class="card parent">
+<h2 style="margin-top:0">For parents</h2>
+<ul>
+<li><b>No accounts, no names, no email.</b> Children never sign up and never give personal information.</li>
+<li><b>No photos, no camera, no microphone.</b> Online, players appear only as cartoon faces built from parts, sent between devices as a single number. We never collect, upload, scan or measure a child's face, photo or voice.</li>
+<li><b>No chat.</b> Online races use a 4-letter room code. Other players see only a cartoon face, a seat number and the race.</li>
+<li><b>Nothing stored on our side.</b> The race server passes game moves along and keeps nothing. A room disappears when the last player leaves.</li>
+<li><b>Saved on your device only:</b> best runs, the chosen face, sound and control settings, and a halfway checkpoint. You can delete them any time with the button below, or in each game.</li>
+<li><b>No ads, no ad tracking, no selling of data.</b></li>
+<li>We follow the federal children's privacy law (COPPA) and apply the strictest state rules (including face and biometric data laws) to every player.</li>
+</ul>
+</div>
+
+<h2>Free-time play with Coach Sam</h2>
+<p>Coach Sam (Samuel Saldivar) tutors math through <a href="https://salomandermath.com/">SAL0MANder Math</a>. His students may race him in the games outside tutoring hours only with a parent's written OK. The same rules apply: no chat, no names, no photos, nothing stored.</p>
+
+<h2>Delete saved game data on this device</h2>
+<p>This removes best runs, faces, checkpoints and settings for every SAL0MANder game in this browser.</p>
+<p><button id="clear" type="button">Delete my saved game data</button><span id="cleared" role="status"></span></p>
+
+<h2>Questions</h2>
+<p>Parents can ask anything about privacy, or ask us to confirm we hold nothing about their child, through <a href="https://salomandermath.com/">salomandermath.com</a>. We answer within 30 days.</p>
+<p><small>Last updated November 23, 2026.</small></p>
+</main>
+<script>
+(()=>{const b=document.getElementById('clear'),out=document.getElementById('cleared');let armed=false;
+const keys=()=>{try{return Object.keys(localStorage).filter(k=>/^(sal0mander|neon-dash|moon)/i.test(k));}catch{return [];}};
+b.onclick=()=>{if(!armed){armed=true;b.textContent='Tap again to delete';out.textContent=keys().length+' saved item(s) found';return;}
+  let n=0;for(const k of keys()){try{localStorage.removeItem(k);n++;}catch{}}armed=false;b.textContent='Delete my saved game data';out.textContent='Done: '+n+' item(s) deleted.';};})();
+</script>
+</body>
+</html>
