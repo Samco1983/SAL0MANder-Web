@@ -11,7 +11,7 @@ const SEAT=['#7cf3da','#ff8fd1','#ffd166','#8fb8ff','#b7ff8f','#ff9f6b','#c79bff
 const saveKey='sal0mander.voltage-works.half.v1', soundKey='sal0mander.voltage-works.sound', faceKey='sal0mander.neon-dash.face';
 // Faces: 0 = the original pilot cube, 1-6 = drawn cartoon faces. Only the number is ever shared online.
 const FACES=['Coach Sam','Smile','Shades','Cat','Robot','Alien','Star eyes'];
-// Build-your-own face (Mii-style, our own art): eyes, mouth, top and brows picked from parts. Online it travels as ONE
+// Face Builder (shared across SAL0MANder games; our own art): eyes, mouth, top and brows picked from parts. Online it travels as ONE
 // number (10000 + eyes*1000 + mouth*100 + top*10 + brows), so no picture or text ever leaves the device.
 const CUSTOM=10000,PARTS=[['Eyes',['Dots','Big','Shades','Stars','Sleepy','Wink']],['Mouth',['Smile','Grin','Flat','Oh','Tongue']],['Top',['None','Cat ears','Antenna','Crown','Spikes','Bow']],['Brows',['None','Happy','Angry','Raised']]];
 const W=[1000,100,10,1];
@@ -60,7 +60,8 @@ function keepRun(){const m=me(),e={s:scoreOf(m),p:Math.floor(run.progress*1e4)/1
   const b=loadBoard();b.push(e);b.sort((a,c)=>c.s-a.s||a.at-c.at);const top=b.slice(0,10);save(boardKey,JSON.stringify(top));return top.indexOf(e);}
 function simulate(jumps){const x={r:new Circuit(score),replay:new Set(jumps)};while(alive(x)){if(x.replay.has(x.r.tick))jumpFor(x);x.r.advance();grabCoins(x);watchSprings(x);}return x;}
 let myFace=(()=>{const v=Number(read(faceKey));return isCustom(v)||(Number.isInteger(v)&&v>=(COACH_MODE?0:1)&&v<FACES.length)?v:(COACH_MODE?0:1);})();
-let myCustom=(()=>{const v=Number(read(faceKey+'.custom'));return isCustom(v)?v:customCode([1,0,4,1]);})();
+// The built face is shared by every SAL0MANder game on this device ('sal0mander.face'), so it follows the kid.
+let myCustom=(()=>{for(const k of ['sal0mander.face',faceKey+'.custom']){const v=Number(read(k));if(isCustom(v))return v;}return customCode([1,0,4,1]);})();
 function read(key){try{return localStorage.getItem(key);}catch{return null;}}
 function save(key,value){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{/* Session play is still available. */}}
 let score,run,racers=[],kind='solo',checkpoint,mode='loading',attempt=0,last=0,acc=0,noticeEnd=0,countIn=0,width=0,height=0,shownHud='',muted=read(soundKey)==='off';
@@ -258,7 +259,7 @@ function buildPicker(){const box=$('faces');box.replaceChildren();FACES.forEach(
   tile.append(tc);tile.onclick=()=>{myFace=myCustom;save(faceKey,String(myFace));buildPicker();};box.append(tile);
   let ed=$('faceEdit');if(!ed){ed=document.createElement('div');ed.id='faceEdit';ed.setAttribute('role','group');ed.setAttribute('aria-label','Make your own face');box.after(ed);}
   ed.replaceChildren();ed.hidden=myFace!==myCustom;const parts=partsOf(myCustom);
-  PARTS.forEach(([name,opts],i)=>{const b=document.createElement('button');b.type='button';b.textContent=name+': '+opts[parts[i]];b.onclick=()=>{parts[i]=(parts[i]+1)%opts.length;myCustom=myFace=customCode(parts);save(faceKey,String(myFace));save(faceKey+'.custom',String(myCustom));buildPicker();};ed.append(b);});}
+  PARTS.forEach(([name,opts],i)=>{const b=document.createElement('button');b.type='button';b.textContent=name+': '+opts[parts[i]];b.onclick=()=>{parts[i]=(parts[i]+1)%opts.length;myCustom=myFace=customCode(parts);save(faceKey,String(myFace));save(faceKey+'.custom',String(myCustom));save('sal0mander.face',String(myCustom));buildPicker();};ed.append(b);});}
 pilot.addEventListener('load',()=>{if(score)buildPicker();});
 $('create').onclick=()=>openNet({t:'create'});
 $('join').onclick=()=>{const c=$('codeIn').value.trim();if(c.length<4){$('lobbyMsg').textContent='Type the 4-letter code.';return;}openNet({t:'join',code:c});};
