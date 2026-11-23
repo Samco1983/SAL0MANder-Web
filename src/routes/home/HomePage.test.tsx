@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -47,6 +48,7 @@ describe('the primary action', () => {
       paths.giftPlay,
       paths.studio,
       '#pictures-title',
+      '/arcade/neon-dash/',
     ])
     for (const name of ['Make a Puzzle Gift', 'Open a gift', 'Teacher Studio', 'Picture library']) {
       expect(within(choices).getByRole('link', { name })).toBeVisible()
@@ -85,6 +87,10 @@ describe('the primary action', () => {
     expect(within(choices).getByRole('link', { name: 'Teacher Studio' })).toHaveAttribute(
       'href',
       '/school/studio',
+    )
+    expect(within(choices).getByRole('link', { name: 'Play Neon Dash' })).toHaveAttribute(
+      'href',
+      '/school/arcade/neon-dash/',
     )
   })
 
@@ -168,7 +174,7 @@ describe('the primary action', () => {
 })
 
 describe('no dead links', () => {
-  it('every link resolves to a route the router actually serves', () => {
+  it('every link resolves to an app route or a published arcade entry', () => {
     renderHome()
     const hrefs = screen
       .getAllByRole('link')
@@ -177,7 +183,9 @@ describe('no dead links', () => {
 
     expect(hrefs.length).toBeGreaterThan(0)
     for (const href of hrefs) {
-      const served = ROUTE_PATTERNS.some((pattern) => pattern.test(href))
+      const served =
+        ROUTE_PATTERNS.some((pattern) => pattern.test(href)) ||
+        (href.startsWith('/arcade/') && existsSync(`public${href}index.html`))
       expect(served, `${href} is not a route this app serves`).toBe(true)
     }
   })
