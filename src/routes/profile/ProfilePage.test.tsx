@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -141,8 +142,13 @@ describe('links', () => {
 
     for (const href of internal) {
       const path = href.split(/[?#]/)[0] ?? ''
+      // The Arcade is a published static page under public/, not a router
+      // route — same allowance as the home page's dead-link guard.
+      const served =
+        ROUTE_PATTERNS.some((r) => r.test(path)) ||
+        (path.startsWith('/arcade/') && existsSync(`public${path}index.html`))
       expect(
-        ROUTE_PATTERNS.some((r) => r.test(path)),
+        served,
         `"${href}" is not a route in config/routes.ts — this link 404s a real visitor`,
       ).toBe(true)
     }

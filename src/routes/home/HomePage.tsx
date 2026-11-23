@@ -188,14 +188,14 @@ export function HomePage() {
           <Link
             to="/arcade/neon-dash/"
             reloadDocument
-            className={styles.startTile}
+            className={`${styles.startTile} ${styles.arcadeTile}`}
             aria-labelledby="start-neon-title"
             aria-describedby="start-neon-description"
           >
             <span className={styles.startText}>
               <strong id="start-neon-title">Play Neon Dash</strong>
               <span id="start-neon-description">
-                SAL0MANder Arcade · Tap to jump through Voltage Works.
+                SAL0MANder Arcade · Tap to jump through Voltage Works. More games on the Arcade page.
               </span>
             </span>
           </Link>
