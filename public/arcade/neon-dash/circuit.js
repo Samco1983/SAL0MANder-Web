@@ -1,6 +1,7 @@
 // Voltage Works uses the Unity course score, fixed timestep and hitboxes.
 export const STEP=1/120, SPEED=390, CUBE=84, BEAT=60/140;
 const FOOT=CUBE/2-5, accentBeats=[32,112,224,304,384];
+export const LEDGE={from:260,to:1720,h:280,superV:1300,window:12};
 export const sectors=['Freight Yard','Signal Bridge','Turbine Hall','Blackout Tunnel','Reactor Core','Daybreak Run'];
 export class Circuit {
   constructor(score) {
@@ -29,6 +30,9 @@ export class Circuit {
       }
     }));
     this.gates.sort((a,b)=>a.x-b.x);
+    // Upper routes (Nov 23): after each spring, a floating one-way ledge high above the saw and the next hazard.
+    // Only a SUPER bounce (tap jump right after the spring fires) reaches it; everyone else runs underneath, unchanged.
+    this.ledges=this.gates.filter(g=>g.kind==='pad').map(p=>({x:p.x+LEDGE.from,w:LEDGE.to-LEDGE.from,h:LEDGE.h}));
     // Preserve the exact airborne or grounded state on the first tick at 50%.
     this.halfTick=Math.ceil(this.duration*.5/STEP);
     this.halfX=this.halfTick*STEP*SPEED;
@@ -37,7 +41,7 @@ export class Circuit {
   reset(save=null){
     this.tick=save?this.halfTick:0;this.y=0;this.v=0;this.angle=0;
     this.grounded=true;this.buffer=0;this.dead='';this.finished=false;this.first=0;this.jumps=0;
-    this.prisms=0;this.shield=!!save?.shield;this.shieldBreak=0;this.clearedGate=null;
+    this.prisms=0;this.shield=!!save?.shield;this.shieldBreak=0;this.clearedGate=null;this.padTick=null;
     this.gates.forEach((g,i)=>{g.got=!!save&&save.collected.includes(i);g.tripped=!!save&&save.pads.includes(i);if(g.got)this.prisms++;});
     if(save){
       this.y=save.y;this.v=save.v;this.angle=save.angle;this.grounded=save.grounded;
@@ -57,6 +61,8 @@ export class Circuit {
       Array.isArray(s.pads)&&s.pads.every(i=>Number.isInteger(i)&&this.gates[i]?.kind==='pad');
   }
   jump(){this.buffer=.12;}
+  // Super bounce: called when the player taps within LEDGE.window ticks after a spring fires (still rising).
+  spring(){if(this.padTick!=null&&this.tick-this.padTick<=LEDGE.window&&this.v>0){this.v=Math.max(this.v,LEDGE.superV);this.padTick=null;return true;}return false;}
   land(h){this.y=h;this.v=0;this.grounded=true;}
   advance(){
     if(this.dead||this.finished)return;
@@ -75,7 +81,7 @@ export class Circuit {
         if((left>=g.x&&right<=g.x+g.w)||(this.y< -2&&prev<0))floor=false;
         if(this.y< -19)this.dead='Missed the far ledge';
       }else if(g.kind==='pad'){
-        if(!g.tripped&&this.y<=10&&this.v<=0){g.tripped=true;this.y=Math.max(0,this.y);this.v=995;}
+        if(!g.tripped&&this.y<=10&&this.v<=0){g.tripped=true;this.y=Math.max(0,this.y);this.v=995;this.padTick=this.tick;}
       }else if(g.kind==='deck'){
         if(prev>=g.h-.25&&this.y<=g.h&&this.v<=0)this.land(g.h);
         else if(this.y+2<g.h)this.dead='Hit the platform wall';
@@ -92,6 +98,7 @@ export class Circuit {
       }
       if(this.dead)return;
     }
+    for(const l of this.ledges)if(right>l.x&&left<l.x+l.w&&prev>=l.h-.25&&this.y<=l.h&&this.v<=0)this.land(l.h); // one-way: land from above only
     if(floor&&this.y<=0&&this.v<=0)this.land(0);
     this.angle=this.grounded?0:(this.angle+STEP*555)%360;
     this.finished=this.time>=this.duration;
