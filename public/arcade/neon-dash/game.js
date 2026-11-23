@@ -25,6 +25,13 @@ function face(id,c,R=30){ctx.save();ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineCa
 // sal0mander.com (public games/classroom site) stays neutral. Coach Sam features only appear via the tutoring site's
 // link (?sam=1, for Sam's students) or Sam's own link (?coach=1, to record runs and race as SAM).
 const COACH_MODE=/[?&]coach=1\b/.test(location.search),SAM_LINK=COACH_MODE||/[?&]sam=1\b/.test(location.search);let samRun=null,rec=[],recFull=false,coachOutAt=0;
+// Best runs: every full 1-player run is saved ON THIS DEVICE ONLY (no names, nothing sent anywhere), top 10 by score.
+// Each saved run keeps its jump ticks, so any row can be raced as a ghost (the course is deterministic).
+const boardKey='neon-dash-board-v1';let ghost=null,lastRank=-1;
+function loadBoard(){try{const b=JSON.parse(read(boardKey)||'[]');return Array.isArray(b)?b.filter(e=>e&&Array.isArray(e.j)&&e.j.every(Number.isInteger)&&Number.isFinite(e.s)).slice(0,10):[];}catch{return [];}}
+function keepRun(){const m=me(),e={s:scoreOf(m),p:Math.floor(run.progress*1e4)/1e4,f:run.finished,pr:run.prisms,g:m.gold||0,pf:m.perfect||0,fc:myFace,j:rec.slice(),at:Date.now()};
+  const b=loadBoard();b.push(e);b.sort((a,c)=>c.s-a.s||a.at-c.at);const top=b.slice(0,10);save(boardKey,JSON.stringify(top));return top.indexOf(e);}
+function simulate(jumps){const x={r:new Circuit(score),replay:new Set(jumps)};while(alive(x)){if(x.replay.has(x.r.tick))jumpFor(x);x.r.advance();grabCoins(x);watchSprings(x);}return x;}
 let myFace=(()=>{const v=Number(read(faceKey));return Number.isInteger(v)&&v>=(COACH_MODE?0:1)&&v<FACES.length?v:(COACH_MODE?0:1);})();
 function read(key){try{return localStorage.getItem(key);}catch{return null;}}
 function save(key,value){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{/* Session play is still available. */}}
@@ -75,17 +82,28 @@ function jumpFor(x){const r=x.r;if(!r||r.dead||r.finished)return;
 function standings(){return [...racers].sort(ahead);}
 // Place = 1 + number of racers strictly ahead, so tied racers share a place (and nobody 'leads' at 0%).
 function place(x){return 1+racers.filter(y=>ahead(y,x)<0).length;}
-function short(x){return x.coach?'SAM':(kind==='online'||kind==='coach')?(x.me?'YOU':'R'+(x.seat+1)):'P'+(x.seat+1);}
-function label(x){return x.coach?'Coach Sam':kind==='coach'?'You':kind==='online'?(x.me?'You':'Racer '+(x.seat+1)):'Player '+(x.seat+1);}
+function short(x){return x.coach?'SAM':x.ghostName?'GHOST':(kind==='online'||kind==='coach')?(x.me?'YOU':'R'+(x.seat+1)):'P'+(x.seat+1);}
+function label(x){return x.coach?'Coach Sam':x.ghostName?x.ghostName:kind==='coach'?'You':kind==='online'?(x.me?'You':'Racer '+(x.seat+1)):'Player '+(x.seat+1);}
 function resultText(){
-  if(kind==='coach'){const m=me(),c=racers.find(x=>x.coach),d=ahead(m,c);return d<0?'You beat Coach Sam!':d===0?'Dead heat with Coach Sam!':'Coach Sam wins this time. Try again!';}
+  if(kind==='coach'){const m=me(),c=racers.find(x=>x.replay),n=label(c),d=ahead(m,c);return d<0?'You beat '+n+'!':d===0?'Dead heat with '+n+'!':n+' wins this time. Try again!';}
   const list=standings(),top=list[0],tie=list[1]&&ahead(list[0],list[1])===0;
   if(kind==='online'){const p=place(me()),shared=racers.some(y=>y!==me()&&place(y)===p);return p===1?(shared?'Tied for 1st!':'You win!'):'You came '+(shared?'joint ':'')+['','1st','2nd','3rd','4th','5th','6th','7th'][p]+' of '+list.length;}
   if(tie)return 'It’s a tie!';
   return label(top)+' wins!';
 }
-function resultList(){const ol=$('ranks');ol.replaceChildren();for(const x of standings()){const li=document.createElement('li'),p=place(x),c=document.createElement('canvas');c.width=c.height=56;
-  const keep=ctx;ctx=c.getContext('2d');ctx.fillStyle='#1b1630';ctx.beginPath();ctx.arc(28,28,26,0,Math.PI*2);ctx.fill();ctx.strokeStyle=x.color;ctx.lineWidth=4;ctx.stroke();ctx.translate(28,29);face(x.face>0?x.face:1,x.color,17);ctx.setTransform(1,0,0,1,0,0);if(p<=3)medal(44,14,10,p);ctx=keep;
+function faceIcon(fc,color,p){const c=document.createElement('canvas');c.width=c.height=56;
+  const keep=ctx;ctx=c.getContext('2d');ctx.fillStyle='#1b1630';ctx.beginPath();ctx.arc(28,28,26,0,Math.PI*2);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=4;ctx.stroke();ctx.translate(28,29);face(fc>0?fc:1,color,17);ctx.setTransform(1,0,0,1,0,0);if(p<=3)medal(44,14,10,p);ctx=keep;return c;}
+const pctText=e=>e.f?'finished':(Math.floor(e.p*1000)/10).toFixed(1)+'%';
+// Best runs board: this device's top runs plus Coach Sam's run (when the tutoring link loaded it). Tap Race to race any of them.
+function boardList(){const rows=loadBoard().map((e,i)=>({...e,name:'Ghost #'+(i+1),fresh:i===lastRank}));
+  if(samRun){if(!samRun.entry){const x=simulate(samRun.jumps);samRun.entry={s:scoreOf(x),p:x.r.progress,f:x.r.finished,pr:x.r.prisms,g:x.gold||0,pf:x.perfect||0,fc:0,j:samRun.jumps,coach:true,name:'Coach Sam'};}rows.push(samRun.entry);}
+  rows.sort((a,b)=>b.s-a.s);const ol=$('board');ol.replaceChildren();
+  rows.slice(0,5).forEach((e,i)=>{const li=document.createElement('li'),col=e.coach?'#ffd166':'#9ad7ff',txt=document.createElement('div'),name=document.createElement('b'),stat=document.createElement('span'),go=document.createElement('button');
+    name.textContent=(i+1)+'. '+e.name+(e.fresh?' · NEW':'');name.style.color=col;stat.textContent=e.s+' pts · '+pctText(e)+' · ◆ '+e.pr+' · gold '+e.g;txt.append(name,stat);
+    go.type='button';go.textContent='Race';go.setAttribute('aria-label','Race '+e.name);go.onclick=()=>{if(score)startGhost(e);};
+    if(e.fresh)li.className='mine';li.append(faceIcon(e.fc,col,i+1),txt,go);ol.append(li);});
+  $('boardBox').hidden=!rows.length;}
+function resultList(){const ol=$('ranks');ol.replaceChildren();for(const x of standings()){const li=document.createElement('li'),p=place(x),c=faceIcon(x.face,x.color,p);
   const name=document.createElement('b');name.textContent=(p<=3?['','1st','2nd','3rd'][p]:p+'th')+' · '+label(x);name.style.color=x.color;
   const stat=document.createElement('span');stat.textContent=scoreOf(x)+' pts · '+(x.r.finished?'finished':(Math.floor(x.r.progress*1000)/10).toFixed(1)+'%')+' · ◆ '+x.r.prisms+' · ★ '+(x.perfect||0)+' perfect · '+(x.great||0)+' great'+(x.crit?' · '+x.crit+' critical':'')+' · gold '+(x.gold||0)+(x.left?' · left':'');
   if(x.me)li.className='mine';li.append(c,name,stat);ol.append(li);}}
@@ -107,12 +125,14 @@ function menu(state){
   if(state==='lobby'){$('eyebrow').textContent='RACE ONLINE';$('title').innerHTML='Neon <em>Race</em>';$('detail').textContent='Same course, same blocks, everyone on one track. No names, no chat, nothing saved.';lobbyUI(true);return;}
   lobbyUI(false);
   const again=!!checkpoint&&kind==='solo',dead=state==='dead',paused=state==='paused',won=state==='won',result=state==='result';
-  $('eyebrow').textContent=result?(kind==='online'?'ONLINE RACE':'2-PLAYER RACE'):dead?'ATTEMPT '+attempt:paused?'VOLTAGE WORKS':won?'FINISH LINE':'STAGE 01 · VOLTAGE WORKS';
+  $('eyebrow').textContent=result?(kind==='online'?'ONLINE RACE':kind==='coach'?'GHOST RACE':'2-PLAYER RACE'):dead?'ATTEMPT '+attempt:paused?'VOLTAGE WORKS':won?'FINISH LINE':'STAGE 01 · VOLTAGE WORKS';
   if(state==='title')$('title').innerHTML='Neon <em>Dash</em>';
   else $('title').textContent=result?resultText():dead?run.dead:paused?'Paused':'Stage clear!';
   $('ranks').hidden=!result;if(result)resultList();
+  $('boardBox').hidden=true;if(state==='title'||((dead||won)&&kind==='solo'))boardList();
   $('title').classList.toggle('long',result);
   $('detail').hidden=result;$('detail').textContent=result?resultDetail():
+    (dead||won)&&lastRank===0?'New personal best! '+scoreOf(me())+' pts. Saved on this device.':(dead||won)&&lastRank>0?'#'+(lastRank+1)+' on your best runs · '+scoreOf(me())+' pts.':
     dead?Math.floor(run.progress*100)+'% of the circuit · '+run.prisms+' / '+run.total+' prisms':
     paused?'Resume the beat when you’re ready.':won?run.prisms+' / '+run.total+' prisms collected.':
     again?'Your halfway checkpoint is saved.':'Jump at the teal arrows. Every five prisms charge a shield against one spike or saw. Race a friend on the same track.';
@@ -124,16 +144,18 @@ function menu(state){
   $('keys2').hidden=state!=='title';
   const over=result||dead||won;$('coachCta').hidden=!(over&&SAM_LINK);
   $('coach').hidden=!samRun||paused||(!over&&state!=='title');if(samRun)$('coach').textContent=result&&kind==='coach'?'Race Sam again':'Race Coach Sam';
-  if(result&&kind==='coach'){primary.textContent='Race Sam again';$('coach').hidden=true;}
+  if(result&&kind==='coach'){primary.textContent=ghost?.coach?'Race Sam again':'Race ghost again';$('coach').hidden=true;}
   $('saveRun').hidden=!(COACH_MODE&&kind==='solo'&&(dead||won)&&recFull);
 }
 function setSolo(){kind='solo';leaveNet();run=new Circuit(score);racers=[{r:run,seat:0,me:true,local:true,color:SEAT[0]}];}
 function start(fromHalf){
-  attempt++;if(kind!=='solo')setSolo();rec=[];recFull=!fromHalf;run.reset(fromHalf?checkpoint:null);racers[0].perfect=0;racers[0].great=0;racers[0].crit=0;racers[0].used=new Set();racers[0].pp=0;racers[0].streak=0;racers[0].gold=0;racers[0].gotGold=new Set();racers[0].sp=0;racers[0].springStreak=0;racers[0].springSeen=new Set();racers[0].springOpen=null;countIn=fromHalf?1.5:0;
+  attempt++;lastRank=-1;if(kind!=='solo')setSolo();rec=[];recFull=!fromHalf;run.reset(fromHalf?checkpoint:null);racers[0].perfect=0;racers[0].great=0;racers[0].crit=0;racers[0].used=new Set();racers[0].pp=0;racers[0].streak=0;racers[0].gold=0;racers[0].gotGold=new Set();racers[0].sp=0;racers[0].springStreak=0;racers[0].springSeen=new Set();racers[0].springOpen=null;countIn=fromHalf?1.5:0;
   $('message').textContent=fromHalf?'Ready…':'';noticeEnd=0;play();
 }
-function startCoach(){attempt++;leaveNet();kind='coach';coachOutAt=0;const sam={r:new Circuit(score),seat:1,me:false,local:false,coach:true,replay:new Set(samRun.jumps),color:'#ffd166',face:0,perfect:0};
-  racers=[racer(0,true,true),sam];run=racers[0].r;countIn=1.5;$('message').textContent='';play();}
+// Ghost race: you vs a recorded run (Coach Sam's, or one of your saved best runs). Same track, same speed.
+function startCoach(){if(samRun)startGhost({coach:true,name:'Coach Sam',fc:0,j:samRun.jumps});}
+function startGhost(g){ghost=g;attempt++;leaveNet();kind='coach';coachOutAt=0;const gx={r:new Circuit(score),seat:1,me:false,local:false,coach:!!g.coach,ghostName:g.coach?'':g.name,replay:new Set(g.j),color:g.coach?'#ffd166':'#9ad7ff',face:g.fc,perfect:0};
+  racers=[racer(0,true,true),gx];run=racers[0].r;countIn=1.5;$('message').textContent='';play();}
 function startLocal(){attempt++;leaveNet();kind='local';racers=[racer(0,true,true),racer(1,false,true)];run=racers[0].r;countIn=1.5;$('message').textContent='';play();}
 function startOnline(){
   attempt++;kind='online';racers=[];
@@ -144,7 +166,7 @@ function play(){mode='play';acc=0;last=performance.now();$('overlay').hidden=tru
 function activate(){
   if(!score||mode==='play')return;
   if(mode==='paused')return play();
-  if(mode==='result'){if(kind==='coach')return startCoach();if(kind==='local')return startLocal();if(kind==='online'){netSend({t:'again'});net.iAmReady=false;return menu('lobby');}}
+  if(mode==='result'){if(kind==='coach')return ghost?startGhost(ghost):startCoach();if(kind==='local')return startLocal();if(kind==='online'){netSend({t:'again'});net.iAmReady=false;return menu('lobby');}}
   if(kind!=='solo')setSolo();
   start(!!checkpoint&&mode!=='won');
 }
@@ -251,6 +273,7 @@ function step(){
   if(!oldShield&&run.shield)notify('Prism shield charged');
   if(oldShield&&!run.shield)notify('Shield absorbed the hit');
   if(noticeEnd&&run.time>noticeEnd){$('message').textContent='';noticeEnd=0;}
+  if((run.dead||run.finished)&&recFull)lastRank=keepRun(); // the run ends here, so this saves once
   if(run.dead)menu('dead');
   if(run.finished){checkpoint=null;save(saveKey,null);menu('won');}
 }
@@ -377,7 +400,7 @@ function draw(){
     if(out){ctx.save();ctx.globalAlpha=.55;rect(px,py+head,pw,ph,'#0b0c18');ctx.restore();ctx.fillStyle='#ffffff';ctx.font=(small?'800 12px':'800 16px')+' Barlow,"Arial Black",sans-serif';ctx.textAlign='center';ctx.fillText('OUT',px+pw/2,py+head+ph/2);}
   });
   ctx.textBaseline='middle';
-  if(!alive(me())&&main!==me()&&alive(main)&&mode==='play'){ctx.fillStyle='#ffffff';ctx.font=(small?'800 13px':'800 18px')+' Barlow,"Arial Black",sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('You’re out · watching '+(kind==='online'?'R':'P')+(main.seat+1),12,ch-12);}
+  if(!alive(me())&&main!==me()&&alive(main)&&mode==='play'){ctx.fillStyle='#ffffff';ctx.font=(small?'800 13px':'800 18px')+' Barlow,"Arial Black",sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('You’re out · watching '+short(main),12,ch-12);}
   else if(kind==='local'){ctx.textAlign='left';ctx.fillStyle='#c9c9d6';ctx.font='700 12px Consolas,monospace';ctx.fillText('P1: left half · Space/W    P2: right half · ↑/Enter',12,ph+head+28);}
   if(mode==='play'&&countIn>0){ctx.fillStyle='#ffffff';ctx.font='800 40px Barlow,"Arial Black",sans-serif';ctx.textAlign='center';ctx.fillText('Ready · '+Math.ceil(countIn*2),cw/2,ch*.45);}
 }
