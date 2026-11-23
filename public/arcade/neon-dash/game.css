@@ -37,3 +37,5 @@ footer{justify-content:space-between;gap:10px;margin-top:10px;color:#d8d8dc}foot
 #overlay.cool button{pointer-events:none;opacity:.55}
 #coach{background:#ffd166;color:#1d170a;border-color:transparent}#saveRun{background:#242738;border-color:#ffd166}
 .coachCta{margin:.5rem 0 0;font-size:.95rem;color:#e8e8f0}.coachCta a{color:#ffd166;font-weight:700}
+.boardBox{margin:.5rem 0}.boardBox h3{margin:0 0 .2rem;font:800 .95rem Barlow,"Arial Black",sans-serif;color:#9ad7ff;letter-spacing:.04em}.boardBox small{font:600 .75rem Consolas,monospace;color:#b9b9c8;letter-spacing:0}
+.board{max-height:30dvh;margin:.2rem 0}.board li div{display:grid;min-width:0}.board li span{font-size:.78rem}.board button{min-height:40px;padding:.3rem .9rem;font-size:.9rem}
