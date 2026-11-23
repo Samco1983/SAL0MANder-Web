@@ -16,11 +16,13 @@ import styles from './AppShell.module.css'
  * they were part of the product. Removing the routes instead would cost the
  * team its own smoke-test surfaces to hide two links.
  */
-type NavItem = { to: string; label: string; internal?: boolean }
+type NavItem = { to: string; label: string; internal?: boolean; reload?: boolean }
 
 const NAV: NavItem[] = [
   { to: paths.home, label: 'Home' },
   { to: paths.guestPlayIndex, label: 'Play' },
+  // The Arcade is a static page under public/, not a client route: a full load.
+  { to: '/arcade/', label: 'Arcade', reload: true },
   { to: paths.gifts, label: 'Puzzle Gifts' },
   { to: paths.studio, label: 'Teacher Studio' },
   { to: paths.profile, label: 'Profile' },
@@ -113,6 +115,7 @@ export function AppShell({
               key={item.to}
               to={item.to}
               end={item.to === paths.home}
+              reloadDocument={item.reload}
               onClick={() => setMenuOpen(false)}
               className={({ isActive }) =>
                 isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
