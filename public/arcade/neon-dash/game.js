@@ -28,7 +28,7 @@ function face(id,c,R=30){ctx.save();ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineCa
    else if(e===5){if(s<0)eye(x,y,R*.15);else L(.22,-.1,.5,-.1);}}
   if(e===2){ctx.fillRect(-R*.75,-R*.3,R*1.5,R*.34);}
   if(b===1)for(const s of[-1,1]){ctx.lineWidth=R*.1;ctx.beginPath();ctx.arc(s*R*.35,-R*.3,R*.2,1.15*Math.PI,1.85*Math.PI);ctx.stroke();}
-  else if(b>1){ctx.lineWidth=R*.1;for(const s of[-1,1])b===2?L(s*.18,-.38,s*.55,-.5):L(s*.2,-.52,s*.52,-.52);}
+  else if(b>1){ctx.lineWidth=R*.1;for(const s of[-1,1]){if(b===2)L(s*.18,-.38,s*.55,-.5);else L(s*.2,-.52,s*.52,-.52);}}
   ctx.lineWidth=R*.16;
   if(m===0)smile(R*.05,R*.42);else if(m===1){ctx.beginPath();ctx.arc(0,R*.15,R*.38,.1*Math.PI,.9*Math.PI);ctx.fill();}
   else if(m===2)L(-.3,.35,.3,.35);else if(m===3){ctx.lineWidth=R*.1;ctx.beginPath();ctx.arc(0,R*.36,R*.13,0,Math.PI*2);ctx.stroke();}
