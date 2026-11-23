@@ -69,6 +69,13 @@
   outline-offset: 3px;
 }
 
+/* The arcade hero spans the row like the Mystery tile: games are the hook. */
+.arcadeTile {
+  grid-column: 1 / -1;
+  border-color: var(--color-brand-violet);
+  background: color-mix(in srgb, var(--color-brand-violet) 10%, var(--color-surface));
+}
+
 .mysteryTile {
   grid-column: 1 / -1;
   border-color: var(--color-brand-green-text);
