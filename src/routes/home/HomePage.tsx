@@ -185,6 +185,17 @@ export function HomePage() {
               <span id="start-pictures-description">Find a picture worth uncovering.</span>
             </span>
           </a>
+          <a
+            href={`${import.meta.env.BASE_URL}arcade/neon-dash/`}
+            className={styles.startTile}
+            aria-labelledby="start-neon-title"
+            aria-describedby="start-neon-description"
+          >
+            <span className={styles.startText}>
+              <strong id="start-neon-title">Play Neon Dash</strong>
+              <span id="start-neon-description">SAL0MANder Arcade · Tap to jump through Voltage Works.</span>
+            </span>
+          </a>
         </nav>
 
         {/*
