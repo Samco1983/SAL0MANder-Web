@@ -11,11 +11,14 @@
 
  // ---------- CPU strength: each round adds steps to the CPU's reaction odds (the engine scales them by round) ----------
  const proto = MoonCombat.Match.prototype, baseCpu = proto.cpu;
- proto.cpu = function (dt) { const r = this.round; this.round = r + (this.tier || 0); try { return baseCpu.call(this, dt); } finally { this.round = r; } };
+ // Solo difficulty (saved on this device): Easy slows the CPU's reads and reactions, Hard sharpens them.
+ const LEVELS = [['Easy', -3], ['Normal', 0], ['Hard', 3]], LEVEL_KEY = 'sal0mander.moon-gate.level';
+ let level = (() => { try { const v = Number(localStorage.getItem(LEVEL_KEY)); return v >= 0 && v <= 2 ? v : 1; } catch { return 1; } })();
+ proto.cpu = function (dt) { const r = this.round; this.round = r + (this.tier || 0) + LEVELS[level][1]; try { return baseCpu.call(this, dt); } finally { this.round = r; } };
 
  // ---------- styles + UI ----------
  const css = document.createElement('style');
- css.textContent = '#tourSetup{margin:.8rem 0 0}#tourSetup p{margin:.2rem 0 .5rem}#tourSetup .row{display:flex;gap:8px;flex-wrap:wrap}' +
+ css.textContent = '#level{border:0;padding:0;margin:.5rem 0 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center}#level legend{float:left;margin-right:6px;font-size:.8rem;opacity:.8}#level[hidden]{display:none}#level button{min-height:40px}#level button[aria-pressed=true]{outline:2px solid #ffd166}#tourSetup{margin:.8rem 0 0}#tourSetup p{margin:.2rem 0 .5rem}#tourSetup .row{display:flex;gap:8px;flex-wrap:wrap}' +
   '#bracket{position:absolute;inset:0;z-index:30;display:flex;align-items:flex-start;justify-content:center;background:rgba(10,8,14,.88);padding:10px;overflow:auto}' +
   '#bracket[hidden]{display:none}#bracket .card{margin:auto;width:min(100%,760px);background:#1a1420;border:2px solid #c9a25d;border-radius:14px;padding:14px 16px;color:#f4ead8}' +
   '#bracket h2{margin:.1rem 0 .2rem;font-size:1.5rem}#bracket .sub{margin:0 0 .6rem;opacity:.85}' +
@@ -31,6 +34,11 @@
  const modeBox = $('mode'), cover = document.querySelector('.coverCopy');
  const tourBtn = document.createElement('button'); tourBtn.type = 'button'; tourBtn.id = 'tour'; tourBtn.textContent = 'Tournament'; tourBtn.setAttribute('aria-pressed', 'false');
  modeBox.append(tourBtn);
+ const levelRow = document.createElement('fieldset'); levelRow.id = 'level'; levelRow.innerHTML = '<legend>CPU level</legend>';
+ LEVELS.forEach(([name], i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = name; b.onclick = () => { level = i; try { localStorage.setItem(LEVEL_KEY, String(i)); } catch { /* session only */ } paintLevel(); }; levelRow.append(b); });
+ const paintLevel = () => { [...levelRow.querySelectorAll('button')].forEach((b, i) => b.setAttribute('aria-pressed', String(i === level))); levelRow.hidden = mode === 'versus' || $('online')?.getAttribute('aria-pressed') === 'true'; };
+ modeBox.after(levelRow); paintLevel();
+ for (const id of ['solo', 'versus', 'online', 'tour']) $(id)?.addEventListener('click', () => setTimeout(paintLevel));
  const setup = document.createElement('div'); setup.id = 'tourSetup'; setup.hidden = true;
  setup.innerHTML = '<p>8 fighters, knockout bracket. Win 3 fights to take the Golden Dumpling.</p><div class="row">' +
   '<button type="button" class="primary" data-n="1">1 player</button><button type="button" data-n="2">2 players</button></div>';
@@ -114,10 +122,11 @@
   setMode(humans.length === 2 ? 'versus' : 'solo');
   startMatch();
   match.tier = humans.length === 2 ? 0 : T.r * 2; // CPU reads more and waits less each round
+  if (window.MoonMask) { MoonMask.setOverride(0, black.human == null ? (black.face = black.face || MoonMask.random()) : null); MoonMask.setOverride(1, red.human == null ? (red.face = red.face || MoonMask.random()) : null); }
   names[0] = black.name; names[1] = red.name;
   const b = hudNames(); if (b[0]) b[0].textContent = black.name.toUpperCase(); if (b[1]) b[1].textContent = red.name.toUpperCase();
  }
- function restoreNames() { names[0] = 'Black'; names[1] = 'Red'; const b = hudNames(); if (b[0]) b[0].textContent = 'BLACK'; if (b[1]) b[1].textContent = 'RED'; }
+ function restoreNames() { if (window.MoonMask) { MoonMask.setOverride(0, null); MoonMask.setOverride(1, null); } names[0] = 'Black'; names[1] = 'Red'; const b = hudNames(); if (b[0]) b[0].textContent = 'BLACK'; if (b[1]) b[1].textContent = 'RED'; }
  function finishBout() {
   const m = T.current; m.w = T.seats[match.roundWinner]; restoreNames();
   toMenu(); $('cover').hidden = true; $('stage').classList.add('menu');

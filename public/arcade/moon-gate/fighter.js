@@ -160,6 +160,7 @@
     if(f.pose!=="down" && f.pose!=="splat") {
       path(ctx,[offset(6.2,-.9),offset(13.1,-.15),offset(10.9,-2.55),offset(6.9,-2.5)],eye);
     }
+    if(window.MaskHook)window.MaskHook(ctx,f,head,up,cross);
     if(f.jaw!=null) {
       const pt=offset(9.2,-7.3);
       oval(ctx,...pt,3.4,1.0+2.3*f.jaw,"#f2c4a0");
