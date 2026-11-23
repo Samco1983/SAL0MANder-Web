@@ -201,6 +201,9 @@ function activate(){
 primary.onclick=activate;
 $('coach').onclick=()=>{if(score&&samRun)startCoach();};
 $('saveRun').onclick=()=>{const blob=new Blob([JSON.stringify({v:1,name:'Coach Sam',course:'voltage-works',jumps:rec,progress:+run.progress.toFixed(4),finished:run.finished,prisms:run.prisms,perfect:me().perfect||0,recordedAt:new Date().toISOString()})],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sam-run.json';a.click();$('saveRun').textContent='Saved: put sam-run.json next to game.js';};
+// Clear my data: deletes everything this game saved on this device (runs, face, checkpoint, sound). Tap twice to confirm.
+{const w=$('wipe');let armed=-1e9;if(w)w.onclick=()=>{if(performance.now()-armed>4000){armed=performance.now();w.textContent='Tap again to delete';return;}
+  try{for(const k of Object.keys(localStorage))if(/^(sal0mander|neon-dash)/i.test(k))localStorage.removeItem(k);}catch{/* Nothing saved. */}location.reload();};}
 two.onclick=()=>{if(!score)return;if(mode==='result'&&kind==='local'){setSolo();start(false);}else startLocal();};
 $('secondary').onclick=()=>{checkpoint=null;save(saveKey,null);start(false);};
 $('pause').onclick=()=>{if(mode==='play'&&kind!=='online')menu('paused');};
