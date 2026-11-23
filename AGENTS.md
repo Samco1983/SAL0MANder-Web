@@ -1,5 +1,9 @@
 # SAL0MANder Web — working notes
 
+> **Kid safety (all agents):** before touching `public/arcade`, read
+> [`docs/arcade/KID-SAFETY-RULES.md`](docs/arcade/KID-SAFETY-RULES.md). The
+> `scripts/arcade-safety.test.mjs` check enforces it; fix your change, never the test.
+
 > **Before starting work, read
 > [`docs/coordination/STATUS.md`](docs/coordination/STATUS.md) and
 > [`docs/coordination/MIRROR-PROTOCOL.md`](docs/coordination/MIRROR-PROTOCOL.md),
