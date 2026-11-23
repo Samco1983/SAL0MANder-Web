@@ -11,8 +11,35 @@ const SEAT=['#7cf3da','#ff8fd1','#ffd166','#8fb8ff','#b7ff8f','#ff9f6b','#c79bff
 const saveKey='sal0mander.voltage-works.half.v1', soundKey='sal0mander.voltage-works.sound', faceKey='sal0mander.neon-dash.face';
 // Faces: 0 = the original pilot cube, 1-6 = drawn cartoon faces. Only the number is ever shared online.
 const FACES=['Coach Sam','Smile','Shades','Cat','Robot','Alien','Star eyes'];
+// Build-your-own face (Mii-style, our own art): eyes, mouth, top and brows picked from parts. Online it travels as ONE
+// number (10000 + eyes*1000 + mouth*100 + top*10 + brows), so no picture or text ever leaves the device.
+const CUSTOM=10000,PARTS=[['Eyes',['Dots','Big','Shades','Stars','Sleepy','Wink']],['Mouth',['Smile','Grin','Flat','Oh','Tongue']],['Top',['None','Cat ears','Antenna','Crown','Spikes','Bow']],['Brows',['None','Happy','Angry','Raised']]];
+const W=[1000,100,10,1];
+const partsOf=v=>W.map(w=>Math.floor((v-CUSTOM)/w)%10);
+const isCustom=v=>Number.isInteger(v)&&v>=CUSTOM&&v<CUSTOM+10000&&partsOf(v).every((p,i)=>p<PARTS[i][1].length);
+const customCode=p=>CUSTOM+p.reduce((s,n,i)=>s+n*W[i],0);
 function face(id,c,R=30){ctx.save();ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=R*.16;
  const eye=(x,y,r)=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();},smile=(y,w)=>{ctx.beginPath();ctx.arc(0,y,w,.15*Math.PI,.85*Math.PI);ctx.stroke();};
+ const star=(x,y,s)=>{ctx.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,rr=i%2?s*.4:s;ctx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}ctx.fill();};
+ if(id>=CUSTOM){const [e,m,t,b]=isCustom(id)?partsOf(id):[0,0,0,0],L=(x1,y1,x2,y2)=>{ctx.beginPath();ctx.moveTo(x1*R,y1*R);ctx.lineTo(x2*R,y2*R);ctx.stroke();};
+  for(const s of[-1,1]){const x=s*R*.35,y=-R*.1;
+   if(e===0)eye(x,y,R*.15);else if(e===1){ctx.lineWidth=R*.09;ctx.beginPath();ctx.arc(x,y,R*.21,0,Math.PI*2);ctx.stroke();eye(x,y+R*.04,R*.09);ctx.lineWidth=R*.16;}
+   else if(e===3)star(x,y,R*.24);else if(e===4){ctx.beginPath();ctx.arc(x,y-R*.08,R*.17,.15*Math.PI,.85*Math.PI);ctx.stroke();}
+   else if(e===5){if(s<0)eye(x,y,R*.15);else L(.22,-.1,.5,-.1);}}
+  if(e===2){ctx.fillRect(-R*.75,-R*.3,R*1.5,R*.34);}
+  if(b===1)for(const s of[-1,1]){ctx.lineWidth=R*.1;ctx.beginPath();ctx.arc(s*R*.35,-R*.3,R*.2,1.15*Math.PI,1.85*Math.PI);ctx.stroke();}
+  else if(b>1){ctx.lineWidth=R*.1;for(const s of[-1,1]){if(b===2)L(s*.18,-.38,s*.55,-.5);else L(s*.2,-.52,s*.52,-.52);}}
+  ctx.lineWidth=R*.16;
+  if(m===0)smile(R*.05,R*.42);else if(m===1){ctx.beginPath();ctx.arc(0,R*.15,R*.38,.1*Math.PI,.9*Math.PI);ctx.fill();}
+  else if(m===2)L(-.3,.35,.3,.35);else if(m===3){ctx.lineWidth=R*.1;ctx.beginPath();ctx.arc(0,R*.36,R*.13,0,Math.PI*2);ctx.stroke();}
+  else{smile(R*.05,R*.42);eye(R*.15,R*.5,R*.11);}
+  ctx.lineWidth=R*.16;
+  if(t===1){ctx.beginPath();ctx.moveTo(-R*.8,-R*.45);ctx.lineTo(-R*.62,-R*.95);ctx.lineTo(-R*.28,-R*.62);ctx.moveTo(R*.8,-R*.45);ctx.lineTo(R*.62,-R*.95);ctx.lineTo(R*.28,-R*.62);ctx.stroke();}
+  else if(t===2){L(0,-.62,0,-.9);eye(0,-R*.97,R*.1);}
+  else if(t===3){ctx.beginPath();ctx.moveTo(-R*.45,-R*.6);ctx.lineTo(-R*.45,-R*.95);ctx.lineTo(-R*.22,-R*.75);ctx.lineTo(0,-R*.97);ctx.lineTo(R*.22,-R*.75);ctx.lineTo(R*.45,-R*.95);ctx.lineTo(R*.45,-R*.6);ctx.closePath();ctx.fill();}
+  else if(t===4){ctx.beginPath();for(let i=0;i<=6;i++)ctx.lineTo(-R*.75+i*R*.25,i%2?-R*.95:-R*.65);ctx.lineTo(R*.75,-R*.6);ctx.lineTo(-R*.75,-R*.6);ctx.closePath();ctx.fill();}
+  else if(t===5){ctx.beginPath();ctx.moveTo(R*.45,-R*.75);ctx.lineTo(R*.15,-R*.95);ctx.lineTo(R*.15,-R*.55);ctx.closePath();ctx.moveTo(R*.45,-R*.75);ctx.lineTo(R*.75,-R*.95);ctx.lineTo(R*.75,-R*.55);ctx.closePath();ctx.fill();eye(R*.45,-R*.75,R*.09);}
+  ctx.restore();return;}
  if(id===2){ctx.fillRect(-R*.75,-R*.42,R*1.5,R*.34);ctx.fillRect(-R*.12,-R*.42,R*.24,R*.2);smile(R*.05,R*.42);}
  else if(id===3){ctx.beginPath();ctx.moveTo(-R*.8,-R*.35);ctx.lineTo(-R*.6,-R*.95);ctx.lineTo(-R*.25,-R*.55);ctx.moveTo(R*.8,-R*.35);ctx.lineTo(R*.6,-R*.95);ctx.lineTo(R*.25,-R*.55);ctx.stroke();eye(-R*.35,-R*.1,R*.13);eye(R*.35,-R*.1,R*.13);
    ctx.beginPath();ctx.moveTo(-R*.15,R*.15);ctx.lineTo(0,R*.28);ctx.lineTo(R*.15,R*.15);ctx.stroke();ctx.lineWidth=R*.06;for(const s of[-1,1]){ctx.beginPath();ctx.moveTo(s*R*.3,R*.25);ctx.lineTo(s*R*.85,R*.15);ctx.moveTo(s*R*.3,R*.33);ctx.lineTo(s*R*.85,R*.4);ctx.stroke();}}
@@ -32,7 +59,8 @@ function loadBoard(){try{const b=JSON.parse(read(boardKey)||'[]');return Array.i
 function keepRun(){const m=me(),e={s:scoreOf(m),p:Math.floor(run.progress*1e4)/1e4,f:run.finished,pr:run.prisms,g:m.gold||0,pf:m.perfect||0,fc:myFace,j:rec.slice(),at:Date.now()};
   const b=loadBoard();b.push(e);b.sort((a,c)=>c.s-a.s||a.at-c.at);const top=b.slice(0,10);save(boardKey,JSON.stringify(top));return top.indexOf(e);}
 function simulate(jumps){const x={r:new Circuit(score),replay:new Set(jumps)};while(alive(x)){if(x.replay.has(x.r.tick))jumpFor(x);x.r.advance();grabCoins(x);watchSprings(x);}return x;}
-let myFace=(()=>{const v=Number(read(faceKey));return Number.isInteger(v)&&v>=(COACH_MODE?0:1)&&v<FACES.length?v:(COACH_MODE?0:1);})();
+let myFace=(()=>{const v=Number(read(faceKey));return isCustom(v)||(Number.isInteger(v)&&v>=(COACH_MODE?0:1)&&v<FACES.length)?v:(COACH_MODE?0:1);})();
+let myCustom=(()=>{const v=Number(read(faceKey+'.custom'));return isCustom(v)?v:customCode([1,0,4,1]);})();
 function read(key){try{return localStorage.getItem(key);}catch{return null;}}
 function save(key,value){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{/* Session play is still available. */}}
 let score,run,racers=[],kind='solo',checkpoint,mode='loading',attempt=0,last=0,acc=0,noticeEnd=0,countIn=0,width=0,height=0,shownHud='',muted=read(soundKey)==='off';
@@ -220,7 +248,14 @@ function buildPicker(){const box=$('faces');box.replaceChildren();FACES.forEach(
   const c=document.createElement('canvas');c.width=c.height=88;const g2=c.getContext('2d'),keep=ctx;
   if(id===0){g2.fillStyle='#70f1dd';g2.fillRect(0,0,88,88);if(pilot.complete&&pilot.naturalWidth){const s=Math.min(pilot.width,pilot.height);g2.drawImage(pilot,(pilot.width-s)/2,(pilot.height-s)/2,s,s,6,6,76,76);}else{g2.fillStyle='#14121f';g2.font='800 15px sans-serif';g2.textAlign='center';g2.fillText('PILOT',44,50);}}
   else{g2.fillStyle=SEAT[0];g2.fillRect(0,0,88,88);g2.fillStyle='#1b1630';g2.fillRect(8,8,72,72);g2.translate(44,46);ctx=g2;face(id,SEAT[0],30);ctx=keep;}
-  b.append(c);b.onclick=()=>{myFace=id;save(faceKey,String(id));buildPicker();};box.append(b);});}
+  b.append(c);b.onclick=()=>{myFace=id;save(faceKey,String(id));buildPicker();};box.append(b);});
+  // "Make your own" tile + part buttons (tap to cycle). Shown under the preset faces.
+  const tile=document.createElement('button'),tc=document.createElement('canvas');tile.type='button';tile.className='faceBtn mine';tile.title='Make your own';tile.setAttribute('aria-label','Face: make your own');tile.setAttribute('aria-pressed',String(myFace===myCustom));
+  tc.width=tc.height=88;{const g2=tc.getContext('2d'),keep=ctx;g2.fillStyle=SEAT[0];g2.fillRect(0,0,88,88);g2.fillStyle='#1b1630';g2.fillRect(8,8,72,72);g2.translate(44,48);ctx=g2;face(myCustom,SEAT[0],30);ctx=keep;}
+  tile.append(tc);tile.onclick=()=>{myFace=myCustom;save(faceKey,String(myFace));buildPicker();};box.append(tile);
+  let ed=$('faceEdit');if(!ed){ed=document.createElement('div');ed.id='faceEdit';ed.setAttribute('role','group');ed.setAttribute('aria-label','Make your own face');box.after(ed);}
+  ed.replaceChildren();ed.hidden=myFace!==myCustom;const parts=partsOf(myCustom);
+  PARTS.forEach(([name,opts],i)=>{const b=document.createElement('button');b.type='button';b.textContent=name+': '+opts[parts[i]];b.onclick=()=>{parts[i]=(parts[i]+1)%opts.length;myCustom=myFace=customCode(parts);save(faceKey,String(myFace));save(faceKey+'.custom',String(myCustom));buildPicker();};ed.append(b);});}
 pilot.addEventListener('load',()=>{if(score)buildPicker();});
 $('create').onclick=()=>openNet({t:'create'});
 $('join').onclick=()=>{const c=$('codeIn').value.trim();if(c.length<4){$('lobbyMsg').textContent='Type the 4-letter code.';return;}openNet({t:'join',code:c});};
