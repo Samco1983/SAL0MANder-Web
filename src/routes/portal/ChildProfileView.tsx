@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { buildChildActor, can, type PortalActor } from '@/portal/access'
 import { ASK_SEND_DISCLOSURE, submitAskQuestion } from '@/portal/askActions'
+import { awardCosmeticPoints, getCourseLadder, getNextBeltStep } from '@/portal/belts'
 import { FUN_GAMES, LESSON_GAMES } from '@/portal/parentActions'
 import { portalStorage } from '@/portal/storage'
 import type { ChildProfile, PortalState, WorkAttempt, WorkRecord } from '@/portal/types'
@@ -10,11 +11,12 @@ import {
   WorkConflictError, openOrCreateWorkRecord, saveWorkDraft,
   simulateExternalDeviceSave, startRedoAttempt, submitWorkRecord, type DraftAnswerInput,
 } from '@/portal/workActions'
-import { BELT_MASCOT, GRADE7_UNITS, INTEGER_OPERATIONS_SET, checkNumericAnswer, nextUnitName } from '@/portal/worksheet'
+import { BELT_MASCOT, INTEGER_OPERATIONS_SET, checkNumericAnswer } from '@/portal/worksheet'
 import styles from './PortalPage.module.css'
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const
 const GAME_LABELS: Record<string, string> = Object.fromEntries([...LESSON_GAMES, ...FUN_GAMES].map((g) => [g.id, g.label]))
+const FUN_GAME_IDS = new Set<string>(FUN_GAMES.map((g) => g.id))
 
 function replyWeekday(iso: string | null): string {
   if (!iso) return 'recently'
@@ -44,6 +46,9 @@ export function ChildProfileView({ state, onStateChange }: { state: PortalState;
 
   const childActor = buildChildActor(state, child.id)
   const mascot = BELT_MASCOT[child.currentBelt]
+  const ladder = getCourseLadder(child.level)
+  const nextBelt = getNextBeltStep(child)
+  const nextUnit = ladder.units[Math.min(child.stripesEarned, ladder.units.length - 1)]?.title ?? ladder.units[0]!.title
   const visibleWork = state.workRecords.filter((record) => can(childActor, 'view', { type: 'work', record }))
   const visibleFeedback = state.feedback.filter((record) => can(childActor, 'view', { type: 'feedback', record }))
   const waitingReply = state.feedback.find((f) => f.childId === child.id && f.status === 'sent_to_parent')
@@ -110,15 +115,19 @@ export function ChildProfileView({ state, onStateChange }: { state: PortalState;
           </Card>
 
           <div className={styles.grid}>
-            <Card title="Belt ladder & next unit" headingLevel={2}>
-              <p className={styles.checkLabel}>{mascot.label} · {child.stripesEarned} / {GRADE7_UNITS.length} stripes</p>
-              <p className={styles.statusCallout}>Next unit: <strong>{nextUnitName(child.stripesEarned)}</strong></p>
+            <Card title={`Belt ladder — ${ladder.courseLabel}`} headingLevel={2}>
+              <p className={styles.checkLabel}>{mascot.label} · {child.stripesEarned} / {ladder.units.length} stripes</p>
+              <p className={styles.statusCallout}>Next unit: <strong>{nextUnit}</strong></p>
+              <p className={styles.note}>
+                Belts at 2 / 4 / 6 / last (+ live teach-it test for Black).
+                {nextBelt ? ` Next belt: ${nextBelt.nextBelt} at ${nextBelt.stripesRequired} stripes (${nextBelt.testType === 'teach_it' ? 'teach-it test' : 'live whiteboard test'}).` : ' Black belt complete!'}
+              </p>
               <ol className={styles.miniList}>
-                {GRADE7_UNITS.map((unit, idx) => (
-                  <li key={unit}>{idx < child.stripesEarned ? '✓ ' : idx === child.stripesEarned ? '→ ' : '○ '}{unit}</li>
+                {ladder.units.map((unit, idx) => (
+                  <li key={unit.unitId}>{idx < child.stripesEarned ? '✓ ' : idx === child.stripesEarned ? '→ ' : '○ '}{unit.title}</li>
                 ))}
               </ol>
-              <p className={styles.note}>Belts and stripes are awarded only by a human mentor — never by fun games.</p>
+              <p className={styles.note}>Belts are awarded only by a human mentor — never automatic, never by fun games.</p>
             </Card>
 
             <Card title="Replies from Mr. Sam" headingLevel={2}>
@@ -145,6 +154,14 @@ export function ChildProfileView({ state, onStateChange }: { state: PortalState;
                       <li key={gameId}>
                         <strong>{GAME_LABELS[gameId] ?? gameId}</strong>
                         {room ? ` — races open at ${formatRaceTime(room.startsAt)} (code ${room.roomCode})` : ''}
+                        {FUN_GAME_IDS.has(gameId) && child.consentStatus === 'verified' ? (
+                          <>
+                            {' '}
+                            <Button type="button" size="sm" variant="ghost" onClick={() => onStateChange(awardCosmeticPoints(portalStorage, childActor, child.id, 10, `Played ${GAME_LABELS[gameId] ?? gameId}`))}>
+                              Play (+10 cosmetic pts)
+                            </Button>
+                          </>
+                        ) : null}
                       </li>
                     )
                   })}

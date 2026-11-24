@@ -3,9 +3,10 @@ import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { buildMentorActor, can } from '@/portal/access'
 import { sendMentorReplyDemo } from '@/portal/askActions'
+import { formatParentBeltSentence, getNextBeltStep } from '@/portal/belts'
 import {
-  SCRIPT_LIBRARY, addMentorAccount, assignMentorToHousehold, awardBeltPassed,
-  buildFridayDrafts, daysQuiet, getMembershipCapacity, listBeltTestsDue,
+  SCRIPT_LIBRARY, addMentorAccount, assignMentorToHousehold, awardBadgeByMentor,
+  awardBeltPassed, buildFridayDrafts, daysQuiet, getMembershipCapacity, listBeltTestsDue,
   listQuietKids, listTodayAskQueue, listTodayWorkQueue, sendAllFridayNotes,
   sendQuietNudge, sendWorkReviewReply,
 } from '@/portal/mentorActions'
@@ -23,6 +24,7 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
   const [selectedUnitId, setSelectedUnitId] = useState(SCRIPT_LIBRARY[0]!.unitId)
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({})
   const [humanSentences, setHumanSentences] = useState<Record<string, string>>({})
+  const [teachItDone, setTeachItDone] = useState(false)
   const [newMentorName, setNewMentorName] = useState('')
   const [newMentorEmail, setNewMentorEmail] = useState('')
   const [assignMentorId, setAssignMentorId] = useState('mentor_c')
@@ -134,7 +136,7 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
                         <span>Feedback draft (no model call; parent email first)</span>
                         <input className={styles.input} value={draft} onChange={(e) => setReplyDrafts((p) => ({ ...p, [w.id]: e.target.value }))} />
                       </label>
-                      <Button size="sm" onClick={() => { const res = sendWorkReviewReply(portalStorage, actor, w.id, draft); onStateChange(res.state); setNotice(`Reviewed ${kid?.nickname ?? 'child'}'s set (sent to parent first).`) }}>
+                      <Button size="sm" onClick={() => { const res = sendWorkReviewReply(portalStorage, actor, w.id, draft); onStateChange(res.state); setNotice(`Reviewed ${kid?.nickname ?? 'child'}'s set (sent to parent first${res.stripeEarned ? '; +1 stripe computed, belt still human-awarded' : ''}).`) }}>
                         Send work feedback
                       </Button>
                     </li>
@@ -168,7 +170,7 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
                 <ul className={styles.miniList}>
                   {beltDue.map((b) => (
                     <li key={b.child.id}>
-                      <strong>{b.child.nickname}</strong> — {b.child.currentBelt} → {b.nextBelt} ({b.child.stripesEarned}/{b.stripesRequired} stripes · {b.ready ? 'Ready for live belt test' : '1 stripe away'})
+                      <strong>{b.child.nickname}</strong> — {b.child.currentBelt} → {b.nextBelt} ({b.child.stripesEarned}/{b.stripesRequired} stripes · {b.ready ? (b.testType === 'teach_it' ? 'Ready for live teach-it test' : 'Ready for live belt test') : '1 stripe away'})
                     </li>
                   ))}
                 </ul>
@@ -185,7 +187,7 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
           <div className={styles.stack}>
             <div className={styles.actions}>
               {assignedKids.map((k) => (
-                <Button key={k.id} type="button" size="sm" variant={k.id === activeKid?.id ? 'primary' : 'secondary'} onClick={() => setSelectedKidId(k.id)}>
+                <Button key={k.id} type="button" size="sm" variant={k.id === activeKid?.id ? 'primary' : 'secondary'} onClick={() => { setSelectedKidId(k.id); setTeachItDone(false) }}>
                   {k.nickname} ({k.currentBelt})
                 </Button>
               ))}
@@ -194,15 +196,37 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
               const kidHh = state.households.find((h) => h.id === activeKid.householdId)
               const kidWork = state.workRecords.filter((record) => record.childId === activeKid.id && can(actor, 'view', { type: 'work', record }))
               const kidReplies = state.feedback.filter((record) => record.childId === activeKid.id && can(actor, 'view', { type: 'feedback', record }))
+              const nextStep = getNextBeltStep(activeKid)
               return (
                 <div className={styles.grid}>
                   <Card title={`${activeKid.nickname} — Profile & belt test`} headingLevel={2}>
                     <p className={styles.checkLabel}>{activeKid.level} · {BELT_MASCOT[activeKid.currentBelt].label} ({activeKid.stripesEarned} stripes)</p>
+                    <p className={styles.statusCallout}>{formatParentBeltSentence(activeKid)}</p>
                     <p className={styles.checkDetail}>“{activeKid.firstConversationLine}”</p>
                     <p className={styles.note}>Approved games: {activeKid.approvedGames.length ? activeKid.approvedGames.join(', ') : 'None'}</p>
+                    {nextStep?.testType === 'teach_it' ? (
+                      <label className={styles.radioRow}>
+                        <input type="checkbox" checked={teachItDone} onChange={(e) => setTeachItDone(e.target.checked)} />
+                        Live teach-it test completed (required for Black Belt)
+                      </label>
+                    ) : null}
                     <div className={styles.actions}>
-                      <Button size="sm" disabled={activeKid.currentBelt === 'black'} onClick={() => { onStateChange(awardBeltPassed(portalStorage, actor, activeKid.id)); setNotice(`Logged live belt test passed for ${activeKid.nickname}.`) }}>
+                      <Button
+                        size="sm"
+                        disabled={!nextStep || (nextStep.testType === 'teach_it' && !teachItDone)}
+                        onClick={() => {
+                          onStateChange(awardBeltPassed(portalStorage, actor, activeKid.id, { teachItCompleted: teachItDone }))
+                          setTeachItDone(false)
+                          setNotice(`Logged live belt test passed for ${activeKid.nickname}.`)
+                        }}
+                      >
                         Belt test passed (human award)
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => { onStateChange(awardBadgeByMentor(portalStorage, actor, activeKid.id, 'explained_it')); setNotice(`Awarded 'Explained it' badge to ${activeKid.nickname}.`) }}>
+                        Award ‘Explained it’
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => { onStateChange(awardBadgeByMentor(portalStorage, actor, activeKid.id, 'came_back')); setNotice(`Awarded 'Came back' badge to ${activeKid.nickname}.`) }}>
+                        Award ‘Came back’
                       </Button>
                     </div>
                   </Card>

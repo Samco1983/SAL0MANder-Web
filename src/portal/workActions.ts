@@ -1,8 +1,11 @@
 import { can, type PortalActor } from './access'
 import { enqueueAskQuestionInState } from './askActions'
+import { STARTER_BADGE_LABELS, grantBadgeInState } from './belts'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import type { PortalState, WorkRecord } from './types'
 import { INTEGER_OPERATIONS_SET, type QuestionSet } from './worksheet'
+
+const CAME_BACK_DAYS_MS = 14 * 86_400_000
 
 export class WorkConflictError extends Error {
   readonly serverRevision: number
@@ -41,10 +44,21 @@ export function openOrCreateWorkRecord(
   if (child.consentStatus !== 'verified') {
     throw new PortalAccessError('Parent consent is required before saving practice work')
   }
+  const returnedAfterTwoWeeks =
+    (Date.parse(nowIso) || Date.now()) - (Date.parse(child.lastActiveAt) || Date.now()) >= CAME_BACK_DAYS_MS
+  let mutated = false
+  if (returnedAfterTwoWeeks) {
+    mutated = grantBadgeInState(state, child, 'came_back', STARTER_BADGE_LABELS.came_back, 'system', nowIso) || mutated
+    child.lastActiveAt = nowIso
+    mutated = true
+  }
   const existing = state.workRecords.find(
     (w) => w.childId === childId && w.activityId === set.activityId && can(actor, 'view', { type: 'work', record: w }),
   )
-  if (existing) return { state, record: existing }
+  if (existing) {
+    const out = mutated ? adapter.save(state) : state
+    return { state: out, record: out.workRecords.find((w) => w.id === existing.id)! }
+  }
 
   const id = `work_${childId}_${set.unitId}`
   const attemptId = `att_${id}_1`

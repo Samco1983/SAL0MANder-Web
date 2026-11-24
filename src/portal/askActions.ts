@@ -1,4 +1,5 @@
 import { can, type PortalActor } from './access'
+import { STARTER_BADGE_LABELS, grantBadgeInState } from './belts'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import type { AskQuestion, ChildProfile, Household, PortalState } from './types'
 
@@ -109,6 +110,7 @@ export function enqueueAskQuestionInState(
     createdAt: nowIso,
   }
   state.askQuestions.unshift(question)
+  grantBadgeInState(state, child, 'first_question', STARTER_BADGE_LABELS.first_question, 'system', nowIso)
 
   // Only Auto-send queues a mentor draft immediately (after parent acceptance); Review-first waits for parent Forward.
   if (!isReview && input.source === 'ask_form') {

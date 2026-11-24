@@ -1,16 +1,10 @@
 import { can, type PortalActor } from './access'
+import { STARTER_BADGE_LABELS, creditReviewedUnitStripe, getNextBeltStep, grantBadgeInState } from './belts'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import { MentorSchema, type AskQuestion, type BeltColor, type ChildProfile, type MentorRole, type PortalState, type WorkRecord } from './types'
 
 export const MEMBERSHIP_CAP = 100
 export const QUIET_DAYS_THRESHOLD = 7
-const BELT_STEPS: ReadonlyArray<{ belt: BeltColor; next: BeltColor | null; stripesRequired: number }> = [
-  { belt: 'white', next: 'yellow', stripesRequired: 2 },
-  { belt: 'yellow', next: 'green', stripesRequired: 4 },
-  { belt: 'green', next: 'purple', stripesRequired: 6 },
-  { belt: 'purple', next: 'black', stripesRequired: 7 },
-  { belt: 'black', next: null, stripesRequired: 7 },
-]
 
 export type UnitScript = {
   unitId: string; title: string; explanation: string; commonMistake: string
@@ -48,14 +42,14 @@ export function listQuietKids(state: PortalState, actor: PortalActor, nowIso = '
   return state.children.filter((record) => can(actor, 'view', { type: 'child', record }) && daysQuiet(record, nowIso) >= QUIET_DAYS_THRESHOLD)
 }
 
-export function listBeltTestsDue(state: PortalState, actor: PortalActor): Array<{ child: ChildProfile; nextBelt: BeltColor; stripesRequired: number; ready: boolean }> {
-  const out: Array<{ child: ChildProfile; nextBelt: BeltColor; stripesRequired: number; ready: boolean }> = []
+export function listBeltTestsDue(state: PortalState, actor: PortalActor): Array<{ child: ChildProfile; nextBelt: BeltColor; stripesRequired: number; testType: 'whiteboard' | 'teach_it'; ready: boolean }> {
+  const out: Array<{ child: ChildProfile; nextBelt: BeltColor; stripesRequired: number; testType: 'whiteboard' | 'teach_it'; ready: boolean }> = []
   for (const child of state.children) {
     if (!can(actor, 'award_belt', { type: 'child', record: child })) continue
-    const step = BELT_STEPS.find((s) => s.belt === child.currentBelt)
-    if (!step?.next) continue
+    const step = getNextBeltStep(child)
+    if (!step) continue
     if (child.stripesEarned >= step.stripesRequired - 1) {
-      out.push({ child, nextBelt: step.next, stripesRequired: step.stripesRequired, ready: child.stripesEarned >= step.stripesRequired })
+      out.push({ child, nextBelt: step.nextBelt, stripesRequired: step.stripesRequired, testType: step.testType, ready: step.eligible })
     }
   }
   return out
@@ -67,7 +61,7 @@ export function sendWorkReviewReply(
   workRecordId: string,
   replyText: string,
   nowIso = new Date().toISOString(),
-): { state: PortalState; shownToChild: boolean } {
+): { state: PortalState; shownToChild: boolean; stripeEarned: boolean } {
   const trimmed = replyText.trim()
   if (!trimmed) throw new PortalAccessError('Reply text is required')
   const state = adapter.load()
@@ -94,8 +88,13 @@ export function sendWorkReviewReply(
     shownToChildAt: canAutoShow ? nowIso : null, shownBy: canAutoShow ? 'parent_auto_show' : null,
   })
   record.status = 'reviewed'
+  // Computed stripe when unit's set + open response pass review; NEVER auto-awards a belt.
+  const stripeEarned = creditReviewedUnitStripe(state, child, record.unitId)
+  if (record.openResponse.trim()) {
+    grantBadgeInState(state, child, 'explained_it', STARTER_BADGE_LABELS.explained_it, mentorId, nowIso)
+  }
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'mentor', actorId: mentorId, action: 'review_work', recordType: 'work', recordId: record.id, householdId: hh.id, outcome: 'allow' })
-  return { state: adapter.save(state), shownToChild: canAutoShow }
+  return { state: adapter.save(state), shownToChild: canAutoShow, stripeEarned }
 }
 
 export function sendQuietNudge(adapter: PortalStorageAdapter, actor: PortalActor, childId: string, nowIso = new Date().toISOString()): PortalState {
@@ -118,16 +117,45 @@ export function sendQuietNudge(adapter: PortalStorageAdapter, actor: PortalActor
   return adapter.save(state)
 }
 
-export function awardBeltPassed(adapter: PortalStorageAdapter, actor: PortalActor, childId: string, nowIso = new Date().toISOString()): PortalState {
+export function awardBeltPassed(
+  adapter: PortalStorageAdapter,
+  actor: PortalActor,
+  childId: string,
+  options?: string | { nowIso?: string; teachItCompleted?: boolean },
+): PortalState {
+  const nowIso = typeof options === 'string' ? options : (options?.nowIso ?? new Date().toISOString())
+  const teachItCompleted = typeof options === 'object' ? Boolean(options?.teachItCompleted) : false
   const state = adapter.load()
   const child = state.children.find((c) => c.id === childId)
   if (!child || !can(actor, 'award_belt', { type: 'child', record: child })) {
     throw new PortalAccessError('Only an assigned human mentor may award a belt')
   }
-  const step = BELT_STEPS.find((s) => s.belt === child.currentBelt)
-  if (step?.next) child.currentBelt = step.next
+  const step = getNextBeltStep(child)
+  if (!step) return state
+  if (step.testType === 'teach_it' && !teachItCompleted) {
+    throw new PortalAccessError('Black belt requires completing the live teach-it test')
+  }
+  child.currentBelt = step.nextBelt
   const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'mentor', actorId: mentorId, action: 'award_belt', recordType: 'child', recordId: child.id, householdId: child.householdId, outcome: 'allow' })
+  return adapter.save(state)
+}
+
+export function awardBadgeByMentor(
+  adapter: PortalStorageAdapter,
+  actor: PortalActor,
+  childId: string,
+  kind: 'first_question' | 'explained_it' | 'came_back',
+  nowIso = new Date().toISOString(),
+): PortalState {
+  const state = adapter.load()
+  const child = state.children.find((c) => c.id === childId)
+  if (!child || !can(actor, 'award_belt', { type: 'child', record: child })) {
+    throw new PortalAccessError('Only an assigned mentor may award a badge')
+  }
+  const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  grantBadgeInState(state, child, kind, STARTER_BADGE_LABELS[kind], mentorId, nowIso)
+  state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'mentor', actorId: mentorId, action: 'award_badge', recordType: 'badge', recordId: `${child.id}:${kind}`, householdId: child.householdId, outcome: 'allow' })
   return adapter.save(state)
 }
 

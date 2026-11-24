@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { buildChildActor, buildParentActor, can } from '@/portal/access'
 import { forwardQuestionToMentor } from '@/portal/askActions'
+import { formatParentBeltSentence } from '@/portal/belts'
 import {
   ASK_MODE_HELP, AUTO_SHOW_WARNING, CONSENT_NOTICE_POINTS, FUN_GAMES, LESSON_GAMES,
   completeParentConsent, listParentReceipts, requestParentSignInLink, saveChildProfile,
@@ -189,7 +190,8 @@ export function ParentAccountView({
                 return (
                   <div key={child.id} className={styles.childPreview} data-testid={`child-preview-${child.id}`}>
                     <p className={styles.checkLabel}>{child.nickname} · {child.level}</p>
-                    <p className={styles.checkDetail}>Belt: {child.currentBelt} ({child.stripesEarned} stripes) · Ask mode: {child.askMode}</p>
+                    <p className={styles.statusCallout} data-testid={`parent-belt-sentence-${child.id}`}>{formatParentBeltSentence(child)}</p>
+                    <p className={styles.checkDetail}>Ask mode: {child.askMode}</p>
                     <p className={styles.checkDetail}>“{child.firstConversationLine}”</p>
                     <p className={styles.checkDetail}>Approved games: {child.approvedGames.length ? child.approvedGames.join(', ') : 'Free arcade only until consent'}</p>
                     {hasWaiting ? <p className={styles.warningText}>Mr. Sam replied — ask your parent to check their email and you’ll see it here.</p> : null}
