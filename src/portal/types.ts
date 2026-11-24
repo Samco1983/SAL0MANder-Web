@@ -24,7 +24,8 @@ export const HouseholdSchema = z.object({
   membershipStatus: z.enum(['active', 'paused', 'waitlisted', 'closed']),
   consentRecord: z.object({
     status: ConsentStatusSchema, noticeVersion: id,
-    verifiedAt: iso.nullable(), method: z.enum(['simulated_form', 'simulated_call']).nullable(),
+    verifiedAt: iso.nullable(), withdrawnAt: iso.nullable().default(null),
+    method: z.enum(['simulated_form', 'simulated_call']).nullable(),
   }).strict(),
   settings: z.object({ emailMode: EmailModeSchema }).strict(),
   createdAt: iso,

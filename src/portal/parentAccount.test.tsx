@@ -34,28 +34,42 @@ describe('portal Phase 1 — PR 2 parent account', () => {
     expect(() => showFeedbackToChild(adapter, priya, 'fb_marcus_waiting')).toThrow(PortalAccessError)
     expect(() => saveChildProfile(adapter, priya, 'hh_elena', { nickname: 'Nope', level: '6th', firstConversationLine: '' })).toThrow(PortalAccessError)
 
-    // Unconsented household (David) keeps askMode off and joinRooms false even if settings requested
+    // Unconsented household (David) keeps askMode off, autoShow false, and joinRooms false even if requested
     const beforeConsent = updateFourSettings(adapter, david, 'hh_david', 'child_kai', {
       askMode: 'auto', autoShow: true, approvedFunGames: ['moon-gate'], joinRooms: true, emailMode: 'everything',
     })
     expect(beforeConsent.children.find((c) => c.id === 'child_kai')?.askMode).toBe('off')
+    expect(beforeConsent.children.find((c) => c.id === 'child_kai')?.autoShow).toBe(false)
     expect(beforeConsent.children.find((c) => c.id === 'child_kai')?.joinRooms).toBe(false)
 
-    // Complete consent -> timestamp recorded -> settings unlock; withdraw -> locks off again
+    // Complete consent -> timestamp recorded -> settings unlock; withdraw -> records withdrawnAt, keeps verifiedAt, forces autoShow=false
     const consented = completeParentConsent(adapter, david, 'hh_david', 'simulated_call', '2026-11-24T15:00:00Z')
     expect(consented.households.find((h) => h.id === 'hh_david')?.consentRecord.verifiedAt).toBe('2026-11-24T15:00:00Z')
     const unlocked = updateFourSettings(adapter, david, 'hh_david', 'child_kai', {
-      askMode: 'review', autoShow: false, approvedFunGames: ['neon-dash'], joinRooms: true, emailMode: 'friday_only',
+      askMode: 'review', autoShow: true, approvedFunGames: ['neon-dash'], joinRooms: true, emailMode: 'friday_only',
     })
     expect(unlocked.children.find((c) => c.id === 'child_kai')?.askMode).toBe('review')
+    expect(unlocked.children.find((c) => c.id === 'child_kai')?.autoShow).toBe(true)
     expect(unlocked.children.find((c) => c.id === 'child_kai')?.approvedGames).toEqual(['act_integer_operations', 'neon-dash'])
 
     const withdrawn = withdrawParentConsent(adapter, david, 'hh_david', '2026-11-24T15:05:00Z')
+    const davidHh = withdrawn.households.find((h) => h.id === 'hh_david')!
+    expect(davidHh.consentRecord.verifiedAt).toBe('2026-11-24T15:00:00Z')
+    expect(davidHh.consentRecord.withdrawnAt).toBe('2026-11-24T15:05:00Z')
     expect(withdrawn.children.find((c) => c.id === 'child_kai')?.askMode).toBe('off')
+    expect(withdrawn.children.find((c) => c.id === 'child_kai')?.autoShow).toBe(false)
     expect(withdrawn.children.find((c) => c.id === 'child_kai')?.joinRooms).toBe(false)
+    const davidReceipts = listParentReceipts(withdrawn, david)
+    expect(davidReceipts.some((r) => r.label.includes('Consent withdrawn') && r.at === '2026-11-24T15:05:00Z')).toBe(true)
+
+    // Newly created child profiles use opaque random IDs (never containing nickname)
+    const withNewKid = saveChildProfile(adapter, elena, 'hh_elena', { nickname: 'Toby', level: '6th', firstConversationLine: 'Hi' })
+    const toby = withNewKid.children.find((c) => c.nickname === 'Toby')!
+    expect(toby.id).toMatch(/^child_[0-9a-f]{12}$/)
+    expect(toby.id.toLowerCase()).not.toContain('toby')
 
     // Parent receipts expose household consent/approvals only — never admin assign_mentor audit entries
-    const receipts = listParentReceipts(withdrawn, elena)
+    const receipts = listParentReceipts(withNewKid, elena)
     expect(receipts.some((r) => r.kind === 'consent')).toBe(true)
     expect(receipts.some((r) => r.label.includes('assign_mentor'))).toBe(false)
   })

@@ -93,6 +93,22 @@ export function runAccessChecks(seed: PortalState): AccessCheckResult[] {
     !can(samUnassigned, 'review_work', marcusWork) &&
     !can(samUnassigned, 'award_belt', marcusChild)
 
+  const signInEmail = {
+    id: 'eml_check_signin',
+    to: 'elena.demo@family.example',
+    householdId: 'hh_elena',
+    subject: 'Sign in to SAL0MANder',
+    body: 'Simulated one-time sign-in link.',
+    kind: 'sign_in_link' as const,
+    status: 'delivered' as const,
+    sentAt: '2026-11-24T17:05:00Z',
+  }
+  const mentorNoSignInLink =
+    can(elena, 'view', { type: 'email', record: signInEmail }) &&
+    !can(mentorB, 'view', { type: 'email', record: signInEmail }) &&
+    !can(samuel, 'view', { type: 'email', record: signInEmail }) &&
+    can(mentorB, 'view', { type: 'email', record: state.inbox[0]! })
+
   return [
     { id: 'parent-own-children', label: 'Parent sees only own children (and no mentor drafts)', passed: parentOwnOnly, detail: `Elena sees [${ev.children.join(', ')}]; Priya sees [${pv.children.join(', ')}]; draft hidden.` },
     { id: 'mentor-b-assigned-only', label: 'Mentor B sees only assigned household', passed: mentorBAssignedOnly, detail: `Mentor B sees [${bv.households.join(', ')}] / [${bv.children.join(', ')}]; 0 audit logs.` },
@@ -102,5 +118,6 @@ export function runAccessChecks(seed: PortalState): AccessCheckResult[] {
     { id: 'export-delete-parent-and-admin-only', label: 'Export and delete allowed only for own parent and admin', passed: exportDeleteScoped, detail: 'Elena (own parent) + Mr. Sam (admin): ALLOW. Priya, Marcus, Mentor B, Mentor C, Anonymous: DENY.' },
     { id: 'child-schema-forbids-pii', label: 'Child schema forbids email, password, last name, photo, video, private channel', passed: rejectedAllForbidden, detail: `Strict schema rejected ${forbidden.length}/${forbidden.length} forbidden fields.` },
     { id: 'admin-hat-no-unassigned-teaching', label: 'Admin hat grants admin actions only; all teaching actions require an active Assignment', passed: hatSeparation, detail: 'Pure admin & unassigned Mr. Sam keep export/audit access but cannot view child work, review, or award belts.' },
+    { id: 'mentor-no-signin-link', label: 'Mentor B cannot see a parent sign-in link', passed: mentorNoSignInLink, detail: 'Parent sign-in link: Elena ALLOW; Mentor B & Mr. Sam DENY (mentors see only mentor_reply / friday_note / room_invite).' },
   ]
 }

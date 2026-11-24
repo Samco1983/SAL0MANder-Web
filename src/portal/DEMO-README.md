@@ -11,4 +11,4 @@
 
 ## How to run the demo & Access Checks
 1. **Browser:** Run `npm run dev` and open `/portal`. Switch between **Access Checks**, **Parent Account**, **Child Profile**, and **Simulated Inbox**.
-2. **Automated suite:** Run `npm run test` (or `npx vitest run src/portal/`) to verify all 8 access assertions, parent account flows, child profile/worksheet persistence, and route rendering.
+2. **Automated suite:** Run `npm run test` (or `npx vitest run src/portal/`) to verify all 9 access assertions, parent account flows, child profile/worksheet persistence, and route rendering.

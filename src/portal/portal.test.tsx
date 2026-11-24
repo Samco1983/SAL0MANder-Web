@@ -28,7 +28,7 @@ describe('portal Phase 1 — data model, access policy, and seed', () => {
 
   it('passes all centralized can() access checks and rejects forbidden child fields', () => {
     const results = runAccessChecks(createSeedState())
-    expect(results).toHaveLength(8)
+    expect(results).toHaveLength(9)
     for (const check of results) expect(check.passed, `${check.id}: ${check.detail}`).toBe(true)
 
     const child = createSeedState().children[0]!
@@ -68,7 +68,7 @@ describe('portal Phase 1 — data model, access policy, and seed', () => {
     render(<ThemeProvider><RouterProvider router={router} /></ThemeProvider>)
 
     expect(await screen.findByText(PORTAL_DEMO_BANNER, {}, { timeout: 10_000 })).toBeVisible()
-    expect(screen.getByTestId('access-checks-summary')).toHaveTextContent(/PASS · 8\/8 checks passed/)
+    expect(screen.getByTestId('access-checks-summary')).toHaveTextContent(/PASS · 9\/9 checks passed/)
     expect(screen.getByText(/Mentor B currently sees/i)).toHaveTextContent('1 household(s): Elena')
 
     await user.click(screen.getByRole('button', { name: /revoke mentor b as mr\. sam/i }))

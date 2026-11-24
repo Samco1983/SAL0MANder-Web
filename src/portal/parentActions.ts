@@ -70,7 +70,7 @@ export function completeParentConsent(
   if (!hh || !can(actor, 'edit_household', { type: 'household', record: hh })) {
     throw new PortalAccessError('Only the household parent may record consent')
   }
-  hh.consentRecord = { status: 'verified', noticeVersion: CONSENT_NOTICE_VERSION, verifiedAt: nowIso, method }
+  hh.consentRecord = { status: 'verified', noticeVersion: CONSENT_NOTICE_VERSION, verifiedAt: nowIso, withdrawnAt: null, method }
   for (const child of state.children) {
     if (child.householdId !== householdId) continue
     child.consentStatus = 'verified'
@@ -91,11 +91,12 @@ export function withdrawParentConsent(
   if (!hh || !can(actor, 'edit_household', { type: 'household', record: hh })) {
     throw new PortalAccessError('Only the household parent may withdraw consent')
   }
-  hh.consentRecord = { ...hh.consentRecord, status: 'withdrawn' }
+  hh.consentRecord = { ...hh.consentRecord, status: 'withdrawn', withdrawnAt: nowIso }
   for (const child of state.children) {
     if (child.householdId !== householdId) continue
     child.consentStatus = 'withdrawn'
     child.askMode = 'off'
+    child.autoShow = false
     child.joinRooms = false
     child.approvedGames = []
   }
@@ -135,7 +136,7 @@ export function saveChildProfile(
   if (!can(actor, 'create_child', { type: 'household', record: hh })) {
     throw new PortalAccessError('Only the household parent may create a child profile')
   }
-  const newId = `child_${state.children.length + 1}_${input.nickname.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 'kid'}`
+  const newId = `child_${globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`
   const created = ChildProfileSchema.parse({
     id: newId,
     householdId,
@@ -183,7 +184,7 @@ export function updateFourSettings(
   const cleanFun = next.approvedFunGames.filter((g) => allowedFun.has(g))
   hh.settings.emailMode = next.emailMode
   child.askMode = consentOk ? next.askMode : 'off'
-  child.autoShow = next.autoShow
+  child.autoShow = consentOk ? next.autoShow : false
   child.joinRooms = consentOk ? next.joinRooms : false
   child.approvedGames = consentOk ? [...cleanLesson, ...cleanFun] : []
   return adapter.save(state)
@@ -214,7 +215,10 @@ export function listParentReceipts(state: PortalState, actor: PortalActor): Pare
   if (!hh || !can(actor, 'view', { type: 'household', record: hh })) return []
   const out: ParentReceipt[] = []
   if (hh.consentRecord.verifiedAt) {
-    out.push({ id: `rcpt_consent_${hh.id}`, kind: 'consent', label: `Consent ${hh.consentRecord.status} (${hh.consentRecord.method ?? 'recorded'}, notice ${hh.consentRecord.noticeVersion})`, at: hh.consentRecord.verifiedAt })
+    out.push({ id: `rcpt_consent_${hh.id}`, kind: 'consent', label: `Consent verified (${hh.consentRecord.method ?? 'recorded'}, notice ${hh.consentRecord.noticeVersion})`, at: hh.consentRecord.verifiedAt })
+  }
+  if (hh.consentRecord.withdrawnAt) {
+    out.push({ id: `rcpt_consent_withdrawn_${hh.id}`, kind: 'consent', label: `Consent withdrawn (notice ${hh.consentRecord.noticeVersion})`, at: hh.consentRecord.withdrawnAt })
   }
   for (const fb of state.feedback) {
     if (fb.householdId === hh.id && fb.shownToChildAt) {

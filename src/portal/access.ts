@@ -90,6 +90,13 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
   if (action === 'view') {
     if (target.type === 'audit_log' || target.type === 'assignment') return isAdmin
     if (target.type === 'household') return isAdmin || assigned
+    if (target.type === 'email') {
+      return assigned && (
+        target.record.kind === 'mentor_reply' ||
+        target.record.kind === 'friday_note' ||
+        target.record.kind === 'room_invite'
+      )
+    }
     return assigned
   }
   if (action === 'review_work') return target.type === 'work' && assigned

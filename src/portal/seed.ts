@@ -4,7 +4,7 @@ const T = '2026-11-20T17:00:00Z'
 
 const hh = (id: string, parentName: string, parentEmail: string, verified: boolean, emailMode: 'everything' | 'friday_only' = 'everything'): Household => ({
   id, parentName, parentEmail, membershipStatus: 'active',
-  consentRecord: { status: verified ? 'verified' : 'pending', noticeVersion: '2026-11-24-demo-v1', verifiedAt: verified ? '2026-11-18T16:10:00Z' : null, method: verified ? 'simulated_form' : null },
+  consentRecord: { status: verified ? 'verified' : 'pending', noticeVersion: '2026-11-24-demo-v1', verifiedAt: verified ? '2026-11-18T16:10:00Z' : null, withdrawnAt: null, method: verified ? 'simulated_form' : null },
   settings: { emailMode }, createdAt: '2026-11-18T16:00:00Z',
 })
 
