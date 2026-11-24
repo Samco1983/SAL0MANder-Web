@@ -242,6 +242,7 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
                       <li>Parent: {kidHh?.parentName} · Consent: {kidHh?.consentRecord.status}</li>
                       <li>Questions mode: {activeKid.askMode} · Auto-show replies: {activeKid.autoShow ? 'On' : 'Off'}</li>
                       <li>Join rooms: {activeKid.joinRooms ? 'On' : 'Off'} · Emails: {kidHh?.settings.emailMode}</li>
+                      <li>Mr. Sam’s voice clips: {activeKid.voiceClipsEnabled ? 'On' : 'Off'} (written hints always show)</li>
                     </ul>
                   </Card>
                   <Card title={`Work history (${kidWork.length})`} headingLevel={2}>

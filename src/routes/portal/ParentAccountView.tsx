@@ -116,7 +116,7 @@ export function ParentAccountView({
       </div>
 
       <div className={styles.actions} role="tablist" aria-label="Parent sections">
-        {([['overview', 'Parent view'], ['consent', 'Consent'], ['profiles', 'Child profiles'], ['settings', 'Settings (4)']] as const).map(([key, label]) => (
+        {([['overview', 'Parent view'], ['consent', 'Consent'], ['profiles', 'Child profiles'], ['settings', 'Settings (5)']] as const).map(([key, label]) => (
           <Button key={key} type="button" size="sm" variant={subTab === key ? 'primary' : 'secondary'} role="tab" aria-selected={subTab === key} onClick={() => setSubTab(key)}>
             {label}
           </Button>
@@ -354,7 +354,7 @@ function SettingsPanel({
   childrenList: ChildProfile[]
   child: ChildProfile
   onSelectChild: (id: string) => void
-  onSave: (next: { askMode: AskMode; autoShow: boolean; approvedLessonGames: string[]; approvedFunGames: string[]; joinRooms: boolean; emailMode: EmailMode }) => void
+  onSave: (next: { askMode: AskMode; autoShow: boolean; approvedLessonGames: string[]; approvedFunGames: string[]; joinRooms: boolean; emailMode: EmailMode; voiceClipsEnabled: boolean }) => void
 }) {
   const lessonIds = new Set<string>(LESSON_GAMES.map((g) => g.id))
   const [askMode, setAskMode] = useState<AskMode>(child.askMode)
@@ -363,12 +363,14 @@ function SettingsPanel({
   const [funGames, setFunGames] = useState<string[]>(child.approvedGames.filter((g) => !lessonIds.has(g)))
   const [joinRooms, setJoinRooms] = useState(child.joinRooms)
   const [emailMode, setEmailMode] = useState<EmailMode>(hh.settings.emailMode)
+  const [voiceClipsEnabled, setVoiceClipsEnabled] = useState(child.voiceClipsEnabled ?? true)
   const [lastId, setLastId] = useState(child.id)
 
   if (child.id !== lastId) {
     setLastId(child.id); setAskMode(child.askMode); setAutoShow(child.autoShow)
     setLessonGames(child.approvedGames.filter((g) => lessonIds.has(g)))
-    setFunGames(child.approvedGames.filter((g) => !lessonIds.has(g))); setJoinRooms(child.joinRooms); setEmailMode(hh.settings.emailMode)
+    setFunGames(child.approvedGames.filter((g) => !lessonIds.has(g))); setJoinRooms(child.joinRooms)
+    setEmailMode(hh.settings.emailMode); setVoiceClipsEnabled(child.voiceClipsEnabled ?? true)
   }
 
   const consentVerified = hh.consentRecord.status === 'verified'
@@ -376,7 +378,7 @@ function SettingsPanel({
   const toggleFun = (id: string) => setFunGames((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
   return (
-    <Card title="Settings (four controls)" headingLevel={2}>
+    <Card title="Settings (five controls)" headingLevel={2}>
       {childrenList.length > 1 ? (
         <div className={styles.actions}>
           {childrenList.map((c) => (
@@ -384,7 +386,7 @@ function SettingsPanel({
           ))}
         </div>
       ) : null}
-      <form className={styles.formStack} onSubmit={(e) => { e.preventDefault(); onSave({ askMode, autoShow, approvedLessonGames: lessonGames, approvedFunGames: funGames, joinRooms, emailMode }) }}>
+      <form className={styles.formStack} onSubmit={(e) => { e.preventDefault(); onSave({ askMode, autoShow, approvedLessonGames: lessonGames, approvedFunGames: funGames, joinRooms, emailMode, voiceClipsEnabled }) }}>
         <fieldset className={styles.fieldset} disabled={!consentVerified}>
           <legend>1. Questions {!consentVerified ? '(locked Off until consent is verified)' : ''}</legend>
           <p className={styles.note}>{ASK_MODE_HELP}</p>
@@ -416,6 +418,12 @@ function SettingsPanel({
           <legend>4. Emails</legend>
           <label className={styles.radioRow}><input type="radio" name="emailMode" checked={emailMode === 'everything'} onChange={() => setEmailMode('everything')} />Everything (replies + Friday note)</label>
           <label className={styles.radioRow}><input type="radio" name="emailMode" checked={emailMode === 'friday_only'} onChange={() => setEmailMode('friday_only')} />Friday note only</label>
+        </fieldset>
+        <fieldset className={styles.fieldset}>
+          <legend>5. Mr. Sam’s voice clips</legend>
+          <label className={styles.radioRow}><input type="radio" name="voiceClipsEnabled" checked={voiceClipsEnabled} onChange={() => setVoiceClipsEnabled(true)} />On (default — click to play, never auto-plays)</label>
+          <label className={styles.radioRow}><input type="radio" name="voiceClipsEnabled" checked={!voiceClipsEnabled} onChange={() => setVoiceClipsEnabled(false)} />Off</label>
+          <p className={styles.note}>Written hints always show under a wrong answer regardless of this setting.</p>
         </fieldset>
         <div className={styles.actions}><Button type="submit">Save settings</Button></div>
       </form>

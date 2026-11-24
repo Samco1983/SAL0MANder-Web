@@ -106,13 +106,14 @@ describe('portal Phase 1 — PR 2 parent account', () => {
     await user.click(screen.getByRole('button', { name: /create child profile/i }))
     expect(screen.getByText(/Toby \(7th Grade Math\)/i)).toBeVisible()
 
-    // Settings tab displays the exact four controls + auto-show warning
-    await user.click(screen.getByRole('tab', { name: /settings \(4\)/i }))
+    // Settings tab displays the five controls + auto-show warning
+    await user.click(screen.getByRole('tab', { name: /settings \(5\)/i }))
     expect(screen.getByText(/1\. Questions/i)).toBeVisible()
     expect(screen.getByText(/2\. Show replies/i)).toBeVisible()
     expect(screen.getByText(AUTO_SHOW_WARNING)).toBeVisible()
     expect(screen.getByText(/3\. Games/i)).toBeVisible()
     expect(screen.getByText(/4\. Emails/i)).toBeVisible()
+    expect(screen.getByText(/5\. Mr\. Sam’s voice clips/i)).toBeVisible()
 
     // Export & Delete flow
     await user.click(screen.getByRole('tab', { name: /parent view/i }))

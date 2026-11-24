@@ -17,6 +17,9 @@ import u7Raw from '@content/curriculum/g7/g7-u7-statistics-probability.json'
 export const CURRICULUM_VERSION_ID = 'g7-v1'
 export const ANSWER_INPUT_MIN_CHARS = 24
 export const ANSWER_INPUT_MAX_LENGTH = 64
+export const CORRECT_FADE_MS = 3_000
+export const EXPLANATION_WRONG_TRIES = 3
+export const VOICE_CLIP_PLACEHOLDER_NOTICE = 'Voice clip placeholder — Mr. Sam’s audio clip is not recorded yet (never auto-plays).'
 
 export const CurriculumAnswerTypeSchema = z.enum([
   'integer',
@@ -116,18 +119,30 @@ function uniqueStandards(codes: ReadonlyArray<string>): string[] {
   return [...new Set(codes)]
 }
 
-/** Collects all standards attached to a set (explicit set standards + problem standards, falling back to unit standards). */
+function standardsMentionedInSkill(skill: string, unitStandards: ReadonlyArray<string>): string[] {
+  const lower = skill.toLowerCase()
+  return unitStandards.filter((code) => lower.includes(code.toLowerCase()))
+}
+
+/** Collects standards attached to a set (explicit set/problem standards, skill-matched unit standards, else unit standards). */
 export function getSetStandards(set: CurriculumSet, unit: CurriculumUnit): string[] {
   const fromProblems = set.problems.flatMap((p) => p.standards ?? [])
   const combined = uniqueStandards([...(set.standards ?? []), ...fromProblems])
-  return combined.length > 0 ? combined : [...unit.standards]
+  if (combined.length > 0) return combined
+  const fromSkill = standardsMentionedInSkill(set.skill, unit.standards)
+  return fromSkill.length > 0 ? fromSkill : [...unit.standards]
 }
 
 /** Returns standards for an individual problem, falling back to its set or unit standards when omitted. */
 export function getProblemStandards(problem: CurriculumProblem, set: CurriculumSet, unit: CurriculumUnit): string[] {
   if (problem.standards && problem.standards.length > 0) return [...problem.standards]
-  if (set.standards && set.standards.length > 0) return [...set.standards]
-  return [...unit.standards]
+  return getSetStandards(set, unit)
+}
+
+/** Resolves standards to display for a problem inside a loaded practice set. */
+export function resolveProblemStandards(problem: CurriculumProblem, practiceSet: LoadedPracticeSet): string[] {
+  if (problem.standards && problem.standards.length > 0) return [...problem.standards]
+  return [...practiceSet.standards]
 }
 
 export const GRADE7_PRACTICE_SETS: ReadonlyArray<LoadedPracticeSet> = GRADE7_CURRICULUM.flatMap((unit, unitIndex) =>
@@ -161,6 +176,29 @@ export function getCurriculumSet(setId: string): LoadedPracticeSet | undefined {
 
 export function getDefaultCurriculumSet(): LoadedPracticeSet {
   return GRADE7_PRACTICE_SETS[0]!
+}
+
+/** Filters loaded practice sets by standard code (e.g. "7.EE.1") or keyword across unit, title, skill, and standards. */
+export function filterPracticeSets(
+  query: string,
+  sets: ReadonlyArray<LoadedPracticeSet> = GRADE7_PRACTICE_SETS,
+): LoadedPracticeSet[] {
+  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  if (tokens.length === 0) return [...sets]
+  return sets.filter((entry) => {
+    const haystack = [
+      `unit ${entry.unitNumber}`,
+      entry.unitId,
+      entry.unitName,
+      entry.setId,
+      entry.setLabel,
+      entry.title,
+      entry.skill,
+      ...entry.standards,
+      ...entry.problems.flatMap((p) => p.standards ?? []),
+    ].join(' ').toLowerCase()
+    return tokens.every((tok) => haystack.includes(tok))
+  })
 }
 
 /** Normalizes student text for strict text comparison: trims, removes spaces, ignores case. */

@@ -10,7 +10,7 @@ const hh = (id: string, parentName: string, parentEmail: string, verified: boole
 
 const kid = (id: string, householdId: string, nickname: string, level: string, overrides: Partial<ChildProfile> = {}): ChildProfile => ({
   id, householdId, nickname, level, consentStatus: 'verified', askMode: 'review', autoShow: false,
-  approvedGames: ['act_integer_operations'], joinRooms: false, currentBelt: 'white', stripesEarned: 0,
+  approvedGames: ['act_integer_operations'], joinRooms: false, voiceClipsEnabled: true, currentBelt: 'white', stripesEarned: 0,
   completedUnitIds: [],
   firstConversationLine: 'Just getting started.', lastActiveAt: '2026-11-23T18:00:00Z', ...overrides,
 })

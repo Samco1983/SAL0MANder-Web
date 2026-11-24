@@ -170,6 +170,7 @@ export function updateFourSettings(
     approvedFunGames: string[]
     joinRooms: boolean
     emailMode: EmailMode
+    voiceClipsEnabled?: boolean
   },
 ): PortalState {
   const state = adapter.load()
@@ -188,6 +189,9 @@ export function updateFourSettings(
   child.autoShow = consentOk ? next.autoShow : false
   child.joinRooms = consentOk ? next.joinRooms : false
   child.approvedGames = consentOk ? [...cleanLesson, ...cleanFun] : []
+  if (typeof next.voiceClipsEnabled === 'boolean') {
+    child.voiceClipsEnabled = next.voiceClipsEnabled
+  }
   return adapter.save(state)
 }
 

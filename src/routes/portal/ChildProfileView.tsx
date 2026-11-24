@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { buildChildActor, can, type PortalActor } from '@/portal/access'
@@ -6,11 +6,16 @@ import { ASK_SEND_DISCLOSURE, submitAskQuestion } from '@/portal/askActions'
 import { awardCosmeticPoints, countPassedSetsInUnit, getCourseLadder, getNextBeltStep } from '@/portal/belts'
 import {
   ANSWER_INPUT_MAX_LENGTH,
+  CORRECT_FADE_MS,
+  EXPLANATION_WRONG_TRIES,
   GRADE7_CURRICULUM,
   GRADE7_PRACTICE_SETS,
+  VOICE_CLIP_PLACEHOLDER_NOTICE,
   checkCurriculumAnswer,
+  filterPracticeSets,
   getCurriculumSet,
   getDefaultCurriculumSet,
+  resolveProblemStandards,
   selectProblemHint,
   type CurriculumProblem,
   type LoadedPracticeSet,
@@ -59,6 +64,7 @@ export function ChildProfileView({
 }) {
   const [selectedChildId, setSelectedChildId] = useState(state.children[0]?.id ?? '')
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null)
+  const [setSearchQuery, setSetSearchQuery] = useState('')
   const [openWorkId, setOpenWorkId] = useState<string | null>(null)
   const [profileError, setProfileError] = useState('')
 
@@ -84,7 +90,10 @@ export function ChildProfileView({
 
   const activeUnitId = selectedUnitId ?? defaultUnitForChild(child)
   const activeUnit = GRADE7_CURRICULUM.find((u) => u.unitId === activeUnitId) ?? GRADE7_CURRICULUM[0]!
-  const activeUnitSets = GRADE7_PRACTICE_SETS.filter((s) => s.unitId === activeUnit.unitId)
+  const isSearching = setSearchQuery.trim().length > 0
+  const displayedSets = isSearching
+    ? filterPracticeSets(setSearchQuery, GRADE7_PRACTICE_SETS)
+    : GRADE7_PRACTICE_SETS.filter((s) => s.unitId === activeUnit.unitId)
 
   const draftWork = visibleWork.find((w) => w.status === 'draft' && getCurriculumSet(w.activityId))
   const continueSet: LoadedPracticeSet =
@@ -114,7 +123,7 @@ export function ChildProfileView({
               type="button"
               size="sm"
               variant={c.id === child.id ? 'primary' : 'secondary'}
-              onClick={() => { setSelectedChildId(c.id); setSelectedUnitId(null); setOpenWorkId(null); setProfileError('') }}
+              onClick={() => { setSelectedChildId(c.id); setSelectedUnitId(null); setSetSearchQuery(''); setOpenWorkId(null); setProfileError('') }}
             >
               {c.nickname} ({c.currentBelt})
             </Button>
@@ -166,50 +175,84 @@ export function ChildProfileView({
           {child.consentStatus === 'verified' ? (
             <Card title="Choose a unit and set (7th Grade Math — 7 units × 3 sets)" headingLevel={2}>
               <div className={styles.stack} data-testid="unit-set-picker">
-                <div className={styles.actions} role="group" aria-label="Choose a unit">
-                  {GRADE7_CURRICULUM.map((unit, idx) => {
-                    const unitCfg = ladder.units.find((u) => u.unitId === unit.unitId)
-                    const passedCount = unitCfg ? countPassedSetsInUnit(state, child.id, unitCfg) : 0
-                    const unitDone = completedUnitSet.has(unit.unitId) || (unitCfg ? passedCount === unitCfg.requiredActivityIds.length : false)
-                    return (
-                      <Button
-                        key={unit.unitId}
-                        type="button"
-                        size="sm"
-                        variant={unit.unitId === activeUnit.unitId ? 'primary' : 'secondary'}
-                        onClick={() => setSelectedUnitId(unit.unitId)}
-                      >
-                        {unitDone ? '✓ ' : ''}Unit {idx + 1}: {unit.unitName}
-                      </Button>
-                    )
-                  })}
+                <div className={styles.searchRow}>
+                  <label className={styles.field}>
+                    <span>Search sets by standard code or word</span>
+                    <input
+                      type="search"
+                      className={styles.input}
+                      value={setSearchQuery}
+                      onChange={(e) => setSetSearchQuery(e.target.value)}
+                      placeholder="e.g. 7.EE.1, 7.RP.3, percent, scale"
+                    />
+                  </label>
+                  {isSearching ? (
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setSetSearchQuery('')}>
+                      Clear search
+                    </Button>
+                  ) : null}
                 </div>
-                <p className={styles.note}>
-                  <strong>Unit {GRADE7_CURRICULUM.findIndex((u) => u.unitId === activeUnit.unitId) + 1}: {activeUnit.unitName}</strong>
-                  {' · '}Complete all 3 sets + open responses for this unit’s stripe.
-                </p>
-                <div className={styles.stack}>
-                  {activeUnitSets.map((setEntry) => {
-                    const existing = visibleWork.find((w) => w.activityId === setEntry.setId)
-                    const statusLabel =
-                      existing?.status === 'reviewed' ? 'Reviewed ✓'
-                        : existing?.status === 'submitted' ? 'Submitted'
-                          : existing?.status === 'draft' ? 'In progress'
-                            : 'Not started'
-                    return (
-                      <div key={setEntry.setId} className={styles.setCard} data-testid={`set-card-${setEntry.setId}`}>
-                        <div className={styles.checkMeta}>
-                          <p className={styles.checkLabel}>{setEntry.setLabel}: {setEntry.title}</p>
-                          <p className={styles.checkDetail}>{setEntry.skill}</p>
-                          <p className={styles.note}>{setEntry.problems.length} problems + open response · Status: <strong>{statusLabel}</strong></p>
+
+                {!isSearching ? (
+                  <>
+                    <div className={styles.actions} role="group" aria-label="Choose a unit">
+                      {GRADE7_CURRICULUM.map((unit, idx) => {
+                        const unitCfg = ladder.units.find((u) => u.unitId === unit.unitId)
+                        const passedCount = unitCfg ? countPassedSetsInUnit(state, child.id, unitCfg) : 0
+                        const unitDone = completedUnitSet.has(unit.unitId) || (unitCfg ? passedCount === unitCfg.requiredActivityIds.length : false)
+                        return (
+                          <Button
+                            key={unit.unitId}
+                            type="button"
+                            size="sm"
+                            variant={unit.unitId === activeUnit.unitId ? 'primary' : 'secondary'}
+                            onClick={() => setSelectedUnitId(unit.unitId)}
+                          >
+                            {unitDone ? '✓ ' : ''}Unit {idx + 1}: {unit.unitName}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                    <p className={styles.note}>
+                      <strong>Unit {GRADE7_CURRICULUM.findIndex((u) => u.unitId === activeUnit.unitId) + 1}: {activeUnit.unitName}</strong>
+                      {' · '}Complete all 3 sets + open responses for this unit’s stripe.
+                    </p>
+                  </>
+                ) : (
+                  <p className={styles.note} role="status" data-testid="set-search-count">
+                    Showing {displayedSets.length} matching {displayedSets.length === 1 ? 'set' : 'sets'} for “{setSearchQuery.trim()}”.
+                  </p>
+                )}
+
+                {displayedSets.length === 0 ? (
+                  <p className={styles.note}>No sets matched “{setSearchQuery.trim()}”. Try a standard like 7.NS.1, 7.EE.1, or a topic like percent.</p>
+                ) : (
+                  <div className={styles.stack}>
+                    {displayedSets.map((setEntry) => {
+                      const existing = visibleWork.find((w) => w.activityId === setEntry.setId)
+                      const statusLabel =
+                        existing?.status === 'reviewed' ? 'Reviewed ✓'
+                          : existing?.status === 'submitted' ? 'Submitted'
+                            : existing?.status === 'draft' ? 'In progress'
+                              : 'Not started'
+                      return (
+                        <div key={setEntry.setId} className={styles.setCard} data-testid={`set-card-${setEntry.setId}`}>
+                          <div className={styles.checkMeta}>
+                            <p className={styles.checkLabel}>
+                              {isSearching ? `Unit ${setEntry.unitNumber} · ` : ''}{setEntry.setLabel}: {setEntry.title}
+                            </p>
+                            <p className={styles.checkDetail}>{setEntry.skill}</p>
+                            <p className={styles.standardCode}>Standards: {setEntry.standards.join(', ')}</p>
+                            <p className={styles.note}>{setEntry.problems.length} problems + open response · Status: <strong>{statusLabel}</strong></p>
+                          </div>
+                          <Button type="button" size="sm" variant={existing?.status === 'draft' ? 'primary' : 'secondary'} onClick={() => openPracticeSet(setEntry)}>
+                            {existing?.status === 'draft' ? `Resume ${setEntry.setLabel}` : existing ? `Review / Redo ${setEntry.setLabel}` : `Open ${setEntry.setLabel}`}
+                          </Button>
                         </div>
-                        <Button type="button" size="sm" variant={existing?.status === 'draft' ? 'primary' : 'secondary'} onClick={() => openPracticeSet(setEntry)}>
-                          {existing?.status === 'draft' ? `Resume ${setEntry.setLabel}` : existing ? `Review / Redo ${setEntry.setLabel}` : `Open ${setEntry.setLabel}`}
-                        </Button>
-                      </div>
-                    )
-                  })}
-                </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </Card>
           ) : null}
@@ -387,6 +430,10 @@ type ProblemCheckState = {
   status: 'correct' | 'wrong'
   hint: string | null
   tries: number
+  wrongTries: number
+  showCorrectBanner: boolean
+  showExplanation: boolean
+  voicePlaceholderShown: boolean
 }
 
 function initialCheckState(attempt: WorkAttempt | undefined, practiceSet: LoadedPracticeSet): Record<string, ProblemCheckState> {
@@ -397,10 +444,15 @@ function initialCheckState(attempt: WorkAttempt | undefined, practiceSet: Loaded
     const prob = byId.get(a.questionId)
     if (!prob) continue
     const ok = checkCurriculumAnswer(a.chosenValue, prob)
+    const wrongTries = ok ? Math.max(0, a.tries - 1) : a.tries
     out[a.questionId] = {
       status: ok ? 'correct' : 'wrong',
       hint: ok ? null : selectProblemHint(a.chosenValue, prob),
       tries: a.tries,
+      wrongTries,
+      showCorrectBanner: false,
+      showExplanation: ok || wrongTries >= EXPLANATION_WRONG_TRIES,
+      voicePlaceholderShown: false,
     }
   }
   return out
@@ -419,9 +471,11 @@ function WorksheetPanel({
   const activeAttempt = record.attempts.at(-1)
   const priorAttempts = record.attempts.slice(0, -1)
   const isFrozen = record.status !== 'draft' || activeAttempt?.submittedAt !== null
+  const voiceClipsAllowed = child.voiceClipsEnabled ?? true
 
   const [answers, setAnswers] = useState<Record<string, DraftAnswerInput>>(() => answersToMap(activeAttempt))
   const [checkedMap, setCheckedMap] = useState<Record<string, ProblemCheckState>>(() => initialCheckState(activeAttempt, practiceSet))
+  const [hintsMuted, setHintsMuted] = useState(false)
   const [openResponse, setOpenResponse] = useState(() => activeAttempt?.openResponse ?? record.openResponse)
   const [localRevision, setLocalRevision] = useState(record.currentRevision)
   const [failedSaveMode, setFailedSaveMode] = useState(false)
@@ -429,6 +483,24 @@ function WorksheetPanel({
     kind: 'saved',
     text: isFrozen ? `Submitted · rev ${record.currentRevision} (read-only)` : `Saved · rev ${record.currentRevision}`,
   })
+
+  // Timers exist ONLY to fade the "Correct!" message after ~3 seconds. Hints NEVER have a timer.
+  const correctTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+
+  useEffect(() => {
+    const timers = correctTimersRef.current
+    return () => {
+      for (const timer of Object.values(timers)) clearTimeout(timer)
+    }
+  }, [])
+
+  function clearCorrectTimer(questionId: string) {
+    const existing = correctTimersRef.current[questionId]
+    if (existing !== undefined) {
+      clearTimeout(existing)
+      delete correctTimersRef.current[questionId]
+    }
+  }
 
   function persistDraft(nextAnswers: Record<string, DraftAnswerInput>, nextOpen: string, bypassFail = false) {
     if (isFrozen) return
@@ -474,6 +546,8 @@ function WorksheetPanel({
     if (!chosenValue.trim()) return
     const ok = checkCurriculumAnswer(chosenValue, problem)
     const tries = (prev?.tries ?? 0) + 1
+    const prevCheck = checkedMap[problem.id]
+    const wrongTries = ok ? (prevCheck?.wrongTries ?? 0) : (prevCheck?.wrongTries ?? 0) + 1
     const next = {
       ...answers,
       [problem.id]: {
@@ -485,15 +559,39 @@ function WorksheetPanel({
       },
     }
     setAnswers(next)
+    clearCorrectTimer(problem.id)
     setCheckedMap((prevMap) => ({
       ...prevMap,
       [problem.id]: {
         status: ok ? 'correct' : 'wrong',
         hint: ok ? null : selectProblemHint(chosenValue, problem),
         tries,
+        wrongTries,
+        showCorrectBanner: ok,
+        showExplanation: ok || wrongTries >= EXPLANATION_WRONG_TRIES || Boolean(prevCheck?.showExplanation),
+        voicePlaceholderShown: false,
       },
     }))
+    if (ok) {
+      correctTimersRef.current[problem.id] = setTimeout(() => {
+        setCheckedMap((prevMap) => {
+          const cur = prevMap[problem.id]
+          if (!cur) return prevMap
+          return { ...prevMap, [problem.id]: { ...cur, showCorrectBanner: false } }
+        })
+        delete correctTimersRef.current[problem.id]
+      }, CORRECT_FADE_MS)
+    }
     persistDraft(next, openResponse)
+  }
+
+  function handleHearMrSam(problemId: string) {
+    if (!voiceClipsAllowed || hintsMuted) return
+    setCheckedMap((prevMap) => {
+      const cur = prevMap[problemId]
+      if (!cur) return prevMap
+      return { ...prevMap, [problemId]: { ...cur, voicePlaceholderShown: !cur.voicePlaceholderShown } }
+    })
   }
 
   function handleSubmit() {
@@ -542,6 +640,7 @@ function WorksheetPanel({
               const entry = answers[q.id]
               const chosenValue = entry?.chosenValue ?? ''
               const fb = checkedMap[q.id]
+              const standards = resolveProblemStandards(q, practiceSet)
               return (
                 <li key={q.id} className={styles.questionItem} data-testid={`problem-${q.id}`}>
                   {q.answerType === 'choice' && q.choices ? (
@@ -593,12 +692,61 @@ function WorksheetPanel({
                       </div>
                     </div>
                   )}
-                  {fb ? (
-                    fb.status === 'correct' ? (
-                      <p className={styles.correctText}>Correct! ({fb.tries} {fb.tries === 1 ? 'try' : 'tries'})</p>
-                    ) : (
-                      <p className={styles.hintText}>Teacher hint: {fb.hint}</p>
-                    )
+
+                  <p className={styles.standardCode} data-testid={`problem-standards-${q.id}`}>
+                    Standard{standards.length === 1 ? '' : 's'}: {standards.join(', ')}
+                  </p>
+
+                  {fb?.showCorrectBanner ? (
+                    <p className={styles.correctText} role="status" data-testid={`correct-msg-${q.id}`}>
+                      Correct! ({fb.tries} {fb.tries === 1 ? 'try' : 'tries'})
+                    </p>
+                  ) : null}
+
+                  {fb?.status === 'wrong' && fb.hint ? (
+                    <div className={styles.hintBox} data-testid={`hint-box-${q.id}`}>
+                      <div className={styles.hintRow}>
+                        <p className={styles.hintText}>Teacher hint: {fb.hint}</p>
+                        <div className={styles.actions}>
+                          {voiceClipsAllowed ? (
+                            <>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="secondary"
+                                disabled={hintsMuted}
+                                onClick={() => handleHearMrSam(q.id)}
+                              >
+                                Hear Mr. Sam explain
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                aria-pressed={hintsMuted}
+                                onClick={() => setHintsMuted((m) => !m)}
+                              >
+                                {hintsMuted ? 'Unmute' : 'Mute'}
+                              </Button>
+                            </>
+                          ) : (
+                            <span className={styles.note}>Mr. Sam’s voice clips: Off (parent setting)</span>
+                          )}
+                        </div>
+                      </div>
+                      {voiceClipsAllowed && hintsMuted ? (
+                        <p className={styles.note}>Voice clips muted — written hint stays visible.</p>
+                      ) : null}
+                      {voiceClipsAllowed && !hintsMuted && fb.voicePlaceholderShown ? (
+                        <p className={styles.note} role="status">{VOICE_CLIP_PLACEHOLDER_NOTICE}</p>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {fb?.showExplanation ? (
+                    <p className={styles.explanationBox} data-testid={`explanation-${q.id}`}>
+                      <strong>Explanation:</strong> {q.explanation}
+                    </p>
                   ) : null}
                 </li>
               )

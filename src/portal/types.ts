@@ -35,6 +35,7 @@ export const ChildProfileSchema = z.object({
   id, householdId: id, nickname: id, level: id, pinHash: id.optional(),
   consentStatus: ConsentStatusSchema, askMode: AskModeSchema, autoShow: z.boolean(),
   approvedGames: z.array(z.string()), joinRooms: z.boolean(),
+  voiceClipsEnabled: z.boolean().default(true),
   currentBelt: BeltColorSchema, stripesEarned: z.number().int().min(0),
   completedUnitIds: z.array(id).default([]),
   firstConversationLine: z.string(),
