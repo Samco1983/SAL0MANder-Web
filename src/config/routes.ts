@@ -33,6 +33,8 @@ export const paths = {
   unity: '/unity',
   /** Owner-facing V6 mission selector and its two bounded commands. */
   console: '/console',
+  /** Phase 1 fictional-data tutoring portal demonstration (demo only). */
+  portal: '/portal',
   notFound: '*',
 } as const
 
