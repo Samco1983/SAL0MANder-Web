@@ -94,6 +94,17 @@ export const PUZZLE_LIBRARY: readonly PuzzlePicture[] = [
     height: 480,
   },
   {
+    key: 'sal0mander-rover-expedition',
+    searchTerms: ['salamander', 'rover', 'spaceship', 'planet', 'crystals'],
+    shape: 'Square',
+    name: 'Rover expedition',
+    category: 'Space',
+    src: '/images/library/square/fantasy/sal0mander_rover_expedition.webp',
+    alt: 'Fantasy illustration of the SAL0MANder hero, a lime-green salamander with purple markings and goggles, riding a purple rover across a violet alien desert; a purple spaceship with a lowered ramp waits by a glowing green lake, with a ringed green planet, a spiral galaxy and purple crystals in the scene.',
+    width: 480,
+    height: 480,
+  },
+  {
     key: 'red-panda',
     shape: 'Square',
     name: 'Red panda forest',
