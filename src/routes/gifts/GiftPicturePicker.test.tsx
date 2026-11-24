@@ -100,6 +100,7 @@ it('finds both puppy and race-car photos using common search spellings', async (
     await user.type(search, query)
     expect(screen.getByRole('button', { name: 'Choose Orange Indy race car' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Choose Red Indy race car' })).toBeVisible()
-    expect(screen.getAllByRole('button', { name: /^Choose / })).toHaveLength(2)
+    expect(screen.getByRole('button', { name: 'Choose Track race cars' })).toBeVisible()
+    expect(screen.getAllByRole('button', { name: /^Choose / })).toHaveLength(3)
   }
 })
