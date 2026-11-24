@@ -1,0 +1,2284 @@
+{
+  "unitId": "g7-u4",
+  "course": "7th grade",
+  "unitName": "Expressions",
+  "standards": [
+    "7.EE.1",
+    "7.EE.2"
+  ],
+  "sets": [
+    {
+      "setId": "g7-u4-a",
+      "title": "Combining like terms, distributive property with rational coefficients",
+      "skill": "Add, subtract and expand linear expressions with rational coefficients by combining like terms and using the distributive property (7.EE.1)",
+      "standards": [
+        "7.EE.1",
+        "7.EE.2"
+      ],
+      "problems": [
+        {
+          "id": "g7-u4-a-01",
+          "prompt": "Simplify: 3x + 5x",
+          "answerType": "expression",
+          "answer": "8x",
+          "acceptedAnswers": [
+            "8x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "15x",
+              "say": "You multiplied the 3 and the 5. Three x's and five more x's: how many x's is that?"
+            },
+            {
+              "ifAnswer": "8x^2",
+              "say": "So close! Adding x's doesn't change them into x². You just count how many x's there are."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Think of x as an object: 3 of them plus 5 more of them."
+            }
+          ],
+          "explanation": "3x and 5x are like terms, so add the coefficients: 3 + 5 = 8. The answer is 8x.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-a-02",
+          "prompt": "Simplify: 7y - 2y + 4",
+          "answerType": "expression",
+          "answer": "5y + 4",
+          "acceptedAnswers": [
+            "5y + 4",
+            "5y+4",
+            "4 + 5y",
+            "4+5y"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9y",
+              "say": "The 4 has no y, so it isn't a like term with 7y or 2y. It stays on its own."
+            },
+            {
+              "ifAnswer": "9y + 4",
+              "say": "Check the sign in front of 2y. It's being taken away."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Combine only the y terms. The plain number stays as it is."
+            }
+          ],
+          "explanation": "7y - 2y = 5y. The 4 is a constant and stays, so the answer is 5y + 4.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-a-03",
+          "prompt": "Use the distributive property to expand: 4(x + 3)",
+          "answerType": "expression",
+          "answer": "4x + 12",
+          "acceptedAnswers": [
+            "4x + 12",
+            "4x+12",
+            "12 + 4x",
+            "12+4x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4x + 3",
+              "say": "You multiplied the x by 4, nice. The 4 multiplies EVERYTHING inside the parentheses, so the 3 gets multiplied too."
+            },
+            {
+              "ifAnswer": "4x + 7",
+              "say": "You added 4 and 3. The 4 outside multiplies each term inside."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply 4 by x, then multiply 4 by 3."
+            }
+          ],
+          "explanation": "4(x + 3) = 4·x + 4·3 = 4x + 12.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-a-04",
+          "prompt": "Which expression is equivalent to 2(3x - 5)?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "6x - 5",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "6x - 10",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "5x - 3",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "6x + 10",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "The 2 multiplied the 3x but skipped the 5. It multiplies both terms."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Right numbers, but check the sign: 2 times -5 is negative."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply the 2 by each term inside: 2 times 3x, and 2 times -5."
+            }
+          ],
+          "explanation": "2(3x - 5) = 6x - 10.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-a-05",
+          "prompt": "Simplify: 6a + 2 - a + 5",
+          "answerType": "expression",
+          "answer": "5a + 7",
+          "acceptedAnswers": [
+            "5a + 7",
+            "5a+7",
+            "7 + 5a",
+            "7+5a"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6a + 7",
+              "say": "The constants are right. Look again at \"- a\": that's one a being taken away."
+            },
+            {
+              "ifAnswer": "7a + 7",
+              "say": "The minus sign belongs to the a after it. 6a minus one a is how many a's?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Group like terms: (6a - a) + (2 + 5). Remember that a means 1a."
+            }
+          ],
+          "explanation": "6a - a = 5a, and 2 + 5 = 7. So the answer is 5a + 7.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-a-06",
+          "prompt": "Expand: -3(x + 4)",
+          "answerType": "expression",
+          "answer": "-3x - 12",
+          "acceptedAnswers": [
+            "-3x - 12",
+            "-3x-12",
+            "-12 - 3x",
+            "-12-3x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-3x + 12",
+              "say": "The x part is right. Now -3 times +4: one negative and one positive make what sign?"
+            },
+            {
+              "ifAnswer": "-3x + 4",
+              "say": "The -3 has to multiply the 4 too, not just the x."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply -3 by x, and -3 by 4. Watch the signs."
+            }
+          ],
+          "explanation": "-3 · x = -3x and -3 · 4 = -12, so -3(x + 4) = -3x - 12.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-a-07",
+          "prompt": "Expand: (1/2)(4x - 10)",
+          "answerType": "expression",
+          "answer": "2x - 5",
+          "acceptedAnswers": [
+            "2x - 5",
+            "2x-5",
+            "-5 + 2x",
+            "-5+2x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2x - 10",
+              "say": "You took half of 4x. Half of the -10 is needed too."
+            },
+            {
+              "ifAnswer": "8x - 20",
+              "say": "You doubled. Multiplying by 1/2 means taking half."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiplying by 1/2 means taking half of each term."
+            }
+          ],
+          "explanation": "(1/2)(4x) = 2x and (1/2)(-10) = -5, so the answer is 2x - 5.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-a-08",
+          "prompt": "Simplify: 0.5x + 1.2 - 0.3x - 2",
+          "answerType": "expression",
+          "answer": "0.2x - 0.8",
+          "acceptedAnswers": [
+            "0.2x - 0.8",
+            "0.2x-0.8",
+            "-0.8 + 0.2x",
+            "-0.8+0.2x",
+            ".2x - .8",
+            ".2x-.8"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.8x - 0.8",
+              "say": "The minus sign in front of 0.3x goes with it. It's 0.5x take away 0.3x."
+            },
+            {
+              "ifAnswer": "0.2x + 0.8",
+              "say": "The x part is right. Check the numbers: 1.2 - 2 takes away more than you have."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Combine the x terms: 0.5x - 0.3x. Then combine the numbers: 1.2 - 2."
+            }
+          ],
+          "explanation": "0.5x - 0.3x = 0.2x and 1.2 - 2 = -0.8. The answer is 0.2x - 0.8.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-a-09",
+          "prompt": "Which expression is equivalent to -2(x - 5) + 3x?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "x - 10",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "5x + 10",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "x + 10",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "-5x - 10",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Check -2 times -5. Two negatives make a positive."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "-2 times x is -2x, not +2x. Then combine -2x with 3x."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distribute -2 first, then combine the x terms."
+            }
+          ],
+          "explanation": "-2(x - 5) = -2x + 10. Then -2x + 10 + 3x = x + 10.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-a-10",
+          "prompt": "Simplify: 5(2x - 1) - 4x",
+          "answerType": "expression",
+          "answer": "6x - 5",
+          "acceptedAnswers": [
+            "6x - 5",
+            "6x-5",
+            "-5 + 6x",
+            "-5+6x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6x - 1",
+              "say": "The 5 multiplies the -1 too. What is 5 times -1?"
+            },
+            {
+              "ifAnswer": "14x - 5",
+              "say": "The minus sign goes with the 4x. It's 10x take away 4x."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distribute the 5 first, then combine the x terms."
+            }
+          ],
+          "explanation": "5(2x - 1) = 10x - 5. Then 10x - 5 - 4x = 6x - 5.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-a-11",
+          "prompt": "Expand: -(3/4)(8x - 12)",
+          "answerType": "expression",
+          "answer": "-6x + 9",
+          "acceptedAnswers": [
+            "-6x + 9",
+            "-6x+9",
+            "9 - 6x",
+            "9-6x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-6x - 9",
+              "say": "The x part is right. Now -(3/4) times -12: two negatives make what sign?"
+            },
+            {
+              "ifAnswer": "-6x - 12",
+              "say": "The -(3/4) multiplies the -12 too, not only the 8x."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply -(3/4) by 8x, then by -12. Three quarters of 8 is 6, and three quarters of 12 is 9."
+            }
+          ],
+          "explanation": "-(3/4)(8x) = -6x and -(3/4)(-12) = +9, so the answer is -6x + 9.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-a-12",
+          "prompt": "Simplify: (2/3)x + (1/6)x",
+          "answerType": "expression",
+          "answer": "(5/6)x",
+          "acceptedAnswers": [
+            "(5/6)x",
+            "5/6x",
+            "5x/6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3/9x",
+              "say": "You added the tops and the bottoms. To add fractions, use a common denominator: 2/3 = 4/6."
+            },
+            {
+              "ifAnswer": "1/9x",
+              "say": "You multiplied the fractions. These are like terms, so ADD the coefficients."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add the coefficients 2/3 and 1/6. Write 2/3 in sixths first."
+            }
+          ],
+          "explanation": "2/3 = 4/6, and 4/6 + 1/6 = 5/6. So the answer is (5/6)x.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-a-13",
+          "prompt": "Simplify: 3(x + 2) + 2(x - 4)",
+          "answerType": "expression",
+          "answer": "5x - 2",
+          "acceptedAnswers": [
+            "5x - 2",
+            "5x-2",
+            "-2 + 5x",
+            "-2+5x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5x + 14",
+              "say": "Check the second group: 2 times -4 is negative."
+            },
+            {
+              "ifAnswer": "5x - 6",
+              "say": "The x parts are right. The 3 and the 2 also multiply the numbers inside: 3 times 2 and 2 times -4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distribute in each group, then combine the x terms and the numbers."
+            }
+          ],
+          "explanation": "3x + 6 + 2x - 8 = 5x - 2.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-a-14",
+          "prompt": "Which expression is equivalent to 4 - 2(3x - 1)?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "2(3x - 1)",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "6 - 6x",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "2 - 6x",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "4 - 6x - 1",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You did 4 - 2 first. The order of operations says multiply first, so -2 goes with the parentheses."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Check -2 times -1. Two negatives make a positive."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distribute -2 to both terms in the parentheses before you do anything else."
+            }
+          ],
+          "explanation": "-2(3x - 1) = -6x + 2. Then 4 - 6x + 2 = 6 - 6x.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-a-15",
+          "prompt": "Simplify: -1.5(2x - 4) + 0.5x",
+          "answerType": "expression",
+          "answer": "-2.5x + 6",
+          "acceptedAnswers": [
+            "-2.5x + 6",
+            "-2.5x+6",
+            "6 - 2.5x",
+            "6-2.5x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-2.5x - 6",
+              "say": "The x part is right. Check -1.5 times -4: negative times negative is positive."
+            },
+            {
+              "ifAnswer": "3.5x - 6",
+              "say": "Both signs flipped, which happens when the -1.5 is treated like +1.5. Keep its negative sign."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distribute -1.5 to 2x and to -4. Then combine the x terms."
+            }
+          ],
+          "explanation": "-1.5(2x) = -3x and -1.5(-4) = 6. Then -3x + 6 + 0.5x = -2.5x + 6.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-a-16",
+          "prompt": "Simplify: (1/2)(6x + 4) - (1/3)(9x - 3)",
+          "answerType": "expression",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1",
+              "say": "Very close! The minus sign in front of (1/3) changes the sign of BOTH terms it multiplies, including the -3."
+            },
+            {
+              "ifAnswer": "6x + 3",
+              "say": "The minus sign in front of (1/3) has to change the 3x to -3x as well."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distribute in each part. The minus sign goes along with the 1/3 to both terms."
+            }
+          ],
+          "explanation": "(1/2)(6x + 4) = 3x + 2 and -(1/3)(9x - 3) = -3x + 1. Then 3x + 2 - 3x + 1 = 3. The x terms cancel.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-a-17",
+          "prompt": "Simplify: 2.4y - 3(0.6y - 1.5)",
+          "answerType": "expression",
+          "answer": "0.6y + 4.5",
+          "acceptedAnswers": [
+            "0.6y + 4.5",
+            "0.6y+4.5",
+            "4.5 + 0.6y",
+            "4.5+0.6y",
+            ".6y + 4.5",
+            ".6y+4.5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.6y - 4.5",
+              "say": "The y part is right. Check -3 times -1.5: two negatives make a positive."
+            },
+            {
+              "ifAnswer": "0.6y + 1.5",
+              "say": "The -3 multiplies the -1.5 too, not only the 0.6y."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distribute -3 to both terms inside, then combine the y terms."
+            }
+          ],
+          "explanation": "-3(0.6y) = -1.8y and -3(-1.5) = 4.5. Then 2.4y - 1.8y + 4.5 = 0.6y + 4.5.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-a-18",
+          "prompt": "Which expression is NOT equivalent to 6x - 9?",
+          "answerType": "choice",
+          "answer": "d",
+          "acceptedAnswers": [
+            "d"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "3(2x - 3)",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "-3(3 - 2x)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "6(x - 1.5)",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3(2x - 9)",
+              "isCorrect": true
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "Multiply it out to check: -3 times 3 is -9, and -3 times -2x is +6x. So this one IS equivalent."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Multiply it out: 6 times x is 6x, and 6 times -1.5 is -9. So this one IS equivalent."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Expand each choice and see which one doesn't give 6x - 9."
+            }
+          ],
+          "explanation": "3(2x - 9) = 6x - 27, which is not 6x - 9. The others all expand to 6x - 9.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-a-19",
+          "prompt": "Simplify: -(x - 7) - 3(2 - x)",
+          "answerType": "expression",
+          "answer": "2x + 1",
+          "acceptedAnswers": [
+            "2x + 1",
+            "2x+1",
+            "1 + 2x",
+            "1+2x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-4x + 1",
+              "say": "Check -3 times -x. Two negatives make a positive, so that term is +3x."
+            },
+            {
+              "ifAnswer": "2x + 13",
+              "say": "The x terms are right. Check -3 times 2: that's -6, not +6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distribute the - in front of (x - 7), and the -3 in front of (2 - x). Then combine."
+            }
+          ],
+          "explanation": "-(x - 7) = -x + 7 and -3(2 - x) = -6 + 3x. Then -x + 3x + 7 - 6 = 2x + 1.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-a-20",
+          "prompt": "Simplify: (3/4)(8n - 4) - (1/2)(n + 6)",
+          "answerType": "expression",
+          "answer": "5.5n - 6",
+          "acceptedAnswers": [
+            "5.5n - 6",
+            "5.5n-6",
+            "(11/2)n - 6",
+            "(11/2)n-6",
+            "11/2n - 6",
+            "11/2n-6",
+            "11n/2 - 6",
+            "11n/2-6",
+            "-6 + 5.5n",
+            "-6+5.5n"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5.5n",
+              "say": "The n part is right. Check the numbers: (3/4)(-4) is -3, and -(1/2)(6) is another -3."
+            },
+            {
+              "ifAnswer": "6.5n - 6",
+              "say": "The minus sign in front of (1/2) makes the n term -(1/2)n. Take it away instead of adding it."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distribute in each part: (3/4) to both terms, and -(1/2) to both terms. Then combine like terms."
+            }
+          ],
+          "explanation": "(3/4)(8n - 4) = 6n - 3 and -(1/2)(n + 6) = -0.5n - 3. Then 6n - 0.5n - 3 - 3 = 5.5n - 6.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 19,
+        "prompt": "Explain how you did number 19. Write each step you took and why, and show how you checked that your answer is equivalent to the expression you started with (for example, by putting in a number for the variable). If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u4-b",
+      "title": "Factoring expressions and rewriting (equivalent forms)",
+      "skill": "Factor linear expressions using the greatest common factor (including negative and fractional factors) and rewrite expressions in equivalent forms that show how quantities are related (7.EE.1, 7.EE.2)",
+      "standards": [
+        "7.EE.1",
+        "7.EE.2"
+      ],
+      "problems": [
+        {
+          "id": "g7-u4-b-01",
+          "prompt": "Factor: 3x + 12",
+          "answerType": "expression",
+          "answer": "3(x + 4)",
+          "acceptedAnswers": [
+            "3(x + 4)",
+            "3(x+4)",
+            "3(4 + x)",
+            "3(4+x)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3(x + 12)",
+              "say": "You pulled the 3 out of 3x, nice. Pull it out of 12 too: 12 is 3 times what?"
+            },
+            {
+              "ifAnswer": "4(x + 3)",
+              "say": "Check by multiplying back: 4(x + 3) is 4x + 12. The number in front of x has to stay 3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Both terms can be divided by 3. Write 3( ___ + ___ ) and fill in what's left."
+            }
+          ],
+          "explanation": "3x = 3 · x and 12 = 3 · 4, so 3x + 12 = 3(x + 4). Check: 3(x + 4) = 3x + 12.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-b-02",
+          "prompt": "Factor: 5n - 20",
+          "answerType": "expression",
+          "answer": "5(n - 4)",
+          "acceptedAnswers": [
+            "5(n - 4)",
+            "5(n-4)",
+            "5(-4 + n)",
+            "5(-4+n)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5(n - 20)",
+              "say": "You took the 5 out of 5n. Take it out of 20 too: 20 is 5 times what?"
+            },
+            {
+              "ifAnswer": "5(n + 4)",
+              "say": "Right numbers! Check the sign by multiplying back: 5 times +4 is +20, but you need -20."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide each term by 5 and keep its sign."
+            }
+          ],
+          "explanation": "5n ÷ 5 = n and -20 ÷ 5 = -4, so 5n - 20 = 5(n - 4).",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-b-03",
+          "prompt": "Factor out the greatest common factor: 8x + 6",
+          "answerType": "expression",
+          "answer": "2(4x + 3)",
+          "acceptedAnswers": [
+            "2(4x + 3)",
+            "2(4x+3)",
+            "2(3 + 4x)",
+            "2(3+4x)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2(4x + 6)",
+              "say": "You divided 8x by 2. Divide the 6 by 2 as well."
+            },
+            {
+              "ifAnswer": "8(x + 6)",
+              "say": "8 doesn't go into 6. Find the biggest number that divides BOTH 8 and 6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "What is the biggest number that divides both 8 and 6?"
+            }
+          ],
+          "explanation": "The GCF of 8 and 6 is 2. 8x ÷ 2 = 4x and 6 ÷ 2 = 3, so 8x + 6 = 2(4x + 3).",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-b-04",
+          "prompt": "Which expression is equivalent to 12x + 18?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "6(2x + 3)",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "6(2x + 18)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "12(x + 6)",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3(4x + 3)",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "You took 6 out of 12x but not out of 18. Multiply back: 6 times 18 is 108."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Multiply it out: 3 times 3 is 9, not 18."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply each choice back out and see which one gives 12x + 18."
+            }
+          ],
+          "explanation": "6(2x + 3) = 12x + 18.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-b-05",
+          "prompt": "Factor: 10a + 15b",
+          "answerType": "expression",
+          "answer": "5(2a + 3b)",
+          "acceptedAnswers": [
+            "5(2a + 3b)",
+            "5(2a+3b)",
+            "5(3b + 2a)",
+            "5(3b+2a)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5(2a + 3)",
+              "say": "The numbers are right! The b still belongs to the second term, so keep it inside."
+            },
+            {
+              "ifAnswer": "5(10a + 15b)",
+              "say": "You put a 5 in front, but you didn't divide the terms inside by 5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the GCF of 10 and 15, then divide each term by it."
+            }
+          ],
+          "explanation": "The GCF is 5. 10a ÷ 5 = 2a and 15b ÷ 5 = 3b, so 10a + 15b = 5(2a + 3b).",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-b-06",
+          "prompt": "Factor: 7x - 7",
+          "answerType": "expression",
+          "answer": "7(x - 1)",
+          "acceptedAnswers": [
+            "7(x - 1)",
+            "7(x-1)",
+            "7(-1 + x)",
+            "7(-1+x)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "7(x)",
+              "say": "When you take 7 out of 7, there's 1 left behind, not 0. Keep that term inside."
+            },
+            {
+              "ifAnswer": "7(x - 7)",
+              "say": "You took 7 out of 7x. Take it out of the 7 too: 7 ÷ 7 = ?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "7 is the same as 7 · 1."
+            }
+          ],
+          "explanation": "7x = 7 · x and 7 = 7 · 1, so 7x - 7 = 7(x - 1).",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-b-07",
+          "prompt": "Factor out -4: -4x + 12",
+          "answerType": "expression",
+          "answer": "-4(x - 3)",
+          "acceptedAnswers": [
+            "-4(x - 3)",
+            "-4(x-3)",
+            "-4(-3 + x)",
+            "-4(-3+x)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-4(x + 3)",
+              "say": "Multiply back to check: -4 times +3 is -12, but you need +12."
+            },
+            {
+              "ifAnswer": "-4(x - 12)",
+              "say": "You divided -4x by -4. Now divide 12 by -4 too."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide each term by -4: -4x ÷ -4 and 12 ÷ -4."
+            }
+          ],
+          "explanation": "-4x ÷ -4 = x and 12 ÷ -4 = -3, so -4x + 12 = -4(x - 3).",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-b-08",
+          "prompt": "Factor out 1/2: (1/2)x + 3",
+          "answerType": "expression",
+          "answer": "(1/2)(x + 6)",
+          "acceptedAnswers": [
+            "(1/2)(x + 6)",
+            "(1/2)(x+6)",
+            "1/2(x + 6)",
+            "1/2(x+6)",
+            "0.5(x + 6)",
+            "0.5(x+6)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "(1/2)(x + 3)",
+              "say": "Multiply back: (1/2) times 3 is 1.5, not 3. What number has half equal to 3?"
+            },
+            {
+              "ifAnswer": "(1/2)(x + 1.5)",
+              "say": "You multiplied 3 by 1/2. Factoring out 1/2 means DIVIDING by 1/2, which doubles."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Ask: (1/2) times what gives 3?"
+            }
+          ],
+          "explanation": "(1/2)x = (1/2) · x and 3 = (1/2) · 6, so (1/2)x + 3 = (1/2)(x + 6).",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-b-09",
+          "prompt": "A rectangle has a width of 4 and an area of 4x + 20. Which expression is its length?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "x + 20",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "x + 5",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "4x + 5",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "x + 80",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Check: 4 times (x + 20) is 4x + 80. Divide the 20 by 4 too."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Check: 4 times (4x + 5) is 16x + 20. Divide the 4x by 4 too."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Area = width × length. Factor 4 out of 4x + 20."
+            }
+          ],
+          "explanation": "4x + 20 = 4(x + 5), so the length is x + 5.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-b-10",
+          "prompt": "Factor completely (use the greatest common factor): 18y - 24",
+          "answerType": "expression",
+          "answer": "6(3y - 4)",
+          "acceptedAnswers": [
+            "6(3y - 4)",
+            "6(3y-4)",
+            "6(-4 + 3y)",
+            "6(-4+3y)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3(6y - 8)",
+              "say": "That's equal, nice! But 6y and 8 still share a 2. Pull out the biggest factor you can."
+            },
+            {
+              "ifAnswer": "6(3y - 24)",
+              "say": "You divided 18y by 6. Divide the 24 by 6 as well."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the greatest common factor of 18 and 24."
+            }
+          ],
+          "explanation": "The GCF of 18 and 24 is 6. 18y ÷ 6 = 3y and 24 ÷ 6 = 4, so 18y - 24 = 6(3y - 4).",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-b-11",
+          "prompt": "Factor: 9x + 12y - 3",
+          "answerType": "expression",
+          "answer": "3(3x + 4y - 1)",
+          "acceptedAnswers": [
+            "3(3x + 4y - 1)",
+            "3(3x+4y-1)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3(3x + 4y)",
+              "say": "Two terms are right. The -3 is a term too: -3 ÷ 3 leaves -1 inside."
+            },
+            {
+              "ifAnswer": "3(3x + 4y - 3)",
+              "say": "You divided 9x and 12y by 3. Divide the -3 by 3 as well."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "All three terms can be divided by 3."
+            }
+          ],
+          "explanation": "9x ÷ 3 = 3x, 12y ÷ 3 = 4y, -3 ÷ 3 = -1. So 9x + 12y - 3 = 3(3x + 4y - 1).",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-b-12",
+          "prompt": "Factor out 0.5: 0.5x - 4",
+          "answerType": "expression",
+          "answer": "0.5(x - 8)",
+          "acceptedAnswers": [
+            "0.5(x - 8)",
+            "0.5(x-8)",
+            "(1/2)(x - 8)",
+            "(1/2)(x-8)",
+            "1/2(x - 8)",
+            "1/2(x-8)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.5(x - 4)",
+              "say": "Multiply back: 0.5 times 4 is 2, not 4. What number times 0.5 gives 4?"
+            },
+            {
+              "ifAnswer": "0.5(x - 2)",
+              "say": "You multiplied 4 by 0.5. Factoring out 0.5 means DIVIDING by 0.5, which makes the number bigger."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Ask: 0.5 times what gives 4?"
+            }
+          ],
+          "explanation": "0.5x = 0.5 · x and 4 = 0.5 · 8, so 0.5x - 4 = 0.5(x - 8).",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-b-13",
+          "prompt": "Write 6(x + 2) + 4(x + 2) as a single product of a number and (x + 2).",
+          "answerType": "expression",
+          "answer": "10(x + 2)",
+          "acceptedAnswers": [
+            "10(x + 2)",
+            "10(x+2)",
+            "10(2 + x)",
+            "10(2+x)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "24(x + 2)",
+              "say": "You multiplied 6 and 4. You have 6 groups of (x + 2) plus 4 more groups. How many groups is that?"
+            },
+            {
+              "ifAnswer": "10x + 20",
+              "say": "That's equal, nice! The question asks for the product form: a number times (x + 2)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Think of (x + 2) as one object, like an apple. 6 apples plus 4 apples."
+            }
+          ],
+          "explanation": "6 groups of (x + 2) plus 4 groups of (x + 2) is 10 groups: 10(x + 2).",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-b-14",
+          "prompt": "Which expression is equivalent to -6x - 15?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "-3(2x - 5)",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "3(-2x + 5)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "-3(2x + 5)",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "-3(-2x - 5)",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Multiply back: -3 times -5 is +15. You need -15."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Multiply back: -3 times -2x is +6x. You need -6x."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply each choice back out. Watch every sign."
+            }
+          ],
+          "explanation": "-3(2x + 5) = -6x - 15.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-b-15",
+          "prompt": "Factor out 2/3: (2/3)x - 4",
+          "answerType": "expression",
+          "answer": "(2/3)(x - 6)",
+          "acceptedAnswers": [
+            "(2/3)(x - 6)",
+            "(2/3)(x-6)",
+            "2/3(x - 6)",
+            "2/3(x-6)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "(2/3)(x - 4)",
+              "say": "Multiply back: (2/3) times 4 is 8/3, not 4. What number times 2/3 gives 4?"
+            },
+            {
+              "ifAnswer": "(2/3)(x - 8/3)",
+              "say": "You multiplied 4 by 2/3. Factoring out 2/3 means dividing by 2/3: multiply by 3/2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Ask: (2/3) times what number gives 4? Divide 4 by 2/3."
+            }
+          ],
+          "explanation": "4 ÷ (2/3) = 4 × (3/2) = 6, so (2/3)x - 4 = (2/3)(x - 6).",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-b-16",
+          "prompt": "Factor completely (use the greatest common factor): 24n + 36",
+          "answerType": "expression",
+          "answer": "12(2n + 3)",
+          "acceptedAnswers": [
+            "12(2n + 3)",
+            "12(2n+3)",
+            "12(3 + 2n)",
+            "12(3+2n)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6(4n + 6)",
+              "say": "That's equal, nice! But 4n and 6 still share a 2. Is there a bigger factor of 24 and 36?"
+            },
+            {
+              "ifAnswer": "4(6n + 9)",
+              "say": "That's equal, nice! But 6n and 9 still share a 3. Look for the GREATEST common factor."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "List factors of 24 and 36. Which is the biggest one they share?"
+            }
+          ],
+          "explanation": "The GCF of 24 and 36 is 12. 24n ÷ 12 = 2n and 36 ÷ 12 = 3, so 24n + 36 = 12(2n + 3).",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-b-17",
+          "prompt": "Factor out -2.5: -2.5x + 10",
+          "answerType": "expression",
+          "answer": "-2.5(x - 4)",
+          "acceptedAnswers": [
+            "-2.5(x - 4)",
+            "-2.5(x-4)",
+            "-2.5(-4 + x)",
+            "-2.5(-4+x)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-2.5(x + 4)",
+              "say": "Multiply back: -2.5 times +4 is -10. You need +10."
+            },
+            {
+              "ifAnswer": "-2.5(x - 25)",
+              "say": "You multiplied 10 by 2.5. Factoring out means dividing: 10 ÷ -2.5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide each term by -2.5."
+            }
+          ],
+          "explanation": "-2.5x ÷ -2.5 = x and 10 ÷ -2.5 = -4, so -2.5x + 10 = -2.5(x - 4).",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-b-18",
+          "prompt": "The perimeter of a rectangle is 2x + 2(x + 3). Which expression is equivalent AND shows the perimeter as 4 times something?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "4x + 3",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "4(x + 1.5)",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "4(x + 6)",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "4(x + 3)",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "d",
+              "say": "Multiply back: 4(x + 3) is 4x + 12. The perimeter simplifies to 4x + 6."
+            },
+            {
+              "ifAnswer": "a",
+              "say": "That doesn't show 4 times something, and 4x + 3 isn't equal to the perimeter. Simplify first: 2x + 2x + 6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Simplify the perimeter first, then factor out 4."
+            }
+          ],
+          "explanation": "2x + 2(x + 3) = 2x + 2x + 6 = 4x + 6 = 4(x + 1.5).",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-b-19",
+          "prompt": "Factor completely: 14xy - 21x",
+          "answerType": "expression",
+          "answer": "7x(2y - 3)",
+          "acceptedAnswers": [
+            "7x(2y - 3)",
+            "7x(2y-3)",
+            "7x(-3 + 2y)",
+            "7x(-3+2y)"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "7(2xy - 3x)",
+              "say": "That's equal, nice! Both terms inside still have an x. Pull the x out too."
+            },
+            {
+              "ifAnswer": "7x(2y - 21)",
+              "say": "You took 7x out of 14xy. Take 7x out of 21x too: 21x ÷ 7x = ?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Both terms have a 7 AND an x. Factor out 7x."
+            }
+          ],
+          "explanation": "14xy ÷ 7x = 2y and 21x ÷ 7x = 3, so 14xy - 21x = 7x(2y - 3).",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-b-20",
+          "prompt": "A price p is lowered by 15%. Rewrite p - 0.15p as a single term.",
+          "answerType": "expression",
+          "answer": "0.85p",
+          "acceptedAnswers": [
+            "0.85p",
+            ".85p",
+            "(17/20)p"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.15p",
+              "say": "That's the amount taken off. Subtract it from the whole price p, which is 1p."
+            },
+            {
+              "ifAnswer": "1.15p",
+              "say": "That's a 15% increase. The price is being lowered, so take the 0.15p away."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "p is the same as 1p. Factor p out: p(1 - 0.15)."
+            }
+          ],
+          "explanation": "p - 0.15p = 1p - 0.15p = (1 - 0.15)p = 0.85p. After a 15% decrease, you pay 85% of the price.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 16,
+        "prompt": "Explain how you did number 16. Write each step you took and why, and show how you checked that your answer is equivalent to the expression you started with (for example, by putting in a number for the variable). If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u4-c",
+      "title": "Expressions from words and context",
+      "skill": "Write and simplify expressions from words and real situations, and see what different equivalent forms say about the situation (7.EE.2)",
+      "standards": [
+        "7.EE.1",
+        "7.EE.2"
+      ],
+      "problems": [
+        {
+          "id": "g7-u4-c-01",
+          "prompt": "Write an expression for \"5 more than n.\"",
+          "answerType": "expression",
+          "answer": "n + 5",
+          "acceptedAnswers": [
+            "n + 5",
+            "n+5",
+            "5 + n",
+            "5+n"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5n",
+              "say": "That's 5 TIMES n. \"More than\" means adding."
+            },
+            {
+              "ifAnswer": "n - 5",
+              "say": "\"More than\" makes the number bigger, so it's adding, not subtracting."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "\"More than\" means add."
+            }
+          ],
+          "explanation": "5 more than n is n + 5.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-c-02",
+          "prompt": "Write an expression for \"3 times a number x, decreased by 4.\"",
+          "answerType": "expression",
+          "answer": "3x - 4",
+          "acceptedAnswers": [
+            "3x - 4",
+            "3x-4",
+            "-4 + 3x",
+            "-4+3x"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4 - 3x",
+              "say": "The order matters with subtraction. You start with 3 times x, then take 4 away from it."
+            },
+            {
+              "ifAnswer": "3(x - 4)",
+              "say": "That subtracts 4 BEFORE multiplying. Here you multiply first, then decrease by 4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "First write \"3 times x,\" then take 4 away from that."
+            }
+          ],
+          "explanation": "3 times x is 3x. Decreased by 4 means subtract 4: 3x - 4.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-c-03",
+          "prompt": "Tickets cost $8 each, and there is one $5 fee for the whole order. Write an expression for the cost of t tickets (in dollars).",
+          "answerType": "expression",
+          "answer": "8t + 5",
+          "acceptedAnswers": [
+            "8t + 5",
+            "8t+5",
+            "5 + 8t",
+            "5+8t"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "13t",
+              "say": "8t and 5 aren't like terms. The $5 fee is charged once, not for every ticket."
+            },
+            {
+              "ifAnswer": "8(t + 5)",
+              "say": "That charges the fee once for every ticket. The fee is paid only once for the whole order."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Cost of the tickets: 8 for each ticket. Then add the fee once."
+            }
+          ],
+          "explanation": "t tickets cost 8t dollars, plus the $5 fee: 8t + 5.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-c-04",
+          "prompt": "Which expression means \"half of the sum of a number y and 6\"?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "(1/2)y + 6",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "(1/2)(y + 6)",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "2(y + 6)",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "y + 6/2",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "That takes half of y only, then adds 6. \"The sum\" has to be found first, so it goes in parentheses."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That's twice the sum. Half means multiply by 1/2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find \"the sum of y and 6\" first, then take half of it."
+            }
+          ],
+          "explanation": "The sum is (y + 6), and half of it is (1/2)(y + 6).",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-c-05",
+          "prompt": "A square has side length s. Write an expression for its perimeter.",
+          "answerType": "expression",
+          "answer": "4s",
+          "acceptedAnswers": [
+            "4s"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "s^2",
+              "say": "That's the area. Perimeter is the distance around: add up all four sides."
+            },
+            {
+              "ifAnswer": "s + 4",
+              "say": "A square has 4 sides that are each s long. Add s four times."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Perimeter is s + s + s + s. Write that a shorter way."
+            }
+          ],
+          "explanation": "s + s + s + s = 4s.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-c-06",
+          "prompt": "You have d dollars and spend $12. Write an expression for the money you have left.",
+          "answerType": "expression",
+          "answer": "d - 12",
+          "acceptedAnswers": [
+            "d - 12",
+            "d-12",
+            "-12 + d",
+            "-12+d"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "12 - d",
+              "say": "The order matters with subtraction. You START with d dollars and take 12 away."
+            },
+            {
+              "ifAnswer": "12d",
+              "say": "Spending takes money away, so subtract instead of multiplying."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Start with what you have, then subtract what you spend."
+            }
+          ],
+          "explanation": "Start with d and subtract 12: d - 12.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u4-c-07",
+          "prompt": "A phone plan costs $25 a month plus $0.10 for each text. Write an expression for one month's cost if you send m texts.",
+          "answerType": "expression",
+          "answer": "25 + 0.1m",
+          "acceptedAnswers": [
+            "25 + 0.1m",
+            "25+0.1m",
+            "0.1m + 25",
+            "0.1m+25",
+            "25 + 0.10m",
+            "25+0.10m",
+            "0.10m + 25",
+            "0.10m+25",
+            "25 + .1m",
+            "25+.1m",
+            ".1m + 25",
+            ".1m+25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "25.1m",
+              "say": "25 and 0.1m aren't like terms. The $25 is paid once, not for each text."
+            },
+            {
+              "ifAnswer": "25m + 0.1",
+              "say": "The 25 and 0.1 got switched. Which one depends on the number of texts?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The $25 is the same every month. The $0.10 is paid for EACH text."
+            }
+          ],
+          "explanation": "Texts cost 0.1m dollars, plus the $25 monthly charge: 25 + 0.1m.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-c-08",
+          "prompt": "A shirt costs p dollars. It's on sale for 30% off. Write the sale price as a single term.",
+          "answerType": "expression",
+          "answer": "0.7p",
+          "acceptedAnswers": [
+            "0.7p",
+            ".7p",
+            "0.70p",
+            "(7/10)p"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.3p",
+              "say": "That's the amount you save. The sale price is what's left of p."
+            },
+            {
+              "ifAnswer": "p - 30",
+              "say": "That takes off 30 dollars. 30% of p is 0.3p."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Start with p - 0.3p, then combine."
+            }
+          ],
+          "explanation": "p - 0.3p = 0.7p. You pay 70% of the price.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-c-09",
+          "prompt": "A rectangle has width w. Its length is 3 more than twice the width. Which expression is the length?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "2(w + 3)",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "2w + 3",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "3w + 2",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "2 + 3w",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "That adds 3 to the width BEFORE doubling. The phrase says double the width first, then add 3."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "The 2 and the 3 switched places. \"Twice the width\" is 2w."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "\"Twice the width\" is 2w. Then \"3 more than\" that."
+            }
+          ],
+          "explanation": "Twice the width is 2w, and 3 more than that is 2w + 3.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-c-10",
+          "prompt": "Three friends split a bill of b dollars evenly, and each one also adds a $2 tip. Write an expression for what one friend pays.",
+          "answerType": "expression",
+          "answer": "b/3 + 2",
+          "acceptedAnswers": [
+            "b/3 + 2",
+            "b/3+2",
+            "(1/3)b + 2",
+            "(1/3)b+2",
+            "1/3b + 2",
+            "1/3b+2",
+            "2 + b/3",
+            "2+b/3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "(b + 2)/3",
+              "say": "That splits the tip three ways too. Each friend adds a whole $2."
+            },
+            {
+              "ifAnswer": "3b + 2",
+              "say": "Splitting the bill means dividing it, not multiplying."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "First find one friend's share of the bill, then add that friend's tip."
+            }
+          ],
+          "explanation": "Each share of the bill is b/3. Adding a $2 tip gives b/3 + 2.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-c-11",
+          "prompt": "A number n is increased by 7, and then the result is multiplied by 4. Write an expression.",
+          "answerType": "expression",
+          "answer": "4(n + 7)",
+          "acceptedAnswers": [
+            "4(n + 7)",
+            "4(n+7)",
+            "4(7 + n)",
+            "4(7+n)",
+            "(n + 7)4",
+            "(n+7)4",
+            "4n + 28",
+            "4n+28",
+            "28 + 4n",
+            "28+4n"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4n + 7",
+              "say": "That multiplies only the n. The WHOLE result (n + 7) gets multiplied by 4."
+            },
+            {
+              "ifAnswer": "n + 28",
+              "say": "The 4 has to multiply the n as well as the 7."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write \"n increased by 7\" first, put it in parentheses, then multiply by 4."
+            }
+          ],
+          "explanation": "n increased by 7 is (n + 7), and multiplying by 4 gives 4(n + 7), which equals 4n + 28.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-c-12",
+          "prompt": "A plant is 12 cm tall and grows 1.5 cm each week. Write an expression for its height after w weeks.",
+          "answerType": "expression",
+          "answer": "12 + 1.5w",
+          "acceptedAnswers": [
+            "12 + 1.5w",
+            "12+1.5w",
+            "1.5w + 12",
+            "1.5w+12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "13.5w",
+              "say": "12 and 1.5w aren't like terms. The 12 cm is the starting height; it doesn't grow each week."
+            },
+            {
+              "ifAnswer": "1.5 + 12w",
+              "say": "The numbers got switched. Which number happens every week?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Start with 12, then add 1.5 cm for each week."
+            }
+          ],
+          "explanation": "Growth after w weeks is 1.5w cm. Height = 12 + 1.5w.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-c-13",
+          "prompt": "A store marks up the cost c of an item by 40%. Write the selling price as a single term.",
+          "answerType": "expression",
+          "answer": "1.4c",
+          "acceptedAnswers": [
+            "1.4c",
+            "1.40c",
+            "(7/5)c"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.4c",
+              "say": "That's the markup only. Add it to the cost c."
+            },
+            {
+              "ifAnswer": "c + 40",
+              "say": "That adds 40 dollars. 40% of c is 0.4c."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Selling price = c + 0.4c. Combine the like terms."
+            }
+          ],
+          "explanation": "c + 0.4c = 1c + 0.4c = 1.4c.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u4-c-14",
+          "prompt": "A tank holds 200 liters and drains 4.5 liters each minute. Which expression gives the liters left after m minutes?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "200 - 4.5m",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "4.5m - 200",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "200m - 4.5",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "(200 - 4.5)m",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "That subtracts the wrong way: it would be negative at the start. Start with 200 and take water away."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "That drains 4.5 liters once and then multiplies everything by m. Only the 4.5 happens every minute."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Start with 200. Each minute, 4.5 liters are taken away."
+            }
+          ],
+          "explanation": "After m minutes, 4.5m liters have drained, so 200 - 4.5m liters are left.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-c-15",
+          "prompt": "A jacket costs j dollars. It's 25% off, and then 8% tax is added to the sale price. Write the final price as a single term.",
+          "answerType": "expression",
+          "answer": "0.81j",
+          "acceptedAnswers": [
+            "0.81j",
+            ".81j"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.83j",
+              "say": "You did 1 - 0.25 + 0.08. The tax is 8% of the SALE price, so multiply: 0.75 × 1.08."
+            },
+            {
+              "ifAnswer": "0.75j",
+              "say": "That's the sale price. The 8% tax still goes on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Sale price: 0.75j. Then multiply that by 1.08 for the tax."
+            }
+          ],
+          "explanation": "0.75j × 1.08 = 0.81j.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-c-16",
+          "prompt": "A rectangle's length is 5 more than its width w. Write a simplified expression for its perimeter.",
+          "answerType": "expression",
+          "answer": "4w + 10",
+          "acceptedAnswers": [
+            "4w + 10",
+            "4w+10",
+            "10 + 4w",
+            "10+4w"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2w + 5",
+              "say": "That's one width plus one length, which is only halfway around. A rectangle has two of each."
+            },
+            {
+              "ifAnswer": "4w + 5",
+              "say": "You doubled the w's. Both lengths have the extra 5, so double it too."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Length = w + 5. Perimeter = 2(length) + 2(width). Then combine like terms."
+            }
+          ],
+          "explanation": "2(w + 5) + 2w = 2w + 10 + 2w = 4w + 10.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-c-17",
+          "prompt": "A jar has n nickels and d dimes. Write an expression for the total value in CENTS.",
+          "answerType": "expression",
+          "answer": "5n + 10d",
+          "acceptedAnswers": [
+            "5n + 10d",
+            "5n+10d",
+            "10d + 5n",
+            "10d+5n"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "n + d",
+              "say": "That counts the coins, not their value. Each nickel is worth 5 cents and each dime 10 cents."
+            },
+            {
+              "ifAnswer": "0.05n + 0.1d",
+              "say": "That's the value in dollars, nice. The question asks for cents."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Value = (cents per nickel) × n + (cents per dime) × d."
+            }
+          ],
+          "explanation": "Nickels are worth 5n cents and dimes 10d cents, so the total is 5n + 10d cents.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-c-18",
+          "prompt": "Two expressions describe the price after a 20% markup on a price p. Which pair is correct?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "p + 0.2p and 1.2p",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "p + 0.2 and 1.2p",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "0.2p and 1.2p",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "p + 20 and 1.2p",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "p + 0.2 adds 20 cents. The markup is 20% OF p, which is 0.2p."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "0.2p is only the markup. The new price is the old price plus the markup."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "New price = old price + 20% of the old price."
+            }
+          ],
+          "explanation": "p + 0.2p = 1.2p, so both expressions in (a) are the new price.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-c-19",
+          "prompt": "Movie tickets cost $9 for students and $12 for adults. A group has s students and 2 more adults than students. Write a simplified expression for the total cost (in dollars).",
+          "answerType": "expression",
+          "answer": "21s + 24",
+          "acceptedAnswers": [
+            "21s + 24",
+            "21s+24",
+            "24 + 21s",
+            "24+21s"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "21s + 2",
+              "say": "The 2 extra adults each pay $12, so the 2 gets multiplied by 12."
+            },
+            {
+              "ifAnswer": "21s",
+              "say": "That's the cost if there were the same number of adults and students. Don't forget the 2 extra adults."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Number of adults: s + 2. Cost = 9s + 12(s + 2). Then simplify."
+            }
+          ],
+          "explanation": "9s + 12(s + 2) = 9s + 12s + 24 = 21s + 24.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u4-c-20",
+          "prompt": "A savings account starts with $150. Each week you deposit $20 and spend $5.50 from it. Write a simplified expression for the balance after w weeks.",
+          "answerType": "expression",
+          "answer": "150 + 14.5w",
+          "acceptedAnswers": [
+            "150 + 14.5w",
+            "150+14.5w",
+            "14.5w + 150",
+            "14.5w+150",
+            "150 + 14.50w",
+            "150+14.50w",
+            "14.50w + 150",
+            "14.50w+150"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "150 + 25.5w",
+              "say": "The $5.50 is spent, so it's taken away. Each week the balance goes up by 20 - 5.50."
+            },
+            {
+              "ifAnswer": "164.5w",
+              "say": "150 and 14.5w aren't like terms. The $150 is there once, at the start."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Each week the change is 20 - 5.50. Start with 150 and add that change for each of w weeks."
+            }
+          ],
+          "explanation": "Each week: 20 - 5.50 = 14.50. Balance = 150 + 20w - 5.5w = 150 + 14.5w.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.1",
+            "7.EE.2"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 19,
+        "prompt": "Explain how you did number 19. Write each step you took and why, and show how you checked that your answer is equivalent to the expression you started with (for example, by putting in a number for the variable). If you changed your mind partway through, tell what made you change it."
+      }
+    }
+  ]
+}

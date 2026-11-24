@@ -36,6 +36,7 @@ export const ChildProfileSchema = z.object({
   consentStatus: ConsentStatusSchema, askMode: AskModeSchema, autoShow: z.boolean(),
   approvedGames: z.array(z.string()), joinRooms: z.boolean(),
   currentBelt: BeltColorSchema, stripesEarned: z.number().int().min(0),
+  completedUnitIds: z.array(id).default([]),
   firstConversationLine: z.string(),
   lastActiveAt: iso.default('2026-11-24T12:00:00Z'),
 }).strict()

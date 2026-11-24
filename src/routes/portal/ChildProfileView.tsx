@@ -3,7 +3,18 @@ import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { buildChildActor, can, type PortalActor } from '@/portal/access'
 import { ASK_SEND_DISCLOSURE, submitAskQuestion } from '@/portal/askActions'
-import { awardCosmeticPoints, getCourseLadder, getNextBeltStep } from '@/portal/belts'
+import { awardCosmeticPoints, countPassedSetsInUnit, getCourseLadder, getNextBeltStep } from '@/portal/belts'
+import {
+  ANSWER_INPUT_MAX_LENGTH,
+  GRADE7_CURRICULUM,
+  GRADE7_PRACTICE_SETS,
+  checkCurriculumAnswer,
+  getCurriculumSet,
+  getDefaultCurriculumSet,
+  selectProblemHint,
+  type CurriculumProblem,
+  type LoadedPracticeSet,
+} from '@/portal/curriculum'
 import { FUN_GAMES, LESSON_GAMES } from '@/portal/parentActions'
 import { portalStorage } from '@/portal/storage'
 import type { ChildProfile, PortalState, WorkAttempt, WorkRecord } from '@/portal/types'
@@ -11,7 +22,7 @@ import {
   WorkConflictError, openOrCreateWorkRecord, saveWorkDraft,
   simulateExternalDeviceSave, startRedoAttempt, submitWorkRecord, type DraftAnswerInput,
 } from '@/portal/workActions'
-import { BELT_MASCOT, INTEGER_OPERATIONS_SET, checkNumericAnswer } from '@/portal/worksheet'
+import { BELT_MASCOT } from '@/portal/worksheet'
 import styles from './PortalPage.module.css'
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const
@@ -36,12 +47,18 @@ function answersToMap(attempt: WorkAttempt | undefined): Record<string, DraftAns
   return out
 }
 
+function defaultUnitForChild(child: ChildProfile): string {
+  const idx = Math.min(child.stripesEarned, GRADE7_CURRICULUM.length - 1)
+  return GRADE7_CURRICULUM[idx]?.unitId ?? GRADE7_CURRICULUM[0]!.unitId
+}
+
 export function ChildProfileView({
   state, onStateChange, onOpenRoom,
 }: {
   state: PortalState; onStateChange: (next: PortalState) => void; onOpenRoom?: (inviteId: string, childId: string) => void
 }) {
   const [selectedChildId, setSelectedChildId] = useState(state.children[0]?.id ?? '')
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null)
   const [openWorkId, setOpenWorkId] = useState<string | null>(null)
   const [profileError, setProfileError] = useState('')
 
@@ -52,7 +69,11 @@ export function ChildProfileView({
   const mascot = BELT_MASCOT[child.currentBelt]
   const ladder = getCourseLadder(child.level)
   const nextBelt = getNextBeltStep(child)
-  const nextUnit = ladder.units[Math.min(child.stripesEarned, ladder.units.length - 1)]?.title ?? ladder.units[0]!.title
+  const completedUnitSet = new Set(child.completedUnitIds ?? [])
+  const nextUnitObj =
+    ladder.units.find((u, idx) => !completedUnitSet.has(u.unitId) && idx >= child.stripesEarned) ??
+    ladder.units[Math.min(child.stripesEarned, ladder.units.length - 1)] ??
+    ladder.units[0]!
   const visibleWork = state.workRecords.filter((record) => can(childActor, 'view', { type: 'work', record }))
   const visibleFeedback = state.feedback.filter((record) => can(childActor, 'view', { type: 'feedback', record }))
   const waitingReply = state.feedback.find((f) => f.childId === child.id && f.status === 'sent_to_parent')
@@ -60,12 +81,22 @@ export function ChildProfileView({
   const visibleBadges = state.badges.filter((record) => can(childActor, 'view', { type: 'badge', record }))
   const pointsRec = state.points.find((record) => can(childActor, 'view', { type: 'points', record }))
   const activeWork = openWorkId ? visibleWork.find((w) => w.id === openWorkId) : undefined
-  const intOpsWork = visibleWork.find((w) => w.activityId === INTEGER_OPERATIONS_SET.activityId)
 
-  function handleContinue() {
+  const activeUnitId = selectedUnitId ?? defaultUnitForChild(child)
+  const activeUnit = GRADE7_CURRICULUM.find((u) => u.unitId === activeUnitId) ?? GRADE7_CURRICULUM[0]!
+  const activeUnitSets = GRADE7_PRACTICE_SETS.filter((s) => s.unitId === activeUnit.unitId)
+
+  const draftWork = visibleWork.find((w) => w.status === 'draft' && getCurriculumSet(w.activityId))
+  const continueSet: LoadedPracticeSet =
+    (draftWork ? getCurriculumSet(draftWork.activityId) : undefined) ??
+    GRADE7_PRACTICE_SETS.find((s) => s.unitId === activeUnit.unitId && !visibleWork.some((w) => w.activityId === s.setId && w.status === 'reviewed')) ??
+    getDefaultCurriculumSet()
+  const continueWork = visibleWork.find((w) => w.activityId === continueSet.activityId)
+
+  function openPracticeSet(practiceSet: LoadedPracticeSet) {
     setProfileError('')
     try {
-      const res = openOrCreateWorkRecord(portalStorage, childActor, child!.id, INTEGER_OPERATIONS_SET)
+      const res = openOrCreateWorkRecord(portalStorage, childActor, child!.id, practiceSet)
       onStateChange(res.state)
       setOpenWorkId(res.record.id)
     } catch (err) {
@@ -78,7 +109,13 @@ export function ChildProfileView({
       <Card title="Demo child switcher (child profile only — never parent controls)" headingLevel={2}>
         <div className={styles.actions}>
           {state.children.map((c) => (
-            <Button key={c.id} type="button" size="sm" variant={c.id === child.id ? 'primary' : 'secondary'} onClick={() => { setSelectedChildId(c.id); setOpenWorkId(null); setProfileError('') }}>
+            <Button
+              key={c.id}
+              type="button"
+              size="sm"
+              variant={c.id === child.id ? 'primary' : 'secondary'}
+              onClick={() => { setSelectedChildId(c.id); setSelectedUnitId(null); setOpenWorkId(null); setProfileError('') }}
+            >
               {c.nickname} ({c.currentBelt})
             </Button>
           ))}
@@ -87,7 +124,15 @@ export function ChildProfileView({
       </Card>
 
       {activeWork ? (
-        <WorksheetPanel key={`${activeWork.id}-${activeWork.attempts.length}`} child={child} childActor={childActor} record={activeWork} onStateChange={onStateChange} onBack={() => setOpenWorkId(null)} />
+        <WorksheetPanel
+          key={`${activeWork.id}-${activeWork.attempts.length}`}
+          child={child}
+          childActor={childActor}
+          record={activeWork}
+          practiceSet={getCurriculumSet(activeWork.activityId) ?? getDefaultCurriculumSet()}
+          onStateChange={onStateChange}
+          onBack={() => setOpenWorkId(null)}
+        />
       ) : (
         <div className={styles.stack}>
           <Card headingLevel={2}>
@@ -106,8 +151,8 @@ export function ChildProfileView({
               <div className={styles.heroCta}>
                 <p className={styles.motto}>Homework done? Then let’s go.</p>
                 {child.consentStatus === 'verified' ? (
-                  <Button size="lg" onClick={handleContinue}>
-                    {intOpsWork?.status === 'draft' ? 'Continue unfinished set' : intOpsWork ? 'Continue (review / redo set)' : 'Continue'}
+                  <Button size="lg" onClick={() => openPracticeSet(continueSet)}>
+                    {continueWork?.status === 'draft' ? 'Continue unfinished set' : continueWork ? 'Continue (review / redo set)' : 'Continue'}
                   </Button>
                 ) : (
                   <p className={styles.warningText}>Waiting for parent consent before saving practice work. Free arcade games remain open outside the portal.</p>
@@ -118,18 +163,73 @@ export function ChildProfileView({
             {profileError ? <p className={styles.warningText} role="alert">{profileError}</p> : null}
           </Card>
 
+          {child.consentStatus === 'verified' ? (
+            <Card title="Choose a unit and set (7th Grade Math — 7 units × 3 sets)" headingLevel={2}>
+              <div className={styles.stack} data-testid="unit-set-picker">
+                <div className={styles.actions} role="group" aria-label="Choose a unit">
+                  {GRADE7_CURRICULUM.map((unit, idx) => {
+                    const unitCfg = ladder.units.find((u) => u.unitId === unit.unitId)
+                    const passedCount = unitCfg ? countPassedSetsInUnit(state, child.id, unitCfg) : 0
+                    const unitDone = completedUnitSet.has(unit.unitId) || (unitCfg ? passedCount === unitCfg.requiredActivityIds.length : false)
+                    return (
+                      <Button
+                        key={unit.unitId}
+                        type="button"
+                        size="sm"
+                        variant={unit.unitId === activeUnit.unitId ? 'primary' : 'secondary'}
+                        onClick={() => setSelectedUnitId(unit.unitId)}
+                      >
+                        {unitDone ? '✓ ' : ''}Unit {idx + 1}: {unit.unitName}
+                      </Button>
+                    )
+                  })}
+                </div>
+                <p className={styles.note}>
+                  <strong>Unit {GRADE7_CURRICULUM.findIndex((u) => u.unitId === activeUnit.unitId) + 1}: {activeUnit.unitName}</strong>
+                  {' · '}Complete all 3 sets + open responses for this unit’s stripe.
+                </p>
+                <div className={styles.stack}>
+                  {activeUnitSets.map((setEntry) => {
+                    const existing = visibleWork.find((w) => w.activityId === setEntry.setId)
+                    const statusLabel =
+                      existing?.status === 'reviewed' ? 'Reviewed ✓'
+                        : existing?.status === 'submitted' ? 'Submitted'
+                          : existing?.status === 'draft' ? 'In progress'
+                            : 'Not started'
+                    return (
+                      <div key={setEntry.setId} className={styles.setCard} data-testid={`set-card-${setEntry.setId}`}>
+                        <div className={styles.checkMeta}>
+                          <p className={styles.checkLabel}>{setEntry.setLabel}: {setEntry.title}</p>
+                          <p className={styles.checkDetail}>{setEntry.skill}</p>
+                          <p className={styles.note}>{setEntry.problems.length} problems + open response · Status: <strong>{statusLabel}</strong></p>
+                        </div>
+                        <Button type="button" size="sm" variant={existing?.status === 'draft' ? 'primary' : 'secondary'} onClick={() => openPracticeSet(setEntry)}>
+                          {existing?.status === 'draft' ? `Resume ${setEntry.setLabel}` : existing ? `Review / Redo ${setEntry.setLabel}` : `Open ${setEntry.setLabel}`}
+                        </Button>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </Card>
+          ) : null}
+
           <div className={styles.grid}>
             <Card title={`Belt ladder — ${ladder.courseLabel}`} headingLevel={2}>
               <p className={styles.checkLabel}>{mascot.label} · {child.stripesEarned} / {ladder.units.length} stripes</p>
-              <p className={styles.statusCallout}>Next unit: <strong>{nextUnit}</strong></p>
+              <p className={styles.statusCallout}>Next unit: <strong>{nextUnitObj.title}</strong></p>
               <p className={styles.note}>
                 Belts at 2 / 4 / 6 / last (+ live teach-it test for Black).
                 {nextBelt ? ` Next belt: ${nextBelt.nextBelt} at ${nextBelt.stripesRequired} stripes (${nextBelt.testType === 'teach_it' ? 'teach-it test' : 'live whiteboard test'}).` : ' Black belt complete!'}
               </p>
               <ol className={styles.miniList}>
-                {ladder.units.map((unit, idx) => (
-                  <li key={unit.unitId}>{idx < child.stripesEarned ? '✓ ' : idx === child.stripesEarned ? '→ ' : '○ '}{unit.title}</li>
-                ))}
+                {ladder.units.map((unit, idx) => {
+                  const done = completedUnitSet.has(unit.unitId) || idx < child.stripesEarned
+                  const isNext = unit.unitId === nextUnitObj.unitId && !done
+                  return (
+                    <li key={unit.unitId}>{done ? '✓ ' : isNext ? '→ ' : '○ '}{unit.title}</li>
+                  )
+                })}
               </ol>
               <p className={styles.note}>Belts are awarded only by a human mentor — never automatic, never by fun games.</p>
             </Card>
@@ -283,16 +383,45 @@ function AskMrSamCard({
   )
 }
 
+type ProblemCheckState = {
+  status: 'correct' | 'wrong'
+  hint: string | null
+  tries: number
+}
+
+function initialCheckState(attempt: WorkAttempt | undefined, practiceSet: LoadedPracticeSet): Record<string, ProblemCheckState> {
+  const out: Record<string, ProblemCheckState> = {}
+  const byId = new Map(practiceSet.problems.map((p) => [p.id, p]))
+  for (const a of attempt?.answers ?? []) {
+    if (a.tries <= 0) continue
+    const prob = byId.get(a.questionId)
+    if (!prob) continue
+    const ok = checkCurriculumAnswer(a.chosenValue, prob)
+    out[a.questionId] = {
+      status: ok ? 'correct' : 'wrong',
+      hint: ok ? null : selectProblemHint(a.chosenValue, prob),
+      tries: a.tries,
+    }
+  }
+  return out
+}
+
 function WorksheetPanel({
-  child, childActor, record, onStateChange, onBack,
+  child, childActor, record, practiceSet, onStateChange, onBack,
 }: {
-  child: ChildProfile; childActor: PortalActor; record: WorkRecord; onStateChange: (next: PortalState) => void; onBack: () => void
+  child: ChildProfile
+  childActor: PortalActor
+  record: WorkRecord
+  practiceSet: LoadedPracticeSet
+  onStateChange: (next: PortalState) => void
+  onBack: () => void
 }) {
   const activeAttempt = record.attempts.at(-1)
   const priorAttempts = record.attempts.slice(0, -1)
   const isFrozen = record.status !== 'draft' || activeAttempt?.submittedAt !== null
 
   const [answers, setAnswers] = useState<Record<string, DraftAnswerInput>>(() => answersToMap(activeAttempt))
+  const [checkedMap, setCheckedMap] = useState<Record<string, ProblemCheckState>>(() => initialCheckState(activeAttempt, practiceSet))
   const [openResponse, setOpenResponse] = useState(() => activeAttempt?.openResponse ?? record.openResponse)
   const [localRevision, setLocalRevision] = useState(record.currentRevision)
   const [failedSaveMode, setFailedSaveMode] = useState(false)
@@ -321,6 +450,7 @@ function WorksheetPanel({
       if (err instanceof WorkConflictError) {
         const latest = err.serverRecord.attempts.at(-1)
         setAnswers(answersToMap(latest))
+        setCheckedMap(initialCheckState(latest, practiceSet))
         setOpenResponse(latest?.openResponse ?? err.serverRecord.openResponse)
         setLocalRevision(err.serverRevision)
         onStateChange(portalStorage.load())
@@ -338,12 +468,31 @@ function WorksheetPanel({
     persistDraft(next, openResponse)
   }
 
-  function handleCheck(questionId: string, expected: number) {
-    const prev = answers[questionId]
+  function handleCheck(problem: CurriculumProblem) {
+    const prev = answers[problem.id]
     const chosenValue = prev?.chosenValue ?? ''
-    const ok = checkNumericAnswer(chosenValue, expected)
-    const next = { ...answers, [questionId]: { questionId, chosenValue, tries: (prev?.tries ?? 0) + 1, hintUsed: Boolean(prev?.hintUsed) || !ok, answeredAt: new Date().toISOString() } }
+    if (!chosenValue.trim()) return
+    const ok = checkCurriculumAnswer(chosenValue, problem)
+    const tries = (prev?.tries ?? 0) + 1
+    const next = {
+      ...answers,
+      [problem.id]: {
+        questionId: problem.id,
+        chosenValue,
+        tries,
+        hintUsed: Boolean(prev?.hintUsed) || !ok,
+        answeredAt: new Date().toISOString(),
+      },
+    }
     setAnswers(next)
+    setCheckedMap((prevMap) => ({
+      ...prevMap,
+      [problem.id]: {
+        status: ok ? 'correct' : 'wrong',
+        hint: ok ? null : selectProblemHint(chosenValue, problem),
+        tries,
+      },
+    }))
     persistDraft(next, openResponse)
   }
 
@@ -364,8 +513,11 @@ function WorksheetPanel({
     <div className={styles.stack}>
       <div className={styles.headerRow}>
         <div>
-          <h2 className={styles.sectionTitle}>{INTEGER_OPERATIONS_SET.title} — Attempt #{record.attempts.length}</h2>
-          <p className={styles.note}>Status: <strong>{record.status}</strong> · Autosaves on every change</p>
+          <h2 className={styles.sectionTitle}>
+            Unit {practiceSet.unitNumber}: {practiceSet.unitName} · {practiceSet.setLabel}: {practiceSet.title} — Attempt #{record.attempts.length}
+          </h2>
+          <p className={styles.note}>{practiceSet.skill}</p>
+          <p className={styles.note}>Status: <strong>{record.status}</strong> · {practiceSet.problems.length} problems · Autosaves on every change</p>
         </div>
         <div className={styles.actions}>
           <Button type="button" variant="secondary" size="sm" onClick={onBack}>Back to profile</Button>
@@ -386,27 +538,75 @@ function WorksheetPanel({
       <div className={priorAttempts.length > 0 ? styles.sideBySide : styles.stack}>
         <Card title={`Active attempt (#${record.attempts.length})`} headingLevel={3}>
           <ol className={styles.questionList}>
-            {INTEGER_OPERATIONS_SET.questions.map((q, idx) => {
+            {practiceSet.problems.map((q, idx) => {
               const entry = answers[q.id]
-              const checked = (entry?.tries ?? 0) > 0
-              const isCorrect = checked && checkNumericAnswer(entry?.chosenValue ?? '', q.answer)
+              const chosenValue = entry?.chosenValue ?? ''
+              const fb = checkedMap[q.id]
               return (
-                <li key={q.id} className={styles.questionItem}>
-                  <div className={styles.questionRow}>
-                    <label htmlFor={`ws-${q.id}`} className={styles.checkLabel}>{idx + 1}. {q.prompt}</label>
-                    <div className={styles.actions}>
-                      <input id={`ws-${q.id}`} type="text" inputMode="numeric" className={styles.answerInput} disabled={isFrozen} value={entry?.chosenValue ?? ''} onChange={(e) => handleAnswerChange(q.id, e.target.value)} />
-                      {!isFrozen ? <Button type="button" size="sm" variant="secondary" onClick={() => handleCheck(q.id, q.answer)}>Check</Button> : null}
+                <li key={q.id} className={styles.questionItem} data-testid={`problem-${q.id}`}>
+                  {q.answerType === 'choice' && q.choices ? (
+                    <fieldset className={styles.choiceGroup} disabled={isFrozen}>
+                      <legend className={styles.checkLabel}>{idx + 1}. {q.prompt}</legend>
+                      <div className={styles.choiceList}>
+                        {q.choices.map((choice) => (
+                          <label key={choice.id} className={styles.radioRow}>
+                            <input
+                              type="radio"
+                              name={`ws-${q.id}`}
+                              value={choice.id}
+                              checked={chosenValue.toLowerCase() === choice.id.toLowerCase()}
+                              onChange={() => handleAnswerChange(q.id, choice.id)}
+                            />
+                            <span>{choice.id}) {choice.text}</span>
+                          </label>
+                        ))}
+                      </div>
+                      {!isFrozen ? (
+                        <div className={styles.actions}>
+                          <Button type="button" size="sm" variant="secondary" disabled={!chosenValue.trim()} onClick={() => handleCheck(q)}>Check</Button>
+                        </div>
+                      ) : null}
+                    </fieldset>
+                  ) : (
+                    <div className={styles.questionRow}>
+                      <label htmlFor={`ws-${q.id}`} className={styles.checkLabel}>{idx + 1}. {q.prompt}</label>
+                      <div className={styles.actions}>
+                        <input
+                          id={`ws-${q.id}`}
+                          type="text"
+                          size={26}
+                          maxLength={ANSWER_INPUT_MAX_LENGTH}
+                          autoComplete="off"
+                          spellCheck={false}
+                          className={styles.answerInput}
+                          disabled={isFrozen}
+                          value={chosenValue}
+                          onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !isFrozen && chosenValue.trim()) {
+                              e.preventDefault()
+                              handleCheck(q)
+                            }
+                          }}
+                        />
+                        {!isFrozen ? <Button type="button" size="sm" variant="secondary" disabled={!chosenValue.trim()} onClick={() => handleCheck(q)}>Check</Button> : null}
+                      </div>
                     </div>
-                  </div>
-                  {checked ? (isCorrect ? <p className={styles.correctText}>Correct! ({entry?.tries} {entry?.tries === 1 ? 'try' : 'tries'})</p> : <p className={styles.hintText}>Teacher hint: {q.hint}</p>) : null}
+                  )}
+                  {fb ? (
+                    fb.status === 'correct' ? (
+                      <p className={styles.correctText}>Correct! ({fb.tries} {fb.tries === 1 ? 'try' : 'tries'})</p>
+                    ) : (
+                      <p className={styles.hintText}>Teacher hint: {fb.hint}</p>
+                    )
+                  ) : null}
                 </li>
               )
             })}
           </ol>
 
           <label className={styles.field}>
-            <span>Open response: {INTEGER_OPERATIONS_SET.openResponsePrompt}</span>
+            <span>Open response (Problem #{practiceSet.openResponse.problemNumber}): {practiceSet.openResponse.prompt}</span>
             <textarea rows={3} className={styles.input} disabled={isFrozen} value={openResponse} onChange={(e) => { setOpenResponse(e.target.value); persistDraft(answers, e.target.value) }} />
           </label>
           <p className={styles.note}>{askRouteNote}</p>

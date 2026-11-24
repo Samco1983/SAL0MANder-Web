@@ -1,7 +1,7 @@
 import { can, type PortalActor } from './access'
+import { GRADE7_CURRICULUM } from './curriculum'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import type { Badge, BeltColor, ChildProfile, PortalState } from './types'
-import { GRADE7_UNITS } from './worksheet'
 
 export type BeltThreshold = {
   belt: BeltColor
@@ -22,24 +22,14 @@ export type CourseLadderConfig = {
   beltThresholds: readonly BeltThreshold[]
 }
 
-const G7_UNIT_IDS = [
-  'g7_u1_ratios',
-  'g7_u2_integers',
-  'g7_u3_expressions',
-  'g7_u4_equations',
-  'g7_u5_geometry',
-  'g7_u6_statistics',
-  'g7_u7_probability',
-] as const
-
 export const COURSE_LADDERS: Readonly<Record<string, CourseLadderConfig>> = {
   '7th Grade Math': {
     courseId: 'grade7_ca',
     courseLabel: '7th Grade Math',
-    units: GRADE7_UNITS.map((title, i) => ({
-      unitId: G7_UNIT_IDS[i]!,
-      title,
-      requiredActivityIds: i === 1 ? ['act_integer_operations'] : [`act_${G7_UNIT_IDS[i]}`],
+    units: GRADE7_CURRICULUM.map((unit, i) => ({
+      unitId: unit.unitId,
+      title: `Unit ${i + 1}: ${unit.unitName}`,
+      requiredActivityIds: unit.sets.map((s) => s.setId),
     })),
     beltThresholds: [
       { belt: 'yellow', stripes: 2, testType: 'whiteboard' },
@@ -52,7 +42,7 @@ export const COURSE_LADDERS: Readonly<Record<string, CourseLadderConfig>> = {
     courseId: 'grade6_ca',
     courseLabel: '6th Grade Math',
     units: [
-      { unitId: 'g6_u1_ratios', title: 'Unit 1: Ratios & Unit Rates', requiredActivityIds: ['act_integer_operations'] },
+      { unitId: 'g6_u1_ratios', title: 'Unit 1: Ratios & Unit Rates', requiredActivityIds: ['g7-u1-a'] },
       { unitId: 'g6_u2_fractions', title: 'Unit 2: Dividing Fractions', requiredActivityIds: ['act_g6_u2'] },
       { unitId: 'g6_u3_decimals', title: 'Unit 3: Decimals & Percents', requiredActivityIds: ['act_g6_u3'] },
       { unitId: 'g6_u4_negatives', title: 'Unit 4: Rational Numbers', requiredActivityIds: ['act_g6_u4'] },
@@ -73,7 +63,7 @@ export const COURSE_LADDERS: Readonly<Record<string, CourseLadderConfig>> = {
     units: [
       { unitId: 'g8_u1_transforms', title: 'Unit 1: Transformations', requiredActivityIds: ['act_g8_u1'] },
       { unitId: 'g8_u2_angles', title: 'Unit 2: Angles & Triangles', requiredActivityIds: ['act_g8_u2'] },
-      { unitId: 'g8_u3_linear', title: 'Unit 3: Linear Equations', requiredActivityIds: ['act_integer_operations'] },
+      { unitId: 'g8_u3_linear', title: 'Unit 3: Linear Equations', requiredActivityIds: ['g7-u5-a'] },
       { unitId: 'g8_u4_systems', title: 'Unit 4: Systems of Equations', requiredActivityIds: ['act_g8_u4'] },
       { unitId: 'g8_u5_functions', title: 'Unit 5: Functions', requiredActivityIds: ['act_g8_u5'] },
       { unitId: 'g8_u6_exponents', title: 'Unit 6: Exponents & Scientific Notation', requiredActivityIds: ['act_g8_u6'] },
@@ -101,33 +91,68 @@ export function getNextBeltStep(child: ChildProfile): { nextBelt: BeltColor; str
   return { nextBelt: next.belt, stripesRequired: next.stripes, testType: next.testType, eligible: child.stripesEarned >= next.stripes }
 }
 
+/** True when EVERY required set in the unit has been reviewed with a non-empty open response. */
+export function isUnitPassed(state: PortalState, childId: string, unit: CourseUnitConfig): boolean {
+  if (unit.requiredActivityIds.length === 0) return false
+  return unit.requiredActivityIds.every((activityId) =>
+    state.workRecords.some(
+      (w) =>
+        w.childId === childId &&
+        w.unitId === unit.unitId &&
+        w.activityId === activityId &&
+        w.status === 'reviewed' &&
+        w.openResponse.trim().length > 0,
+    ),
+  )
+}
+
+/** Counts how many required sets in a unit have passed review with a non-empty open response. */
+export function countPassedSetsInUnit(state: PortalState, childId: string, unit: CourseUnitConfig): number {
+  return unit.requiredActivityIds.filter((activityId) =>
+    state.workRecords.some(
+      (w) =>
+        w.childId === childId &&
+        w.unitId === unit.unitId &&
+        w.activityId === activityId &&
+        w.status === 'reviewed' &&
+        w.openResponse.trim().length > 0,
+    ),
+  ).length
+}
+
 /**
- * Computes passed units (sets reviewed + open response present) for a child.
+ * Computes passed units (all unit sets reviewed + open responses present) for a child.
  * Never reduces stripesEarned (no demotions or resets) and NEVER awards a belt automatically.
  */
 export function recomputeStripesInState(state: PortalState, child: ChildProfile): { addedStripes: number; totalStripes: number } {
   const ladder = getCourseLadder(child.level)
-  const passedUnits = ladder.units.filter((unit) => {
-    const matching = state.workRecords.filter(
-      (w) => w.childId === child.id && w.unitId === unit.unitId && w.status === 'reviewed' && w.openResponse.trim().length > 0,
-    )
-    return matching.length > 0
-  }).length
+  const completed = new Set(child.completedUnitIds ?? [])
+  for (const unit of ladder.units) {
+    if (isUnitPassed(state, child.id, unit)) completed.add(unit.unitId)
+  }
+  child.completedUnitIds = [...completed]
   const prev = child.stripesEarned
-  // Never take stripes away; if a newly reviewed unit raises count beyond current stripes, advance up to ladder length.
-  const next = Math.min(ladder.units.length, Math.max(prev, passedUnits))
+  const next = Math.min(ladder.units.length, Math.max(prev, completed.size))
   child.stripesEarned = next
   return { addedStripes: next - prev, totalStripes: next }
 }
 
-/** Awards one stripe when a unit's set + open response finishes mentor review (capped at ladder units, never demotes). */
+/**
+ * Credits a unit's stripe once ALL required sets + open responses for `unitId` pass mentor review.
+ * Idempotent per unit (redoing a set never double-credits), capped at ladder units, never auto-awards a belt.
+ */
 export function creditReviewedUnitStripe(state: PortalState, child: ChildProfile, unitId: string): boolean {
   const ladder = getCourseLadder(child.level)
-  const hasReviewedWithOpen = state.workRecords.some(
-    (w) => w.childId === child.id && w.unitId === unitId && w.status === 'reviewed' && w.openResponse.trim().length > 0,
-  )
-  if (!hasReviewedWithOpen || child.stripesEarned >= ladder.units.length) return false
-  child.stripesEarned = Math.min(ladder.units.length, child.stripesEarned + 1)
+  const unit = ladder.units.find((u) => u.unitId === unitId)
+  if (!unit) return false
+  const completed = new Set(child.completedUnitIds ?? [])
+  if (completed.has(unit.unitId)) return false
+  if (!isUnitPassed(state, child.id, unit)) return false
+
+  completed.add(unit.unitId)
+  child.completedUnitIds = [...completed]
+  if (child.stripesEarned >= ladder.units.length) return false
+  child.stripesEarned = Math.min(ladder.units.length, Math.max(child.stripesEarned + 1, completed.size))
   return true
 }
 

@@ -11,6 +11,7 @@ const hh = (id: string, parentName: string, parentEmail: string, verified: boole
 const kid = (id: string, householdId: string, nickname: string, level: string, overrides: Partial<ChildProfile> = {}): ChildProfile => ({
   id, householdId, nickname, level, consentStatus: 'verified', askMode: 'review', autoShow: false,
   approvedGames: ['act_integer_operations'], joinRooms: false, currentBelt: 'white', stripesEarned: 0,
+  completedUnitIds: [],
   firstConversationLine: 'Just getting started.', lastActiveAt: '2026-11-23T18:00:00Z', ...overrides,
 })
 
@@ -28,9 +29,9 @@ export function createSeedState(): PortalState {
       hh('hh_david', 'David', 'david.demo@family.example', false, 'friday_only'),
     ],
     children: [
-      kid('child_marcus', 'hh_elena', 'Marcus', '7th Grade Math', { pinHash: 'demo-pin-1234', currentBelt: 'yellow', stripesEarned: 3, firstConversationLine: 'I want to get fast at negative numbers before the quiz.' }),
-      kid('child_sofia', 'hh_elena', 'Sofia', '6th Grade Math', { askMode: 'off', stripesEarned: 1, firstConversationLine: 'Fractions are fine, word problems trip me up.' }),
-      kid('child_leo', 'hh_priya', 'Leo', '7th Grade Math', { pinHash: 'demo-pin-4321', askMode: 'auto', autoShow: true, approvedGames: ['act_integer_operations', 'neon-dash'], joinRooms: true, currentBelt: 'green', stripesEarned: 4, firstConversationLine: 'I like spotting patterns and checking why shortcuts work.' }),
+      kid('child_marcus', 'hh_elena', 'Marcus', '7th Grade Math', { pinHash: 'demo-pin-1234', currentBelt: 'yellow', stripesEarned: 3, completedUnitIds: ['g7-u1', 'g7-u2', 'g7-u3'], firstConversationLine: 'I want to get fast at negative numbers before the quiz.' }),
+      kid('child_sofia', 'hh_elena', 'Sofia', '6th Grade Math', { askMode: 'off', stripesEarned: 1, completedUnitIds: ['g6_u1_ratios'], firstConversationLine: 'Fractions are fine, word problems trip me up.' }),
+      kid('child_leo', 'hh_priya', 'Leo', '7th Grade Math', { pinHash: 'demo-pin-4321', askMode: 'auto', autoShow: true, approvedGames: ['act_integer_operations', 'neon-dash'], joinRooms: true, currentBelt: 'green', stripesEarned: 4, completedUnitIds: ['g7-u1', 'g7-u2', 'g7-u3', 'g7-u4'], firstConversationLine: 'I like spotting patterns and checking why shortcuts work.' }),
       kid('child_nina', 'hh_priya', 'Nina', '8th Grade Math', { firstConversationLine: 'Graphing lines makes more sense when I draw the steps.', lastActiveAt: '2026-11-12T18:00:00Z' }),
       kid('child_kai', 'hh_david', 'Kai', '7th Grade Math', { consentStatus: 'pending', askMode: 'off', approvedGames: [] }),
     ],
@@ -47,18 +48,30 @@ export function createSeedState(): PortalState {
     ],
     workRecords: [
       {
-        id: 'work_marcus_u2', householdId: 'hh_elena', childId: 'child_marcus', activityId: 'act_integer_operations', activityVersionId: 'ver_int_ops_v1', unitId: 'g7_u2_integers', status: 'submitted',
-        attempts: [{ attemptId: 'att_marcus_1', startedAt: '2026-11-22T23:00:00Z', submittedAt: '2026-11-22T23:18:00Z', answers: [{ questionId: 'q1', chosenValue: '-5', tries: 1, hintUsed: false, answeredAt: '2026-11-22T23:03:00Z' }], openResponse: 'Subtracting a negative moved right on the number line.' }],
-        openResponse: 'Subtracting a negative moved right on the number line.',
+        id: 'work_marcus_u2', householdId: 'hh_elena', childId: 'child_marcus', activityId: 'g7-u4-c', activityVersionId: 'g7-v1', unitId: 'g7-u4', status: 'submitted',
+        attempts: [{ attemptId: 'att_marcus_1', startedAt: '2026-11-22T23:00:00Z', submittedAt: '2026-11-22T23:18:00Z', answers: [{ questionId: 'g7-u4-c-01', chosenValue: '3x + 5', tries: 1, hintUsed: false, answeredAt: '2026-11-22T23:03:00Z' }], openResponse: 'I grouped like terms and checked the sign on each coefficient.' }],
+        openResponse: 'I grouped like terms and checked the sign on each coefficient.',
         revisions: [{ revision: 1, savedAt: '2026-11-22T23:18:00Z', attemptId: 'att_marcus_1' }], currentRevision: 1,
       },
       {
-        id: 'work_sofia_u1', householdId: 'hh_elena', childId: 'child_sofia', activityId: 'act_integer_operations', activityVersionId: 'ver_int_ops_v1', unitId: 'g6_u1_ratios', status: 'draft',
+        id: 'work_marcus_u4_a', householdId: 'hh_elena', childId: 'child_marcus', activityId: 'g7-u4-a', activityVersionId: 'g7-v1', unitId: 'g7-u4', status: 'reviewed',
+        attempts: [{ attemptId: 'att_marcus_u4a_1', startedAt: '2026-11-20T22:00:00Z', submittedAt: '2026-11-20T22:20:00Z', answers: [], openResponse: 'Distributed the negative across both terms inside the parentheses.' }],
+        openResponse: 'Distributed the negative across both terms inside the parentheses.',
+        revisions: [{ revision: 1, savedAt: '2026-11-20T22:20:00Z', attemptId: 'att_marcus_u4a_1' }], currentRevision: 1,
+      },
+      {
+        id: 'work_marcus_u4_b', householdId: 'hh_elena', childId: 'child_marcus', activityId: 'g7-u4-b', activityVersionId: 'g7-v1', unitId: 'g7-u4', status: 'reviewed',
+        attempts: [{ attemptId: 'att_marcus_u4b_1', startedAt: '2026-11-21T22:00:00Z', submittedAt: '2026-11-21T22:20:00Z', answers: [], openResponse: 'Found the GCF of both terms and checked by multiplying back.' }],
+        openResponse: 'Found the GCF of both terms and checked by multiplying back.',
+        revisions: [{ revision: 1, savedAt: '2026-11-21T22:20:00Z', attemptId: 'att_marcus_u4b_1' }], currentRevision: 1,
+      },
+      {
+        id: 'work_sofia_u1', householdId: 'hh_elena', childId: 'child_sofia', activityId: 'g7-u1-a', activityVersionId: 'g7-v1', unitId: 'g7-u1', status: 'draft',
         attempts: [{ attemptId: 'att_sofia_1', startedAt: '2026-11-23T22:00:00Z', submittedAt: null, answers: [], openResponse: '' }],
         openResponse: '', revisions: [{ revision: 1, savedAt: '2026-11-23T22:05:00Z', attemptId: 'att_sofia_1' }], currentRevision: 1,
       },
       {
-        id: 'work_leo_u2', householdId: 'hh_priya', childId: 'child_leo', activityId: 'act_integer_operations', activityVersionId: 'ver_int_ops_v1', unitId: 'g7_u2_integers', status: 'reviewed',
+        id: 'work_leo_u2', householdId: 'hh_priya', childId: 'child_leo', activityId: 'g7-u1-a', activityVersionId: 'g7-v1', unitId: 'g7-u1', status: 'reviewed',
         attempts: [{ attemptId: 'att_leo_1', startedAt: '2026-11-21T19:00:00Z', submittedAt: '2026-11-21T19:14:00Z', answers: [], openResponse: 'Two negatives add to a deeper negative.' }],
         openResponse: 'Two negatives add to a deeper negative.',
         revisions: [{ revision: 1, savedAt: '2026-11-21T19:14:00Z', attemptId: 'att_leo_1' }], currentRevision: 1,

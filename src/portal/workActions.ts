@@ -3,7 +3,7 @@ import { enqueueAskQuestionInState } from './askActions'
 import { STARTER_BADGE_LABELS, grantBadgeInState } from './belts'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import type { PortalState, WorkRecord } from './types'
-import { INTEGER_OPERATIONS_SET, type QuestionSet } from './worksheet'
+import { DEFAULT_PRACTICE_SET, type QuestionSet } from './worksheet'
 
 const CAME_BACK_DAYS_MS = 14 * 86_400_000
 
@@ -33,7 +33,7 @@ export function openOrCreateWorkRecord(
   adapter: PortalStorageAdapter,
   actor: PortalActor,
   childId: string,
-  set: QuestionSet = INTEGER_OPERATIONS_SET,
+  set: QuestionSet = DEFAULT_PRACTICE_SET,
   nowIso = new Date().toISOString(),
 ): { state: PortalState; record: WorkRecord } {
   const state = adapter.load()
@@ -60,7 +60,7 @@ export function openOrCreateWorkRecord(
     return { state: out, record: out.workRecords.find((w) => w.id === existing.id)! }
   }
 
-  const id = `work_${childId}_${set.unitId}`
+  const id = `work_${childId}_${set.activityId}`
   const attemptId = `att_${id}_1`
   state.workRecords.push({
     id, householdId: child.householdId, childId, activityId: set.activityId,

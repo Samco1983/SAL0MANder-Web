@@ -16,7 +16,7 @@ import {
   startRedoAttempt,
   submitWorkRecord,
 } from './workActions'
-import { INTEGER_OPERATIONS_SET } from './worksheet'
+import { DEFAULT_PRACTICE_SET } from './worksheet'
 
 describe('portal Phase 1 — PR 3 child profile, worksheet, work record, and lesson-game toggle', () => {
   beforeEach(() => {
@@ -45,9 +45,9 @@ describe('portal Phase 1 — PR 3 child profile, worksheet, work record, and les
     expect(() => openOrCreateWorkRecord(adapter, kai, 'child_kai')).toThrow(PortalAccessError)
 
     // Nina creates a draft, saves mid-set, hits optimistic-concurrency conflict, submits (routes parent-first), and redoes
-    const opened = openOrCreateWorkRecord(adapter, nina, 'child_nina', INTEGER_OPERATIONS_SET, '2026-11-24T18:00:00Z')
+    const opened = openOrCreateWorkRecord(adapter, nina, 'child_nina', DEFAULT_PRACTICE_SET, '2026-11-24T18:00:00Z')
     const saved = saveWorkDraft(adapter, nina, opened.record.id, opened.record.currentRevision, {
-      answers: [{ questionId: 'q1', chosenValue: '5', tries: 1, hintUsed: false, answeredAt: '2026-11-24T18:01:00Z' }],
+      answers: [{ questionId: 'g7-u1-a-01', chosenValue: '5', tries: 1, hintUsed: false, answeredAt: '2026-11-24T18:01:00Z' }],
       openResponse: 'Subtracting -5 is adding 5.',
     })
     simulateExternalDeviceSave(adapter, opened.record.id, '2026-11-24T18:02:00Z')
@@ -80,7 +80,7 @@ describe('portal Phase 1 — PR 3 child profile, worksheet, work record, and les
     // Marcus profile elements + visibility guarantees
     expect(screen.getByRole('img', { name: /Yellow Belt: Goggles salamander/i })).toBeVisible()
     expect(screen.getByText(/Homework done\? Then let’s go\./i)).toBeVisible()
-    expect(screen.getByText(/Next unit:/i)).toHaveTextContent('Unit 4: Equations & Inequalities')
+    expect(screen.getByText(/Next unit:/i)).toHaveTextContent('Unit 4: Expressions')
     expect(screen.getByText(/Mr\. Sam replied Tuesday, ask your parent/i)).toBeVisible()
     expect(screen.getByText(/I want to get fast at negative numbers/i)).toBeVisible()
     expect(screen.getByText(/Points: 120 pts/i)).toBeVisible()
@@ -97,15 +97,15 @@ describe('portal Phase 1 — PR 3 child profile, worksheet, work record, and les
     expect(screen.getByText(/Waiting for parent consent/i)).toBeVisible()
     expect(screen.queryByRole('button', { name: /continue/i })).toBeNull()
 
-    // Sofia opens unfinished set, triggers teacher hint on wrong check, corrects answer, autosaves across Continue
+    // Sofia opens unfinished set (g7-u1-a), triggers teacher hint on wrong check, corrects answer, autosaves across Continue
     await user.click(screen.getByRole('button', { name: /Sofia \(white\)/i }))
     await user.click(screen.getByRole('button', { name: /continue unfinished set/i }))
 
-    const q1Input = screen.getByLabelText(/1\. -7 \+ 12 = \?/i)
+    const q1Input = screen.getByLabelText(/1\. -3 \+ 8 = \?/i)
     const q1Item = q1Input.closest('li')!
-    await user.type(q1Input, '-1')
+    await user.type(q1Input, '-11')
     await user.click(within(q1Item).getByRole('button', { name: /^check$/i }))
-    expect(within(q1Item).getByText(/Teacher hint: Start at -7/i)).toBeVisible()
+    expect(within(q1Item).getByText(/Teacher hint: You kept the minus and added the sizes/i)).toBeVisible()
 
     await user.clear(q1Input)
     await user.type(q1Input, '5')
@@ -114,14 +114,14 @@ describe('portal Phase 1 — PR 3 child profile, worksheet, work record, and les
 
     await user.click(screen.getByRole('button', { name: /back to profile/i }))
     await user.click(screen.getByRole('button', { name: /continue unfinished set/i }))
-    expect(screen.getByLabelText(/1\. -7 \+ 12 = \?/i)).toHaveValue('5')
+    expect(screen.getByLabelText(/1\. -3 \+ 8 = \?/i)).toHaveValue('5')
 
     // Simulate failed save: shows "Not saved, retrying…", preserves typed Q2 answer with zero loss, then recovers on retry
     await user.click(screen.getByRole('button', { name: /simulate failed save/i }))
     expect(screen.getByTestId('worksheet-save-status')).toHaveTextContent(/Not saved, retrying/i)
-    const q2Input = screen.getByLabelText(/2\. 3 - \(-5\) = \?/i)
-    await user.type(q2Input, '8')
-    expect(q2Input).toHaveValue('8')
+    const q2Input = screen.getByLabelText(/2\. 6 \+ \(-9\) = \?/i)
+    await user.type(q2Input, '-3')
+    expect(q2Input).toHaveValue('-3')
     await user.click(screen.getByRole('button', { name: /retry save now/i }))
     expect(screen.getByTestId('worksheet-save-status')).toHaveTextContent(/recovered after retry/i)
 
@@ -131,7 +131,7 @@ describe('portal Phase 1 — PR 3 child profile, worksheet, work record, and les
 
     // Submit freezes attempt, then Redo creates Attempt #2 side by side preserving Attempt #1
     await user.click(screen.getByRole('button', { name: /submit set/i }))
-    expect(screen.getByLabelText(/1\. -7 \+ 12 = \?/i)).toBeDisabled()
+    expect(screen.getByLabelText(/1\. -3 \+ 8 = \?/i)).toBeDisabled()
     await user.click(screen.getByRole('button', { name: /redo \(new attempt side by side\)/i }))
     expect(screen.getByText(/Attempt #2/i)).toBeVisible()
     expect(within(screen.getByTestId('prior-attempts-column')).getByText(/Attempt #1/i)).toBeVisible()
