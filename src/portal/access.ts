@@ -12,7 +12,7 @@ export type PortalAction =
   | 'submit_question' | 'forward_question'
   | 'review_work' | 'author_feedback' | 'show_feedback_to_child' | 'send_parent_update'
   | 'award_belt' | 'manage_room_invite' | 'approve_room_invite'
-  | 'assign_mentor' | 'revoke_mentor' | 'export_household' | 'delete_household'
+  | 'add_mentor' | 'assign_mentor' | 'revoke_mentor' | 'export_household' | 'delete_household'
 
 export type PortalActor =
   | { kind: 'anonymous' }
@@ -33,8 +33,10 @@ export type AccessTarget =
   | { type: 'assignment'; record: Assignment }
   | { type: 'audit_log'; record: AuditLog }
   | { type: 'email'; record: SimulatedEmail }
+  | { type: 'portal_admin'; householdId: null }
 
-const targetHh = (t: AccessTarget): string | null => (t.type === 'household' ? t.record.id : t.record.householdId)
+const targetHh = (t: AccessTarget): string | null =>
+  t.type === 'household' ? t.record.id : t.type === 'portal_admin' ? null : t.record.householdId
 
 function hasActiveAssignment(actor: Extract<PortalActor, { kind: 'mentor' }>, hhId: string | null): boolean {
   return hhId !== null && actor.assignments.some((a) => a.mentorId === actor.mentorId && a.householdId === hhId && a.revokedAt === null)
@@ -115,6 +117,7 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
   if (action === 'send_parent_update') return target.type === 'parent_update' && assigned
   if (action === 'award_belt') return target.type === 'child' && assigned
   if (action === 'manage_room_invite') return target.type === 'room_invite' && assigned
+  if (action === 'add_mentor') return isAdmin && target.type === 'portal_admin'
   if (action === 'assign_mentor' || action === 'revoke_mentor') return isAdmin && (target.type === 'assignment' || target.type === 'household')
   if (action === 'export_household' || action === 'delete_household') return isAdmin && target.type === 'household'
   return false

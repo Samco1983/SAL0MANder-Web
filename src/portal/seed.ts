@@ -11,7 +11,7 @@ const hh = (id: string, parentName: string, parentEmail: string, verified: boole
 const kid = (id: string, householdId: string, nickname: string, level: string, overrides: Partial<ChildProfile> = {}): ChildProfile => ({
   id, householdId, nickname, level, consentStatus: 'verified', askMode: 'review', autoShow: false,
   approvedGames: ['act_integer_operations'], joinRooms: false, currentBelt: 'white', stripesEarned: 0,
-  firstConversationLine: 'Just getting started.', ...overrides,
+  firstConversationLine: 'Just getting started.', lastActiveAt: '2026-11-23T18:00:00Z', ...overrides,
 })
 
 const asgn = (id: string, mentorId: string, householdId: string): Assignment => ({
@@ -31,7 +31,7 @@ export function createSeedState(): PortalState {
       kid('child_marcus', 'hh_elena', 'Marcus', '7th Grade Math', { pinHash: 'demo-pin-1234', currentBelt: 'yellow', stripesEarned: 3, firstConversationLine: 'I want to get fast at negative numbers before the quiz.' }),
       kid('child_sofia', 'hh_elena', 'Sofia', '6th Grade Math', { askMode: 'off', stripesEarned: 1, firstConversationLine: 'Fractions are fine, word problems trip me up.' }),
       kid('child_leo', 'hh_priya', 'Leo', '7th Grade Math', { pinHash: 'demo-pin-4321', askMode: 'auto', autoShow: true, approvedGames: ['act_integer_operations', 'neon-dash'], joinRooms: true, currentBelt: 'green', stripesEarned: 4, firstConversationLine: 'I like spotting patterns and checking why shortcuts work.' }),
-      kid('child_nina', 'hh_priya', 'Nina', '8th Grade Math', { firstConversationLine: 'Graphing lines makes more sense when I draw the steps.' }),
+      kid('child_nina', 'hh_priya', 'Nina', '8th Grade Math', { firstConversationLine: 'Graphing lines makes more sense when I draw the steps.', lastActiveAt: '2026-11-12T18:00:00Z' }),
       kid('child_kai', 'hh_david', 'Kai', '7th Grade Math', { consentStatus: 'pending', askMode: 'off', approvedGames: [] }),
     ],
     mentors: [

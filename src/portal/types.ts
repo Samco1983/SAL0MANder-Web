@@ -37,6 +37,7 @@ export const ChildProfileSchema = z.object({
   approvedGames: z.array(z.string()), joinRooms: z.boolean(),
   currentBelt: BeltColorSchema, stripesEarned: z.number().int().min(0),
   firstConversationLine: z.string(),
+  lastActiveAt: iso.default('2026-11-24T12:00:00Z'),
 }).strict()
 
 export const MentorSchema = z.object({

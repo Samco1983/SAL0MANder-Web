@@ -123,12 +123,14 @@ describe('portal Phase 1 — PR 4 Ask rail', () => {
     await user.click(screen.getByRole('button', { name: /^send question$/i }))
     expect(screen.getByTestId('ask-rail-status')).toHaveTextContent(/Sent to your parent first/i)
 
-    // Simulated Inbox: neither rejected nor waiting-review question is in Mr. Sam's queue yet
-    await user.click(screen.getByRole('tab', { name: /simulated inbox/i }))
+    // Mentor View: neither rejected nor waiting-review question is in Mr. Sam's queue yet
+    await user.click(screen.getByRole('tab', { name: /mentor view/i }))
     expect(screen.queryByTestId('mentor-ask-queue')).toBeNull()
 
-    // Parent forwards from inbox -> appears in Mr. Sam's Ask Queue -> Mr. Sam sends reply (parent first)
+    // Parent forwards from Simulated Inbox -> appears in Mentor View Ask Queue -> Mr. Sam sends reply (parent first)
+    await user.click(screen.getByRole('tab', { name: /simulated inbox/i }))
     await user.click(screen.getByRole('button', { name: /forward to mr\. sam/i }))
+    await user.click(screen.getByRole('tab', { name: /mentor view/i }))
     const queue = screen.getByTestId('mentor-ask-queue')
     expect(within(queue).getByText(/How do I check -6 times 3\?/i)).toBeVisible()
     expect(within(queue).queryByText(/Rejected test question/i)).toBeNull()
