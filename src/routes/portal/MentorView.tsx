@@ -10,12 +10,14 @@ import {
   listQuietKids, listTodayAskQueue, listTodayWorkQueue, sendAllFridayNotes,
   sendQuietNudge, sendWorkReviewReply,
 } from '@/portal/mentorActions'
+import { FUN_GAMES } from '@/portal/parentActions'
+import { createRoomInvite, openRoomByMentor } from '@/portal/roomActions'
 import { portalStorage } from '@/portal/storage'
 import type { PortalState } from '@/portal/types'
 import { BELT_MASCOT } from '@/portal/worksheet'
 import styles from './PortalPage.module.css'
 
-type MentorSubTab = 'today' | 'kids' | 'friday' | 'scripts' | 'admin'
+type MentorSubTab = 'today' | 'kids' | 'friday' | 'rooms' | 'scripts' | 'admin'
 
 export function MentorView({ state, onStateChange }: { state: PortalState; onStateChange: (next: PortalState) => void }) {
   const [selectedMentorId, setSelectedMentorId] = useState('mentor_samuel')
@@ -25,6 +27,8 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({})
   const [humanSentences, setHumanSentences] = useState<Record<string, string>>({})
   const [teachItDone, setTeachItDone] = useState(false)
+  const [roomChildId, setRoomChildId] = useState('')
+  const [roomGameId, setRoomGameId] = useState<string>(FUN_GAMES[0].id)
   const [newMentorName, setNewMentorName] = useState('')
   const [newMentorEmail, setNewMentorEmail] = useState('')
   const [assignMentorId, setAssignMentorId] = useState('mentor_c')
@@ -44,6 +48,9 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
   const beltDue = listBeltTestsDue(state, actor)
   const assignedKids = state.children.filter((record) => can(actor, 'view', { type: 'child', record }))
   const activeKid = assignedKids.find((c) => c.id === selectedKidId) ?? assignedKids[0]
+  const verifiedAssignedKids = assignedKids.filter((c) => c.consentStatus === 'verified')
+  const targetRoomChild = verifiedAssignedKids.find((c) => c.id === roomChildId) ?? verifiedAssignedKids[0]
+  const visibleRoomInvites = state.roomInvites.filter((record) => can(actor, 'manage_room_invite', { type: 'room_invite', record }))
   const fridayDrafts = buildFridayDrafts(state, actor).map((d) => ({ ...d, humanSentence: humanSentences[d.childId] ?? d.humanSentence }))
   const activeScript = SCRIPT_LIBRARY.find((s) => s.unitId === selectedUnitId) ?? SCRIPT_LIBRARY[0]!
   const capacity = getMembershipCapacity(state)
@@ -74,7 +81,7 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
       </Card>
 
       <div className={styles.actions} role="tablist" aria-label="Mentor sections">
-        {([['today', `Today (${askQueue.length + workQueue.length})`], ['kids', `Kids (${assignedKids.length})`], ['friday', 'Friday'], ['scripts', 'Script library']] as const).map(([key, label]) => (
+        {([['today', `Today (${askQueue.length + workQueue.length})`], ['kids', `Kids (${assignedKids.length})`], ['friday', 'Friday'], ['rooms', `Rooms (${visibleRoomInvites.length})`], ['scripts', 'Script library']] as const).map(([key, label]) => (
           <Button key={key} type="button" size="sm" variant={activeTab === key ? 'primary' : 'secondary'} role="tab" aria-selected={activeTab === key} onClick={() => setSubTab(key)}>
             {label}
           </Button>
@@ -278,6 +285,83 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
             </div>
           )}
         </Card>
+      ) : null}
+
+      {activeTab === 'rooms' ? (
+        <div className={styles.stack}>
+          <Card title="Open a game room invite (fun games only — never during scheduled tutoring)" headingLevel={2}>
+            {verifiedAssignedKids.length === 0 ? (
+              <p className={styles.note}>No verified assigned kids available to invite.</p>
+            ) : (
+              <div className={styles.formStack}>
+                <label className={styles.field}>
+                  <span>Assigned child</span>
+                  <select className={styles.input} value={targetRoomChild?.id ?? ''} onChange={(e) => setRoomChildId(e.target.value)}>
+                    {verifiedAssignedKids.map((c) => <option key={c.id} value={c.id}>{c.nickname} (standing yes: {c.joinRooms ? 'on' : 'off'})</option>)}
+                  </select>
+                </label>
+                <label className={styles.field}>
+                  <span>Fun game</span>
+                  <select className={styles.input} value={roomGameId} onChange={(e) => setRoomGameId(e.target.value)}>
+                    {FUN_GAMES.map((g) => <option key={g.id} value={g.id}>{g.label}</option>)}
+                  </select>
+                </label>
+                <div className={styles.actions}>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (!targetRoomChild) return
+                      const start = new Date(Date.now() + 5_000).toISOString()
+                      const end = new Date(Date.now() + 10 * 60_000).toISOString()
+                      try {
+                        const res = createRoomInvite(portalStorage, actor, { childId: targetRoomChild.id, gameId: roomGameId, startsAt: start, endsAt: end })
+                        onStateChange(res.state)
+                        setNotice(`Sent ${roomGameId} room invite (${res.invite.roomCode}, ${res.invite.parentApproval}) to parent email.`)
+                      } catch (err) {
+                        setNotice(err instanceof Error ? err.message : 'Unable to create room invite.')
+                      }
+                    }}
+                  >
+                    Send room invite (10 min)
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          <Card title={`Assigned room invites (${visibleRoomInvites.length})`} headingLevel={2}>
+            {visibleRoomInvites.length === 0 ? <p className={styles.note}>No room invites yet.</p> : (
+              <ul className={styles.checkList}>
+                {visibleRoomInvites.map((inv) => {
+                  const kidName = state.children.find((c) => c.id === inv.childId)?.nickname ?? 'Child'
+                  return (
+                    <li key={inv.id} className={styles.checkItem}>
+                      <div className={styles.checkMeta}>
+                        <p className={styles.checkLabel}>{inv.gameId} · {kidName} · code {inv.roomCode} ({inv.parentApproval})</p>
+                        <p className={styles.checkDetail}>{inv.closedAt ? 'Closed (hard end)' : inv.openedAt ? `Open since ${inv.openedAt}` : 'Not opened yet'} · ends {inv.endsAt}</p>
+                      </div>
+                      {!inv.openedAt && !inv.closedAt ? (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            try {
+                              onStateChange(openRoomByMentor(portalStorage, actor, inv.id))
+                              setNotice(`Opened room ${inv.roomCode} for ${kidName}.`)
+                            } catch (err) {
+                              setNotice(err instanceof Error ? err.message : 'Unable to open room.')
+                            }
+                          }}
+                        >
+                          Open room now
+                        </Button>
+                      ) : null}
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </Card>
+        </div>
       ) : null}
 
       {activeTab === 'scripts' ? (

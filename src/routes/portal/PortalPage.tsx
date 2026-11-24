@@ -5,12 +5,14 @@ import { Card } from '@components/ui/Card'
 import { buildMentorActor, buildParentActor, can } from '@/portal/access'
 import { runAccessChecks } from '@/portal/accessChecks'
 import { forwardQuestionToMentor } from '@/portal/askActions'
+import { respondToRoomInvite } from '@/portal/roomActions'
 import { createSeedState } from '@/portal/seed'
 import { portalStorage } from '@/portal/storage'
 import type { PortalState } from '@/portal/types'
 import { ChildProfileView } from './ChildProfileView'
 import { MentorView } from './MentorView'
 import { ParentAccountView } from './ParentAccountView'
+import { RoomStageCard } from './RoomStageCard'
 import styles from './PortalPage.module.css'
 
 export const PORTAL_DEMO_BANNER =
@@ -22,6 +24,7 @@ export function PortalPage() {
   const [tab, setTab] = useState<PortalTab>('access')
   const [state, setState] = useState<PortalState>(() => portalStorage.load())
   const [signedInHouseholdId, setSignedInHouseholdId] = useState<string | null>(null)
+  const [activeRoom, setActiveRoom] = useState<{ inviteId: string; childId: string } | null>(null)
   const [statusMessage, setStatusMessage] = useState('')
   const [inboxNotice, setInboxNotice] = useState('')
 
@@ -44,6 +47,7 @@ export function PortalPage() {
   function handleResetSeed() {
     setState(portalStorage.reset())
     setSignedInHouseholdId(null)
+    setActiveRoom(null)
     setInboxNotice('')
     setStatusMessage('Demo storage reset to clean fictional seed (3 households, 5 kids, 3 mentors).')
   }
@@ -56,39 +60,53 @@ export function PortalPage() {
         <div className={styles.headerRow}>
           <h1 className={styles.title}>SAL0MANder Tutoring Portal (Phase 1 Demo)</h1>
           <div className={styles.actions} role="tablist" aria-label="Portal views">
-            <Button size="sm" variant={tab === 'access' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'access'} onClick={() => setTab('access')}>
+            <Button size="sm" variant={tab === 'access' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'access'} onClick={() => { setTab('access'); setActiveRoom(null) }}>
               Access Checks
             </Button>
-            <Button size="sm" variant={tab === 'parent' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'parent'} onClick={() => setTab('parent')}>
+            <Button size="sm" variant={tab === 'parent' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'parent'} onClick={() => { setTab('parent'); setActiveRoom(null) }}>
               Parent Account
             </Button>
-            <Button size="sm" variant={tab === 'child' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'child'} onClick={() => setTab('child')}>
+            <Button size="sm" variant={tab === 'child' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'child'} onClick={() => { setTab('child'); setActiveRoom(null) }}>
               Child Profile
             </Button>
-            <Button size="sm" variant={tab === 'mentor' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'mentor'} onClick={() => setTab('mentor')}>
+            <Button size="sm" variant={tab === 'mentor' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'mentor'} onClick={() => { setTab('mentor'); setActiveRoom(null) }}>
               Mentor View
             </Button>
-            <Button size="sm" variant={tab === 'inbox' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'inbox'} onClick={() => setTab('inbox')}>
+            <Button size="sm" variant={tab === 'inbox' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'inbox'} onClick={() => { setTab('inbox'); setActiveRoom(null) }}>
               Simulated Inbox ({state.inbox.length})
             </Button>
           </div>
         </div>
 
-        {tab === 'parent' ? (
+        {activeRoom ? (
+          <RoomStageCard
+            key={activeRoom.inviteId}
+            state={state}
+            inviteId={activeRoom.inviteId}
+            childId={activeRoom.childId}
+            onStateChange={setState}
+            onClose={() => setActiveRoom(null)}
+          />
+        ) : null}
+
+        {!activeRoom && tab === 'parent' ? (
           <ParentAccountView
             state={state}
             signedInHouseholdId={signedInHouseholdId}
             onStateChange={setState}
             onSignOut={() => setSignedInHouseholdId(null)}
             onOpenInbox={() => setTab('inbox')}
+            onOpenRoom={(inviteId, childId) => setActiveRoom({ inviteId, childId })}
           />
         ) : null}
 
-        {tab === 'child' ? <ChildProfileView state={state} onStateChange={setState} /> : null}
+        {!activeRoom && tab === 'child' ? (
+          <ChildProfileView state={state} onStateChange={setState} onOpenRoom={(inviteId, childId) => setActiveRoom({ inviteId, childId })} />
+        ) : null}
 
-        {tab === 'mentor' ? <MentorView state={state} onStateChange={setState} /> : null}
+        {!activeRoom && tab === 'mentor' ? <MentorView state={state} onStateChange={setState} /> : null}
 
-        {tab === 'inbox' ? (
+        {!activeRoom && tab === 'inbox' ? (
           <div className={styles.stack}>
             {inboxNotice ? <p className={styles.statusCallout} role="status">{inboxNotice}</p> : null}
             <Card title="Simulated Email Inbox (in-app only — no real email sent)" headingLevel={2}>
@@ -99,6 +117,9 @@ export function PortalPage() {
                   {state.inbox.map((email) => {
                     const pendingQ = email.relatedQuestionId
                       ? state.askQuestions.find((q) => q.id === email.relatedQuestionId && q.status === 'waiting_parent_review')
+                      : undefined
+                    const linkedRoom = email.relatedRoomInviteId
+                      ? state.roomInvites.find((r) => r.id === email.relatedRoomInviteId)
                       : undefined
                     return (
                       <li key={email.id} className={styles.checkItem}>
@@ -123,6 +144,26 @@ export function PortalPage() {
                             Forward to Mr. Sam
                           </Button>
                         ) : null}
+                        {email.kind === 'room_invite' && linkedRoom && email.householdId ? (
+                          <div className={styles.actions}>
+                            {linkedRoom.parentApproval === 'pending' ? (
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setState(respondToRoomInvite(portalStorage, buildParentActor(state, email.householdId!), linkedRoom.id, 'approved'))
+                                  setInboxNotice(`Approved ${linkedRoom.gameId} room (${linkedRoom.roomCode}).`)
+                                }}
+                              >
+                                Approve room (Yes)
+                              </Button>
+                            ) : null}
+                            {linkedRoom.parentApproval === 'approved' || linkedRoom.parentApproval === 'standing_yes' ? (
+                              <Button size="sm" variant="secondary" onClick={() => setActiveRoom({ inviteId: linkedRoom.id, childId: linkedRoom.childId })}>
+                                Open room link
+                              </Button>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </li>
                     )
                   })}
@@ -132,7 +173,7 @@ export function PortalPage() {
           </div>
         ) : null}
 
-        {tab === 'access' ? (
+        {!activeRoom && tab === 'access' ? (
           <div className={styles.stack}>
             <div className={styles.headerRow}>
               <h2 className={styles.sectionTitle}>Access Checks</h2>

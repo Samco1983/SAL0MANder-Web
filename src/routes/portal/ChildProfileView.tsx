@@ -36,7 +36,11 @@ function answersToMap(attempt: WorkAttempt | undefined): Record<string, DraftAns
   return out
 }
 
-export function ChildProfileView({ state, onStateChange }: { state: PortalState; onStateChange: (next: PortalState) => void }) {
+export function ChildProfileView({
+  state, onStateChange, onOpenRoom,
+}: {
+  state: PortalState; onStateChange: (next: PortalState) => void; onOpenRoom?: (inviteId: string, childId: string) => void
+}) {
   const [selectedChildId, setSelectedChildId] = useState(state.children[0]?.id ?? '')
   const [openWorkId, setOpenWorkId] = useState<string | null>(null)
   const [profileError, setProfileError] = useState('')
@@ -154,6 +158,14 @@ export function ChildProfileView({ state, onStateChange }: { state: PortalState;
                       <li key={gameId}>
                         <strong>{GAME_LABELS[gameId] ?? gameId}</strong>
                         {room ? ` — races open at ${formatRaceTime(room.startsAt)} (code ${room.roomCode})` : ''}
+                        {room && onOpenRoom ? (
+                          <>
+                            {' '}
+                            <Button type="button" size="sm" variant="secondary" onClick={() => onOpenRoom(room.id, child.id)}>
+                              Open room ({room.roomCode})
+                            </Button>
+                          </>
+                        ) : null}
                         {FUN_GAME_IDS.has(gameId) && child.consentStatus === 'verified' ? (
                           <>
                             {' '}

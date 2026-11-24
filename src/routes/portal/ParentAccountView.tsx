@@ -9,6 +9,7 @@ import {
   completeParentConsent, listParentReceipts, requestParentSignInLink, saveChildProfile,
   showFeedbackToChild, updateFourSettings, withdrawParentConsent,
 } from '@/portal/parentActions'
+import { respondToRoomInvite } from '@/portal/roomActions'
 import { portalStorage } from '@/portal/storage'
 import type { AskMode, ChildProfile, EmailMode, PortalState } from '@/portal/types'
 import styles from './PortalPage.module.css'
@@ -16,13 +17,14 @@ import styles from './PortalPage.module.css'
 type ParentSubTab = 'overview' | 'consent' | 'profiles' | 'settings'
 
 export function ParentAccountView({
-  state, signedInHouseholdId, onStateChange, onSignOut, onOpenInbox,
+  state, signedInHouseholdId, onStateChange, onSignOut, onOpenInbox, onOpenRoom,
 }: {
   state: PortalState
   signedInHouseholdId: string | null
   onStateChange: (next: PortalState) => void
   onSignOut: () => void
   onOpenInbox: () => void
+  onOpenRoom?: (inviteId: string, childId: string) => void
 }) {
   const [subTab, setSubTab] = useState<ParentSubTab>('overview')
   const [emailInput, setEmailInput] = useState('elena.demo@family.example')
@@ -181,6 +183,44 @@ export function ParentAccountView({
               </ul>
             )}
           </Card>
+
+          {(() => {
+            const myInvites = state.roomInvites.filter((record) => can(parentActor, 'view', { type: 'room_invite', record }))
+            if (myInvites.length === 0) return null
+            return (
+              <Card title={`Game room invites (${myInvites.length})`} headingLevel={2}>
+                <ul className={styles.checkList}>
+                  {myInvites.map((inv) => {
+                    const kidName = myChildren.find((c) => c.id === inv.childId)?.nickname ?? 'child'
+                    const approved = inv.parentApproval === 'approved' || inv.parentApproval === 'standing_yes'
+                    return (
+                      <li key={inv.id} className={styles.checkItem}>
+                        <div className={styles.checkMeta}>
+                          <p className={styles.checkLabel}>{inv.gameId} for {kidName} · code {inv.roomCode} ({inv.parentApproval})</p>
+                          <p className={styles.checkDetail}>Ends at {inv.endsAt} · {inv.openedAt ? 'Open now' : 'Waiting for Mr. Sam to open'}</p>
+                        </div>
+                        <div className={styles.actions}>
+                          {inv.parentApproval === 'pending' ? (
+                            <>
+                              <Button size="sm" onClick={() => { onStateChange(respondToRoomInvite(portalStorage, parentActor, inv.id, 'approved')); setNotice(`Approved ${inv.gameId} room for ${kidName}.`) }}>
+                                Approve room (Yes)
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => { onStateChange(respondToRoomInvite(portalStorage, parentActor, inv.id, 'declined')); setNotice(`Declined ${inv.gameId} room for ${kidName}.`) }}>
+                                Decline
+                              </Button>
+                            </>
+                          ) : null}
+                          {approved && onOpenRoom ? (
+                            <Button size="sm" variant="secondary" onClick={() => onOpenRoom(inv.id, inv.childId)}>Open room link</Button>
+                          ) : null}
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </Card>
+            )
+          })()}
 
           <Card title="Each child’s profile (as your child sees it)" headingLevel={2}>
             <div className={styles.grid}>

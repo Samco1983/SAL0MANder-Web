@@ -103,6 +103,7 @@ export function runAccessChecks(seed: PortalState): AccessCheckResult[] {
     status: 'delivered' as const,
     sentAt: '2026-11-24T17:05:00Z',
     relatedQuestionId: null,
+    relatedRoomInviteId: null,
   }
   const mentorNoSignInLink =
     can(elena, 'view', { type: 'email', record: signInEmail }) &&
@@ -128,6 +129,16 @@ export function runAccessChecks(seed: PortalState): AccessCheckResult[] {
     can(samuel, 'view', { type: 'ask_question', record: qQueued }) &&
     !can(mentorC, 'view', { type: 'ask_question', record: qQueued })
 
+  const invPending = state.roomInvites.find((r) => r.id === 'inv_marcus_1')!
+  const invLeo = state.roomInvites.find((r) => r.id === 'inv_leo_1')!
+  const roomInviteScoped =
+    !can(marcus, 'view', { type: 'room_invite', record: invPending }) &&
+    can(elena, 'approve_room_invite', { type: 'room_invite', record: invPending }) &&
+    !can(priya, 'approve_room_invite', { type: 'room_invite', record: invPending }) &&
+    can(leo, 'view', { type: 'room_invite', record: invLeo }) &&
+    !can(marcus, 'view', { type: 'room_invite', record: invLeo }) &&
+    !can(mentorB, 'view', { type: 'room_invite', record: invLeo })
+
   return [
     { id: 'parent-own-children', label: 'Parent sees only own children (and no mentor drafts)', passed: parentOwnOnly, detail: `Elena sees [${ev.children.join(', ')}]; Priya sees [${pv.children.join(', ')}]; draft hidden.` },
     { id: 'mentor-b-assigned-only', label: 'Mentor B sees only assigned household', passed: mentorBAssignedOnly, detail: `Mentor B sees [${bv.households.join(', ')}] / [${bv.children.join(', ')}]; 0 audit logs.` },
@@ -139,5 +150,6 @@ export function runAccessChecks(seed: PortalState): AccessCheckResult[] {
     { id: 'admin-hat-no-unassigned-teaching', label: 'Admin hat grants admin actions only; all teaching actions require an active Assignment', passed: hatSeparation, detail: 'Pure admin & unassigned Mr. Sam keep export/audit access but cannot view child work, review, or award belts.' },
     { id: 'mentor-no-signin-link', label: 'Mentor B cannot see a parent sign-in link', passed: mentorNoSignInLink, detail: 'Parent sign-in link: Elena ALLOW; Mentor B & Mr. Sam DENY (mentors see only mentor_reply / friday_note / room_invite).' },
     { id: 'ask-rail-provider-gate', label: 'Held or unforwarded questions never reach Mr. Sam or Mentor B', passed: askGateEnforced, detail: 'Waiting-review & rejected-email questions: Elena ALLOW; Mr. Sam & Mentor B DENY until accepted/forwarded.' },
+    { id: 'room-invite-scoped', label: 'Room invites require own-parent approval and hide uninvited rooms', passed: roomInviteScoped, detail: 'Pending invite hidden from Marcus; Elena ALLOW / Priya DENY approve; Leo room hidden from Marcus & Mentor B.' },
   ]
 }

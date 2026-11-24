@@ -82,6 +82,9 @@ export const RoomInviteSchema = z.object({
   startsAt: iso, endsAt: iso,
   parentApproval: z.enum(['pending', 'approved', 'declined', 'standing_yes']),
   approvedAt: iso.nullable(),
+  openedAt: iso.nullable().default(null),
+  closedAt: iso.nullable().default(null),
+  activeChildIds: z.array(id).default([]),
 }).strict()
 
 export const BadgeSchema = z.object({
@@ -126,6 +129,7 @@ export const SimulatedEmailSchema = z.object({
   kind: z.enum(['sign_in_link', 'question_review', 'question_copy', 'mentor_reply', 'friday_note', 'room_invite', 'delivery_failure']),
   status: z.enum(['queued', 'accepted', 'delivered', 'rejected', 'bounced']),
   relatedQuestionId: id.nullable().default(null),
+  relatedRoomInviteId: id.nullable().optional(),
 }).strict()
 
 export const PortalStateSchema = z.object({
