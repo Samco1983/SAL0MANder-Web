@@ -115,6 +115,8 @@ export const PortalStateSchema = z.object({
   auditLogs: z.array(AuditLogSchema), inbox: z.array(SimulatedEmailSchema),
 }).strict()
 
+export type AskMode = z.infer<typeof AskModeSchema>
+export type EmailMode = z.infer<typeof EmailModeSchema>
 export type MentorRole = z.infer<typeof MentorRoleSchema>
 export type Household = z.infer<typeof HouseholdSchema>
 export type ChildProfile = z.infer<typeof ChildProfileSchema>

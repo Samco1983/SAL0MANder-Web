@@ -8,7 +8,7 @@ import type {
  * Phase 1 enforces it in the local adapter and UI; Phase 2 enforces it server-side.
  */
 export type PortalAction =
-  | 'view' | 'create_child' | 'edit_child' | 'save_work' | 'submit_work'
+  | 'view' | 'edit_household' | 'create_child' | 'edit_child' | 'save_work' | 'submit_work'
   | 'review_work' | 'author_feedback' | 'show_feedback_to_child' | 'send_parent_update'
   | 'award_belt' | 'manage_room_invite' | 'approve_room_invite'
   | 'assign_mentor' | 'revoke_mentor' | 'export_household' | 'delete_household'
@@ -48,7 +48,14 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
       if (target.type === 'audit_log' || target.type === 'assignment') return false
       return target.type === 'feedback' ? target.record.status !== 'draft' : true
     }
-    if (action === 'create_child' || action === 'export_household' || action === 'delete_household') return target.type === 'household'
+    if (
+      action === 'edit_household' ||
+      action === 'create_child' ||
+      action === 'export_household' ||
+      action === 'delete_household'
+    ) {
+      return target.type === 'household'
+    }
     if (action === 'edit_child') return target.type === 'child'
     if (action === 'show_feedback_to_child') return target.type === 'feedback' && target.record.status === 'sent_to_parent'
     if (action === 'approve_room_invite') return target.type === 'room_invite'
@@ -78,15 +85,15 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
   const assigned = isMentor && hasActiveAssignment(actor, hhId)
 
   if (action === 'view') {
-    if (isAdmin) return true
-    if (target.type === 'audit_log' || target.type === 'assignment') return false
+    if (target.type === 'audit_log' || target.type === 'assignment') return isAdmin
+    if (target.type === 'household') return isAdmin || assigned
     return assigned
   }
-  if (action === 'review_work') return target.type === 'work' && (assigned || (isAdmin && isMentor))
-  if (action === 'author_feedback') return target.type === 'feedback' && (assigned || (isAdmin && isMentor))
-  if (action === 'send_parent_update') return target.type === 'parent_update' && (assigned || (isAdmin && isMentor))
-  if (action === 'award_belt') return target.type === 'child' && (assigned || (isAdmin && isMentor))
-  if (action === 'manage_room_invite') return target.type === 'room_invite' && (assigned || (isAdmin && isMentor))
+  if (action === 'review_work') return target.type === 'work' && assigned
+  if (action === 'author_feedback') return target.type === 'feedback' && assigned
+  if (action === 'send_parent_update') return target.type === 'parent_update' && assigned
+  if (action === 'award_belt') return target.type === 'child' && assigned
+  if (action === 'manage_room_invite') return target.type === 'room_invite' && assigned
   if (action === 'assign_mentor' || action === 'revoke_mentor') return isAdmin && (target.type === 'assignment' || target.type === 'household')
   if (action === 'export_household' || action === 'delete_household') return isAdmin && target.type === 'household'
   return false

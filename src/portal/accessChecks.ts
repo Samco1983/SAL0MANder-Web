@@ -74,6 +74,25 @@ export function runAccessChecks(seed: PortalState): AccessCheckResult[] {
   const forbidden = ['email', 'password', 'lastName', 'photo', 'video', 'privateChannel']
   const rejectedAllForbidden = forbidden.every((f) => !ChildProfileSchema.safeParse({ ...state.children[0]!, [f]: 'x' }).success)
 
+  const pureAdmin: PortalActor = { kind: 'mentor', mentorId: 'admin_only', roles: ['admin'], active: true, assignments: state.assignments }
+  const samUnassigned: PortalActor = {
+    kind: 'mentor',
+    mentorId: 'mentor_samuel',
+    roles: ['owner', 'admin', 'mentor'],
+    active: true,
+    assignments: state.assignments.filter((a) => a.householdId !== 'hh_elena'),
+  }
+  const marcusChild = { type: 'child' as const, record: state.children[0]! }
+  const marcusWork = { type: 'work' as const, record: state.workRecords[0]! }
+  const hatSeparation =
+    can(pureAdmin, 'export_household', targetHh) &&
+    can(pureAdmin, 'view', { type: 'audit_log', record: state.auditLogs[0]! }) &&
+    !can(pureAdmin, 'view', marcusWork) &&
+    !can(pureAdmin, 'award_belt', marcusChild) &&
+    can(samUnassigned, 'export_household', targetHh) &&
+    !can(samUnassigned, 'review_work', marcusWork) &&
+    !can(samUnassigned, 'award_belt', marcusChild)
+
   return [
     { id: 'parent-own-children', label: 'Parent sees only own children (and no mentor drafts)', passed: parentOwnOnly, detail: `Elena sees [${ev.children.join(', ')}]; Priya sees [${pv.children.join(', ')}]; draft hidden.` },
     { id: 'mentor-b-assigned-only', label: 'Mentor B sees only assigned household', passed: mentorBAssignedOnly, detail: `Mentor B sees [${bv.households.join(', ')}] / [${bv.children.join(', ')}]; 0 audit logs.` },
@@ -82,5 +101,6 @@ export function runAccessChecks(seed: PortalState): AccessCheckResult[] {
     { id: 'revoke-mentor-b-immediate', label: "Revoking Mentor B empties Mentor B's view immediately", passed: revokeEmptiesB, detail: `After revoking asgn_b_elena, Mentor B sees ${bAfter.households.length} households, ${bAfter.children.length} kids.` },
     { id: 'export-delete-parent-and-admin-only', label: 'Export and delete allowed only for own parent and admin', passed: exportDeleteScoped, detail: 'Elena (own parent) + Mr. Sam (admin): ALLOW. Priya, Marcus, Mentor B, Mentor C, Anonymous: DENY.' },
     { id: 'child-schema-forbids-pii', label: 'Child schema forbids email, password, last name, photo, video, private channel', passed: rejectedAllForbidden, detail: `Strict schema rejected ${forbidden.length}/${forbidden.length} forbidden fields.` },
+    { id: 'admin-hat-no-unassigned-teaching', label: 'Admin hat grants admin actions only; all teaching actions require an active Assignment', passed: hatSeparation, detail: 'Pure admin & unassigned Mr. Sam keep export/audit access but cannot view child work, review, or award belts.' },
   ]
 }
