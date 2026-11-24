@@ -1,4 +1,5 @@
 import { can, type PortalActor } from './access'
+import { enqueueAskQuestionInState } from './askActions'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import type { PortalState, WorkRecord } from './types'
 import { INTEGER_OPERATIONS_SET, type QuestionSet } from './worksheet'
@@ -142,25 +143,27 @@ export function submitWorkRecord(
     pts.ledger.push({ id: `pl_${pts.ledger.length + 1}`, amount: 20, reason: 'Submitted practice set (cosmetics only)', createdAt: nowIso })
   }
 
-  // Queue placeholder draft into mentor queue (invisible to child/parent until human-sent)
+  // Route open response through the Ask rail (parent first, provider-accepted gate, Review-first vs Auto-send)
+  if (record.openResponse.trim() && child.askMode !== 'off') {
+    enqueueAskQuestionInState(
+      state,
+      child,
+      hh,
+      { text: record.openResponse, source: 'worksheet_open_response', workRecordId: record.id },
+      nowIso,
+    )
+  }
+
+  // Queue placeholder draft for the submitted math set (open response text stays behind Review-first until forwarded)
   const mentorId = state.assignments.find((a) => a.householdId === hh.id && a.revokedAt === null)?.mentorId ?? 'mentor_samuel'
   state.feedback.push({
     id: `fb_q_${state.feedback.length + 1}`, householdId: hh.id, childId: child.id, workRecordId: record.id,
     authorMentorId: mentorId, status: 'draft',
-    draftText: `[Placeholder draft] Review ${child.nickname}'s attempt #${record.attempts.length} and open response.`,
+    draftText: child.askMode === 'review' && record.openResponse.trim()
+      ? `[Placeholder draft] Review ${child.nickname}'s attempt #${record.attempts.length} (open response waiting for parent review).`
+      : `[Placeholder draft] Review ${child.nickname}'s attempt #${record.attempts.length}.`,
     sentText: null, parentNotifiedAt: null, shownToChildAt: null, shownBy: null,
   })
-
-  // Route open response through the Ask rail (parent first, obeying parent's askMode)
-  if (record.openResponse.trim() && child.askMode !== 'off') {
-    const isReview = child.askMode === 'review'
-    state.inbox.unshift({
-      id: `eml_or_${state.inbox.length + 1}`, to: hh.parentEmail, householdId: hh.id,
-      subject: isReview ? `${child.nickname}'s open response is ready for your review` : `Copy: ${child.nickname} sent an open response to Mr. Sam`,
-      body: isReview ? 'Review-first mode: open your Parent View to read and forward to Mr. Sam.' : 'Auto-send mode: delivered to your inbox first, then queued for Mr. Sam.',
-      kind: isReview ? 'question_review' : 'question_copy', status: 'delivered', sentAt: nowIso,
-    })
-  }
 
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'child', actorId: child.id, action: 'submit_work', recordType: 'work', recordId: record.id, householdId: hh.id, outcome: 'allow' })
   const saved = adapter.save(state)

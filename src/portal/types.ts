@@ -100,20 +100,42 @@ export const AuditLogSchema = z.object({
   householdId: id.nullable(), outcome: z.enum(['allow', 'deny', 'recorded']),
 }).strict()
 
+export const AskQuestionStatusSchema = z.enum([
+  'waiting_parent_review',
+  'held_undelivered',
+  'parent_bounced',
+  'queued_for_mentor',
+  'replied',
+])
+
+export const AskQuestionSchema = z.object({
+  id, householdId: id, childId: id, workRecordId: id.nullable(),
+  source: z.enum(['ask_form', 'worksheet_open_response']),
+  text: z.string().min(1),
+  photoPlaceholder: z.object({ label: id, nameCovered: z.boolean(), expiresAt: iso }).strict().nullable(),
+  askModeAtSend: AskModeSchema,
+  status: AskQuestionStatusSchema,
+  parentEmailAcceptedAt: iso.nullable(),
+  forwardedToMentorAt: iso.nullable(),
+  createdAt: iso,
+}).strict()
+
 export const SimulatedEmailSchema = z.object({
   id, to: mail, householdId: id.nullable(), subject: id, body: z.string(), sentAt: iso,
   kind: z.enum(['sign_in_link', 'question_review', 'question_copy', 'mentor_reply', 'friday_note', 'room_invite', 'delivery_failure']),
   status: z.enum(['queued', 'accepted', 'delivered', 'rejected', 'bounced']),
+  relatedQuestionId: id.nullable().default(null),
 }).strict()
 
 export const PortalStateSchema = z.object({
   schemaVersion: z.literal(1),
   households: z.array(HouseholdSchema), children: z.array(ChildProfileSchema),
   mentors: z.array(MentorSchema), assignments: z.array(AssignmentSchema),
-  workRecords: z.array(WorkRecordSchema), feedback: z.array(FeedbackSchema),
-  parentUpdates: z.array(ParentUpdateSchema), roomInvites: z.array(RoomInviteSchema),
-  badges: z.array(BadgeSchema), points: z.array(PointsSchema),
-  auditLogs: z.array(AuditLogSchema), inbox: z.array(SimulatedEmailSchema),
+  workRecords: z.array(WorkRecordSchema), askQuestions: z.array(AskQuestionSchema).default([]),
+  feedback: z.array(FeedbackSchema), parentUpdates: z.array(ParentUpdateSchema),
+  roomInvites: z.array(RoomInviteSchema), badges: z.array(BadgeSchema),
+  points: z.array(PointsSchema), auditLogs: z.array(AuditLogSchema),
+  inbox: z.array(SimulatedEmailSchema),
 }).strict()
 
 export type AskMode = z.infer<typeof AskModeSchema>
@@ -126,6 +148,7 @@ export type Mentor = z.infer<typeof MentorSchema>
 export type Assignment = z.infer<typeof AssignmentSchema>
 export type WorkAttempt = z.infer<typeof WorkAttemptSchema>
 export type WorkRecord = z.infer<typeof WorkRecordSchema>
+export type AskQuestion = z.infer<typeof AskQuestionSchema>
 export type Feedback = z.infer<typeof FeedbackSchema>
 export type ParentUpdate = z.infer<typeof ParentUpdateSchema>
 export type RoomInvite = z.infer<typeof RoomInviteSchema>

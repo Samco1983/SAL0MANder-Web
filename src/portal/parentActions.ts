@@ -54,6 +54,7 @@ export function requestParentSignInLink(
     kind: 'sign_in_link',
     status: 'delivered',
     sentAt: nowIso,
+    relatedQuestionId: null,
   })
   return { state: adapter.save(state), sent: true, message: `Simulated sign-in link delivered to ${hh.parentEmail} in the Simulated Inbox panel.` }
 }

@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { AppShell } from '@components/layout/AppShell'
 import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
-import { buildMentorActor, can } from '@/portal/access'
+import { buildMentorActor, buildParentActor, can } from '@/portal/access'
 import { runAccessChecks } from '@/portal/accessChecks'
+import { forwardQuestionToMentor, sendMentorReplyDemo } from '@/portal/askActions'
 import { createSeedState } from '@/portal/seed'
 import { portalStorage } from '@/portal/storage'
 import type { PortalState } from '@/portal/types'
@@ -21,25 +22,30 @@ export function PortalPage() {
   const [state, setState] = useState<PortalState>(() => portalStorage.load())
   const [signedInHouseholdId, setSignedInHouseholdId] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState('')
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({})
+  const [inboxNotice, setInboxNotice] = useState('')
 
   const checks = useMemo(() => runAccessChecks(createSeedState()), [])
   const passedCount = checks.filter((c) => c.passed).length
   const allPassed = passedCount === checks.length
 
+  const samuelActor = buildMentorActor(state, 'mentor_samuel')
   const mentorB = buildMentorActor(state, 'mentor_b')
   const mentorBHouseholds = state.households.filter((record) =>
     can(mentorB, 'view', { type: 'household', record }),
   )
   const mentorBRevoked = state.assignments.find((a) => a.id === 'asgn_b_elena')?.revokedAt !== null
+  const samuelAskQueue = state.askQuestions.filter((record) => can(samuelActor, 'view', { type: 'ask_question', record }))
 
   function handleRevokeMentorB() {
-    setState(portalStorage.revokeAssignment(buildMentorActor(state, 'mentor_samuel'), 'asgn_b_elena'))
+    setState(portalStorage.revokeAssignment(samuelActor, 'asgn_b_elena'))
     setStatusMessage('Revoked Mentor B — visible households dropped to 0 immediately.')
   }
 
   function handleResetSeed() {
     setState(portalStorage.reset())
     setSignedInHouseholdId(null)
+    setInboxNotice('')
     setStatusMessage('Demo storage reset to clean fictional seed (3 households, 5 kids, 3 mentors).')
   }
 
@@ -79,28 +85,100 @@ export function PortalPage() {
         {tab === 'child' ? <ChildProfileView state={state} onStateChange={setState} /> : null}
 
         {tab === 'inbox' ? (
-          <Card title="Simulated Email Inbox (in-app only — no real email sent)" headingLevel={2}>
-            {state.inbox.length === 0 ? (
-              <p className={styles.note}>Inbox is empty.</p>
-            ) : (
-              <ul className={styles.checkList}>
-                {state.inbox.map((email) => (
-                  <li key={email.id} className={styles.checkItem}>
-                    <div className={styles.checkMeta}>
-                      <p className={styles.checkLabel}>{email.subject}</p>
-                      <p className={styles.checkDetail}>To: {email.to} · Status: {email.status} · {email.sentAt}</p>
-                      <p className={styles.checkDetail}>{email.body}</p>
-                    </div>
-                    {email.kind === 'sign_in_link' && email.householdId ? (
-                      <Button size="sm" onClick={() => { setSignedInHouseholdId(email.householdId); setTab('parent') }}>
-                        Open sign-in link
-                      </Button>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
+          <div className={styles.stack}>
+            {inboxNotice ? <p className={styles.statusCallout} role="status">{inboxNotice}</p> : null}
+            <Card title="Simulated Email Inbox (in-app only — no real email sent)" headingLevel={2}>
+              {state.inbox.length === 0 ? (
+                <p className={styles.note}>Inbox is empty.</p>
+              ) : (
+                <ul className={styles.checkList}>
+                  {state.inbox.map((email) => {
+                    const pendingQ = email.relatedQuestionId
+                      ? state.askQuestions.find((q) => q.id === email.relatedQuestionId && q.status === 'waiting_parent_review')
+                      : undefined
+                    return (
+                      <li key={email.id} className={styles.checkItem}>
+                        <div className={styles.checkMeta}>
+                          <p className={styles.checkLabel}>{email.subject}</p>
+                          <p className={styles.checkDetail}>To: {email.to} · Status: {email.status} · {email.sentAt}</p>
+                          <p className={styles.checkDetail}>{email.body}</p>
+                        </div>
+                        {email.kind === 'sign_in_link' && email.householdId ? (
+                          <Button size="sm" onClick={() => { setSignedInHouseholdId(email.householdId); setTab('parent') }}>
+                            Open sign-in link
+                          </Button>
+                        ) : null}
+                        {email.kind === 'question_review' && pendingQ && email.householdId ? (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setState(forwardQuestionToMentor(portalStorage, buildParentActor(state, email.householdId!), pendingQ.id))
+                              setInboxNotice('Parent forwarded question to Mr. Sam.')
+                            }}
+                          >
+                            Forward to Mr. Sam
+                          </Button>
+                        ) : null}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </Card>
+
+            <Card title={`Mr. Sam’s Ask Queue — provider-accepted & forwarded only (${samuelAskQueue.length})`} headingLevel={2}>
+              {samuelAskQueue.length === 0 ? (
+                <p className={styles.note}>No questions in Mr. Sam’s queue yet (waiting-review and rejected-email questions stay hidden from Mr. Sam).</p>
+              ) : (
+                <ul className={styles.checkList} data-testid="mentor-ask-queue">
+                  {samuelAskQueue.map((q) => {
+                    const kid = state.children.find((c) => c.id === q.childId)
+                    const draft = replyDrafts[q.id] ?? `Nice question, ${kid?.nickname ?? 'friend'} — rewrite subtracting a negative as moving right on the number line.`
+                    return (
+                      <li key={q.id} className={styles.childPreview}>
+                        <p className={styles.checkLabel}>{kid?.nickname ?? 'Child'} · {q.status} ({q.askModeAtSend})</p>
+                        <p className={styles.checkDetail}>{q.text}</p>
+                        {q.photoPlaceholder ? (
+                          <p className={styles.note}>Photo placeholder: {q.photoPlaceholder.label} (name covered: {q.photoPlaceholder.nameCovered ? 'yes' : 'no'}; 30-day expiry)</p>
+                        ) : null}
+                        {q.status === 'queued_for_mentor' ? (
+                          <div className={styles.formStack}>
+                            <label className={styles.field}>
+                              <span>Human reply (goes to parent email first)</span>
+                              <input className={styles.input} value={draft} onChange={(e) => setReplyDrafts((prev) => ({ ...prev, [q.id]: e.target.value }))} />
+                            </label>
+                            <div className={styles.actions}>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  const res = sendMentorReplyDemo(portalStorage, samuelActor, q.id, draft)
+                                  setState(res.state)
+                                  setInboxNotice(res.message)
+                                }}
+                              >
+                                Send reply (parent first)
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  const res = sendMentorReplyDemo(portalStorage, samuelActor, q.id, draft, { simulateParentRejected: true })
+                                  setState(res.state)
+                                  setInboxNotice(res.message)
+                                }}
+                              >
+                                Simulate reply email rejected
+                              </Button>
+                            </div>
+                          </div>
+                        ) : null}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </Card>
+          </div>
         ) : null}
 
         {tab === 'access' ? (

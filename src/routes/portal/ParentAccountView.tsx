@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { buildChildActor, buildParentActor, can } from '@/portal/access'
+import { forwardQuestionToMentor } from '@/portal/askActions'
 import {
   ASK_MODE_HELP, AUTO_SHOW_WARNING, CONSENT_NOTICE_POINTS, FUN_GAMES, LESSON_GAMES,
   completeParentConsent, listParentReceipts, requestParentSignInLink, saveChildProfile,
@@ -76,6 +77,8 @@ export function ParentAccountView({
   const parentActor = buildParentActor(state, hh.id)
   const myChildren = state.children.filter((record) => can(parentActor, 'view', { type: 'child', record }))
   const waitingReplies = state.feedback.filter((record) => can(parentActor, 'show_feedback_to_child', { type: 'feedback', record }))
+  const waitingQuestions = state.askQuestions.filter((record) => can(parentActor, 'forward_question', { type: 'ask_question', record }))
+  const heldQuestions = state.askQuestions.filter((record) => can(parentActor, 'view', { type: 'ask_question', record }) && record.status === 'held_undelivered')
   const myUpdates = state.parentUpdates.filter((record) => can(parentActor, 'view', { type: 'parent_update', record }))
   const myReceipts = listParentReceipts(state, parentActor)
   const activeChild = myChildren.find((c) => c.id === selectedChildId) ?? myChildren[0]
@@ -121,6 +124,42 @@ export function ParentAccountView({
 
       {subTab === 'overview' ? (
         <div className={styles.stack}>
+          <Card title={`Questions waiting for your review (${waitingQuestions.length})`} headingLevel={2}>
+            {waitingQuestions.length === 0 && heldQuestions.length === 0 ? (
+              <p className={styles.note}>No questions waiting to forward right now.</p>
+            ) : (
+              <ul className={styles.checkList}>
+                {waitingQuestions.map((q) => {
+                  const kidName = myChildren.find((c) => c.id === q.childId)?.nickname ?? 'your child'
+                  return (
+                    <li key={q.id} className={styles.checkItem}>
+                      <div className={styles.checkMeta}>
+                        <p className={styles.checkLabel}>Question from {kidName} ({q.source === 'worksheet_open_response' ? 'open response' : 'Ask form'})</p>
+                        <p className={styles.checkDetail}>{q.text}</p>
+                        {q.photoPlaceholder ? <p className={styles.note}>Photo placeholder: {q.photoPlaceholder.label} (name covered: {q.photoPlaceholder.nameCovered ? 'yes' : 'no'})</p> : null}
+                      </div>
+                      <Button size="sm" onClick={() => { onStateChange(forwardQuestionToMentor(portalStorage, parentActor, q.id)); setNotice(`Forwarded ${kidName}'s question to Mr. Sam.`) }}>
+                        Forward to Mr. Sam
+                      </Button>
+                    </li>
+                  )
+                })}
+                {heldQuestions.map((q) => {
+                  const kidName = myChildren.find((c) => c.id === q.childId)?.nickname ?? 'your child'
+                  return (
+                    <li key={q.id} className={styles.checkItem}>
+                      <div className={styles.checkMeta}>
+                        <p className={styles.checkLabel}>Held undelivered — {kidName}</p>
+                        <p className={styles.checkDetail}>{q.text}</p>
+                        <p className={styles.warningText}>Parent email was rejected; held here and never sent to Mr. Sam.</p>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </Card>
+
           <Card title={`Replies waiting for your yes (${waitingReplies.length})`} headingLevel={2}>
             {waitingReplies.length === 0 ? <p className={styles.note}>No replies waiting right now.</p> : (
               <ul className={styles.checkList}>

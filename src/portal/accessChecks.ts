@@ -102,12 +102,31 @@ export function runAccessChecks(seed: PortalState): AccessCheckResult[] {
     kind: 'sign_in_link' as const,
     status: 'delivered' as const,
     sentAt: '2026-11-24T17:05:00Z',
+    relatedQuestionId: null,
   }
   const mentorNoSignInLink =
     can(elena, 'view', { type: 'email', record: signInEmail }) &&
     !can(mentorB, 'view', { type: 'email', record: signInEmail }) &&
     !can(samuel, 'view', { type: 'email', record: signInEmail }) &&
     can(mentorB, 'view', { type: 'email', record: state.inbox[0]! })
+
+  const baseQ = {
+    id: 'ask_chk', householdId: 'hh_elena', childId: 'child_marcus', workRecordId: null,
+    source: 'ask_form' as const, text: 'Why does subtracting a negative move right?',
+    photoPlaceholder: null, askModeAtSend: 'review' as const, createdAt: '2026-11-24T17:10:00Z',
+  }
+  const qWaiting = { ...baseQ, status: 'waiting_parent_review' as const, parentEmailAcceptedAt: '2026-11-24T17:10:00Z', forwardedToMentorAt: null }
+  const qHeld = { ...baseQ, status: 'held_undelivered' as const, parentEmailAcceptedAt: null, forwardedToMentorAt: null }
+  const qQueued = { ...baseQ, status: 'queued_for_mentor' as const, parentEmailAcceptedAt: '2026-11-24T17:10:00Z', forwardedToMentorAt: '2026-11-24T17:11:00Z' }
+  const askGateEnforced =
+    can(elena, 'view', { type: 'ask_question', record: qWaiting }) &&
+    can(elena, 'forward_question', { type: 'ask_question', record: qWaiting }) &&
+    !can(samuel, 'view', { type: 'ask_question', record: qWaiting }) &&
+    !can(mentorB, 'view', { type: 'ask_question', record: qWaiting }) &&
+    !can(samuel, 'view', { type: 'ask_question', record: qHeld }) &&
+    !can(mentorB, 'view', { type: 'ask_question', record: qHeld }) &&
+    can(samuel, 'view', { type: 'ask_question', record: qQueued }) &&
+    !can(mentorC, 'view', { type: 'ask_question', record: qQueued })
 
   return [
     { id: 'parent-own-children', label: 'Parent sees only own children (and no mentor drafts)', passed: parentOwnOnly, detail: `Elena sees [${ev.children.join(', ')}]; Priya sees [${pv.children.join(', ')}]; draft hidden.` },
@@ -119,5 +138,6 @@ export function runAccessChecks(seed: PortalState): AccessCheckResult[] {
     { id: 'child-schema-forbids-pii', label: 'Child schema forbids email, password, last name, photo, video, private channel', passed: rejectedAllForbidden, detail: `Strict schema rejected ${forbidden.length}/${forbidden.length} forbidden fields.` },
     { id: 'admin-hat-no-unassigned-teaching', label: 'Admin hat grants admin actions only; all teaching actions require an active Assignment', passed: hatSeparation, detail: 'Pure admin & unassigned Mr. Sam keep export/audit access but cannot view child work, review, or award belts.' },
     { id: 'mentor-no-signin-link', label: 'Mentor B cannot see a parent sign-in link', passed: mentorNoSignInLink, detail: 'Parent sign-in link: Elena ALLOW; Mentor B & Mr. Sam DENY (mentors see only mentor_reply / friday_note / room_invite).' },
+    { id: 'ask-rail-provider-gate', label: 'Held or unforwarded questions never reach Mr. Sam or Mentor B', passed: askGateEnforced, detail: 'Waiting-review & rejected-email questions: Elena ALLOW; Mr. Sam & Mentor B DENY until accepted/forwarded.' },
   ]
 }

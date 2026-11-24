@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { buildChildActor, can, type PortalActor } from '@/portal/access'
+import { ASK_SEND_DISCLOSURE, submitAskQuestion } from '@/portal/askActions'
 import { FUN_GAMES, LESSON_GAMES } from '@/portal/parentActions'
 import { portalStorage } from '@/portal/storage'
 import type { ChildProfile, PortalState, WorkAttempt, WorkRecord } from '@/portal/types'
@@ -161,9 +162,95 @@ export function ChildProfileView({ state, onStateChange }: { state: PortalState;
               )}
             </Card>
           </div>
+          <AskMrSamCard
+            key={child.id}
+            child={child}
+            childActor={childActor}
+            questions={state.askQuestions.filter((record) => can(childActor, 'view', { type: 'ask_question', record }))}
+            onStateChange={onStateChange}
+          />
         </div>
       )}
     </div>
+  )
+}
+
+function AskMrSamCard({
+  child, childActor, questions, onStateChange,
+}: {
+  child: ChildProfile; childActor: PortalActor; questions: PortalState['askQuestions']; onStateChange: (next: PortalState) => void
+}) {
+  const [questionText, setQuestionText] = useState('')
+  const [attachPhoto, setAttachPhoto] = useState(false)
+  const [nameCovered, setNameCovered] = useState(true)
+  const [feedbackMsg, setFeedbackMsg] = useState<{ alert: boolean; text: string } | null>(null)
+  const canAsk = can(childActor, 'submit_question', { type: 'child', record: child })
+
+  function send(simulateParentRejected: boolean) {
+    if (!questionText.trim()) return
+    try {
+      const res = submitAskQuestion(portalStorage, childActor, child.id, {
+        text: questionText,
+        photoPlaceholder: attachPhoto ? { label: 'Written homework photo (placeholder)', nameCovered } : null,
+        simulateParentRejected,
+      })
+      onStateChange(res.state)
+      setQuestionText('')
+      setAttachPhoto(false)
+      setFeedbackMsg({ alert: simulateParentRejected, text: res.childNotice })
+    } catch (err) {
+      setFeedbackMsg({ alert: true, text: err instanceof Error ? err.message : 'Unable to send question.' })
+    }
+  }
+
+  return (
+    <Card title="Ask Mr. Sam" headingLevel={2}>
+      {!canAsk ? (
+        <p className={styles.note}>
+          {child.consentStatus !== 'verified'
+            ? 'Ask Mr. Sam stays Off until your parent verifies consent.'
+            : 'Ask Mr. Sam is turned Off in your parent’s settings.'}
+        </p>
+      ) : (
+        <form className={styles.formStack} onSubmit={(e: FormEvent) => { e.preventDefault(); send(false) }}>
+          <label className={styles.field}>
+            <span>Your math question (no email, phone, or last name)</span>
+            <textarea rows={2} required className={styles.input} value={questionText} onChange={(e) => setQuestionText(e.target.value)} placeholder="Where did you get stuck?" />
+          </label>
+          <label className={styles.radioRow}>
+            <input type="checkbox" checked={attachPhoto} onChange={(e) => setAttachPhoto(e.target.checked)} />
+            Attach 1 photo of written work (demo placeholder — cover your name; 30-day retention)
+          </label>
+          {attachPhoto ? (
+            <label className={styles.radioRow}>
+              <input type="checkbox" checked={nameCovered} onChange={(e) => setNameCovered(e.target.checked)} />
+              I covered my name on the page (never uploaded in Phase 1 demo)
+            </label>
+          ) : null}
+          <p className={styles.note}>
+            <strong>{ASK_SEND_DISCLOSURE}</strong> ({child.askMode === 'review' ? 'Review-first: parent forwards each question.' : 'Auto-send: parent email accepted first, then Mr. Sam.'})
+          </p>
+          <div className={styles.actions}>
+            <Button type="submit" size="sm">Send question</Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => send(true)}>Simulate parent email rejected</Button>
+          </div>
+        </form>
+      )}
+      {feedbackMsg ? (
+        <p className={feedbackMsg.alert ? styles.alertCallout : styles.statusCallout} role={feedbackMsg.alert ? 'alert' : 'status'} data-testid="ask-rail-status">
+          {feedbackMsg.text}
+        </p>
+      ) : null}
+      {questions.length > 0 ? (
+        <ul className={styles.miniList}>
+          {questions.map((q) => (
+            <li key={q.id}>
+              “{q.text}” — <strong>{q.status === 'held_undelivered' ? 'Held (parent email rejected)' : q.status === 'waiting_parent_review' ? 'Waiting for parent review' : q.status === 'queued_for_mentor' ? 'Sent to Mr. Sam' : 'Replied'}</strong>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </Card>
   )
 }
 

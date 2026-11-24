@@ -64,6 +64,7 @@ export function createSeedState(): PortalState {
         revisions: [{ revision: 1, savedAt: '2026-11-21T19:14:00Z', attemptId: 'att_leo_1' }], currentRevision: 1,
       },
     ],
+    askQuestions: [],
     feedback: [
       { id: 'fb_marcus_draft', householdId: 'hh_elena', childId: 'child_marcus', workRecordId: 'work_marcus_u2', authorMentorId: 'mentor_samuel', status: 'draft', draftText: '[Placeholder draft] Strong number-line reasoning.', sentText: null, parentNotifiedAt: null, shownToChildAt: null, shownBy: null },
       { id: 'fb_marcus_waiting', householdId: 'hh_elena', childId: 'child_marcus', workRecordId: 'work_marcus_u2', authorMentorId: 'mentor_b', status: 'sent_to_parent', draftText: '[Placeholder draft] Check sign flip.', sentText: 'Great catch checking #4 on the number line.', parentNotifiedAt: '2026-11-24T17:00:00Z', shownToChildAt: null, shownBy: null },

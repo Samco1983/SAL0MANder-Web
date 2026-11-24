@@ -1,5 +1,5 @@
 import type {
-  Assignment, AuditLog, Badge, ChildProfile, Feedback, Household,
+  AskQuestion, Assignment, AuditLog, Badge, ChildProfile, Feedback, Household,
   MentorRole, ParentUpdate, Points, PortalState, RoomInvite, SimulatedEmail, WorkRecord,
 } from './types'
 
@@ -9,6 +9,7 @@ import type {
  */
 export type PortalAction =
   | 'view' | 'edit_household' | 'create_child' | 'edit_child' | 'save_work' | 'submit_work' | 'start_redo'
+  | 'submit_question' | 'forward_question'
   | 'review_work' | 'author_feedback' | 'show_feedback_to_child' | 'send_parent_update'
   | 'award_belt' | 'manage_room_invite' | 'approve_room_invite'
   | 'assign_mentor' | 'revoke_mentor' | 'export_household' | 'delete_household'
@@ -23,6 +24,7 @@ export type AccessTarget =
   | { type: 'household'; record: Household }
   | { type: 'child'; record: ChildProfile }
   | { type: 'work'; record: WorkRecord }
+  | { type: 'ask_question'; record: AskQuestion }
   | { type: 'feedback'; record: Feedback }
   | { type: 'parent_update'; record: ParentUpdate }
   | { type: 'room_invite'; record: RoomInvite }
@@ -58,6 +60,7 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
     }
     if (action === 'edit_child') return target.type === 'child'
     if (action === 'show_feedback_to_child') return target.type === 'feedback' && target.record.status === 'sent_to_parent'
+    if (action === 'forward_question') return target.type === 'ask_question' && target.record.status === 'waiting_parent_review'
     if (action === 'approve_room_invite') return target.type === 'room_invite'
     return false
   }
@@ -66,12 +69,17 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
     if (hhId !== actor.householdId) return false
     if (action === 'view') {
       if (target.type === 'child') return target.record.id === actor.childId
-      if (target.type === 'work' || target.type === 'badge' || target.type === 'points') return target.record.childId === actor.childId
+      if (target.type === 'work' || target.type === 'ask_question' || target.type === 'badge' || target.type === 'points') {
+        return target.record.childId === actor.childId
+      }
       if (target.type === 'feedback') return target.record.childId === actor.childId && target.record.status === 'visible_to_child'
       if (target.type === 'room_invite') {
         return target.record.childId === actor.childId && (target.record.parentApproval === 'approved' || target.record.parentApproval === 'standing_yes')
       }
       return false
+    }
+    if (action === 'submit_question') {
+      return target.type === 'child' && target.record.id === actor.childId && target.record.consentStatus === 'verified' && target.record.askMode !== 'off'
     }
     if (action === 'save_work' || action === 'submit_work') {
       return target.type === 'work' && target.record.childId === actor.childId && target.record.status === 'draft'
@@ -90,6 +98,9 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
   if (action === 'view') {
     if (target.type === 'audit_log' || target.type === 'assignment') return isAdmin
     if (target.type === 'household') return isAdmin || assigned
+    if (target.type === 'ask_question') {
+      return assigned && target.record.parentEmailAcceptedAt !== null && (target.record.status === 'queued_for_mentor' || target.record.status === 'replied')
+    }
     if (target.type === 'email') {
       return assigned && (
         target.record.kind === 'mentor_reply' ||
