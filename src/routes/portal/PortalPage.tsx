@@ -7,13 +7,14 @@ import { runAccessChecks } from '@/portal/accessChecks'
 import { createSeedState } from '@/portal/seed'
 import { portalStorage } from '@/portal/storage'
 import type { PortalState } from '@/portal/types'
+import { ChildProfileView } from './ChildProfileView'
 import { ParentAccountView } from './ParentAccountView'
 import styles from './PortalPage.module.css'
 
 export const PORTAL_DEMO_BANNER =
   'DEMO — fictional families, local-only storage, simulated email.'
 
-type PortalTab = 'access' | 'parent' | 'inbox'
+type PortalTab = 'access' | 'parent' | 'child' | 'inbox'
 
 export function PortalPage() {
   const [tab, setTab] = useState<PortalTab>('access')
@@ -56,6 +57,9 @@ export function PortalPage() {
             <Button size="sm" variant={tab === 'parent' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'parent'} onClick={() => setTab('parent')}>
               Parent Account
             </Button>
+            <Button size="sm" variant={tab === 'child' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'child'} onClick={() => setTab('child')}>
+              Child Profile
+            </Button>
             <Button size="sm" variant={tab === 'inbox' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'inbox'} onClick={() => setTab('inbox')}>
               Simulated Inbox ({state.inbox.length})
             </Button>
@@ -71,6 +75,8 @@ export function PortalPage() {
             onOpenInbox={() => setTab('inbox')}
           />
         ) : null}
+
+        {tab === 'child' ? <ChildProfileView state={state} onStateChange={setState} /> : null}
 
         {tab === 'inbox' ? (
           <Card title="Simulated Email Inbox (in-app only — no real email sent)" headingLevel={2}>

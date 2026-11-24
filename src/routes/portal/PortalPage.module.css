@@ -58,3 +58,24 @@
 .fieldset legend { padding: 0 var(--space-1); font-weight: var(--weight-bold); font-size: var(--text-sm); }
 .radioRow { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-text); min-height: 2rem; cursor: pointer; }
 .codeBox { margin: var(--space-2) 0 0; padding: var(--space-3); border-radius: var(--radius-sm); background: var(--color-surface); border: 1px solid var(--color-border); font-family: var(--font-mono); font-size: var(--text-xs); max-height: 16rem; overflow: auto; white-space: pre-wrap; }
+
+.heroRow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.mascotBox { display: flex; align-items: center; gap: var(--space-3); }
+.mascotBox[data-belt='white'] .mascotSvg { color: var(--color-text-muted); }
+.mascotBox[data-belt='yellow'] .mascotSvg { color: var(--color-warning); }
+.mascotBox[data-belt='green'] .mascotSvg { color: var(--color-success); }
+.mascotBox[data-belt='purple'] .mascotSvg { color: var(--color-accent); }
+.mascotBox[data-belt='black'] .mascotSvg { color: var(--color-text); }
+.heroCta { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2); }
+.motto { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--color-text); }
+.firstLine { margin: var(--space-3) 0 0; font-style: italic; font-size: var(--text-sm); color: var(--color-text-muted); }
+
+.alertCallout { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--color-danger); background: var(--color-danger-soft); font-size: var(--text-sm); color: var(--color-danger); font-weight: var(--weight-medium); }
+.sideBySide { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: var(--space-4); align-items: start; }
+.questionList { list-style: none; margin: 0 0 var(--space-4); padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.questionItem { padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-sunken); display: flex; flex-direction: column; gap: var(--space-2); }
+.questionRow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.answerInput { width: 6.5rem; padding: var(--space-2); border-radius: var(--radius-sm); border: 1px solid var(--color-border-strong); background: var(--color-surface); color: var(--color-text); font: inherit; min-height: 2.5rem; }
+.correctText { margin: 0; font-size: var(--text-sm); color: var(--color-brand-green-text); font-weight: var(--weight-medium); }
+.hintText { margin: 0; font-size: var(--text-sm); color: var(--color-support); font-weight: var(--weight-medium); }
+

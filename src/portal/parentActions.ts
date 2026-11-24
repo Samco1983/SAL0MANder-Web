@@ -161,7 +161,14 @@ export function updateFourSettings(
   actor: PortalActor,
   householdId: string,
   childId: string,
-  next: { askMode: AskMode; autoShow: boolean; approvedFunGames: string[]; joinRooms: boolean; emailMode: EmailMode },
+  next: {
+    askMode: AskMode
+    autoShow: boolean
+    approvedLessonGames?: string[]
+    approvedFunGames: string[]
+    joinRooms: boolean
+    emailMode: EmailMode
+  },
 ): PortalState {
   const state = adapter.load()
   const hh = state.households.find((h) => h.id === householdId)
@@ -170,13 +177,15 @@ export function updateFourSettings(
     throw new PortalAccessError('Only the household parent may update settings')
   }
   const consentOk = hh.consentRecord.status === 'verified'
+  const allowedLesson = new Set<string>(LESSON_GAMES.map((g) => g.id))
   const allowedFun = new Set<string>(FUN_GAMES.map((g) => g.id))
+  const cleanLesson = (next.approvedLessonGames ?? LESSON_GAMES.map((g) => g.id)).filter((g) => allowedLesson.has(g))
   const cleanFun = next.approvedFunGames.filter((g) => allowedFun.has(g))
   hh.settings.emailMode = next.emailMode
   child.askMode = consentOk ? next.askMode : 'off'
   child.autoShow = next.autoShow
   child.joinRooms = consentOk ? next.joinRooms : false
-  child.approvedGames = consentOk ? ['act_integer_operations', ...cleanFun] : []
+  child.approvedGames = consentOk ? [...cleanLesson, ...cleanFun] : []
   return adapter.save(state)
 }
 

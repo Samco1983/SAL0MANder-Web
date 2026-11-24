@@ -117,11 +117,13 @@ export const PortalStateSchema = z.object({
 
 export type AskMode = z.infer<typeof AskModeSchema>
 export type EmailMode = z.infer<typeof EmailModeSchema>
+export type BeltColor = z.infer<typeof BeltColorSchema>
 export type MentorRole = z.infer<typeof MentorRoleSchema>
 export type Household = z.infer<typeof HouseholdSchema>
 export type ChildProfile = z.infer<typeof ChildProfileSchema>
 export type Mentor = z.infer<typeof MentorSchema>
 export type Assignment = z.infer<typeof AssignmentSchema>
+export type WorkAttempt = z.infer<typeof WorkAttemptSchema>
 export type WorkRecord = z.infer<typeof WorkRecordSchema>
 export type Feedback = z.infer<typeof FeedbackSchema>
 export type ParentUpdate = z.infer<typeof ParentUpdateSchema>

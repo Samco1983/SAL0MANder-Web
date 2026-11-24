@@ -273,21 +273,25 @@ function SettingsPanel({
   childrenList: ChildProfile[]
   child: ChildProfile
   onSelectChild: (id: string) => void
-  onSave: (next: { askMode: AskMode; autoShow: boolean; approvedFunGames: string[]; joinRooms: boolean; emailMode: EmailMode }) => void
+  onSave: (next: { askMode: AskMode; autoShow: boolean; approvedLessonGames: string[]; approvedFunGames: string[]; joinRooms: boolean; emailMode: EmailMode }) => void
 }) {
+  const lessonIds = new Set<string>(LESSON_GAMES.map((g) => g.id))
   const [askMode, setAskMode] = useState<AskMode>(child.askMode)
   const [autoShow, setAutoShow] = useState(child.autoShow)
-  const [funGames, setFunGames] = useState<string[]>(child.approvedGames.filter((g) => g !== 'act_integer_operations'))
+  const [lessonGames, setLessonGames] = useState<string[]>(child.approvedGames.filter((g) => lessonIds.has(g)))
+  const [funGames, setFunGames] = useState<string[]>(child.approvedGames.filter((g) => !lessonIds.has(g)))
   const [joinRooms, setJoinRooms] = useState(child.joinRooms)
   const [emailMode, setEmailMode] = useState<EmailMode>(hh.settings.emailMode)
   const [lastId, setLastId] = useState(child.id)
 
   if (child.id !== lastId) {
     setLastId(child.id); setAskMode(child.askMode); setAutoShow(child.autoShow)
-    setFunGames(child.approvedGames.filter((g) => g !== 'act_integer_operations')); setJoinRooms(child.joinRooms); setEmailMode(hh.settings.emailMode)
+    setLessonGames(child.approvedGames.filter((g) => lessonIds.has(g)))
+    setFunGames(child.approvedGames.filter((g) => !lessonIds.has(g))); setJoinRooms(child.joinRooms); setEmailMode(hh.settings.emailMode)
   }
 
   const consentVerified = hh.consentRecord.status === 'verified'
+  const toggleLesson = (id: string) => setLessonGames((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   const toggleFun = (id: string) => setFunGames((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
   return (
@@ -299,7 +303,7 @@ function SettingsPanel({
           ))}
         </div>
       ) : null}
-      <form className={styles.formStack} onSubmit={(e) => { e.preventDefault(); onSave({ askMode, autoShow, approvedFunGames: funGames, joinRooms, emailMode }) }}>
+      <form className={styles.formStack} onSubmit={(e) => { e.preventDefault(); onSave({ askMode, autoShow, approvedLessonGames: lessonGames, approvedFunGames: funGames, joinRooms, emailMode }) }}>
         <fieldset className={styles.fieldset} disabled={!consentVerified}>
           <legend>1. Questions {!consentVerified ? '(locked Off until consent is verified)' : ''}</legend>
           <p className={styles.note}>{ASK_MODE_HELP}</p>
@@ -319,7 +323,7 @@ function SettingsPanel({
         <fieldset className={styles.fieldset} disabled={!consentVerified}>
           <legend>3. Games</legend>
           {LESSON_GAMES.map((g) => (
-            <label key={g.id} className={styles.radioRow}><input type="checkbox" checked={consentVerified} readOnly />{g.label} — on by default</label>
+            <label key={g.id} className={styles.radioRow}><input type="checkbox" checked={consentVerified && lessonGames.includes(g.id)} onChange={() => toggleLesson(g.id)} />{g.label} — on by default</label>
           ))}
           <p className={styles.note}>Fun games (off by default — entertainment games never earn belts or stripes):</p>
           {FUN_GAMES.map((g) => (

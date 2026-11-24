@@ -8,7 +8,7 @@ import type {
  * Phase 1 enforces it in the local adapter and UI; Phase 2 enforces it server-side.
  */
 export type PortalAction =
-  | 'view' | 'edit_household' | 'create_child' | 'edit_child' | 'save_work' | 'submit_work'
+  | 'view' | 'edit_household' | 'create_child' | 'edit_child' | 'save_work' | 'submit_work' | 'start_redo'
   | 'review_work' | 'author_feedback' | 'show_feedback_to_child' | 'send_parent_update'
   | 'award_belt' | 'manage_room_invite' | 'approve_room_invite'
   | 'assign_mentor' | 'revoke_mentor' | 'export_household' | 'delete_household'
@@ -75,6 +75,9 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
     }
     if (action === 'save_work' || action === 'submit_work') {
       return target.type === 'work' && target.record.childId === actor.childId && target.record.status === 'draft'
+    }
+    if (action === 'start_redo') {
+      return target.type === 'work' && target.record.childId === actor.childId && target.record.status !== 'draft'
     }
     return false
   }
