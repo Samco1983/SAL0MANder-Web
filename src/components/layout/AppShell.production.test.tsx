@@ -80,7 +80,7 @@ describe('AppShell in production', () => {
       </ThemeProvider>,
     )
 
-    expect(screen.getByRole('link', { name: 'Need a tutor?' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Math tutoring' })).toHaveAttribute(
       'href',
       'https://salomandermath.com/',
     )
