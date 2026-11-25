@@ -438,8 +438,15 @@ export function StudioPage() {
                       </section>
                       <section className={styles.summary} aria-label="Activity summary">
                         <h2 className={styles.sectionTitle}>Activity summary</h2>
-                        {picture ? <img className={styles.summaryImage} src={picture.src} alt={picture.alt} /> :
-                          <Button variant="secondary" onClick={() => setTab('image')}>Choose puzzle image</Button>}
+                        {picture ? (
+                          <img
+                            className={styles.summaryImage}
+                            src={`${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}${picture.src}`}
+                            alt={picture.alt}
+                          />
+                        ) : (
+                          <Button variant="secondary" onClick={() => setTab('image')}>Choose puzzle image</Button>
+                        )}
                         <dl className={styles.summaryDetails}>
                           <div><dt>Room type</dt><dd>Jigsaw puzzle</dd></div>
                           <div><dt>Puzzle image</dt><dd>{picture?.name ?? 'Not selected'}</dd></div>
