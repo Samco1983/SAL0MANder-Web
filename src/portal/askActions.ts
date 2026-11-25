@@ -32,8 +32,9 @@ export function enqueueAskQuestionInState(
   hh: Household,
   input: {
     text: string
-    source: 'ask_form' | 'worksheet_open_response'
+    source: 'ask_form' | 'worksheet_open_response' | 'worksheet_submission'
     workRecordId?: string | null
+    workAttemptId?: string | null
     photoPlaceholder?: AskPhotoInput
     simulateParentRejected?: boolean
   },
@@ -75,6 +76,7 @@ export function enqueueAskQuestionInState(
     })
     const held: AskQuestion = {
       id: qId, householdId: hh.id, childId: child.id, workRecordId: input.workRecordId ?? null,
+      ...(input.workAttemptId !== undefined ? { workAttemptId: input.workAttemptId } : {}),
       source: input.source, text: trimmed, photoPlaceholder: photo, askModeAtSend: child.askMode,
       status: 'held_undelivered', parentEmailAcceptedAt: null, forwardedToMentorAt: null, createdAt: nowIso,
     }
@@ -103,6 +105,7 @@ export function enqueueAskQuestionInState(
 
   const question: AskQuestion = {
     id: qId, householdId: hh.id, childId: child.id, workRecordId: input.workRecordId ?? null,
+    ...(input.workAttemptId !== undefined ? { workAttemptId: input.workAttemptId } : {}),
     source: input.source, text: trimmed, photoPlaceholder: photo, askModeAtSend: child.askMode,
     status: isReview ? 'waiting_parent_review' : 'queued_for_mentor',
     parentEmailAcceptedAt: nowIso,

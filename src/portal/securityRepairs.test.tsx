@@ -20,7 +20,7 @@ import {
 import { updateFourSettings, withdrawParentConsent } from './parentActions'
 import { createRoomInvite, joinRoom, openRoomByMentor, respondToRoomInvite } from './roomActions'
 import { LocalPortalStorageAdapter, PortalAccessError, portalStorage } from './storage'
-import { openOrCreateWorkRecord, saveWorkDraft, submitWorkRecord } from './workActions'
+import { openOrCreateWorkRecord, saveWorkDraft, startRedoAttempt, submitWorkRecord } from './workActions'
 
 describe('portal Phase 1 — PR 11 security repair order (G-07, G-06, Codex1, G-03)', () => {
   beforeEach(() => {
@@ -279,5 +279,90 @@ describe('portal Phase 1 — PR 11 security repair order (G-07, G-06, Codex1, G-
       askMode: 'off', autoShow: false, approvedFunGames: ['neon-dash'], joinRooms: true, emailMode: 'everything',
     })
     expect(listTodayAskQueue(afterLeoOff, samuel).some((q) => q.text === 'SECRET_LEO_ASK')).toBe(false)
+  })
+
+  it('PR #138 typed-answer leak closure: typed answers without openResponse, rejected auto-mode parent email, redo attempts, and missing parent-step records never reach any mentor', () => {
+    const adapter = new LocalPortalStorageAdapter()
+    const seed = adapter.reset()
+    const samuel = buildMentorActor(seed, 'mentor_samuel')
+    const mentorB = buildMentorActor(seed, 'mentor_b')
+    const elena = buildParentActor(seed, 'hh_elena')
+    const marcus = buildChildActor(seed, 'child_marcus')
+    const leo = buildChildActor(seed, 'child_leo')
+
+    // 1. Review-first (Marcus) submits ONLY typed answers (empty openResponse):
+    //    must route to parent review first and NEVER appear to mentors before parent forwards.
+    const marcusTypedOnly = openOrCreateWorkRecord(adapter, marcus, 'child_marcus', getCurriculumSet('g7-u1-b')!)
+    saveWorkDraft(adapter, marcus, marcusTypedOnly.record.id, marcusTypedOnly.record.currentRevision, {
+      answers: [{ questionId: 'g7-u1-b-01', chosenValue: 'TYPED_ONLY_MARCUS_SENTINEL', tries: 1, hintUsed: false, answeredAt: '2026-11-25T13:00:00Z' }],
+      openResponse: '',
+    })
+    const submittedTypedOnly = submitWorkRecord(adapter, marcus, marcusTypedOnly.record.id, '2026-11-25T13:01:00Z')
+    const typedReviewQ = submittedTypedOnly.state.askQuestions.find(
+      (q) => q.workRecordId === marcusTypedOnly.record.id && q.workAttemptId === marcusTypedOnly.record.attempts[0]!.attemptId,
+    )!
+    expect(typedReviewQ).toBeDefined()
+    expect(typedReviewQ.source).toBe('worksheet_submission')
+    expect(typedReviewQ.status).toBe('waiting_parent_review')
+    expect(JSON.stringify(listTodayWorkQueue(submittedTypedOnly.state, samuel))).not.toContain('TYPED_ONLY_MARCUS_SENTINEL')
+    expect(JSON.stringify(listTodayWorkQueue(submittedTypedOnly.state, mentorB))).not.toContain('TYPED_ONLY_MARCUS_SENTINEL')
+    expect(JSON.stringify(listMentorWorkRecords(submittedTypedOnly.state, samuel, 'child_marcus'))).not.toContain('TYPED_ONLY_MARCUS_SENTINEL')
+
+    // After Elena forwards Attempt #1, mentors may read Attempt #1's typed answer.
+    const forwardedAttempt1 = forwardQuestionToMentor(adapter, elena, typedReviewQ.id, '2026-11-25T13:02:00Z')
+    expect(JSON.stringify(listTodayWorkQueue(forwardedAttempt1, samuel))).toContain('TYPED_ONLY_MARCUS_SENTINEL')
+
+    // 2. Redo Attempt #2 after Attempt #1 was forwarded: Attempt #2's new typed answers MUST NOT piggyback
+    //    on Attempt #1's prior parent approval.
+    const redo = startRedoAttempt(adapter, marcus, marcusTypedOnly.record.id, '2026-11-25T13:05:00Z')
+    saveWorkDraft(adapter, marcus, redo.record.id, redo.record.currentRevision, {
+      answers: [{ questionId: 'g7-u1-b-01', chosenValue: 'REDO_ATTEMPT2_SENTINEL', tries: 1, hintUsed: false, answeredAt: '2026-11-25T13:06:00Z' }],
+      openResponse: 'REDO_OPEN2_SENTINEL',
+    })
+    const submittedAttempt2 = submitWorkRecord(adapter, marcus, redo.record.id, '2026-11-25T13:07:00Z')
+    const queueBeforeAttempt2Fwd = listTodayWorkQueue(submittedAttempt2.state, samuel).find((w) => w.id === redo.record.id)!
+    expect(queueBeforeAttempt2Fwd.childTextWithheld).toBe(true)
+    expect('openResponse' in queueBeforeAttempt2Fwd).toBe(false)
+    expect(JSON.stringify(queueBeforeAttempt2Fwd)).not.toContain('REDO_ATTEMPT2_SENTINEL')
+    expect(JSON.stringify(queueBeforeAttempt2Fwd)).not.toContain('REDO_OPEN2_SENTINEL')
+
+    const attempt2Q = submittedAttempt2.state.askQuestions.find(
+      (q) => q.workRecordId === redo.record.id && q.workAttemptId === redo.record.attempts[1]!.attemptId,
+    )!
+    expect(attempt2Q.status).toBe('waiting_parent_review')
+    const forwardedAttempt2 = forwardQuestionToMentor(adapter, elena, attempt2Q.id, '2026-11-25T13:08:00Z')
+    const queueAfterAttempt2Fwd = listTodayWorkQueue(forwardedAttempt2, samuel).find((w) => w.id === redo.record.id)!
+    expect(queueAfterAttempt2Fwd.childTextWithheld).toBe(false)
+    expect(queueAfterAttempt2Fwd.openResponse).toBe('REDO_OPEN2_SENTINEL')
+    expect(queueAfterAttempt2Fwd.attempts[1]?.answers[0]?.chosenValue).toBe('REDO_ATTEMPT2_SENTINEL')
+
+    // 3. Auto-send mode (Leo) with parent email REJECTED: typed answer MUST be held undelivered and NEVER reach mentors.
+    const leoWork = openOrCreateWorkRecord(adapter, leo, 'child_leo', getCurriculumSet('g7-u1-b')!)
+    saveWorkDraft(adapter, leo, leoWork.record.id, leoWork.record.currentRevision, {
+      answers: [{ questionId: 'g7-u1-b-01', chosenValue: 'LEO_REJECTED_TYPED_SENTINEL', tries: 1, hintUsed: false, answeredAt: '2026-11-25T13:10:00Z' }],
+      openResponse: '',
+    })
+    const leoRejected = submitWorkRecord(adapter, leo, leoWork.record.id, {
+      nowIso: '2026-11-25T13:11:00Z',
+      simulateParentRejected: true,
+    })
+    expect(JSON.stringify(listTodayWorkQueue(leoRejected.state, samuel))).not.toContain('LEO_REJECTED_TYPED_SENTINEL')
+    expect(JSON.stringify(listMentorWorkRecords(leoRejected.state, samuel, 'child_leo'))).not.toContain('LEO_REJECTED_TYPED_SENTINEL')
+
+    // 4. Even an auto-mode submitted record with NO parent-step AskQuestion at all (e.g. direct/unverified write)
+    //    must omit typed answers by default.
+    const directState = adapter.load()
+    const directLeo = openOrCreateWorkRecord(adapter, leo, 'child_leo', getCurriculumSet('g7-u1-c')!)
+    const mutated = adapter.load()
+    const rawRec = mutated.workRecords.find((w) => w.id === directLeo.record.id)!
+    rawRec.status = 'submitted'
+    rawRec.attempts[0]!.submittedAt = '2026-11-25T13:15:00Z'
+    rawRec.attempts[0]!.answers = [
+      { questionId: 'g7-u1-c-01', chosenValue: 'NO_PARENT_STEP_SENTINEL', tries: 1, hintUsed: false, answeredAt: '2026-11-25T13:14:00Z' },
+    ]
+    adapter.save(mutated)
+    expect(directState).toBeDefined()
+    expect(JSON.stringify(listTodayWorkQueue(adapter.load(), samuel))).not.toContain('NO_PARENT_STEP_SENTINEL')
+    expect(JSON.stringify(listMentorWorkRecords(adapter.load(), samuel, 'child_leo'))).not.toContain('NO_PARENT_STEP_SENTINEL')
   })
 })
