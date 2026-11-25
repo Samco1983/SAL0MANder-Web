@@ -672,6 +672,7 @@ function openPanel(kind){
  panel.showModal();
 }
 $('book').onclick=()=>openPanel('moves');$('settings').onclick=()=>openPanel('settings');$('inputs').onclick=()=>openPanel('inputs');$('pause').onclick=()=>openPanel('pause');
+{const mt=$('musicToggle');if(mt){const syncMusicBtn=()=>{const on=Sound.musicEnabled,title=Sound.soundtracks[Sound.soundtrack]||'';mt.textContent=on?'Music: On':'Music: Off';mt.setAttribute('aria-pressed',String(on));mt.title=title?(on?'Now playing: '+title:'Music off ('+title+')'):'';};mt.onclick=()=>{Sound.unlock();Sound.setMusic(!Sound.musicEnabled);syncMusicBtn();};if(Sound.onMusicChange)Sound.onMusicChange(syncMusicBtn);syncMusicBtn();}}
 $('close').onclick=()=>panel.close();panel.addEventListener('close',()=>{if(panel.open)return;capture=null;editor=null;paused=false;cleanInputs();view='';if(match)Sound.resume();else Sound.resume().then(()=>Sound.stopMusic());});
 panel.addEventListener('click',e=>{if(e.target===panel){const b=panel.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)panel.close();}});
 function pauseAway(){if(match&&!panel.open&&($('result').hidden||match.phase==='roundEnd'))openPanel('pause');}

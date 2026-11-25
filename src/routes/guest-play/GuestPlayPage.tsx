@@ -5,6 +5,7 @@ import { buildPath, paths, readBasePath } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
 import { AppShell } from '@components/layout/AppShell'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
+import { GameMusicControl } from '@components/audio/GameMusicControl'
 import { Button, LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
@@ -464,6 +465,7 @@ export function GuestPlayPage() {
          * would close the panel and re-open it on every failed retry.
          */
         reveal={session.resultHeld || state.status === 'error'}
+        stageActions={<GameMusicControl gameId="jigsaw" />}
         stage={renderStage()}
         companion={
           <>

@@ -64,9 +64,9 @@ let myFace=(()=>{const v=Number(read(faceKey));return isCustom(v)||(Number.isInt
 let myCustom=(()=>{for(const k of ['sal0mander.face',faceKey+'.custom']){const v=Number(read(k));if(isCustom(v))return v;}return customCode([1,0,4,1]);})();
 function read(key){try{return localStorage.getItem(key);}catch{return null;}}
 function save(key,value){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{/* Session play is still available. */}}
-let score,run,racers=[],kind='solo',checkpoint,mode='loading',attempt=0,last=0,acc=0,noticeEnd=0,countIn=0,width=0,height=0,shownHud='',muted=read(soundKey)==='off';
+let score,run,racers=[],kind='solo',checkpoint,mode='loading',attempt=0,last=0,acc=0,noticeEnd=0,countIn=0,width=0,height=0,shownHud='',muted=window.Sal0Music?!window.Sal0Music.readEnabled('neon-dash',read(soundKey)!=='off'):read(soundKey)==='off';
 let net=null; // {ws,code,you,count,ready,iAmReady}
-track.volume=.60;track.muted=muted;
+track.volume=.55;track.muted=muted;track.loop=true;
 function soundUI(){$('sound').textContent=muted?'Sound off':'Sound on';$('sound').setAttribute('aria-pressed',String(!muted));}
 soundUI();
 const me=()=>racers.find(x=>x.me)||racers[0];
@@ -74,9 +74,10 @@ const alive=x=>!x.r.dead&&!x.r.finished;
 // The camera follows you; in same-screen 2-player it follows whoever is still running.
 // The camera follows you; once you're out it follows whoever is still running (spectate), so you can watch their face.
 function focus(){const m=me();if(kind==='solo'||alive(m))return m;return [...racers].filter(alive).sort((a,b)=>b.r.time-a.r.time)[0]||m;}
+function trackTimeFor(courseTime){const d=Number.isFinite(track.duration)&&track.duration>1?track.duration:0;return d?courseTime%d:courseTime;}
 function syncTrack(){
   const f=focus();if(!f||mode!=='play'||countIn>0)return;
-  if(track.readyState){try{track.currentTime=f.r.time;}catch{/* Metadata may still be loading. */}}
+  if(track.readyState){try{track.currentTime=trackTimeFor(f.r.time);}catch{/* Metadata may still be loading. */}}
   track.play().catch(()=>{});
 }
 track.addEventListener('loadedmetadata',syncTrack);
@@ -208,7 +209,7 @@ $('saveRun').onclick=()=>{const blob=new Blob([JSON.stringify({v:1,name:'Coach S
 two.onclick=()=>{if(!score)return;if(mode==='result'&&kind==='local'){setSolo();start(false);}else startLocal();};
 $('secondary').onclick=()=>{checkpoint=null;save(saveKey,null);start(false);};
 $('pause').onclick=()=>{if(mode==='play'&&kind!=='online')menu('paused');};
-$('sound').onclick=()=>{muted=!muted;track.muted=muted;soundUI();save(soundKey,muted?'off':'on');};
+$('sound').onclick=()=>{muted=!muted;track.muted=muted;soundUI();save(soundKey,muted?'off':'on');if(window.Sal0Music)window.Sal0Music.writeEnabled('neon-dash',!muted);};
 const full=$('full'),cabinet=$('cabinet');
 if(!cabinet.requestFullscreen)full.hidden=true;
 full.onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await cabinet.requestFullscreen();}catch{}};
@@ -453,12 +454,28 @@ function frame(now){
     }else acc+=dt;
     while(acc>=STEP&&mode==='play'){step();acc-=STEP;}
     const f=focus().r;
-    if(!track.paused&&track.readyState>=3&&Math.abs(track.currentTime-f.time)>.22)track.currentTime=f.time;
+    const expectedTime=trackTimeFor(f.time);
+    if(!track.paused&&track.readyState>=3&&Math.abs(track.currentTime-expectedTime)>.22)track.currentTime=expectedTime;
     if(kind==='solo')hud();
   }
   last=now;draw();requestAnimationFrame(frame);
 }
+async function loadFlowTrack(){
+  if(!window.Sal0Music)return;
+  try{
+    const siteRoot=new URL('../../',location.href).href;
+    const playlist=await window.Sal0Music.loadPlaylist(new URL('audio/music-playlist.json',siteRoot).href);
+    const cfg=window.Sal0Music.resolveGameConfig(playlist,'neon-dash',siteRoot);
+    if(!cfg||!cfg.enabled||cfg.tracks.length===0)return;
+    const chosen=window.Sal0Music.pickTrackForLoad('neon-dash',cfg.tracks);
+    if(!chosen)return;
+    track.src=chosen.src;track.volume=cfg.volume;track.loop=true;
+    const credit=$('trackCredit');
+    if(credit)credit.textContent=chosen.title+' · '+chosen.source;
+  }catch{/* Keep bundled fallback track when offline. */}
+}
 async function boot(){
+  void loadFlowTrack();
   const response=await fetch('course.json');if(!response.ok)throw Error('course');
   score=await response.json();setSolo();buildCoins();GOLD=new Set(run.cues.filter(c=>run.accents.some(a=>Math.abs(a-c)<.001)));buildPicker();
   if(SAM_LINK)try{const s=await (await fetch('sam-run.json',{cache:'no-cache'})).json();if(s&&Array.isArray(s.jumps)&&s.jumps.every(Number.isInteger))samRun=s;}catch{}

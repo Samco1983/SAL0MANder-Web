@@ -39,8 +39,10 @@
   };
   const nextTake = new Map();
   const base = document.currentScript?.src || document.baseURI;
+  const siteRoot = new URL("../../", base).href;
   const audioUrls = window.MoonGateAudioURLs || {};
-  const assetUrl = (name) => audioUrls[name] || new URL("assets/audio/" + name + ".mp3", base).href;
+  const playlistUrls = Object.create(null);
+  const assetUrl = (name) => audioUrls[name] || playlistUrls[name] || new URL("assets/audio/" + name + ".mp3", base).href;
   function fetchAudio(name) {
     return fetch(assetUrl(name)).then((response) => {
       if (!response.ok) throw new Error("Audio unavailable");
@@ -48,9 +50,13 @@
     }).catch(() => null);
   }
   const bankBytes = fetchAudio("ring");
-  const soundtrackNames={ironlantern:"Iron Lantern",courtyard:"Moon Gate Courtyard"};
-  let selection="ironlantern";
-  try{const saved=localStorage.getItem("moonGate.soundtrack");if(Object.hasOwn(soundtrackNames,saved))selection=saved;}catch{}
+  let soundtrackNames = { ironlantern: "Iron Lantern", courtyard: "Moon Gate Courtyard" };
+  let selection = "ironlantern";
+  let userPickedTrack = false;
+  const musicListeners = new Set();
+  const notifyMusicChange = () => {
+    for (const fn of musicListeners) { try { fn(); } catch {} }
+  };
   const voiceBytes=fetchAudio("kiai");
   const crowdBytes=fetchAudio("crowd");
   const festivalBytes=fetchAudio("festival");
@@ -72,7 +78,33 @@
       localStorage.setItem(name, value ? "1" : "0");
     } catch { return true; }
   }
-  let musicOn = setting("music"), effectsOn = setting("effects");
+  let musicOn = window.Sal0Music ? window.Sal0Music.readEnabled("moon-gate", setting("music")) : setting("music");
+  let effectsOn = setting("effects");
+  let musicGainLevel = .37;
+  const playlistReady = window.Sal0Music
+    ? window.Sal0Music.loadPlaylist(new URL("audio/music-playlist.json", siteRoot).href).then((playlist) => {
+        const cfg = window.Sal0Music.resolveGameConfig(playlist, "moon-gate", siteRoot);
+        if (!cfg || !cfg.enabled || cfg.tracks.length === 0) return;
+        musicGainLevel = cfg.volume;
+        const nextNames = {};
+        for (const track of cfg.tracks) {
+          nextNames[track.id] = track.title;
+          playlistUrls[track.id] = track.src;
+        }
+        soundtrackNames = nextNames;
+        if (!userPickedTrack) {
+          const picked = window.Sal0Music.pickTrackForLoad("moon-gate", cfg.tracks);
+          if (picked && picked.id !== selection) {
+            haltMusic(false);
+            selection = picked.id;
+            score = null;
+            if (ctx) loadTrack();
+          }
+        }
+        if (musicBus && ctx) setBus(musicBus, musicOn ? musicGainLevel : 0);
+        notifyMusicChange();
+      }).catch(() => {})
+    : Promise.resolve();
   function scoreTrack(key){
     if(!ctx)return Promise.resolve(null);
     if(!scores.has(key))scores.set(key,fetchAudio(key).then(data=>data?ctx.decodeAudioData(data):null).catch(()=>null));
@@ -100,12 +132,12 @@
       limiter.attack.value = .003; limiter.release.value = .12;
       const output = ctx.createGain(); output.gain.value = .82;
       limiter.connect(output); output.connect(ctx.destination);
-      musicBus = ctx.createGain(); musicBus.gain.value = musicOn ? .37 : 0;
+      musicBus = ctx.createGain(); musicBus.gain.value = musicOn ? musicGainLevel : 0;
       effectsBus = ctx.createGain(); effectsBus.gain.value = effectsOn ? .90 : 0;
       musicBus.connect(limiter); effectsBus.connect(limiter);
       const decode = (bytes) => bytes.then((data) => data ? ctx.decodeAudioData(data) : null).catch(() => null);
-      ready = Promise.all([decode(bankBytes).then(buffer=>{bank=buffer;}),decode(voiceBytes).then(buffer=>{voiceBank=buffer;}),decode(crowdBytes).then(buffer=>{crowdBank=buffer;}),decode(festivalBytes).then(buffer=>{festivalBank=buffer;})]);
-      loadTrack();
+      ready = Promise.all([playlistReady, decode(bankBytes).then(buffer=>{bank=buffer;}),decode(voiceBytes).then(buffer=>{voiceBank=buffer;}),decode(crowdBytes).then(buffer=>{crowdBank=buffer;}),decode(festivalBytes).then(buffer=>{festivalBank=buffer;})]);
+      playlistReady.then(loadTrack);
       ctx.addEventListener("statechange", playMusic);
     } catch { ctx = null; }
   }
@@ -190,8 +222,8 @@
       if (takes) nextTake.set(name,(index + 1) % takes.length);
       if (featured.has(name) && musicOn) {
         duckUntil = Math.max(duckUntil,ctx.currentTime + clip[name][1]);
-        setBus(musicBus,.19);
-        musicBus.gain.setTargetAtTime(.37,duckUntil,.072);
+        setBus(musicBus,musicGainLevel*.51);
+        musicBus.gain.setTargetAtTime(musicGainLevel,duckUntil,.072);
       }
     }
   }
@@ -291,24 +323,33 @@
       const sound=playClip(name,null,0,rate,level);
       if(sound&&musicOn){
         duckUntil=Math.max(duckUntil,ctx.currentTime+clip[name][1]/rate+.05);
-        setBus(musicBus,.045);musicBus.gain.setTargetAtTime(.37,duckUntil,.18);
+        setBus(musicBus,.045);musicBus.gain.setTargetAtTime(musicGainLevel,duckUntil,.18);
       }
     },
     marqueeDing(beat){
       if(beat===0)playClip('payout',null,0,1,.76);
       playClip('bell',null,0,[1.45,1.66,1.91,2.18][beat],.84);
     },
-    soundtracks:Object.freeze(soundtrackNames),
+    get soundtracks(){return Object.freeze({...soundtrackNames});},
     get soundtrack(){return selection;},
     selectSoundtrack(key){
       if(!Object.hasOwn(soundtrackNames,key)||key===selection)return;
+      userPickedTrack = true;
       haltMusic(false);stopAudition();selection=key;score=null;
       try{localStorage.setItem("moonGate.soundtrack",key);}catch{}
       loadTrack();
+      notifyMusicChange();
     },
     setMusic(value) {
-      musicOn = !!value; setting("music",musicOn); setBus(musicBus,musicOn ? .37 : 0);
+      musicOn = !!value; setting("music",musicOn);
+      if (window.Sal0Music) window.Sal0Music.writeEnabled("moon-gate", musicOn);
+      setBus(musicBus,musicOn ? musicGainLevel : 0);
       if (musicOn) playMusic(); else {haltMusic(true);stopAudition();}
+      notifyMusicChange();
+    },
+    onMusicChange(fn) {
+      musicListeners.add(fn);
+      return () => musicListeners.delete(fn);
     },
     setEffects(value) {
       effectsOn = !!value; setting("effects",effectsOn); setBus(effectsBus,effectsOn ? .90 : 0);
