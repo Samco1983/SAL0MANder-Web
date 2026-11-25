@@ -27,6 +27,7 @@ import { useGuestActivity } from './useGuestActivity'
 import { isRecoverable, linkCopy, linkStateFrom } from './linkState'
 import { isModeChange, resolveSelectedMode } from './modeSelection'
 import { useClientAttemptId } from './useClientAttemptId'
+import { JigsawCelebration } from './JigsawCelebration'
 import styles from './GuestPlayPage.module.css'
 
 /**
@@ -397,17 +398,41 @@ export function GuestPlayPage() {
     })
   }, [])
 
+  const canRotateSamplePicture = Boolean(
+    state.status === 'ready' &&
+      isSampleActivityId(state.bundle.summary.id) &&
+      !hasExplicitPicture &&
+      pictureLoadKey,
+  )
+
+  function handleNextPicture() {
+    if (!pictureLoadKey) return
+    setLatchedPicture(
+      rotatePictureForGameLoad(pictureLoadKey, {
+        excludeKey: activePicture?.key,
+      }),
+    )
+  }
+
   function renderStage() {
     if (state.status === 'error') return null
     if (usesLibrarySamplePreview) {
       if (samplePreviewState.status === 'ready') {
         return (
-          <UnityStage
-            key={samplePreviewState.preview.requestId}
-            audience="student"
-            preview={samplePreviewState.preview}
-            previewAttempts
-          />
+          <>
+            <JigsawCelebration
+              key={`celebrate:${samplePreviewState.preview.requestId}`}
+              previewRequestId={samplePreviewState.preview.requestId}
+              picture={activePicture}
+              onNextPicture={canRotateSamplePicture ? handleNextPicture : undefined}
+            />
+            <UnityStage
+              key={samplePreviewState.preview.requestId}
+              audience="student"
+              preview={samplePreviewState.preview}
+              previewAttempts
+            />
+          </>
         )
       }
       if (samplePreviewState.status === 'error') {
@@ -437,12 +462,20 @@ export function GuestPlayPage() {
       )
     }
     return (
-      <UnityStage
-        audience="student"
-        {...(activityId ? { activityId } : {})}
-        {...(boot ? { boot } : {})}
-        {...(sessionStarted ? { sessionStarted } : {})}
-      />
+      <>
+        <JigsawCelebration
+          clientAttemptId={clientAttemptId}
+          sessionId={sessionId}
+          picture={activePicture}
+          onNextPicture={canRotateSamplePicture ? handleNextPicture : undefined}
+        />
+        <UnityStage
+          audience="student"
+          {...(activityId ? { activityId } : {})}
+          {...(boot ? { boot } : {})}
+          {...(sessionStarted ? { sessionStarted } : {})}
+        />
+      </>
     )
   }
 
