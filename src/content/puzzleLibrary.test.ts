@@ -44,10 +44,10 @@ describe('the puzzle picture library', () => {
     for (const picture of PUZZLE_LIBRARY) {
       const bytes = statSync(join('public', picture.src)).size
       total += bytes
-      expect(bytes, `${picture.src} is ${Math.round(bytes / 1024)} KB`).toBeLessThan(200 * 1024)
+      expect(bytes, `${picture.src} is ${Math.round(bytes / 1024)} KB`).toBeLessThan(165 * 1024)
     }
     // Thirty-two lazy-loaded options, including four licensed photos totaling less than 360 KiB.
-    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(2300 * 1024)
+    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(2050 * 1024)
   })
 
   /**

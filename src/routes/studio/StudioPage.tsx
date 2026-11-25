@@ -443,6 +443,10 @@ export function StudioPage() {
                             className={styles.summaryImage}
                             src={`${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}${picture.src}`}
                             alt={picture.alt}
+                            width={picture.width}
+                            height={picture.height}
+                            loading="lazy"
+                            decoding="async"
                           />
                         ) : (
                           <Button variant="secondary" onClick={() => setTab('image')}>Choose puzzle image</Button>
