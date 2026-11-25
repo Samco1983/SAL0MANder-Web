@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { LinkButton } from '@components/ui/Button'
+import { PictureCredit } from '@components/ui/PictureCredit'
 import { paths } from '@config/routes'
+import type { PuzzlePicture } from '@content/puzzleLibrary'
 import { onPreviewMessage } from '@unity/previewBridge'
 import { onSlideMessage } from '@unity/slideBridge'
 import { onPreviewAttemptMessage } from '@unity/previewAttemptBridge'
@@ -12,10 +14,12 @@ export function GiftCelebration({
   requestId,
   presentation,
   channel = 'preview',
+  picture,
 }: {
   requestId: string
   presentation: GiftPresentation
   channel?: 'preview' | 'slide' | 'preview-attempt'
+  picture?: PuzzlePicture
 }) {
   const [finished, setFinished] = useState(false)
   const [moving, setMoving] = useState(false)
@@ -110,9 +114,12 @@ export function GiftCelebration({
           <span key={index}>{decoration}</span>
         ))}
       </div>
-      <p role="status">
-        <strong>Puzzle complete!</strong> {message}
-      </p>
+      <div className={styles.celebrationCopy}>
+        <p role="status">
+          <strong>Puzzle complete!</strong> {message}
+        </p>
+        <PictureCredit picture={picture} />
+      </div>
       <LinkButton to={paths.gifts} variant="secondary" size="sm">
         Make a gift
       </LinkButton>

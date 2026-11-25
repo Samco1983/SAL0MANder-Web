@@ -1,25 +1,53 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '@components/ui/Button'
+import { PictureCredit } from '@components/ui/PictureCredit'
+import { PUZZLE_LIBRARY, type PuzzlePicture } from '@content/puzzleLibrary'
 import { newId } from '@contracts/v1'
 import type { ActivityDraft } from '@studio/activityDraft'
 import { UnityStage } from '@unity/UnityStage'
-import { preparePreview, previewProblems, type PreviewBoot } from '@unity/previewBridge'
+import {
+  onPreviewMessage,
+  preparePreview,
+  previewProblems,
+  type PreviewBoot,
+} from '@unity/previewBridge'
 import styles from './StudioPreview.module.css'
 
-function Player({ preview, onEnd }: { preview: PreviewBoot; onEnd: () => void }) {
+function Player({
+  preview,
+  picture,
+  onEnd,
+}: {
+  preview: PreviewBoot
+  picture?: PuzzlePicture
+  onEnd: () => void
+}) {
   const dialog = useRef<HTMLDialogElement>(null)
+  const [finished, setFinished] = useState(false)
   useEffect(() => {
     const element = dialog.current
     element?.showModal()
     return () => element?.close()
   }, [])
+  useEffect(() => {
+    return onPreviewMessage((message) => {
+      if (message.requestId !== preview.requestId) return
+      if (message.type === 'preview-finished') setFinished(true)
+      if (message.type === 'preview-error') setFinished(false)
+    })
+  }, [preview.requestId])
   return (
     <dialog ref={dialog} className={styles.player} aria-label="Activity preview" onCancel={(event) => event.preventDefault()}>
       <header className={styles.toolbar}>
         <div><strong>{preview.config.title}</strong><p>Student preview · Progress is temporary. Reloading starts a fresh attempt.</p></div>
         <Button variant="secondary" onClick={onEnd}>End preview</Button>
       </header>
+      {finished && picture ? (
+        <aside className={styles.creditBar} aria-label="Picture credit">
+          <PictureCredit picture={picture} />
+        </aside>
+      ) : null}
       <UnityStage preview={preview} audience="student" />
     </dialog>
   )
@@ -77,7 +105,14 @@ export function StudioPreview({ draft }: { draft: ActivityDraft }) {
       <Button disabled={preparing || problems.length > 0} onClick={() => void start()}>{preparing ? 'Preparing picture…' : 'Play preview'}</Button>
       {/* Router navigation may commit after the prepared snapshot. Never mount
           Unity until this route reflects the active preview. */}
-      {preview && searchParams.get('teacherPreview') === '1' && <Player key={preview.requestId} preview={preview} onEnd={end} />}
+      {preview && searchParams.get('teacherPreview') === '1' && (
+        <Player
+          key={preview.requestId}
+          preview={preview}
+          picture={PUZZLE_LIBRARY.find((item) => item.key === draft.meta.imageKey)}
+          onEnd={end}
+        />
+      )}
     </section>
   )
 }

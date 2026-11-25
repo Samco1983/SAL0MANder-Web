@@ -156,3 +156,19 @@
 .demoGuide li + li { margin-top: var(--space-2); }
 .demoLink { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-2) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text); background: var(--color-surface); font-weight: 700; }
 .demoLink:focus-visible, .demoGuide summary:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 3px; }
+
+.stageWrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.completionCredit {
+  flex: 0 0 auto;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}

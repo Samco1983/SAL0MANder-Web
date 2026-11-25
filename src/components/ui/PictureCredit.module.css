@@ -1,0 +1,22 @@
+.credit {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.credit strong {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold, 600);
+}
+
+.credit a {
+  color: inherit;
+  text-underline-offset: 0.15em;
+}
+
+.credit a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
