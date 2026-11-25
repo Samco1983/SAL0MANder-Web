@@ -34,9 +34,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
@@ -206,9 +206,11 @@ jobs:
           '
           node scripts/verify-deploy-artifact.mjs dist "$VITE_BASE_PATH"
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+          # upload-pages-artifact v4+ excludes dotfiles by default; keep dist/.nojekyll.
+          include-hidden-files: true
 
   deploy:
     needs: build
@@ -217,10 +219,10 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       # THE ONLY CHECK HERE THAT CAN FAIL FOR A REASON OUR REPO CANNOT SEE.
       #
