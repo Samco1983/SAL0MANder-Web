@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { env } from '@config/env'
 import { buildPath, paths, readBasePath } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
+import { Wordmark } from '@components/brand/Wordmark'
 import { AppShell } from '@components/layout/AppShell'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
 import { GameMusicControl } from '@components/audio/GameMusicControl'
@@ -487,6 +488,7 @@ export function GuestPlayPage() {
               audience="student"
               preview={samplePreviewState.preview}
               previewAttempts
+              hideFullscreenControl
             />
           </div>
         )
@@ -528,6 +530,7 @@ export function GuestPlayPage() {
         {completedCredit}
         <UnityStage
           audience="student"
+          hideFullscreenControl
           {...(activityId ? { activityId } : {})}
           {...(boot ? { boot } : {})}
           {...(sessionStarted ? { sessionStarted } : {})}
@@ -537,10 +540,16 @@ export function GuestPlayPage() {
   }
 
   return (
-    <AppShell fill contained={false}>
+    <AppShell fill contained={false} hideHeader>
       <CompanionLayout
         companionLabel="Activity context"
         defaultCollapsed
+        fullscreenControl
+        barLead={
+          <Link to={paths.home} className={styles.barBrand} aria-label={`${env.appName} home`}>
+            <Wordmark showStudios={false} />
+          </Link>
+        }
         /*
          * A student who collapsed the panel would otherwise never learn their
          * result failed to save — the notice would render into a hidden region

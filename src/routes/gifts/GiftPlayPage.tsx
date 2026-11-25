@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { env } from '@config/env'
+import { Wordmark } from '@components/brand/Wordmark'
 import { AppShell } from '@components/layout/AppShell'
 import { GameMusicControl } from '@components/audio/GameMusicControl'
 import { Button, LinkButton } from '@components/ui/Button'
@@ -7,6 +9,7 @@ import { paths } from '@config/routes'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import { newId } from '@contracts/v1'
 import { UnityStage } from '@unity/UnityStage'
+import { useFullscreen } from '@unity/useFullscreen'
 import { preparePreview, type PreviewBoot } from '@unity/previewBridge'
 import { prepareSlide, type SlideBoot } from '@unity/slideBridge'
 import { decodeGift, type Gift } from '@/gifts/giftLink'
@@ -41,6 +44,8 @@ function GiftRecipient({ hash, urlLength }: { hash: string; urlLength: number })
   const [preparing, setPreparing] = useState(false)
   const [error, setError] = useState('')
   const pending = useRef<AbortController | null>(null)
+  const playerRef = useRef<HTMLDivElement | null>(null)
+  const fullscreen = useFullscreen(playerRef)
   useEffect(() => () => pending.current?.abort(), [])
   let gift: Gift | null = null
   let invalid = ''
@@ -75,16 +80,33 @@ function GiftRecipient({ hash, urlLength }: { hash: string; urlLength: number })
 
   if (preview && gift)
     return (
-      <AppShell fill contained={false}>
-        <div className={styles.player}>
-          <header className={styles.playerHeader}>
-            <div>
+      <AppShell fill contained={false} hideHeader>
+        <div
+          ref={playerRef}
+          className={styles.player}
+          data-fullscreen={fullscreen.isFullscreen}
+          data-fullscreen-self={fullscreen.isSelfFullscreen}
+        >
+          <header className={styles.playerHeader} aria-label="Game controls">
+            <div className={styles.playerTitleGroup}>
+              <Link
+                to={paths.home}
+                className={styles.playerBrand}
+                aria-label={`${env.appName} home`}
+              >
+                <Wordmark showStudios={false} />
+              </Link>
               <h1>Your puzzle gift</h1>
               <p>Progress is temporary. Reloading starts again.</p>
             </div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div className={styles.playerActions}>
               <GameMusicControl gameId="puzzle-gifts" persist={false} />
-              <Button variant="secondary" onClick={() => setPreview(null)}>
+              {fullscreen.isSupported ? (
+                <Button variant="secondary" size="sm" onClick={fullscreen.toggle}>
+                  {fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}
+                </Button>
+              ) : null}
+              <Button variant="secondary" size="sm" onClick={() => setPreview(null)}>
                 Close puzzle
               </Button>
             </div>
@@ -98,13 +120,19 @@ function GiftRecipient({ hash, urlLength }: { hash: string; urlLength: number })
           />
           <div className={styles.stage}>
             {preview.type === 'slide-boot' ? (
-              <UnityStage key={preview.requestId} slide={preview} audience="student" />
+              <UnityStage
+                key={preview.requestId}
+                slide={preview}
+                audience="student"
+                hideFullscreenControl
+              />
             ) : (
               <UnityStage
                 key={preview.requestId}
                 preview={preview}
                 previewAttempts
                 audience="student"
+                hideFullscreenControl
               />
             )}
           </div>

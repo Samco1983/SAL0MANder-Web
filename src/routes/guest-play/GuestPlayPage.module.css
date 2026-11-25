@@ -157,6 +157,28 @@
 .demoLink { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-2) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); color: var(--color-text); background: var(--color-surface); font-weight: 700; }
 .demoLink:focus-visible, .demoGuide summary:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 3px; }
 
+.barBrand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: var(--text-md);
+}
+
+.barBrand:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .barBrand {
+    min-height: 44px;
+  }
+}
+
 .stageWrap {
   display: flex;
   flex-direction: column;

@@ -72,6 +72,7 @@ export function UnityStage({
   previewAttempts = false,
   slide,
   audience = 'developer',
+  hideFullscreenControl = false,
 }: {
   activityId?: string
   /**
@@ -83,6 +84,11 @@ export function UnityStage({
    * Same component, same states — different reader.
    */
   audience?: 'student' | 'developer'
+  /**
+   * Omit the extra bottom fullscreen strip when the hosting game page already
+   * owns a Full screen button inside its single slim top bar.
+   */
+  hideFullscreenControl?: boolean
   boot?: BootPayload
   /** Local teacher preview, on its own versioned channel. Never combined with guest boot. */
   preview?: PreviewBoot
@@ -492,7 +498,10 @@ export function UnityStage({
         loading spinner or an error message hides the browser chrome around a
         screen that has nothing to show.
       */}
-      {fullscreen.isSupported && state.status === 'ready' && (!privateLaunch || launchReady) ? (
+      {!hideFullscreenControl &&
+      fullscreen.isSupported &&
+      state.status === 'ready' &&
+      (!privateLaunch || launchReady) ? (
         <div className={styles.fullscreenControl} role="group" aria-label="Game display controls">
           <Button variant="secondary" size="sm" onClick={fullscreen.toggle}>
             {fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}

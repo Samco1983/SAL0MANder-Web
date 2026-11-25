@@ -46,10 +46,16 @@ export function AppShell({
   children,
   fill = false,
   contained = true,
+  hideHeader = false,
 }: {
   children: ReactNode
   fill?: boolean
   contained?: boolean
+  /**
+   * Omit the site navigation header on active game pages so a single slim game
+   * bar owns the top of the viewport and the game stage fills the screen.
+   */
+  hideHeader?: boolean
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuId = useId()
@@ -66,7 +72,11 @@ export function AppShell({
     return () => document.removeEventListener('keydown', closeOnEscape)
   }, [menuOpen])
   return (
-    <div className={styles.shell} data-fill={fill}>
+    <div
+      className={styles.shell}
+      data-fill={fill}
+      data-hide-header={hideHeader ? 'true' : undefined}
+    >
       <a
         className={`${styles.skipLink} sr-only`}
         href="#main"
@@ -94,39 +104,41 @@ export function AppShell({
         </p>
       )}
 
-      <header className={styles.header}>
-        <Link to={paths.home} className={styles.brand} aria-label={`${env.appName} home`}>
-          <Wordmark />
-        </Link>
+      {hideHeader ? null : (
+        <header className={styles.header}>
+          <Link to={paths.home} className={styles.brand} aria-label={`${env.appName} home`}>
+            <Wordmark />
+          </Link>
 
-        <button
-          type="button"
-          className={styles.menuButton}
-          ref={menuButton}
-          aria-expanded={menuOpen}
-          aria-controls={menuId}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          {menuOpen ? 'Close menu' : 'Menu'}
-        </button>
-        <nav id={menuId} className={styles.nav} data-open={menuOpen} aria-label="Main">
-          {visibleNav(env.isProd).map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === paths.home}
-              reloadDocument={item.reload}
-              onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-          <ThemeToggle />
-        </nav>
-      </header>
+          <button
+            type="button"
+            className={styles.menuButton}
+            ref={menuButton}
+            aria-expanded={menuOpen}
+            aria-controls={menuId}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? 'Close menu' : 'Menu'}
+          </button>
+          <nav id={menuId} className={styles.nav} data-open={menuOpen} aria-label="Main">
+            {visibleNav(env.isProd).map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === paths.home}
+                reloadDocument={item.reload}
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+            <ThemeToggle />
+          </nav>
+        </header>
+      )}
 
       <main
         id="main"

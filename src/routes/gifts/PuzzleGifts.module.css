@@ -187,23 +187,65 @@
   min-height: 0;
   overscroll-behavior: none;
 }
+.player[data-fullscreen-self='true'] {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--color-stage);
+}
 .playerHeader {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-1) max(var(--space-3), env(safe-area-inset-right, 0px))
+    var(--space-1) max(var(--space-3), env(safe-area-inset-left, 0px));
   background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.playerTitleGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.playerBrand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: var(--text-md);
 }
 .playerHeader h1 {
-  font-size: var(--text-lg);
+  font-size: var(--text-sm);
   margin: 0;
 }
 .playerHeader p {
   font-size: var(--text-xs);
-  margin: var(--space-1) 0 0;
+  margin: 0;
   color: var(--color-text-muted);
+}
+.playerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+.playerHeader button {
+  min-width: 36px;
+  min-height: 36px;
+  padding-inline: var(--space-3);
+  font-size: var(--text-xs);
+}
+@media (pointer: coarse) {
+  .playerHeader button,
+  .playerBrand {
+    min-height: 44px;
+  }
 }
 .stage {
   display: flex;

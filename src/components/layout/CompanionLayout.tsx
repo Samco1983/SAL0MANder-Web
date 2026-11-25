@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Button } from '@components/ui/Button'
+import { useFullscreen } from '@unity/useFullscreen'
 import styles from './CompanionLayout.module.css'
 
 const COLLAPSE_KEY = 'sal0mander.companion.collapsed'
@@ -29,15 +30,21 @@ function readCollapsed(defaultCollapsed: boolean): boolean {
 export function CompanionLayout({
   companion,
   stage,
+  barLead,
   stageActions,
+  fullscreenControl = false,
   defaultCollapsed = false,
   companionLabel = 'Companion panel',
   reveal = false,
 }: {
   companion: ReactNode
   stage: ReactNode
+  /** Optional compact brand/home control placed at the leading edge of the slim bar. */
+  barLead?: ReactNode
   /** Optional compact controls displayed in the stage bar beside the companion toggle. */
   stageActions?: ReactNode
+  /** Place the Full screen / Exit full screen control inside the single slim game bar. */
+  fullscreenControl?: boolean
   defaultCollapsed?: boolean
   companionLabel?: string
   /**
@@ -57,6 +64,8 @@ export function CompanionLayout({
    */
   reveal?: boolean
 }) {
+  const layoutRef = useRef<HTMLDivElement | null>(null)
+  const fullscreen = useFullscreen(layoutRef)
   const [collapsed, setCollapsed] = useState(() => readCollapsed(defaultCollapsed))
 
   /**
@@ -115,8 +124,17 @@ export function CompanionLayout({
     if (restore !== undefined) setCollapsed(restore)
   }, [reveal, collapsed])
 
+  const showFullscreen = fullscreenControl && fullscreen.isSupported
+
   return (
-    <div className={styles.layout} data-collapsed={collapsed} data-revealed={reveal && !collapsed}>
+    <div
+      ref={layoutRef}
+      className={styles.layout}
+      data-collapsed={collapsed}
+      data-revealed={reveal && !collapsed}
+      data-fullscreen={fullscreenControl ? fullscreen.isFullscreen : undefined}
+      data-fullscreen-self={fullscreenControl ? fullscreen.isSelfFullscreen : undefined}
+    >
       <aside
         id={COMPANION_ID}
         className={styles.companion}
@@ -129,19 +147,38 @@ export function CompanionLayout({
       </aside>
 
       <section className={styles.stage} aria-label="Game stage">
-        <div className={styles.toggle}>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={toggle}
-            aria-expanded={!collapsed}
-            // Without this the button announces "expanded" with no subject —
-            // a disclosure control that never says what it discloses.
-            aria-controls={COMPANION_ID}
-          >
-            {collapsed ? 'Show companion' : 'Hide companion'}
-          </Button>
-          {stageActions ? <div className={styles.stageActions}>{stageActions}</div> : null}
+        <div className={styles.toggle} role="toolbar" aria-label="Game controls">
+          <div className={styles.barLeadGroup}>
+            {barLead}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={toggle}
+              aria-expanded={!collapsed}
+              // Without this the button announces "expanded" with no subject —
+              // a disclosure control that never says what it discloses.
+              aria-controls={COMPANION_ID}
+            >
+              {collapsed ? 'Show companion' : 'Hide companion'}
+            </Button>
+          </div>
+          {stageActions || showFullscreen ? (
+            <div className={styles.stageActions}>
+              {stageActions}
+              {showFullscreen ? (
+                <div className={styles.fullscreenGroup} role="group" aria-label="Game display controls">
+                  <Button variant="secondary" size="sm" onClick={fullscreen.toggle}>
+                    {fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}
+                  </Button>
+                  {fullscreen.didFail ? (
+                    <p className={styles.fullscreenFailed} role="alert">
+                      This browser would not allow full screen.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         {stage}
       </section>
