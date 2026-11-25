@@ -14,6 +14,15 @@ export const LAST_PUZZLE_PICTURE_STORAGE_KEY = 'sal0mander.lastPuzzlePictureKey.
  */
 export const RECENT_PUZZLE_PICTURES_STORAGE_KEY = 'sal0mander.recentPuzzlePictureKeys.v1'
 
+/**
+ * Samuel's choice (Nov 25 2026): a device's FIRST jigsaw / Picture Reveal game opens on
+ * the SAL0MANder rover expedition picture. Every game after that rotates as usual.
+ */
+export const FIRST_GAME_PICTURE_KEY = 'sal0mander-rover-expedition'
+
+/** Device-local flag set once the first-game picture has been shown. */
+export const FIRST_GAME_PICTURE_SHOWN_STORAGE_KEY = 'sal0mander.firstGamePictureShown.v1'
+
 /** How many recent picks to avoid when the pool is large enough. */
 export const RECENT_PICTURE_MEMORY = 10
 
@@ -31,6 +40,7 @@ type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 
 let memoryLastPictureKey: string | null = null
 let memoryRecentPictureKeys: string[] = []
+let memoryFirstGamePictureShown = false
 
 function defaultStorage(): StorageLike | null {
   try {
@@ -127,10 +137,31 @@ function recordPickedPicture(key: string, storage: StorageLike | null): void {
   }
 }
 
+function firstGamePictureShown(storage: Pick<Storage, 'getItem'> | null): boolean {
+  if (memoryFirstGamePictureShown) return true
+  if (!storage) return false
+  try {
+    return storage.getItem(FIRST_GAME_PICTURE_SHOWN_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markFirstGamePictureShown(storage: Pick<Storage, 'setItem'> | null): void {
+  memoryFirstGamePictureShown = true
+  if (!storage) return
+  try {
+    storage.setItem(FIRST_GAME_PICTURE_SHOWN_STORAGE_KEY, '1')
+  } catch {
+    // Keep memory fallback only when localStorage refuses writes
+  }
+}
+
 /** Test-only helper to clear the in-memory fallback alongside localStorage. */
 export function resetPictureRotationMemory(): void {
   memoryLastPictureKey = null
   memoryRecentPictureKeys = []
+  memoryFirstGamePictureShown = false
 }
 
 function clampUnitInterval(value: number): number {
@@ -150,10 +181,17 @@ export type PickPictureOptions = {
   storage?: StorageLike | null
   /** Override RNG (defaults to Math.random). */
   random?: () => number
+  /**
+   * Open a device's first game on FIRST_GAME_PICTURE_KEY (default true). Surfaces that
+   * are not a game, such as the home page hero, pass false so they do not use it up.
+   */
+  firstGamePicture?: boolean
 }
 
 /**
- * Pick a random picture from PUZZLE_LIBRARY at the start of a new game. It avoids
+ * Pick a picture from PUZZLE_LIBRARY at the start of a new game. A device's first game
+ * opens on FIRST_GAME_PICTURE_KEY (unless firstGamePicture is false); after that it picks
+ * at random. It avoids
  * the device's recent pictures (up to RECENT_PICTURE_MEMORY) and never repeats the
  * last picture played (as long as at least two eligible pictures exist). In a small
  * pool the oldest recent keys are allowed back first.
@@ -170,6 +208,16 @@ export function pickNextLibraryPicture(options: PickPictureOptions = {}): Puzzle
   const storage = options.storage === undefined ? defaultStorage() : options.storage
   const recent = readRecentPuzzlePictureKeys(storage)
   const forced = options.excludeKey ?? null
+
+  // First game on this device: open on Samuel's chosen picture, then rotate.
+  if (options.firstGamePicture !== false && !forced && !firstGamePictureShown(storage)) {
+    const first = eligible.find((picture) => picture.key === FIRST_GAME_PICTURE_KEY)
+    if (first && recent[0] !== first.key) {
+      markFirstGamePictureShown(storage)
+      recordPickedPicture(first.key, storage)
+      return first
+    }
+  }
 
   const without = (keys: readonly string[], extra: string | null) => {
     const excluded = new Set(keys)
