@@ -15,7 +15,12 @@ import { onPreviewMessage, sendPreview, type PreviewBoot } from './previewBridge
 import { cancelSlide, type SlideBoot } from './slideBridge'
 import { useSlideSession } from './useSlideSession'
 import { usePreviewAttemptSession } from './usePreviewAttemptSession'
+import { installUnityMusicGuard } from './muteBuiltInMusic'
 import styles from './UnityStage.module.css'
+
+// The Unity builds start their own looping song under the site playlist; cut it
+// before any Unity instance exists. Short sound effects still play.
+installUnityMusicGuard()
 
 /**
  * Turn a loader failure into something a student can act on.
