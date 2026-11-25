@@ -58,6 +58,11 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://sal0mander.com/studio</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://sal0mander.com/about/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

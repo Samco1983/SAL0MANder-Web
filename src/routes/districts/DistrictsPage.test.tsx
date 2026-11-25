@@ -28,6 +28,16 @@ describe('DistrictsPage', () => {
     expect(screen.getByText('sal0mander.theme')).toBeInTheDocument()
     expect(screen.getByText('sal0mander.companion.collapsed')).toBeInTheDocument()
     expect(screen.getByText('sal0mander.studio.drafts')).toBeInTheDocument()
+    expect(screen.getByText('sal0mander.lastPuzzlePictureKey.v1')).toBeInTheDocument()
+    expect(screen.getByText('sal0mander.recentPuzzlePictureKeys.v1')).toBeInTheDocument()
+    expect(screen.getByText('sal0mander.firstGamePictureShown.v1')).toBeInTheDocument()
+  })
+
+  it('names the companion lessons domain alongside the games domain', () => {
+    renderPage()
+    expect(screen.getByText('www.salomandermath.com')).toBeInTheDocument()
+    expect(screen.getAllByText('salomandermath.com').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('Last reviewed November 25, 2026')).toBeInTheDocument()
   })
 
   it('provides contact links for district IT staff', () => {
