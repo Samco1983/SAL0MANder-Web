@@ -17,6 +17,12 @@ import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 import { newId, ShareCodeSchema } from '@contracts/v1'
 import type { PuzzlePicture } from '@content/puzzleLibrary'
 import {
+  isGameEnabled,
+  resolveGameFirstPictureKey,
+  resolveGamePicturePool,
+  useSiteGameSettings,
+} from '@content/gameSettings'
+import {
   findLibraryPicture,
   pickPictureForGameLoad,
   rotatePictureForGameLoad,
@@ -112,6 +118,12 @@ export function GuestPlayPage() {
   const { activityId } = useParams<{ activityId: string }>()
   const [searchParams] = useSearchParams()
   const state = useGuestActivity(activityId)
+  const gameSettings = useSiteGameSettings()
+  const jigsawPool = useMemo(
+    () => resolveGamePicturePool(gameSettings, 'jigsaw'),
+    [gameSettings],
+  )
+  const jigsawFirstPictureKey = resolveGameFirstPictureKey(gameSettings, 'jigsaw')
   // Minted lazily on the device; not authentication, carries no PII.
   const identity = getGuestIdentity()
   // Stable for the lifetime of this mounted page load (survives StrictMode
@@ -158,9 +170,13 @@ export function GuestPlayPage() {
   useEffect(() => {
     if (!pictureLoadKey || explicitPicture) return
     setLatchedPicture(
-      pickPictureForGameLoad(pictureLoadKey, { preferredKey: rotatedBundleKey }),
+      pickPictureForGameLoad(pictureLoadKey, {
+        preferredKey: rotatedBundleKey,
+        pool: jigsawPool,
+        firstPictureKey: jigsawFirstPictureKey,
+      }),
     )
-  }, [pictureLoadKey, explicitPicture, rotatedBundleKey])
+  }, [pictureLoadKey, explicitPicture, rotatedBundleKey, jigsawPool, jigsawFirstPictureKey])
 
   const activePicture = explicitPicture ?? latchedPicture
   const hasExplicitPicture = Boolean(explicitPicture)
@@ -534,6 +550,8 @@ export function GuestPlayPage() {
                       setLatchedPicture(
                         rotatePictureForGameLoad(pictureLoadKey, {
                           excludeKey: activePicture?.key,
+                          pool: jigsawPool,
+                          firstPictureKey: jigsawFirstPictureKey,
                         }),
                       )
                     }
@@ -581,6 +599,7 @@ export function GuestPlayIndexPage() {
   // activity that may not exist — a worse dead end than the one being fixed,
   // because this one looks like it works.
   const canDemo = !env.api.isConfigured
+  const gameSettings = useSiteGameSettings()
   const [shareCode, setShareCode] = useState('')
   const navigate = useNavigate()
   const candidate = shareCode.trim()
@@ -607,82 +626,98 @@ export function GuestPlayIndexPage() {
         </p>
         {canDemo ? (
           <section className={styles.demoGrid} aria-label="Game demos">
-            <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Moon Gate: The Last Dumpling</h2>
-              <p className={styles.centeredBody}>The master chef made one giant dumpling. Win three rounds and it is yours. Solo or local versus, with touch controls on phones and tablets.</p>
-              <details className={styles.demoGuide}>
-                <summary>How to play Moon Gate</summary>
-                <ol>
-                  <li>Choose Solo, Local versus or Tournament, then a difficulty.</li>
-                  <li>Move with the arrow keys or the touch pad; punch, kick, grab and guard.</li>
-                  <li>Two points win a round. Win three rounds to take the dumpling.</li>
-                </ol>
-              </details>
-              <a className={styles.demoLink} href={`${readBasePath()}arcade/moon-gate/`}>Play Moon Gate</a>
-            </article>
-            <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Jigsaw — Learning Puzzle</h2>
-              <p className={styles.centeredBody}>Answer questions to unlock pieces, then build the picture.</p>
-              <p className={styles.chooserNote}>Opens the shared puzzle chooser. Choose <strong>Learning Puzzle</strong>.</p>
-              <details className={styles.demoGuide}>
-                <summary>How to play Jigsaw</summary>
-                <ol>
-                  <li>Choose Learning Puzzle on the next screen.</li>
-                  <li>Choose an answer and press Submit. Read the feedback; you can try again.</li>
-                  <li>Drag an unlocked piece from the tray onto the picture. Use Rotate 45° if the piece needs turning.</li>
-                  <li>Keep answering and placing pieces until the picture is complete.</li>
-                </ol>
-              </details>
-              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open chooser for Jigsaw</LinkButton>
-            </article>
-            <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Picture Reveal</h2>
-              <p className={styles.centeredBody}>Answer questions to uncover the picture. Pieces reveal automatically.</p>
-              <p className={styles.chooserNote}>Opens the same puzzle chooser. Choose <strong>Picture Reveal</strong>.</p>
-              <details className={styles.demoGuide}>
-                <summary>How to play Picture Reveal</summary>
-                <ol>
-                  <li>Choose Picture Reveal on the next screen.</li>
-                  <li>Choose an answer and press Submit. Read the feedback and try again when needed.</li>
-                  <li>Correct answers reveal the picture. There is no dragging in this mode.</li>
-                </ol>
-              </details>
-              <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open chooser for Picture Reveal</LinkButton>
-            </article>
-            <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Mystery Graph: X–Y Plane</h2>
-              <p className={styles.centeredBody}>Plot points to build a picture, then fly into a spaceship boss battle.</p>
-              <details className={styles.demoGuide}>
-                <summary>How to play Mystery Graph</summary>
-                <ol>
-                  <li>Move across for x, then up or down for y. Lock each requested point and follow the next line.</li>
-                  <li>Complete the graph, then choose a battle difficulty.</li>
-                  <li>Fly with the arrow keys, WASD or drag. Regular shots fire automatically; hold Z or Charge, then release for a charged shot.</li>
-                  <li>Break the boss shield and complete the coordinate strikes. The game page includes the full controls.</li>
-                </ol>
-              </details>
-              <a className={styles.demoLink} href={`${readBasePath()}demos/mystery-graph/`}>Open Mystery Graph</a>
-            </article>
-            <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Neon Dash</h2>
-              <p className={styles.centeredBody}>Tap to jump through Voltage Works. Grab prisms to charge your shield and dodge spikes and saws.</p>
-              <a className={styles.demoLink} href={`${readBasePath()}arcade/neon-dash/`}>Play Neon Dash</a>
-            </article>
-            <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Space Rescue</h2>
-              <p className={styles.centeredBody}>Your ship has lost power. Restore it, fly the rescue run, and bring everyone home. Opens on SAL0MANder Math.</p>
-              <a className={styles.demoLink} href="https://salomandermath.com/games/function-defenders/space/">Play Space Rescue</a>
-            </article>
-            <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Origin Defenders</h2>
-              <p className={styles.centeredBody}>Robots march on the origin. Build turrets, hold the line, and fire the laser when they swarm. Opens on SAL0MANder Math.</p>
-              <a className={styles.demoLink} href="https://salomandermath.com/games/function-defenders/defense/">Play Origin Defenders</a>
-            </article>
-            <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Bunker Strike</h2>
-              <p className={styles.centeredBody}>Draw the right line to shield bunkers and break enemy factories. Opens on SAL0MANder Math.</p>
-              <a className={styles.demoLink} href="https://salomandermath.com/games/function-defenders/bunker/">Play Bunker Strike</a>
-            </article>
+            {isGameEnabled(gameSettings, 'moon-gate') ? (
+              <article className={styles.demoCard}>
+                <h2 className={styles.demoTitle}>Moon Gate: The Last Dumpling</h2>
+                <p className={styles.centeredBody}>The master chef made one giant dumpling. Win three rounds and it is yours. Solo or local versus, with touch controls on phones and tablets.</p>
+                <details className={styles.demoGuide}>
+                  <summary>How to play Moon Gate</summary>
+                  <ol>
+                    <li>Choose Solo, Local versus or Tournament, then a difficulty.</li>
+                    <li>Move with the arrow keys or the touch pad; punch, kick, grab and guard.</li>
+                    <li>Two points win a round. Win three rounds to take the dumpling.</li>
+                  </ol>
+                </details>
+                <a className={styles.demoLink} href={`${readBasePath()}arcade/moon-gate/`}>Play Moon Gate</a>
+              </article>
+            ) : null}
+            {isGameEnabled(gameSettings, 'jigsaw') ? (
+              <>
+                <article className={styles.demoCard}>
+                  <h2 className={styles.demoTitle}>Jigsaw — Learning Puzzle</h2>
+                  <p className={styles.centeredBody}>Answer questions to unlock pieces, then build the picture.</p>
+                  <p className={styles.chooserNote}>Opens the shared puzzle chooser. Choose <strong>Learning Puzzle</strong>.</p>
+                  <details className={styles.demoGuide}>
+                    <summary>How to play Jigsaw</summary>
+                    <ol>
+                      <li>Choose Learning Puzzle on the next screen.</li>
+                      <li>Choose an answer and press Submit. Read the feedback; you can try again.</li>
+                      <li>Drag an unlocked piece from the tray onto the picture. Use Rotate 45° if the piece needs turning.</li>
+                      <li>Keep answering and placing pieces until the picture is complete.</li>
+                    </ol>
+                  </details>
+                  <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open chooser for Jigsaw</LinkButton>
+                </article>
+                <article className={styles.demoCard}>
+                  <h2 className={styles.demoTitle}>Picture Reveal</h2>
+                  <p className={styles.centeredBody}>Answer questions to uncover the picture. Pieces reveal automatically.</p>
+                  <p className={styles.chooserNote}>Opens the same puzzle chooser. Choose <strong>Picture Reveal</strong>.</p>
+                  <details className={styles.demoGuide}>
+                    <summary>How to play Picture Reveal</summary>
+                    <ol>
+                      <li>Choose Picture Reveal on the next screen.</li>
+                      <li>Choose an answer and press Submit. Read the feedback and try again when needed.</li>
+                      <li>Correct answers reveal the picture. There is no dragging in this mode.</li>
+                    </ol>
+                  </details>
+                  <LinkButton to={buildPath.guestPlay(MOCK_DEMO_ACTIVITIES[0].id)}>Open chooser for Picture Reveal</LinkButton>
+                </article>
+              </>
+            ) : null}
+            {isGameEnabled(gameSettings, 'mystery-graph') ? (
+              <article className={styles.demoCard}>
+                <h2 className={styles.demoTitle}>Mystery Graph: X–Y Plane</h2>
+                <p className={styles.centeredBody}>Plot points to build a picture, then fly into a spaceship boss battle.</p>
+                <details className={styles.demoGuide}>
+                  <summary>How to play Mystery Graph</summary>
+                  <ol>
+                    <li>Move across for x, then up or down for y. Lock each requested point and follow the next line.</li>
+                    <li>Complete the graph, then choose a battle difficulty.</li>
+                    <li>Fly with the arrow keys, WASD or drag. Regular shots fire automatically; hold Z or Charge, then release for a charged shot.</li>
+                    <li>Break the boss shield and complete the coordinate strikes. The game page includes the full controls.</li>
+                  </ol>
+                </details>
+                <a className={styles.demoLink} href={`${readBasePath()}demos/mystery-graph/`}>Open Mystery Graph</a>
+              </article>
+            ) : null}
+            {isGameEnabled(gameSettings, 'neon-dash') ? (
+              <article className={styles.demoCard}>
+                <h2 className={styles.demoTitle}>Neon Dash</h2>
+                <p className={styles.centeredBody}>Tap to jump through Voltage Works. Grab prisms to charge your shield and dodge spikes and saws.</p>
+                <a className={styles.demoLink} href={`${readBasePath()}arcade/neon-dash/`}>Play Neon Dash</a>
+              </article>
+            ) : null}
+            {isGameEnabled(gameSettings, 'space-rescue') ? (
+              <article className={styles.demoCard}>
+                <h2 className={styles.demoTitle}>Space Rescue</h2>
+                <p className={styles.centeredBody}>Your ship has lost power. Restore it, fly the rescue run, and bring everyone home. Opens on SAL0MANder Math.</p>
+                <a className={styles.demoLink} href="https://salomandermath.com/games/function-defenders/space/">Play Space Rescue</a>
+              </article>
+            ) : null}
+            {isGameEnabled(gameSettings, 'origin-defenders') ? (
+              <article className={styles.demoCard}>
+                <h2 className={styles.demoTitle}>Origin Defenders</h2>
+                <p className={styles.centeredBody}>Robots march on the origin. Build turrets, hold the line, and fire the laser when they swarm. Opens on SAL0MANder Math.</p>
+                <a className={styles.demoLink} href="https://salomandermath.com/games/function-defenders/defense/">Play Origin Defenders</a>
+              </article>
+            ) : null}
+            {isGameEnabled(gameSettings, 'bunker-strike') ? (
+              <article className={styles.demoCard}>
+                <h2 className={styles.demoTitle}>Bunker Strike</h2>
+                <p className={styles.centeredBody}>Draw the right line to shield bunkers and break enemy factories. Opens on SAL0MANder Math.</p>
+                <a className={styles.demoLink} href="https://salomandermath.com/games/function-defenders/bunker/">Play Bunker Strike</a>
+              </article>
+            ) : null}
             <p className={styles.demoNote}>No account is needed. The Jigsaw and Picture Reveal sample uses integer-operation questions and has no cloud saves. Mystery Graph keeps graph progress in this browser; an unfinished battle restarts. The whole collection is on the <a href={`${readBasePath()}arcade/`}>Arcade page</a>.</p>
           </section>
         ) : null}

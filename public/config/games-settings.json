@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-25",
+  "site": "sal0mander.com",
+  "musicPlaylistPath": "audio/music-playlist.json",
+  "_howToEdit": [
+    "Edit this single file to control games on sal0mander.com without changing code.",
+    "Set \"enabled\": false on any game to hide it from the Arcade page and game chooser.",
+    "Set \"picturePool\" to \"all\" for every library picture, or list specific keys (for example [\"sal0mander-rover-expedition\", \"sleeping-puppies\"]) to limit a puzzle game's pictures.",
+    "Set \"firstPicture\" to a library picture key (such as \"sal0mander-rover-expedition\") to choose the first picture a new device sees, or set it to null to rotate immediately.",
+    "Edit \"musicSongs\" with track IDs from public/audio/music-playlist.json (or objects like { \"id\": \"custom\", \"title\": \"My Song\", \"src\": \"audio/tracks/my-song.mp3\" })."
+  ],
+  "games": {
+    "jigsaw": {
+      "name": "Jigsaw & Picture Reveal",
+      "enabled": true,
+      "picturePool": "all",
+      "firstPicture": "sal0mander-rover-expedition",
+      "musicDefaultEnabled": true,
+      "musicVolume": 0.28,
+      "musicSongs": [
+        "window-seat-logic",
+        "button-trail",
+        "woven-light",
+        "letters-in-the-rain",
+        "ocean-breeze-village"
+      ]
+    },
+    "puzzle-gifts": {
+      "name": "Puzzle Gifts",
+      "enabled": true,
+      "picturePool": "all",
+      "firstPicture": null,
+      "musicDefaultEnabled": true,
+      "musicVolume": 0.28,
+      "musicSongs": [
+        "woven-light",
+        "ocean-breeze-village",
+        "harbor-of-memories",
+        "whispering-breeze-village",
+        "window-seat-logic"
+      ]
+    },
+    "moon-gate": {
+      "name": "Moon Gate: The Last Dumpling",
+      "enabled": true,
+      "picturePool": null,
+      "firstPicture": null,
+      "musicDefaultEnabled": true,
+      "musicVolume": 0.37,
+      "musicSongs": [
+        "iron-lantern",
+        "clash-of-fate",
+        "final-gambit",
+        "tactical-encounter",
+        "foundry-flank"
+      ]
+    },
+    "neon-dash": {
+      "name": "Neon Dash",
+      "enabled": true,
+      "picturePool": null,
+      "firstPicture": null,
+      "musicDefaultEnabled": true,
+      "musicVolume": 0.55,
+      "musicSongs": [
+        "midnight-rider-groove",
+        "midnight-rider-variant",
+        "tactical-strike",
+        "frontline-deployment",
+        "quiet-acceleration"
+      ]
+    },
+    "mystery-graph": {
+      "name": "Mystery Graph: X–Y Plane",
+      "enabled": true,
+      "picturePool": null,
+      "firstPicture": null,
+      "musicDefaultEnabled": false,
+      "musicVolume": 0.32,
+      "musicSongs": [
+        "constellation-orchard",
+        "boundless-realm",
+        "boundless-horizon",
+        "octopus-at-the-observatory",
+        "shadow-phase"
+      ]
+    },
+    "laser-lab": {
+      "name": "Laser Lab: Graphing Equations",
+      "enabled": true,
+      "picturePool": null,
+      "firstPicture": null,
+      "musicDefaultEnabled": true,
+      "musicVolume": 0.28,
+      "musicSongs": [
+        "invisible-conveyor",
+        "quiet-acceleration",
+        "clockwork-trench",
+        "shadows-and-gears"
+      ]
+    },
+    "space-rescue": {
+      "name": "Space Rescue",
+      "enabled": true,
+      "picturePool": null,
+      "firstPicture": null,
+      "musicDefaultEnabled": true,
+      "musicVolume": 0.32,
+      "musicSongs": []
+    },
+    "origin-defenders": {
+      "name": "Origin Defenders",
+      "enabled": true,
+      "picturePool": null,
+      "firstPicture": null,
+      "musicDefaultEnabled": true,
+      "musicVolume": 0.34,
+      "musicSongs": [
+        "green-zone-council",
+        "foundry-flank",
+        "tactical-breach",
+        "tactical-strike"
+      ]
+    },
+    "bunker-strike": {
+      "name": "Bunker Strike",
+      "enabled": true,
+      "picturePool": null,
+      "firstPicture": null,
+      "musicDefaultEnabled": true,
+      "musicVolume": 0.34,
+      "musicSongs": []
+    }
+  }
+}
