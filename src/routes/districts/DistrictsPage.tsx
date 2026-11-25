@@ -17,7 +17,7 @@ export function DistrictsPage() {
             below describes what the software does today. If you need something this page does not
             answer, the contact address at the bottom reaches a person.
           </p>
-          <p className={styles.updated}>Last reviewed September 8, 2026</p>
+          <p className={styles.updated}>Last reviewed November 25, 2026</p>
         </header>
 
         <section className={styles.section} aria-labelledby="classification">
@@ -32,6 +32,11 @@ export function DistrictsPage() {
             Current demonstrations cover integer operations, one-step inequalities, and linear
             equations.
           </p>
+          <p>
+            The SAL0MANder Arcade adds short math-practice games (for example Moon Gate, Neon Dash
+            and Mystery Graph). Its lesson games, such as Laser Lab, open on the companion lessons
+            site, salomandermath.com.
+          </p>
         </section>
 
         <section className={styles.section} aria-labelledby="allowlist">
@@ -41,6 +46,13 @@ export function DistrictsPage() {
           <p className={styles.callout}>
             <code className={styles.code}>sal0mander.com</code>
             <code className={styles.code}>www.sal0mander.com</code>
+            <code className={styles.code}>salomandermath.com</code>
+            <code className={styles.code}>www.salomandermath.com</code>
+          </p>
+          <p>
+            <code className={styles.code}>salomandermath.com</code> is the companion lessons and
+            tutoring site. Allow it too if students should open the lesson games linked from the
+            Arcade.
           </p>
           {/*
             Both hosts, deliberately. A filter matches on hostname, so allowing
@@ -125,6 +137,27 @@ export function DistrictsPage() {
                 </tr>
                 <tr>
                   <td>
+                    <code className={styles.code}>sal0mander.lastPuzzlePictureKey.v1</code>
+                  </td>
+                  <td>
+                    The name of the last library picture shown, so the next game opens on a
+                    different one. Contains no personal information.
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <code className={styles.code}>sal0mander.recentPuzzlePictureKeys.v1</code>
+                  </td>
+                  <td>The names of the last few library pictures shown, to avoid repeats.</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code className={styles.code}>sal0mander.firstGamePictureShown.v1</code>
+                  </td>
+                  <td>Whether this device has already seen the first-game picture.</td>
+                </tr>
+                <tr>
+                  <td>
                     <code className={styles.code}>sal0mander.studio.drafts</code>
                   </td>
                   <td>
@@ -173,7 +206,8 @@ export function DistrictsPage() {
               needs hardware-accelerated graphics.
             </li>
             <li>
-              HTTPS access to <code className={styles.code}>sal0mander.com</code>.
+              HTTPS access to <code className={styles.code}>sal0mander.com</code> (and{' '}
+              <code className={styles.code}>salomandermath.com</code> for the lesson games).
             </li>
             <li>
               Local storage permitted. If it is blocked, activities still run; the student simply
