@@ -7,6 +7,17 @@ import { PUZZLE_LIBRARY, type PuzzlePicture } from './puzzleLibrary'
 export const LAST_PUZZLE_PICTURE_STORAGE_KEY = 'sal0mander.lastPuzzlePictureKey.v1'
 
 /**
+ * Device-local memory of the most recent rotated pictures (newest first).
+ * A page load can pick more than once (a bundle refetch, React StrictMode in dev),
+ * so remembering only the last key let the picture actually on screen come back
+ * the very next game. Remembering several keys closes that gap.
+ */
+export const RECENT_PUZZLE_PICTURES_STORAGE_KEY = 'sal0mander.recentPuzzlePictureKeys.v1'
+
+/** How many recent picks to avoid when the pool is large enough. */
+export const RECENT_PICTURE_MEMORY = 10
+
+/**
  * Old hard-coded default pictures retired from default/fallback use in PJ-B.
  * Their image files remain untouched on disk so existing Gift links stay valid.
  */
@@ -19,6 +30,7 @@ export const RETIRED_DEFAULT_PICTURES = [
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 
 let memoryLastPictureKey: string | null = null
+let memoryRecentPictureKeys: string[] = []
 
 function defaultStorage(): StorageLike | null {
   try {
@@ -75,9 +87,50 @@ export function writeLastPuzzlePictureKey(
   }
 }
 
+/**
+ * Recent rotated picture keys on this device, newest first. The last-played key
+ * (which explicit writes may set on its own) is always first.
+ */
+export function readRecentPuzzlePictureKeys(
+  storage: Pick<Storage, 'getItem'> | null = defaultStorage(),
+): string[] {
+  let keys: string[] | null = null
+  if (storage) {
+    try {
+      const raw = storage.getItem(RECENT_PUZZLE_PICTURES_STORAGE_KEY)
+      if (raw) {
+        const parsed: unknown = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          keys = parsed.filter((k): k is string => typeof k === 'string' && k.length > 0)
+        }
+      }
+    } catch {
+      // Unreadable or corrupt history: fall back to memory
+    }
+  }
+  if (!keys) keys = [...memoryRecentPictureKeys]
+  const last = readLastPuzzlePictureKey(storage)
+  if (last) keys = [last, ...keys.filter((k) => k !== last)]
+  return keys.slice(0, RECENT_PICTURE_MEMORY)
+}
+
+function recordPickedPicture(key: string, storage: StorageLike | null): void {
+  const previous = readRecentPuzzlePictureKeys(storage)
+  const next = [key, ...previous.filter((k) => k !== key)].slice(0, RECENT_PICTURE_MEMORY)
+  memoryRecentPictureKeys = next
+  writeLastPuzzlePictureKey(key, storage)
+  if (!storage) return
+  try {
+    storage.setItem(RECENT_PUZZLE_PICTURES_STORAGE_KEY, JSON.stringify(next))
+  } catch {
+    // Keep memory fallback only when localStorage refuses writes
+  }
+}
+
 /** Test-only helper to clear the in-memory fallback alongside localStorage. */
 export function resetPictureRotationMemory(): void {
   memoryLastPictureKey = null
+  memoryRecentPictureKeys = []
 }
 
 function clampUnitInterval(value: number): number {
@@ -89,7 +142,7 @@ function clampUnitInterval(value: number): number {
 export type PickPictureOptions = {
   /** Restrict candidates to a board shape when a surface has a fixed frame. */
   shape?: PuzzlePicture['shape']
-  /** Extra key to exclude in addition to the device's last-played key. */
+  /** Extra key to exclude in addition to the device's recent keys. */
   excludeKey?: string | null
   /** Override pool (defaults to PUZZLE_LIBRARY). */
   pool?: readonly PuzzlePicture[]
@@ -100,9 +153,10 @@ export type PickPictureOptions = {
 }
 
 /**
- * Pick a random picture from PUZZLE_LIBRARY at the start of a new game,
- * guaranteed never to repeat the last picture played on this device (as long as
- * at least two eligible pictures exist).
+ * Pick a random picture from PUZZLE_LIBRARY at the start of a new game. It avoids
+ * the device's recent pictures (up to RECENT_PICTURE_MEMORY) and never repeats the
+ * last picture played (as long as at least two eligible pictures exist). In a small
+ * pool the oldest recent keys are allowed back first.
  */
 export function pickNextLibraryPicture(options: PickPictureOptions = {}): PuzzlePicture {
   const pool = options.pool ?? PUZZLE_LIBRARY
@@ -114,24 +168,29 @@ export function pickNextLibraryPicture(options: PickPictureOptions = {}): Puzzle
   const eligible = shaped.length > 0 ? shaped : pool
 
   const storage = options.storage === undefined ? defaultStorage() : options.storage
-  const lastKey = readLastPuzzlePictureKey(storage)
-  const excluded = new Set<string>()
-  if (lastKey) excluded.add(lastKey)
-  if (options.excludeKey) excluded.add(options.excludeKey)
+  const recent = readRecentPuzzlePictureKeys(storage)
+  const forced = options.excludeKey ?? null
 
-  let candidates = eligible.filter((picture) => !excluded.has(picture.key))
-  if (candidates.length === 0 && lastKey) {
-    // If excludeKey + lastKey exhausted a tiny pool, still avoid repeating lastKey first.
-    candidates = eligible.filter((picture) => picture.key !== lastKey)
+  const without = (keys: readonly string[], extra: string | null) => {
+    const excluded = new Set(keys)
+    if (extra) excluded.add(extra)
+    return eligible.filter((picture) => !excluded.has(picture.key))
   }
-  if (candidates.length === 0) {
-    candidates = [...eligible]
+
+  let candidates: PuzzlePicture[] = []
+  // Widest exclusion first, then let the oldest recent keys back in.
+  for (let size = recent.length; size >= 1 && candidates.length === 0; size -= 1) {
+    candidates = without(recent.slice(0, size), forced)
   }
+  // Tiny pool: avoiding the last-played key matters more than excludeKey.
+  if (candidates.length === 0 && recent.length > 0) candidates = without(recent.slice(0, 1), null)
+  if (candidates.length === 0) candidates = without([], forced)
+  if (candidates.length === 0) candidates = [...eligible]
 
   const rng = options.random ?? Math.random
   const index = Math.floor(clampUnitInterval(rng()) * candidates.length)
   const chosen = candidates[index]!
-  writeLastPuzzlePictureKey(chosen.key, storage)
+  recordPickedPicture(chosen.key, storage)
   return chosen
 }
 
@@ -143,8 +202,8 @@ export type ResolveActivityPictureOptions = PickPictureOptions & {
 /**
  * Resolve the picture for a jigsaw activity:
  * - If a teacher or parent explicitly chose a valid library picture, honor it.
- * - Otherwise rotate randomly across PUZZLE_LIBRARY without repeating the last
- *   picture on this device (never falling back to the old salamander default).
+ * - Otherwise rotate randomly across PUZZLE_LIBRARY, avoiding this device's recent
+ *   pictures (never falling back to the old salamander default).
  */
 export function resolveActivityPicture(options: ResolveActivityPictureOptions = {}): {
   picture: PuzzlePicture
