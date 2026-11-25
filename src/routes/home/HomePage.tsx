@@ -231,6 +231,7 @@ export function HomePage() {
                 alt={`A ${heroPicture.name.toLowerCase()} puzzle part-way through: five of its nine pieces uncovered, four still hidden.`}
                 width={heroPicture.width}
                 height={heroPicture.height}
+                fetchPriority="high"
                 decoding="async"
               />
               {/*

@@ -1,6 +1,6 @@
 "use strict";
 const $=id=>document.getElementById(id), {Match,idleInput,clamp}=MoonCombat;
-const canvas=$('arena'), ctx=canvas.getContext('2d'), bg=new Image();bg.src='assets/stage.png';
+const canvas=$('arena'), ctx=canvas.getContext('2d'), bg=new Image();bg.src='assets/stage.webp';
 const names=['Black','Red'], intro=$('call'), panel=$('panel');
 const controls = [
  ['left','Move left'],['right','Move right'],['jump','Jump'],['low','Crouch'],
