@@ -244,3 +244,10 @@
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
+
+/* Active game pages replace the site navigation header with one slim game bar
+   inside the stage layout, so drop the reserved header track cleanly. */
+.shell[data-hide-header='true'] {
+  grid-template-areas: 'banner' 'main' 'footer';
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}

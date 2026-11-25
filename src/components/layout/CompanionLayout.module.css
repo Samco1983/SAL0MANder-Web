@@ -61,8 +61,15 @@
   overscroll-behavior: none;
 }
 
+.layout[data-fullscreen-self='true'] {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--color-stage);
+}
+
 .toggle {
-  /* Reserve a compact row before Unity instead of covering its title or controls. */
+  /* Single slim bar at the top of the game stage instead of stacked header + toolbars. */
   display: flex;
   flex: 0 0 auto;
   flex-wrap: wrap;
@@ -72,7 +79,17 @@
   max-width: 100%;
   padding: var(--space-1) max(var(--space-3), env(safe-area-inset-right, 0px))
     var(--space-1) max(var(--space-3), env(safe-area-inset-left, 0px));
-  background: var(--color-surface-sunken);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.barLeadGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .stageActions {
@@ -83,9 +100,56 @@
   margin-left: auto;
 }
 
+.fullscreenGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fullscreenFailed {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+  max-width: 24ch;
+}
+
 .toggle button {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 36px;
+  min-height: 36px;
+  padding-inline: var(--space-3);
+  font-size: var(--text-xs);
+}
+
+@media (pointer: coarse) {
+  .toggle button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 40rem) {
+  .toggle {
+    gap: var(--space-1);
+    padding: var(--space-1) max(var(--space-2), env(safe-area-inset-right, 0px))
+      var(--space-1) max(var(--space-2), env(safe-area-inset-left, 0px));
+  }
+
+  .barLeadGroup {
+    width: 100%;
+    justify-content: space-between;
+    gap: var(--space-1);
+  }
+
+  .stageActions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+    gap: var(--space-1);
+  }
+
+  .toggle button {
+    padding-inline: var(--space-2);
+  }
 }
 
 /* --- Narrow viewports ------------------------------------------------------
