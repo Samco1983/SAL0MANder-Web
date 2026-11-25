@@ -1,4 +1,4 @@
-import { can, type PortalActor } from './access'
+import { can, resolveLiveActor, type PortalActor } from './access'
 import { enqueueAskQuestionInState } from './askActions'
 import { STARTER_BADGE_LABELS, grantBadgeInState } from './belts'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
@@ -37,8 +37,9 @@ export function openOrCreateWorkRecord(
   nowIso = new Date().toISOString(),
 ): { state: PortalState; record: WorkRecord } {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const child = state.children.find((c) => c.id === childId)
-  if (!child || !can(actor, 'view', { type: 'child', record: child })) {
+  if (!child || !can(liveActor, 'view', { type: 'child', record: child })) {
     throw new PortalAccessError('Child profile is not accessible to this actor')
   }
   if (child.consentStatus !== 'verified') {
@@ -53,7 +54,7 @@ export function openOrCreateWorkRecord(
     mutated = true
   }
   const existing = state.workRecords.find(
-    (w) => w.childId === childId && w.activityId === set.activityId && can(actor, 'view', { type: 'work', record: w }),
+    (w) => w.childId === childId && w.activityId === set.activityId && can(liveActor, 'view', { type: 'work', record: w }),
   )
   if (existing) {
     const out = mutated ? adapter.save(state) : state

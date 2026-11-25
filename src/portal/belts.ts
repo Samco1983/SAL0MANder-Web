@@ -1,4 +1,4 @@
-import { can, type PortalActor } from './access'
+import { can, resolveLiveActor, type PortalActor } from './access'
 import { GRADE7_CURRICULUM } from './curriculum'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import type { Badge, BeltColor, ChildProfile, PortalState } from './types'
@@ -209,8 +209,9 @@ export function awardCosmeticPoints(
   nowIso = new Date().toISOString(),
 ): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const child = state.children.find((c) => c.id === childId)
-  if (!child || !can(actor, 'view', { type: 'child', record: child }) || child.consentStatus !== 'verified') {
+  if (!child || !can(liveActor, 'view', { type: 'child', record: child }) || child.consentStatus !== 'verified') {
     throw new PortalAccessError('Cosmetic points require verified consent and access to this child profile')
   }
   const safeAmount = Math.max(1, Math.min(100, Math.round(amount)))

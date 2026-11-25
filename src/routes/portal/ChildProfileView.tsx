@@ -21,6 +21,7 @@ import {
   type LoadedPracticeSet,
 } from '@/portal/curriculum'
 import { FUN_GAMES, LESSON_GAMES } from '@/portal/parentActions'
+import { canChildAccessRoom } from '@/portal/roomActions'
 import { portalStorage } from '@/portal/storage'
 import type { ChildProfile, PortalState, WorkAttempt, WorkRecord } from '@/portal/types'
 import {
@@ -83,7 +84,9 @@ export function ChildProfileView({
   const visibleWork = state.workRecords.filter((record) => can(childActor, 'view', { type: 'work', record }))
   const visibleFeedback = state.feedback.filter((record) => can(childActor, 'view', { type: 'feedback', record }))
   const waitingReply = state.feedback.find((f) => f.childId === child.id && f.status === 'sent_to_parent')
-  const visibleRooms = state.roomInvites.filter((record) => can(childActor, 'view', { type: 'room_invite', record }))
+  const visibleRooms = state.roomInvites.filter(
+    (record) => can(childActor, 'view', { type: 'room_invite', record }) && canChildAccessRoom(state, child.id, record),
+  )
   const visibleBadges = state.badges.filter((record) => can(childActor, 'view', { type: 'badge', record }))
   const pointsRec = state.points.find((record) => can(childActor, 'view', { type: 'points', record }))
   const activeWork = openWorkId ? visibleWork.find((w) => w.id === openWorkId) : undefined

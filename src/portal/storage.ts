@@ -1,4 +1,4 @@
-import { can, type PortalActor } from './access'
+import { can, resolveLiveActor, type PortalActor } from './access'
 import { createSeedState } from './seed'
 import { PortalStateSchema, type Household, type PortalState } from './types'
 
@@ -57,16 +57,19 @@ export class LocalPortalStorageAdapter implements PortalStorageAdapter {
   }
 
   listVisibleHouseholds(actor: PortalActor): Household[] {
-    return this.load().households.filter((record) => can(actor, 'view', { type: 'household', record }))
+    const state = this.load()
+    const liveActor = resolveLiveActor(state, actor)
+    return state.households.filter((record) => can(liveActor, 'view', { type: 'household', record }))
   }
 
   revokeAssignment(actor: PortalActor, assignmentId: string, nowIso = new Date().toISOString()): PortalState {
     const state = this.load()
+    const liveActor = resolveLiveActor(state, actor)
     const assignment = state.assignments.find((a) => a.id === assignmentId)
-    if (!assignment || !can(actor, 'revoke_mentor', { type: 'assignment', record: assignment })) {
+    if (!assignment || !can(liveActor, 'revoke_mentor', { type: 'assignment', record: assignment })) {
       throw new PortalAccessError('Only an admin may revoke a mentor assignment')
     }
-    const actorId = actor.kind === 'mentor' ? actor.mentorId : 'unknown'
+    const actorId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'unknown'
     assignment.revokedAt = nowIso
     assignment.revokedByMentorId = actorId
     state.auditLogs.push({
@@ -79,8 +82,9 @@ export class LocalPortalStorageAdapter implements PortalStorageAdapter {
 
   exportHousehold(actor: PortalActor, householdId: string): Record<string, unknown> {
     const state = this.load()
+    const liveActor = resolveLiveActor(state, actor)
     const hh = state.households.find((h) => h.id === householdId)
-    if (!hh || !can(actor, 'export_household', { type: 'household', record: hh })) {
+    if (!hh || !can(liveActor, 'export_household', { type: 'household', record: hh })) {
       throw new PortalAccessError('Export is allowed only for the household parent or an admin')
     }
     return {
@@ -97,12 +101,13 @@ export class LocalPortalStorageAdapter implements PortalStorageAdapter {
 
   deleteHousehold(actor: PortalActor, householdId: string, nowIso = new Date().toISOString()): PortalState {
     const state = this.load()
+    const liveActor = resolveLiveActor(state, actor)
     const hh = state.households.find((h) => h.id === householdId)
-    if (!hh || !can(actor, 'delete_household', { type: 'household', record: hh })) {
+    if (!hh || !can(liveActor, 'delete_household', { type: 'household', record: hh })) {
       throw new PortalAccessError('Deletion is allowed only for the household parent or an admin')
     }
-    const actorKind = actor.kind === 'parent' ? 'parent' : 'admin'
-    const actorId = actor.kind === 'parent' ? actor.householdId : actor.kind === 'mentor' ? actor.mentorId : 'unknown'
+    const actorKind = liveActor.kind === 'parent' ? 'parent' : 'admin'
+    const actorId = liveActor.kind === 'parent' ? liveActor.householdId : liveActor.kind === 'mentor' ? liveActor.mentorId : 'unknown'
     const keep = <T extends { householdId: string | null }>(xs: T[]) => xs.filter((x) => x.householdId !== householdId)
     return this.save({
       ...state,

@@ -137,3 +137,14 @@ export function buildMentorActor(state: PortalState, mentorId: string): PortalAc
   const m = state.mentors.find((x) => x.id === mentorId)
   return m ? { kind: 'mentor', mentorId: m.id, roles: m.roles, active: m.active, assignments: state.assignments } : { kind: 'anonymous' }
 }
+
+/**
+ * Re-hydrates a mentor actor from live `state` so revoking or removing a mentor strips
+ * access from their existing session immediately on every read and write.
+ */
+export function resolveLiveActor(state: PortalState, actor: PortalActor): PortalActor {
+  if (actor.kind === 'mentor') {
+    return buildMentorActor(state, actor.mentorId)
+  }
+  return actor
+}

@@ -1,4 +1,4 @@
-import { can, type PortalActor } from './access'
+import { can, resolveLiveActor, type PortalActor } from './access'
 import { STARTER_BADGE_LABELS, grantBadgeInState } from './belts'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import type { AskQuestion, ChildProfile, Household, PortalState } from './types'
@@ -190,13 +190,17 @@ export function sendMentorReplyDemo(
   if (!trimmed) throw new PortalAccessError('Reply text is required')
 
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const q = state.askQuestions.find((x) => x.id === questionId)
-  if (!q || !can(actor, 'view', { type: 'ask_question', record: q }) || q.status === 'parent_bounced') {
+  if (!q || !can(liveActor, 'view', { type: 'ask_question', record: q }) || q.status === 'parent_bounced') {
     throw new PortalAccessError('Mentor may reply only to an assigned, provider-accepted question')
   }
   const hh = state.households.find((h) => h.id === q.householdId)!
   const child = state.children.find((c) => c.id === q.childId)!
-  const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  if (child.consentStatus !== 'verified' || hh.consentRecord.status !== 'verified' || child.askMode === 'off') {
+    throw new PortalAccessError('Mentor may not reply when consent is unverified or Questions are off')
+  }
+  const mentorId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'mentor_samuel'
   const fbId = `fb_rep_${state.feedback.length + 1}`
   const candidateFb = {
     id: fbId, householdId: hh.id, childId: child.id, workRecordId: q.workRecordId,
@@ -204,7 +208,7 @@ export function sendMentorReplyDemo(
     draftText: '[Placeholder draft] Human reply', sentText: null,
     parentNotifiedAt: null, shownToChildAt: null, shownBy: null,
   }
-  if (!can(actor, 'author_feedback', { type: 'feedback', record: candidateFb })) {
+  if (!can(liveActor, 'author_feedback', { type: 'feedback', record: candidateFb })) {
     throw new PortalAccessError('Only an assigned mentor may send feedback')
   }
 

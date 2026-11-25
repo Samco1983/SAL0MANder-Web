@@ -210,8 +210,15 @@ export function ParentAccountView({
                               </Button>
                             </>
                           ) : null}
-                          {approved && onOpenRoom ? (
-                            <Button size="sm" variant="secondary" onClick={() => onOpenRoom(inv.id, inv.childId)}>Open room link</Button>
+                          {approved && !inv.closedAt ? (
+                            <>
+                              {onOpenRoom ? (
+                                <Button size="sm" variant="secondary" onClick={() => onOpenRoom(inv.id, inv.childId)}>Open room link</Button>
+                              ) : null}
+                              <Button size="sm" variant="ghost" onClick={() => { onStateChange(respondToRoomInvite(portalStorage, parentActor, inv.id, 'declined')); setNotice(`Revoked ${inv.gameId} room for ${kidName} (removed from room).`) }}>
+                                Revoke (No)
+                              </Button>
+                            </>
                           ) : null}
                         </div>
                       </li>

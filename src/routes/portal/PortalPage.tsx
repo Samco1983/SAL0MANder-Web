@@ -157,10 +157,22 @@ export function PortalPage() {
                                 Approve room (Yes)
                               </Button>
                             ) : null}
-                            {linkedRoom.parentApproval === 'approved' || linkedRoom.parentApproval === 'standing_yes' ? (
-                              <Button size="sm" variant="secondary" onClick={() => setActiveRoom({ inviteId: linkedRoom.id, childId: linkedRoom.childId })}>
-                                Open room link
-                              </Button>
+                            {(linkedRoom.parentApproval === 'approved' || linkedRoom.parentApproval === 'standing_yes') && !linkedRoom.closedAt ? (
+                              <>
+                                <Button size="sm" variant="secondary" onClick={() => setActiveRoom({ inviteId: linkedRoom.id, childId: linkedRoom.childId })}>
+                                  Open room link
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setState(respondToRoomInvite(portalStorage, buildParentActor(state, email.householdId!), linkedRoom.id, 'declined'))
+                                    setInboxNotice(`Revoked ${linkedRoom.gameId} room (${linkedRoom.roomCode}).`)
+                                  }}
+                                >
+                                  Revoke (No)
+                                </Button>
+                              </>
                             ) : null}
                           </div>
                         ) : null}

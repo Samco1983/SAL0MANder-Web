@@ -1,4 +1,4 @@
-import { can, type PortalActor } from './access'
+import { can, resolveLiveActor, type PortalActor } from './access'
 import { FUN_GAMES } from './parentActions'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import type { PortalState, RoomInvite } from './types'
@@ -42,6 +42,36 @@ export function formatCountdown(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
+/**
+ * Single room-access predicate enforced on join and UI stage (FIX 1 / G-07):
+ * checks verified household + child consent, invite ownership, explicit parent Yes or active standing-yes switch.
+ */
+export function canChildAccessRoom(state: PortalState, childId: string, invite: RoomInvite): boolean {
+  const child = state.children.find((c) => c.id === childId)
+  const hh = child ? state.households.find((h) => h.id === child.householdId) : undefined
+  if (!child || !hh) return false
+  if (child.consentStatus !== 'verified' || hh.consentRecord.status !== 'verified') return false
+  if (invite.childId !== child.id || invite.householdId !== child.householdId) return false
+  if (invite.parentApproval === 'approved') return true
+  if (invite.parentApproval === 'standing_yes') {
+    return child.joinRooms && child.approvedGames.includes(invite.gameId)
+  }
+  return false
+}
+
+/** Immediately removes a child from active rooms and declines non-closed invites (FIX 1 / G-07). */
+export function revokeChildRoomAccessInState(state: PortalState, childId: string, onlyGameId?: string): void {
+  for (const inv of state.roomInvites) {
+    if (inv.childId !== childId) continue
+    if (onlyGameId && inv.gameId !== onlyGameId) continue
+    inv.activeChildIds = inv.activeChildIds.filter((id) => id !== childId)
+    if (inv.closedAt === null && (inv.parentApproval === 'approved' || inv.parentApproval === 'standing_yes' || inv.parentApproval === 'pending')) {
+      inv.parentApproval = 'declined'
+      inv.approvedAt = null
+    }
+  }
+}
+
 export function createRoomInvite(
   adapter: PortalStorageAdapter,
   actor: PortalActor,
@@ -49,6 +79,7 @@ export function createRoomInvite(
   nowIso = new Date().toISOString(),
 ): { state: PortalState; invite: RoomInvite } {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const child = state.children.find((c) => c.id === input.childId)
   const hh = child ? state.households.find((h) => h.id === child.householdId) : undefined
   if (!child || !hh || child.consentStatus !== 'verified' || hh.consentRecord.status !== 'verified') {
@@ -64,7 +95,7 @@ export function createRoomInvite(
   const invId = `inv_${globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 8)}`
   const codeNum = (parseInt(invId.slice(-4), 16) % 900) + 100
   const standingYes = child.joinRooms && child.approvedGames.includes(input.gameId)
-  const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  const mentorId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'mentor_samuel'
   const candidate: RoomInvite = {
     id: invId,
     householdId: hh.id,
@@ -80,7 +111,7 @@ export function createRoomInvite(
     closedAt: null,
     activeChildIds: [],
   }
-  if (!can(actor, 'manage_room_invite', { type: 'room_invite', record: candidate })) {
+  if (!can(liveActor, 'manage_room_invite', { type: 'room_invite', record: candidate })) {
     throw new PortalAccessError('Only an assigned mentor may create a game room invite')
   }
 
@@ -113,13 +144,17 @@ export function respondToRoomInvite(
   nowIso = new Date().toISOString(),
 ): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const inv = state.roomInvites.find((r) => r.id === inviteId)
   const hh = inv ? state.households.find((h) => h.id === inv.householdId) : undefined
-  if (!inv || !hh || !can(actor, 'approve_room_invite', { type: 'room_invite', record: inv }) || hh.consentRecord.status !== 'verified') {
+  if (!inv || !hh || !can(liveActor, 'approve_room_invite', { type: 'room_invite', record: inv }) || hh.consentRecord.status !== 'verified') {
     throw new PortalAccessError('Only the verified household parent may respond to this room invite')
   }
   inv.parentApproval = decision
   inv.approvedAt = decision === 'approved' ? nowIso : null
+  if (decision === 'declined') {
+    inv.activeChildIds = inv.activeChildIds.filter((id) => id !== inv.childId)
+  }
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'parent', actorId: hh.id, action: decision === 'approved' ? 'approve_room_invite' : 'decline_room_invite', recordType: 'room_invite', recordId: inv.id, householdId: hh.id, outcome: 'allow' })
   return adapter.save(state)
 }
@@ -131,15 +166,16 @@ export function openRoomByMentor(
   nowIso = new Date().toISOString(),
 ): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const inv = state.roomInvites.find((r) => r.id === inviteId)
-  if (!inv || !can(actor, 'manage_room_invite', { type: 'room_invite', record: inv })) {
+  if (!inv || !can(liveActor, 'manage_room_invite', { type: 'room_invite', record: inv })) {
     throw new PortalAccessError('Only an assigned mentor may open this room')
   }
   if (inv.closedAt !== null || Date.parse(nowIso) >= Date.parse(inv.endsAt)) {
     throw new PortalAccessError('Cannot open a room that has already ended')
   }
   inv.openedAt = nowIso
-  const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  const mentorId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'mentor_samuel'
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'mentor', actorId: mentorId, action: 'open_room', recordType: 'room_invite', recordId: inv.id, householdId: inv.householdId, outcome: 'allow' })
   return adapter.save(state)
 }
@@ -152,7 +188,15 @@ export function joinRoom(
 ): { state: PortalState; invite: RoomInvite } {
   const state = adapter.load()
   const inv = state.roomInvites.find((r) => r.id === inviteId)
-  if (!inv || actor.kind !== 'child' || !can(actor, 'view', { type: 'room_invite', record: inv })) {
+  if (!inv || actor.kind !== 'child') {
+    throw new PortalAccessError('Join refused: child is not invited or parent has not approved this room')
+  }
+  const child = state.children.find((c) => c.id === actor.childId)
+  const hh = child ? state.households.find((h) => h.id === child.householdId) : undefined
+  if (!child || !hh || child.consentStatus !== 'verified' || hh.consentRecord.status !== 'verified') {
+    throw new PortalAccessError('Join refused: verified parent consent is required')
+  }
+  if (!can(actor, 'view', { type: 'room_invite', record: inv }) || !canChildAccessRoom(state, actor.childId, inv)) {
     throw new PortalAccessError('Join refused: child is not invited or parent has not approved this room')
   }
   const clock = getRoomClockStatus(inv, Date.parse(nowIso))
@@ -160,6 +204,11 @@ export function joinRoom(
     throw new PortalAccessError('Join refused: room has not been opened by the mentor yet')
   }
   if (clock.phase === 'ended') {
+    if (inv.closedAt === null || inv.activeChildIds.length > 0) {
+      inv.closedAt = inv.closedAt ?? inv.endsAt
+      inv.activeChildIds = []
+      adapter.save(state)
+    }
     throw new PortalAccessError('Join refused: room has ended on schedule')
   }
   if (!inv.activeChildIds.includes(actor.childId)) inv.activeChildIds.push(actor.childId)
@@ -189,7 +238,8 @@ export function closeRoomHardEnd(adapter: PortalStorageAdapter, inviteId: string
   const state = adapter.load()
   const inv = state.roomInvites.find((r) => r.id === inviteId)
   if (!inv) return state
-  inv.closedAt = nowIso
+  if (inv.closedAt !== null && inv.activeChildIds.length === 0) return state
+  inv.closedAt = inv.closedAt ?? nowIso
   inv.activeChildIds = []
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'system', actorId: 'room_clock', action: 'room_hard_end', recordType: 'room_invite', recordId: inv.id, householdId: inv.householdId, outcome: 'recorded' })
   return adapter.save(state)

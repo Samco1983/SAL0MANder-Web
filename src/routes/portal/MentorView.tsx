@@ -7,7 +7,7 @@ import { formatParentBeltSentence, getNextBeltStep } from '@/portal/belts'
 import {
   SCRIPT_LIBRARY, addMentorAccount, assignMentorToHousehold, awardBadgeByMentor,
   awardBeltPassed, buildFridayDrafts, daysQuiet, getMembershipCapacity, listBeltTestsDue,
-  listQuietKids, listTodayAskQueue, listTodayWorkQueue, sendAllFridayNotes,
+  listMentorWorkRecords, listQuietKids, listTodayAskQueue, listTodayWorkQueue, sendAllFridayNotes,
   sendQuietNudge, sendWorkReviewReply,
 } from '@/portal/mentorActions'
 import { FUN_GAMES } from '@/portal/parentActions'
@@ -139,6 +139,11 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
                   return (
                     <li key={w.id} className={styles.childPreview}>
                       <p className={styles.checkLabel}>{kid?.nickname ?? 'Child'} · {w.activityId} · Attempt #{w.attempts.length} ({latest?.answers.length ?? 0} answers)</p>
+                      {w.childTextWithheld ? (
+                        <p className={styles.note}>Child text hidden until parent forwards (or Questions are Off).</p>
+                      ) : w.openResponse ? (
+                        <p className={styles.checkDetail}>Open response: “{w.openResponse}”</p>
+                      ) : null}
                       <label className={styles.field}>
                         <span>Feedback draft (no model call; parent email first)</span>
                         <input className={styles.input} value={draft} onChange={(e) => setReplyDrafts((p) => ({ ...p, [w.id]: e.target.value }))} />
@@ -201,7 +206,7 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
             </div>
             {activeKid ? (() => {
               const kidHh = state.households.find((h) => h.id === activeKid.householdId)
-              const kidWork = state.workRecords.filter((record) => record.childId === activeKid.id && can(actor, 'view', { type: 'work', record }))
+              const kidWork = listMentorWorkRecords(state, actor, activeKid.id)
               const kidReplies = state.feedback.filter((record) => record.childId === activeKid.id && can(actor, 'view', { type: 'feedback', record }))
               const nextStep = getNextBeltStep(activeKid)
               return (

@@ -1,4 +1,4 @@
-import { can, type PortalActor } from './access'
+import { can, resolveLiveActor, type PortalActor } from './access'
 import { STARTER_BADGE_LABELS, creditReviewedUnitStripe, getNextBeltStep, grantBadgeInState } from './belts'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import { MentorSchema, type AskQuestion, type BeltColor, type ChildProfile, type MentorRole, type PortalState, type WorkRecord } from './types'
@@ -9,6 +9,38 @@ export const QUIET_DAYS_THRESHOLD = 7
 export type UnitScript = {
   unitId: string; title: string; explanation: string; commonMistake: string
   problems: readonly [string, string, string]; links: readonly [{ label: string; url: string }, { label: string; url: string }]
+}
+
+export type MentorWorkAnswer = {
+  questionId: string
+  tries: number
+  hintUsed: boolean
+  answeredAt: string
+  chosenValue?: string
+}
+
+export type MentorWorkAttempt = {
+  attemptId: string
+  startedAt: string
+  submittedAt: string | null
+  answers: MentorWorkAnswer[]
+  openResponse?: string
+}
+
+/** Mentor-safe projection of a WorkRecord: leaves out child openResponse and typed answers until parent forwards (FIX 4 / G-03). */
+export type MentorWorkRecord = {
+  id: string
+  householdId: string
+  childId: string
+  activityId: string
+  activityVersionId: string
+  unitId: string
+  status: WorkRecord['status']
+  attempts: MentorWorkAttempt[]
+  openResponse?: string
+  revisions: WorkRecord['revisions']
+  currentRevision: number
+  childTextWithheld: boolean
 }
 
 export const SCRIPT_LIBRARY: ReadonlyArray<UnitScript> = [
@@ -26,26 +58,138 @@ export function daysQuiet(child: ChildProfile, nowIso = '2026-11-24T18:00:00Z'):
   return Math.max(0, Math.floor(diff / 86_400_000))
 }
 
+/**
+ * Determines whether a mentor may see child-authored text (`openResponse` and typed `chosenValue` answers)
+ * inside a saved WorkRecord (FIX 4 / G-03). Denied whenever consent is unverified, Questions are Off,
+ * the work is still a draft, a linked question is waiting for parent review or undelivered, or the child
+ * is in Review-first mode without a parent-forwarded release.
+ */
+export function canMentorReadWorkText(state: PortalState, record: WorkRecord): boolean {
+  const child = state.children.find((c) => c.id === record.childId)
+  const hh = state.households.find((h) => h.id === record.householdId)
+  if (!child || !hh || child.consentStatus !== 'verified' || hh.consentRecord.status !== 'verified') return false
+  if (child.askMode === 'off') return false
+  if (record.status === 'draft') return false
+
+  const linked = state.askQuestions.filter((q) => q.workRecordId === record.id)
+  if (
+    linked.some(
+      (q) =>
+        q.status === 'waiting_parent_review' ||
+        q.status === 'held_undelivered' ||
+        q.status === 'parent_bounced' ||
+        q.parentEmailAcceptedAt === null,
+    )
+  ) {
+    return false
+  }
+  if (child.askMode === 'review') {
+    return linked.some(
+      (q) =>
+        q.parentEmailAcceptedAt !== null &&
+        q.forwardedToMentorAt !== null &&
+        (q.status === 'queued_for_mentor' || q.status === 'replied'),
+    )
+  }
+  return true
+}
+
+/** Returns a mentor-safe WorkRecord view, omitting child text fields until parent forwards (FIX 4 / G-03). */
+export function projectWorkRecordForMentor(state: PortalState, record: WorkRecord): MentorWorkRecord {
+  const allowText = canMentorReadWorkText(state, record)
+  if (!allowText) {
+    return {
+      id: record.id,
+      householdId: record.householdId,
+      childId: record.childId,
+      activityId: record.activityId,
+      activityVersionId: record.activityVersionId,
+      unitId: record.unitId,
+      status: record.status,
+      revisions: record.revisions,
+      currentRevision: record.currentRevision,
+      childTextWithheld: true,
+      attempts: record.attempts.map((att) => ({
+        attemptId: att.attemptId,
+        startedAt: att.startedAt,
+        submittedAt: att.submittedAt,
+        answers: att.answers.map((ans) => ({
+          questionId: ans.questionId,
+          tries: ans.tries,
+          hintUsed: ans.hintUsed,
+          answeredAt: ans.answeredAt,
+        })),
+      })),
+    }
+  }
+  return {
+    id: record.id,
+    householdId: record.householdId,
+    childId: record.childId,
+    activityId: record.activityId,
+    activityVersionId: record.activityVersionId,
+    unitId: record.unitId,
+    status: record.status,
+    openResponse: record.openResponse,
+    revisions: record.revisions,
+    currentRevision: record.currentRevision,
+    childTextWithheld: false,
+    attempts: record.attempts.map((att) => ({
+      attemptId: att.attemptId,
+      startedAt: att.startedAt,
+      submittedAt: att.submittedAt,
+      openResponse: att.openResponse,
+      answers: att.answers.map((ans) => ({
+        questionId: ans.questionId,
+        chosenValue: ans.chosenValue,
+        tries: ans.tries,
+        hintUsed: ans.hintUsed,
+        answeredAt: ans.answeredAt,
+      })),
+    })),
+  }
+}
+
 export function listTodayAskQueue(state: PortalState, actor: PortalActor): AskQuestion[] {
+  const liveActor = resolveLiveActor(state, actor)
   return state.askQuestions
-    .filter((record) => record.status === 'queued_for_mentor' && can(actor, 'view', { type: 'ask_question', record }))
+    .filter((record) => {
+      if (record.status !== 'queued_for_mentor') return false
+      if (!can(liveActor, 'view', { type: 'ask_question', record })) return false
+      const child = state.children.find((c) => c.id === record.childId)
+      const hh = state.households.find((h) => h.id === record.householdId)
+      if (!child || !hh || child.consentStatus !== 'verified' || hh.consentRecord.status !== 'verified') return false
+      return child.askMode !== 'off'
+    })
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 }
 
-export function listTodayWorkQueue(state: PortalState, actor: PortalActor): WorkRecord[] {
+export function listTodayWorkQueue(state: PortalState, actor: PortalActor): MentorWorkRecord[] {
+  const liveActor = resolveLiveActor(state, actor)
   return state.workRecords
-    .filter((record) => record.status === 'submitted' && can(actor, 'review_work', { type: 'work', record }))
+    .filter((record) => record.status === 'submitted' && can(liveActor, 'review_work', { type: 'work', record }))
     .sort((a, b) => (a.attempts.at(-1)?.submittedAt ?? '').localeCompare(b.attempts.at(-1)?.submittedAt ?? ''))
+    .map((record) => projectWorkRecordForMentor(state, record))
+}
+
+/** Lists mentor-visible work records (optionally for one child), omitting withheld child text (FIX 3 & FIX 4). */
+export function listMentorWorkRecords(state: PortalState, actor: PortalActor, childId?: string): MentorWorkRecord[] {
+  const liveActor = resolveLiveActor(state, actor)
+  return state.workRecords
+    .filter((record) => (childId ? record.childId === childId : true) && can(liveActor, 'view', { type: 'work', record }))
+    .map((record) => projectWorkRecordForMentor(state, record))
 }
 
 export function listQuietKids(state: PortalState, actor: PortalActor, nowIso = '2026-11-24T18:00:00Z'): ChildProfile[] {
-  return state.children.filter((record) => can(actor, 'view', { type: 'child', record }) && daysQuiet(record, nowIso) >= QUIET_DAYS_THRESHOLD)
+  const liveActor = resolveLiveActor(state, actor)
+  return state.children.filter((record) => can(liveActor, 'view', { type: 'child', record }) && daysQuiet(record, nowIso) >= QUIET_DAYS_THRESHOLD)
 }
 
 export function listBeltTestsDue(state: PortalState, actor: PortalActor): Array<{ child: ChildProfile; nextBelt: BeltColor; stripesRequired: number; testType: 'whiteboard' | 'teach_it'; ready: boolean }> {
+  const liveActor = resolveLiveActor(state, actor)
   const out: Array<{ child: ChildProfile; nextBelt: BeltColor; stripesRequired: number; testType: 'whiteboard' | 'teach_it'; ready: boolean }> = []
   for (const child of state.children) {
-    if (!can(actor, 'award_belt', { type: 'child', record: child })) continue
+    if (!can(liveActor, 'award_belt', { type: 'child', record: child })) continue
     const step = getNextBeltStep(child)
     if (!step) continue
     if (child.stripesEarned >= step.stripesRequired - 1) {
@@ -65,13 +209,14 @@ export function sendWorkReviewReply(
   const trimmed = replyText.trim()
   if (!trimmed) throw new PortalAccessError('Reply text is required')
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const record = state.workRecords.find((w) => w.id === workRecordId)
-  if (!record || !can(actor, 'review_work', { type: 'work', record })) {
+  if (!record || !can(liveActor, 'review_work', { type: 'work', record })) {
     throw new PortalAccessError('Only an assigned mentor may review submitted work')
   }
   const hh = state.households.find((h) => h.id === record.householdId)!
   const child = state.children.find((c) => c.id === record.childId)!
-  const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  const mentorId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'mentor_samuel'
   const canAutoShow = child.autoShow && child.consentStatus === 'verified' && hh.consentRecord.status === 'verified'
 
   state.inbox.unshift({
@@ -99,14 +244,15 @@ export function sendWorkReviewReply(
 
 export function sendQuietNudge(adapter: PortalStorageAdapter, actor: PortalActor, childId: string, nowIso = new Date().toISOString()): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const child = state.children.find((c) => c.id === childId)
   const hh = child ? state.households.find((h) => h.id === child.householdId) : undefined
   if (!child || !hh) throw new PortalAccessError('Child not found')
-  const probe = { id: 'probe', householdId: hh.id, childId: child.id, authorMentorId: actor.kind === 'mentor' ? actor.mentorId : '', weekOf: nowIso.slice(0, 10), workedOn: '', needsHelp: '', tryAtHome: '', humanSentence: '', deliveryStatus: 'draft' as const, sentAt: null }
-  if (!can(actor, 'send_parent_update', { type: 'parent_update', record: probe })) {
+  const probe = { id: 'probe', householdId: hh.id, childId: child.id, authorMentorId: liveActor.kind === 'mentor' ? liveActor.mentorId : '', weekOf: nowIso.slice(0, 10), workedOn: '', needsHelp: '', tryAtHome: '', humanSentence: '', deliveryStatus: 'draft' as const, sentAt: null }
+  if (!can(liveActor, 'send_parent_update', { type: 'parent_update', record: probe })) {
     throw new PortalAccessError('Only an assigned mentor may send a quiet check-in to the parent')
   }
-  const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  const mentorId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'mentor_samuel'
   state.inbox.unshift({
     id: `eml_nudge_${state.inbox.length + 1}`, to: hh.parentEmail, householdId: hh.id,
     subject: `Quick check-in on ${child.nickname}`,
@@ -126,8 +272,9 @@ export function awardBeltPassed(
   const nowIso = typeof options === 'string' ? options : (options?.nowIso ?? new Date().toISOString())
   const teachItCompleted = typeof options === 'object' ? Boolean(options?.teachItCompleted) : false
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const child = state.children.find((c) => c.id === childId)
-  if (!child || !can(actor, 'award_belt', { type: 'child', record: child })) {
+  if (!child || !can(liveActor, 'award_belt', { type: 'child', record: child })) {
     throw new PortalAccessError('Only an assigned human mentor may award a belt')
   }
   const step = getNextBeltStep(child)
@@ -136,7 +283,7 @@ export function awardBeltPassed(
     throw new PortalAccessError('Black belt requires completing the live teach-it test')
   }
   child.currentBelt = step.nextBelt
-  const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  const mentorId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'mentor_samuel'
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'mentor', actorId: mentorId, action: 'award_belt', recordType: 'child', recordId: child.id, householdId: child.householdId, outcome: 'allow' })
   return adapter.save(state)
 }
@@ -149,11 +296,12 @@ export function awardBadgeByMentor(
   nowIso = new Date().toISOString(),
 ): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const child = state.children.find((c) => c.id === childId)
-  if (!child || !can(actor, 'award_belt', { type: 'child', record: child })) {
+  if (!child || !can(liveActor, 'award_belt', { type: 'child', record: child })) {
     throw new PortalAccessError('Only an assigned mentor may award a badge')
   }
-  const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  const mentorId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'mentor_samuel'
   grantBadgeInState(state, child, kind, STARTER_BADGE_LABELS[kind], mentorId, nowIso)
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'mentor', actorId: mentorId, action: 'award_badge', recordType: 'badge', recordId: `${child.id}:${kind}`, householdId: child.householdId, outcome: 'allow' })
   return adapter.save(state)
@@ -162,8 +310,9 @@ export function awardBadgeByMentor(
 export type FridayDraft = { childId: string; householdId: string; nickname: string; quiet: boolean; weekOf: string; workedOn: string; needsHelp: string; tryAtHome: string; humanSentence: string }
 
 export function buildFridayDrafts(state: PortalState, actor: PortalActor, weekOf = '2026-11-24', nowIso = '2026-11-24T18:00:00Z'): FridayDraft[] {
+  const liveActor = resolveLiveActor(state, actor)
   return state.children
-    .filter((record) => can(actor, 'view', { type: 'child', record }))
+    .filter((record) => can(liveActor, 'view', { type: 'child', record }))
     .map((child) => {
       const quiet = daysQuiet(child, nowIso) >= QUIET_DAYS_THRESHOLD
       const workCount = state.workRecords.filter((w) => w.childId === child.id).length
@@ -175,7 +324,8 @@ export function buildFridayDrafts(state: PortalState, actor: PortalActor, weekOf
 
 export function sendAllFridayNotes(adapter: PortalStorageAdapter, actor: PortalActor, drafts: ReadonlyArray<FridayDraft>, nowIso = new Date().toISOString()): { state: PortalState; sentCount: number } {
   const state = adapter.load()
-  const mentorId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  const liveActor = resolveLiveActor(state, actor)
+  const mentorId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'mentor_samuel'
   let sentCount = 0
   for (const d of drafts) {
     const hh = state.households.find((h) => h.id === d.householdId)
@@ -185,7 +335,7 @@ export function sendAllFridayNotes(adapter: PortalStorageAdapter, actor: PortalA
       weekOf: d.weekOf, workedOn: d.workedOn, needsHelp: d.needsHelp, tryAtHome: d.tryAtHome,
       humanSentence: d.humanSentence.trim() || `${d.nickname} checked in this week.`, deliveryStatus: 'delivered' as const, sentAt: nowIso,
     }
-    if (!can(actor, 'send_parent_update', { type: 'parent_update', record: upd })) {
+    if (!can(liveActor, 'send_parent_update', { type: 'parent_update', record: upd })) {
       throw new PortalAccessError('Only an assigned mentor may send Friday notes for this household')
     }
     state.parentUpdates.unshift(upd)
@@ -202,28 +352,30 @@ export function sendAllFridayNotes(adapter: PortalStorageAdapter, actor: PortalA
 }
 
 export function addMentorAccount(adapter: PortalStorageAdapter, actor: PortalActor, input: { displayName: string; email: string; roles?: MentorRole[] }, nowIso = new Date().toISOString()): PortalState {
-  if (!can(actor, 'add_mentor', { type: 'portal_admin', householdId: null })) {
+  const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
+  if (!can(liveActor, 'add_mentor', { type: 'portal_admin', householdId: null })) {
     throw new PortalAccessError('Only an admin may add a mentor')
   }
-  const state = adapter.load()
   const newId = `mentor_${globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 8)}`
   const mentor = MentorSchema.parse({ id: newId, displayName: input.displayName.trim(), email: input.email.trim().toLowerCase(), roles: input.roles?.length ? input.roles : ['mentor'], active: true })
   state.mentors.push(mentor)
-  state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'admin', actorId: actor.kind === 'mentor' ? actor.mentorId : 'admin', action: 'add_mentor', recordType: 'mentor', recordId: newId, householdId: null, outcome: 'allow' })
+  state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'admin', actorId: liveActor.kind === 'mentor' ? liveActor.mentorId : 'admin', action: 'add_mentor', recordType: 'mentor', recordId: newId, householdId: null, outcome: 'allow' })
   return adapter.save(state)
 }
 
 export function assignMentorToHousehold(adapter: PortalStorageAdapter, actor: PortalActor, mentorId: string, householdId: string, nowIso = new Date().toISOString()): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const hh = state.households.find((h) => h.id === householdId)
   const mentor = state.mentors.find((m) => m.id === mentorId && m.active)
-  if (!hh || !mentor || !can(actor, 'assign_mentor', { type: 'household', record: hh })) {
+  if (!hh || !mentor || !can(liveActor, 'assign_mentor', { type: 'household', record: hh })) {
     throw new PortalAccessError('Only an admin may assign an active mentor to a household')
   }
   const existing = state.assignments.find((a) => a.mentorId === mentorId && a.householdId === householdId && a.revokedAt === null)
   if (existing) return state
   const asgnId = `asgn_${globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 8)}`
-  const adminId = actor.kind === 'mentor' ? actor.mentorId : 'mentor_samuel'
+  const adminId = liveActor.kind === 'mentor' ? liveActor.mentorId : 'mentor_samuel'
   state.assignments.push({ id: asgnId, mentorId, householdId, assignedByMentorId: adminId, assignedAt: nowIso, revokedAt: null, revokedByMentorId: null })
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'admin', actorId: adminId, action: 'assign_mentor', recordType: 'assignment', recordId: asgnId, householdId, outcome: 'allow' })
   return adapter.save(state)

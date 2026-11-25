@@ -1,4 +1,4 @@
-import { can, type PortalActor } from './access'
+import { can, resolveLiveActor, type PortalActor } from './access'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import {
   ChildProfileSchema,
@@ -6,6 +6,18 @@ import {
   type EmailMode,
   type PortalState,
 } from './types'
+
+function revokeChildRoomAccessInState(state: PortalState, childId: string, onlyGameId?: string): void {
+  for (const inv of state.roomInvites) {
+    if (inv.childId !== childId) continue
+    if (onlyGameId && inv.gameId !== onlyGameId) continue
+    inv.activeChildIds = inv.activeChildIds.filter((id) => id !== childId)
+    if (inv.closedAt === null && (inv.parentApproval === 'approved' || inv.parentApproval === 'standing_yes' || inv.parentApproval === 'pending')) {
+      inv.parentApproval = 'declined'
+      inv.approvedAt = null
+    }
+  }
+}
 
 export const CONSENT_NOTICE_VERSION = '2026-11-24-demo-v1'
 
@@ -67,8 +79,9 @@ export function completeParentConsent(
   nowIso = new Date().toISOString(),
 ): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const hh = state.households.find((h) => h.id === householdId)
-  if (!hh || !can(actor, 'edit_household', { type: 'household', record: hh })) {
+  if (!hh || !can(liveActor, 'edit_household', { type: 'household', record: hh })) {
     throw new PortalAccessError('Only the household parent may record consent')
   }
   hh.consentRecord = { status: 'verified', noticeVersion: CONSENT_NOTICE_VERSION, verifiedAt: nowIso, withdrawnAt: null, method }
@@ -88,8 +101,9 @@ export function withdrawParentConsent(
   nowIso = new Date().toISOString(),
 ): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const hh = state.households.find((h) => h.id === householdId)
-  if (!hh || !can(actor, 'edit_household', { type: 'household', record: hh })) {
+  if (!hh || !can(liveActor, 'edit_household', { type: 'household', record: hh })) {
     throw new PortalAccessError('Only the household parent may withdraw consent')
   }
   hh.consentRecord = { ...hh.consentRecord, status: 'withdrawn', withdrawnAt: nowIso }
@@ -100,6 +114,7 @@ export function withdrawParentConsent(
     child.autoShow = false
     child.joinRooms = false
     child.approvedGames = []
+    revokeChildRoomAccessInState(state, child.id)
   }
   state.auditLogs.push({ id: `aud_${state.auditLogs.length + 1}`, at: nowIso, actorKind: 'parent', actorId: householdId, action: 'consent_withdrawn', recordType: 'household', recordId: householdId, householdId, outcome: 'allow' })
   return adapter.save(state)
@@ -112,13 +127,14 @@ export function saveChildProfile(
   input: { id?: string; nickname: string; level: string; pin?: string; firstConversationLine: string },
 ): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const hh = state.households.find((h) => h.id === householdId)
   if (!hh) throw new PortalAccessError('Household not found')
   const pinHash = input.pin?.trim() ? `demo-pin-${input.pin.trim()}` : undefined
 
   if (input.id) {
     const existing = state.children.find((c) => c.id === input.id)
-    if (!existing || !can(actor, 'edit_child', { type: 'child', record: existing })) {
+    if (!existing || !can(liveActor, 'edit_child', { type: 'child', record: existing })) {
       throw new PortalAccessError('Only the household parent may edit this child profile')
     }
     const { pinHash: _prevPin, ...rest } = existing
@@ -134,7 +150,7 @@ export function saveChildProfile(
     return adapter.save(state)
   }
 
-  if (!can(actor, 'create_child', { type: 'household', record: hh })) {
+  if (!can(liveActor, 'create_child', { type: 'household', record: hh })) {
     throw new PortalAccessError('Only the household parent may create a child profile')
   }
   const newId = `child_${globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`
@@ -174,9 +190,10 @@ export function updateFourSettings(
   },
 ): PortalState {
   const state = adapter.load()
+  const liveActor = resolveLiveActor(state, actor)
   const hh = state.households.find((h) => h.id === householdId)
   const child = state.children.find((c) => c.id === childId)
-  if (!hh || !child || !can(actor, 'edit_household', { type: 'household', record: hh }) || !can(actor, 'edit_child', { type: 'child', record: child })) {
+  if (!hh || !child || !can(liveActor, 'edit_household', { type: 'household', record: hh }) || !can(liveActor, 'edit_child', { type: 'child', record: child })) {
     throw new PortalAccessError('Only the household parent may update settings')
   }
   const consentOk = hh.consentRecord.status === 'verified'
@@ -191,6 +208,15 @@ export function updateFourSettings(
   child.approvedGames = consentOk ? [...cleanLesson, ...cleanFun] : []
   if (typeof next.voiceClipsEnabled === 'boolean') {
     child.voiceClipsEnabled = next.voiceClipsEnabled
+  }
+  if (!child.joinRooms) {
+    revokeChildRoomAccessInState(state, child.id)
+  } else {
+    for (const inv of state.roomInvites) {
+      if (inv.childId === child.id && inv.parentApproval === 'standing_yes' && !child.approvedGames.includes(inv.gameId)) {
+        revokeChildRoomAccessInState(state, child.id, inv.gameId)
+      }
+    }
   }
   return adapter.save(state)
 }

@@ -4,6 +4,7 @@ import { Card } from '@components/ui/Card'
 import { buildChildActor } from '@/portal/access'
 import { FUN_GAMES } from '@/portal/parentActions'
 import {
+  canChildAccessRoom,
   closeRoomHardEnd,
   formatCountdown,
   getRoomClockStatus,
@@ -31,23 +32,31 @@ export function RoomStageCard({
 }) {
   const invite = state.roomInvites.find((r) => r.id === inviteId)
   const child = state.children.find((c) => c.id === childId)
-  const [clockMs, setClockMs] = useState(() => {
-    const startMs = invite ? Date.parse(invite.openedAt ?? invite.startsAt) : Date.now()
-    const endMs = invite ? Date.parse(invite.endsAt) : Date.now()
-    const now = Date.now()
-    return !Number.isNaN(endMs) && now >= endMs ? startMs : now
-  })
+  // Real time only — never rewinds past-due rooms back to startsAt (FIX 2 / G-06).
+  const [clockMs, setClockMs] = useState(() => Date.now())
   const [roomError, setRoomError] = useState('')
 
   const status = invite ? getRoomClockStatus(invite, clockMs) : null
+  const accessAllowed = Boolean(invite && child && canChildAccessRoom(state, childId, invite))
   const isJoined = Boolean(invite?.activeChildIds.includes(childId))
   const childActor = buildChildActor(state, childId)
 
   useEffect(() => {
     if (!invite || status?.phase !== 'running') return
-    const timer = window.setInterval(() => setClockMs((ms) => ms + 1000), 1000)
+    const timer = window.setInterval(() => {
+      setClockMs((ms) => Math.max(ms + 1000, Date.now()))
+    }, 1000)
     return () => window.clearInterval(timer)
   }, [invite, status?.phase])
+
+  // Persist hard end immediately when the clock reaches 0:00 or opens past endsAt (FIX 2 / G-06).
+  useEffect(() => {
+    if (!invite || status?.phase !== 'ended') return
+    if (invite.closedAt !== null && invite.activeChildIds.length === 0) return
+    const endMs = Date.parse(invite.endsAt)
+    const closedIso = !Number.isNaN(endMs) ? new Date(Math.max(endMs, Date.now())).toISOString() : new Date().toISOString()
+    onStateChange(closeRoomHardEnd(portalStorage, invite.id, closedIso))
+  }, [invite, status?.phase, onStateChange])
 
   if (!invite || !child || !status) {
     return (
@@ -58,13 +67,24 @@ export function RoomStageCard({
     )
   }
 
+  if (!accessAllowed && status.phase !== 'ended') {
+    return (
+      <Card title="Game room" headingLevel={2}>
+        <p className={styles.alertCallout} role="alert" data-testid="room-revoked">
+          Room access ended: parent consent or room permission was turned off.
+        </p>
+        <Button size="sm" variant="secondary" onClick={onClose}>Back</Button>
+      </Card>
+    )
+  }
+
   const gameLabel = GAME_NAMES[invite.gameId] ?? invite.gameId
-  const nowIso = new Date(clockMs).toISOString()
 
   function handleJoin() {
     setRoomError('')
     try {
-      const res = joinRoom(portalStorage, childActor, invite!.id, nowIso)
+      // Always uses real wall-clock time inside joinRoom (never a local preview clock) (FIX 2 / G-06).
+      const res = joinRoom(portalStorage, childActor, invite!.id)
       onStateChange(res.state)
     } catch (err) {
       setRoomError(err instanceof Error ? err.message : 'Join refused.')
@@ -74,7 +94,7 @@ export function RoomStageCard({
   function handleLeave() {
     setRoomError('')
     try {
-      const res = leaveRoom(portalStorage, childActor, invite!.id, nowIso)
+      const res = leaveRoom(portalStorage, childActor, invite!.id)
       onStateChange(res.state)
     } catch (err) {
       setRoomError(err instanceof Error ? err.message : 'Unable to leave room.')
@@ -83,12 +103,14 @@ export function RoomStageCard({
 
   function jumpToWarning() {
     const endMs = Date.parse(invite!.endsAt)
-    if (!Number.isNaN(endMs)) setClockMs(endMs - 45_000)
+    if (!Number.isNaN(endMs) && endMs - 45_000 > clockMs) {
+      setClockMs(endMs - 45_000)
+    }
   }
 
   function jumpToHardEnd() {
     const endMs = Date.parse(invite!.endsAt)
-    const endIso = !Number.isNaN(endMs) ? new Date(endMs).toISOString() : new Date().toISOString()
+    const endIso = !Number.isNaN(endMs) ? new Date(Math.max(endMs, Date.now())).toISOString() : new Date().toISOString()
     setClockMs(Date.parse(endIso))
     onStateChange(closeRoomHardEnd(portalStorage, invite!.id, endIso))
   }
