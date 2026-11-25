@@ -254,15 +254,23 @@ describe('PJ-B picture rotation — sample activities, defaults, and explicit ov
     expect(LIBRARY_KEYS.has(secondKey)).toBe(true)
     expect(secondKey).not.toBe(firstKey)
 
-    // Expanding the companion panel and clicking "New picture" rotates immediately to another picture.
+    // "New picture" is visible on the stage bar without opening the companion panel.
     const user = userEvent.setup()
-    await user.click(screen.getByRole('button', { name: /show companion/i }))
-    await user.click(screen.getByRole('button', { name: 'New picture' }))
+    expect(screen.getByRole('button', { name: /show companion/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
+    const newPictureBtn = screen.getByRole('button', { name: 'New picture' })
+    expect(newPictureBtn).toBeVisible()
+    await user.click(newPictureBtn)
     await waitFor(() => {
       const thirdKey = screen.getByTestId('mock-unity-stage').getAttribute('data-preview-key')!
       expect(LIBRARY_KEYS.has(thirdKey)).toBe(true)
       expect(thirdKey).not.toBe(secondKey)
     })
+    // Opening the companion keeps exactly one "New picture" button (no duplicate inside companion).
+    await user.click(screen.getByRole('button', { name: /show companion/i }))
+    expect(screen.getAllByRole('button', { name: 'New picture' })).toHaveLength(1)
     secondRun.unmount()
   })
 

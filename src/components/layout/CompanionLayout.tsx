@@ -29,12 +29,15 @@ function readCollapsed(defaultCollapsed: boolean): boolean {
 export function CompanionLayout({
   companion,
   stage,
+  stageActions,
   defaultCollapsed = false,
   companionLabel = 'Companion panel',
   reveal = false,
 }: {
   companion: ReactNode
   stage: ReactNode
+  /** Optional compact controls displayed in the stage bar beside the companion toggle. */
+  stageActions?: ReactNode
   defaultCollapsed?: boolean
   companionLabel?: string
   /**
@@ -138,6 +141,7 @@ export function CompanionLayout({
           >
             {collapsed ? 'Show companion' : 'Hide companion'}
           </Button>
+          {stageActions ? <div className={styles.stageActions}>{stageActions}</div> : null}
         </div>
         {stage}
       </section>
