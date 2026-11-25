@@ -12,6 +12,8 @@ import { GuestActivityBundleSchema, PlayBundleSchema } from '@contracts/v1'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import {
   LAST_PUZZLE_PICTURE_STORAGE_KEY,
+  RECENT_PICTURE_MEMORY,
+  RECENT_PUZZLE_PICTURES_STORAGE_KEY,
   pickNextLibraryPicture,
   resetPictureRotationMemory,
   resolveActivityPicture,
@@ -277,5 +279,27 @@ describe('PJ-B picture rotation — sample activities, defaults, and explicit ov
         expect(draft.meta.imageKey).toBe(picture.key)
       }
     }
+  })
+
+  it('never shows a recent picture again when one page load picks twice (refetch / StrictMode)', () => {
+    for (let trial = 0; trial < 200; trial += 1) {
+      localStorage.clear()
+      resetPictureRotationMemory()
+      const shown: string[] = []
+      for (let game = 0; game < 5; game += 1) {
+        const first = pickNextLibraryPicture()
+        const second = pickNextLibraryPicture()
+        shown.push(trial % 2 === 0 ? first.key : second.key)
+      }
+      expect(new Set(shown).size, `trial ${trial}: ${shown.join(', ')}`).toBe(5)
+    }
+  })
+
+  it('shows five different pictures across five consecutive games and keeps the history capped', () => {
+    const keys = Array.from({ length: 5 }, () => pickNextLibraryPicture().key)
+    expect(new Set(keys).size).toBe(5)
+    for (let i = 0; i < 30; i += 1) pickNextLibraryPicture()
+    const stored: unknown = JSON.parse(localStorage.getItem(RECENT_PUZZLE_PICTURES_STORAGE_KEY) ?? '[]')
+    expect(stored).toHaveLength(RECENT_PICTURE_MEMORY)
   })
 })
