@@ -1,0 +1,456 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-25",
+  "licenseNote": "Original instrumental tracks created with Google Flow Music for SAL0MANder Studios (kid-safe, zero lyrics). Approved by Samuel for live sites.",
+  "_howToEdit": [
+    "Edit any game's 'songs' list below to add, remove, or reorder tracks (3-5 songs recommended per game).",
+    "Each entry in 'songs' can be either a track id from 'tracks' OR an inline object like { \"id\": \"my-song\", \"title\": \"My Song\", \"src\": \"audio/tracks/my-song.mp3\" }.",
+    "Set \"enabled\": false on a track (in 'tracks') or on a game to pause it without deleting the audio file.",
+    "Adjust 'volume' (0.0 to 1.0) per game, or 'defaultEnabled' (true/false) for whether music starts on by default."
+  ],
+  "tracks": {
+    "window-seat-logic": {
+      "title": "Window Seat Logic",
+      "src": "audio/tracks/window-seat-logic.mp3",
+      "genre": "cozy chamber soul",
+      "mood": "warm, focused",
+      "bpm": 88,
+      "durationSeconds": 120.15,
+      "bytes": 1442709,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Window Seat Logic (Take 2)",
+      "sourceSha256": "25b236992484b850bf09782299847fe3e8481e556548a841ec0481fdfaca02ad"
+    },
+    "button-trail": {
+      "title": "Button Trail",
+      "src": "audio/tracks/button-trail.mp3",
+      "genre": "acoustic kinetic folk",
+      "mood": "playful, steady",
+      "bpm": 98,
+      "durationSeconds": 170.67,
+      "bytes": 2048953,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Button Trail",
+      "sourceSha256": "af78edf7359a9fbfcdc1c96d92936bb4535c8669772df2e5da5b6981046a4e9e"
+    },
+    "woven-light": {
+      "title": "Woven Light",
+      "src": "audio/tracks/woven-light.mp3",
+      "genre": "harp & bass chamber",
+      "mood": "elegant, calm",
+      "bpm": 92,
+      "durationSeconds": 153.05,
+      "bytes": 1837361,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Woven Light",
+      "sourceSha256": "ba261e249aab7d940835a5d01796a368b56559b1593fef8989347126b0b97ab5"
+    },
+    "letters-in-the-rain": {
+      "title": "Letters in the Rain",
+      "src": "audio/tracks/letters-in-the-rain.mp3",
+      "genre": "felt-piano chamber",
+      "mood": "gentle, reflective",
+      "bpm": 74,
+      "durationSeconds": 147.48,
+      "bytes": 1770600,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Letters in the Rain",
+      "sourceSha256": "111ee733aa4b445ce349359e2a5454240646d9d9ad5ab5970efac7abbd04a3dd"
+    },
+    "ocean-breeze-village": {
+      "title": "Ocean Breeze Village",
+      "src": "audio/tracks/ocean-breeze-village.mp3",
+      "genre": "peaceful acoustic folk",
+      "mood": "warm, breezy",
+      "bpm": 86,
+      "durationSeconds": 177.13,
+      "bytes": 2126388,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Ocean Breeze Village (Take 2)",
+      "sourceSha256": "cbfe4780b991ddd71f5848fed74b7b814b0b8c04f08b876ea515fb1b729e126e"
+    },
+    "harbor-of-memories": {
+      "title": "Harbor of Memories",
+      "src": "audio/tracks/harbor-of-memories.mp3",
+      "genre": "acoustic flute & guitar",
+      "mood": "heartwarming, nostalgic",
+      "bpm": 84,
+      "durationSeconds": 132.2,
+      "bytes": 1587219,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Harbor of Memories",
+      "sourceSha256": "a8079b251c744536696be416bdb250ad708034c2d2683474ab527fcf6397698e"
+    },
+    "whispering-breeze-village": {
+      "title": "Whispering Breeze Village",
+      "src": "audio/tracks/whispering-breeze-village.mp3",
+      "genre": "peaceful acoustic folk",
+      "mood": "gentle, welcoming",
+      "bpm": 86,
+      "durationSeconds": 177.22,
+      "bytes": 2127647,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Whispering Breeze Village",
+      "sourceSha256": "8bb5254e35897a4a502896b8da6bb219d5222ad23a05e68f5964d7dd5f09786c"
+    },
+    "iron-lantern": {
+      "title": "Iron Lantern",
+      "src": "audio/tracks/iron-lantern.mp3",
+      "genre": "tournament percussion score",
+      "mood": "focused, heroic",
+      "bpm": 112,
+      "durationSeconds": 120.09,
+      "bytes": 1442077,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Iron Lantern",
+      "sourceSha256": "a2e6251a2895ed67c026d31b7ad8667d5e163e5eb16e15c99e141dd22ceea1d6"
+    },
+    "clash-of-fate": {
+      "title": "Clash of Fate",
+      "src": "audio/tracks/clash-of-fate.mp3",
+      "genre": "arcade battle rock",
+      "mood": "heroic, driving",
+      "bpm": 116,
+      "durationSeconds": 163.11,
+      "bytes": 1958362,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Clash of Fate",
+      "sourceSha256": "3fed718db4bae3663f27ada4b527ca83f2c10562b524ecff7426216e7c6fcec1"
+    },
+    "final-gambit": {
+      "title": "Final Gambit",
+      "src": "audio/tracks/final-gambit.mp3",
+      "genre": "arcade tournament battle",
+      "mood": "high-stakes, thrilling",
+      "bpm": 116,
+      "durationSeconds": 175.53,
+      "bytes": 2107259,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Final Gambit",
+      "sourceSha256": "dcfe414d787973af9e1095b9ccab971540ef390796e3676b46c95d495bab049c"
+    },
+    "tactical-encounter": {
+      "title": "Tactical Encounter",
+      "src": "audio/tracks/tactical-encounter.mp3",
+      "genre": "classic duel rock",
+      "mood": "dramatic, energetic",
+      "bpm": 116,
+      "durationSeconds": 174.08,
+      "bytes": 2089710,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Tactical Encounter (Boss Cue A)",
+      "sourceSha256": "edee5f67806517d53392eba7d260d6b62bb23ca03baacb99f5914b7cd9403f01"
+    },
+    "foundry-flank": {
+      "title": "Foundry Flank",
+      "src": "audio/tracks/foundry-flank.mp3",
+      "genre": "industrial tactical groove",
+      "mood": "punchy, rhythmic",
+      "bpm": 108,
+      "durationSeconds": 161.6,
+      "bytes": 1940181,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Foundry Flank",
+      "sourceSha256": "9c8154592454926f35396debe5bd551008f3c7ac1471ba4b5048b7189bfa91cf"
+    },
+    "midnight-rider-groove": {
+      "title": "Midnight Rider — Nocturnal Groove",
+      "src": "audio/tracks/midnight-rider-groove.mp3",
+      "genre": "nocturnal synth groove",
+      "mood": "sleek, driving",
+      "bpm": 96,
+      "durationSeconds": 179.31,
+      "bytes": 2152735,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Midnight Rider - Nocturnal Game Groove",
+      "sourceSha256": "fd8745d993666ff2496467ded82cf7551dabee938bcdbc7aa86df7e79a57a48d"
+    },
+    "midnight-rider-variant": {
+      "title": "Midnight Rider — Voltage Variant",
+      "src": "audio/tracks/midnight-rider-variant.mp3",
+      "genre": "nocturnal arcade groove",
+      "mood": "electric, steady",
+      "bpm": 96,
+      "durationSeconds": 182.55,
+      "bytes": 2191604,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Midnight Rider (Variant)",
+      "sourceSha256": "326b35ff7ae6926732471672da68478821b63e4a2158ed0fa73af79752ed9402"
+    },
+    "tactical-strike": {
+      "title": "Tactical Strike",
+      "src": "audio/tracks/tactical-strike.mp3",
+      "genre": "industrial action rock",
+      "mood": "high-energy, intense",
+      "bpm": 115,
+      "durationSeconds": 181.59,
+      "bytes": 2179987,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Tactical Strike - Industrial Mix",
+      "sourceSha256": "a568ea6a8c7555a975ef555b78ab0bcd0721ff4260f025c810e8f4a8f6e6b106"
+    },
+    "frontline-deployment": {
+      "title": "Frontline Deployment",
+      "src": "audio/tracks/frontline-deployment.mp3",
+      "genre": "industrial synth rock",
+      "mood": "relentless, fast",
+      "bpm": 115,
+      "durationSeconds": 151.87,
+      "bytes": 1823264,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Frontline Deployment",
+      "sourceSha256": "61954d0a6efa5eba245519aa4cb600a9ba2b55c0a63e654beff1afc0b7537233"
+    },
+    "quiet-acceleration": {
+      "title": "Quiet Acceleration",
+      "src": "audio/tracks/quiet-acceleration.mp3",
+      "genre": "downtempo breakbeat",
+      "mood": "fluid, forward",
+      "bpm": 106,
+      "durationSeconds": 175.62,
+      "bytes": 2108205,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Quiet Acceleration",
+      "sourceSha256": "1b83bbe1269224f262d55a6c48a5c6c367456ee64b980391173734bf649fe03f"
+    },
+    "constellation-orchard": {
+      "title": "Constellation Orchard",
+      "src": "audio/tracks/constellation-orchard.mp3",
+      "genre": "cosmic acoustic ambient",
+      "mood": "expansive, curious",
+      "bpm": 72,
+      "durationSeconds": 156.82,
+      "bytes": 1882824,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Constellation Orchard",
+      "sourceSha256": "58e8c86840f8bdfcacd5f95a4b33408378e33c1dec9187ff6c2c21a1489bf360"
+    },
+    "boundless-realm": {
+      "title": "Boundless Realm",
+      "src": "audio/tracks/boundless-realm.mp3",
+      "genre": "cinematic adventure score",
+      "mood": "sweeping, wondrous",
+      "bpm": 88,
+      "durationSeconds": 168.28,
+      "bytes": 2020117,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Boundless Realm",
+      "sourceSha256": "d543e338b959fa5da0764034d9745577d50a269697d71d07dc67736164a170f9"
+    },
+    "boundless-horizon": {
+      "title": "Boundless Horizon",
+      "src": "audio/tracks/boundless-horizon.mp3",
+      "genre": "cinematic overworld score",
+      "mood": "open, hopeful",
+      "bpm": 88,
+      "durationSeconds": 179.24,
+      "bytes": 2151776,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Boundless Horizon",
+      "sourceSha256": "9de2ef10de7467f55b321ae0aded84f88405e72f1ada57b607d0939d5be15632"
+    },
+    "octopus-at-the-observatory": {
+      "title": "Octopus at the Observatory",
+      "src": "audio/tracks/octopus-at-the-observatory.mp3",
+      "genre": "playful space boss groove",
+      "mood": "sly, bouncy",
+      "bpm": 86,
+      "durationSeconds": 133.33,
+      "bytes": 1601020,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Octopus at the Observatory",
+      "sourceSha256": "c3e77807c981428d9e6591cbd93490da717b6b13fe064efce0bbbbe1de3d0489"
+    },
+    "shadow-phase": {
+      "title": "Shadow Phase",
+      "src": "audio/tracks/shadow-phase.mp3",
+      "genre": "orchestral trip-hop boss",
+      "mood": "dramatic, cosmic",
+      "bpm": 92,
+      "durationSeconds": 168.28,
+      "bytes": 2020114,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Shadow Phase (Boss Cue)",
+      "sourceSha256": "1fe19945abec7952c6000960d8d5767db036f2583b6d0b4be729bbdf43cb87e9"
+    },
+    "invisible-conveyor": {
+      "title": "Invisible Conveyor",
+      "src": "audio/tracks/invisible-conveyor.mp3",
+      "genre": "ambient clockwork",
+      "mood": "calm, deep focus",
+      "bpm": 80,
+      "durationSeconds": 170.6,
+      "bytes": 2048019,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Invisible Conveyor",
+      "sourceSha256": "fbbe48f917cb80f397d2a69e093a0cd97c6def2967782ff2a8278b8a983c745a"
+    },
+    "clockwork-trench": {
+      "title": "Clockwork Trench",
+      "src": "audio/tracks/clockwork-trench.mp3",
+      "genre": "cinematic downtempo",
+      "mood": "tactile, rhythmic",
+      "bpm": 88,
+      "durationSeconds": 176.94,
+      "bytes": 2124190,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Clockwork Trench",
+      "sourceSha256": "c7c089d4233955173ad773cad3595cf15b2092c9b0b83f0a05f262be34059583"
+    },
+    "shadows-and-gears": {
+      "title": "Shadows & Gears",
+      "src": "audio/tracks/shadows-and-gears.mp3",
+      "genre": "clockwork downtempo",
+      "mood": "focused, mechanical",
+      "bpm": 88,
+      "durationSeconds": 156.65,
+      "bytes": 1880623,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Shadows & Gears",
+      "sourceSha256": "9b4f04715c2490b0fe2637f370c140e3f4a1658a6e198b5d1458250cb5cfb48d"
+    },
+    "green-zone-council": {
+      "title": "Green Zone Council",
+      "src": "audio/tracks/green-zone-council.mp3",
+      "genre": "orchestral strategy",
+      "mood": "noble, strategic",
+      "bpm": 88,
+      "durationSeconds": 120.11,
+      "bytes": 1442083,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Green Zone Council",
+      "sourceSha256": "d2fcd13d3aadaee81045cad820b2115eca7e77683ec58ffeaed0837c2c9e879a"
+    },
+    "tactical-breach": {
+      "title": "Tactical Breach",
+      "src": "audio/tracks/tactical-breach.mp3",
+      "genre": "orchestral trip-hop combat",
+      "mood": "intense, tactical",
+      "bpm": 94,
+      "durationSeconds": 164.99,
+      "bytes": 1980934,
+      "instrumental": true,
+      "source": "Google Flow Music",
+      "flowTitle": "Tactical Breach (Boss Cue)",
+      "sourceSha256": "f7e7818383f7ebdf513a77621610bf900eb0b8d1b7ba4eed92e98706eef6b63d"
+    }
+  },
+  "games": {
+    "jigsaw": {
+      "name": "Jigsaw & Picture Reveal",
+      "genre": "Cozy acoustic & chamber puzzle",
+      "volume": 0.28,
+      "defaultEnabled": true,
+      "songs": [
+        "window-seat-logic",
+        "button-trail",
+        "woven-light",
+        "letters-in-the-rain",
+        "ocean-breeze-village"
+      ]
+    },
+    "puzzle-gifts": {
+      "name": "Puzzle Gifts",
+      "genre": "Warm acoustic celebration & puzzle",
+      "volume": 0.28,
+      "defaultEnabled": true,
+      "songs": [
+        "woven-light",
+        "ocean-breeze-village",
+        "harbor-of-memories",
+        "whispering-breeze-village",
+        "window-seat-logic"
+      ]
+    },
+    "moon-gate": {
+      "name": "Moon Gate: The Last Dumpling",
+      "genre": "Heroic martial-arts tournament battle",
+      "volume": 0.37,
+      "defaultEnabled": true,
+      "songs": [
+        "iron-lantern",
+        "clash-of-fate",
+        "final-gambit",
+        "tactical-encounter",
+        "foundry-flank"
+      ]
+    },
+    "neon-dash": {
+      "name": "Neon Dash: Voltage Works",
+      "genre": "Nocturnal synth & industrial arcade runner",
+      "volume": 0.55,
+      "defaultEnabled": true,
+      "songs": [
+        "midnight-rider-groove",
+        "midnight-rider-variant",
+        "tactical-strike",
+        "frontline-deployment",
+        "quiet-acceleration"
+      ]
+    },
+    "mystery-graph": {
+      "name": "Mystery Graph: X-Y Plane",
+      "genre": "Cosmic star-map ambient & space boss groove",
+      "volume": 0.32,
+      "defaultEnabled": false,
+      "note": "Mystery Graph also has built-in Unity music under Missions -> Music, so this optional Flow soundtrack starts off until toggled on.",
+      "songs": [
+        "constellation-orchard",
+        "boundless-realm",
+        "boundless-horizon",
+        "octopus-at-the-observatory",
+        "shadow-phase"
+      ]
+    },
+    "laser-lab": {
+      "name": "Laser Lab: Graphing Equations",
+      "genre": "Focused clockwork & breakbeat math lab",
+      "volume": 0.28,
+      "defaultEnabled": true,
+      "songs": [
+        "invisible-conveyor",
+        "quiet-acceleration",
+        "clockwork-trench",
+        "shadows-and-gears"
+      ]
+    },
+    "origin-defenders": {
+      "name": "Origin Defenders",
+      "genre": "Tactical strategy & industrial defense battle",
+      "volume": 0.34,
+      "defaultEnabled": true,
+      "songs": [
+        "green-zone-council",
+        "foundry-flank",
+        "tactical-breach",
+        "tactical-strike"
+      ]
+    }
+  }
+}

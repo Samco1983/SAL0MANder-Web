@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { AppShell } from '@components/layout/AppShell'
+import { GameMusicControl } from '@components/audio/GameMusicControl'
 import { Button, LinkButton } from '@components/ui/Button'
 import { paths } from '@config/routes'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
@@ -81,9 +82,12 @@ function GiftRecipient({ hash, urlLength }: { hash: string; urlLength: number })
               <h1>Your puzzle gift</h1>
               <p>Progress is temporary. Reloading starts again.</p>
             </div>
-            <Button variant="secondary" onClick={() => setPreview(null)}>
-              Close puzzle
-            </Button>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <GameMusicControl gameId="puzzle-gifts" persist={false} />
+              <Button variant="secondary" onClick={() => setPreview(null)}>
+                Close puzzle
+              </Button>
+            </div>
           </header>
           <GiftCelebration
             key={preview.requestId}

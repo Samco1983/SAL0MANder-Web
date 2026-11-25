@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#f8f5e9"><meta name="robots" content="noindex,nofollow">
 <meta name="description" content="Plot a point. Connect a line. Discover ten original mystery pictures on an x-y grid.">
 <title>Mystery Graph — SAL0MANder</title>
-<link rel="stylesheet" href="styles.css"><script src="lobby.js" defer></script>
+<link rel="stylesheet" href="styles.css"><script src="../../arcade/shared/music-player.js" defer></script><script src="lobby.js" defer></script>
 </head><body>
 <main id="lobby">
 <a class="brand" href="../../play/">← All game demos</a>
@@ -53,6 +53,6 @@
 <p class="footnote">Play upright or sideways. 10 levels: whole numbers in Quadrant I; integers in Quadrants I–II, I–IV and all four quadrants.</p>
 </main>
 <section id="stage" hidden aria-label="Mystery Graph player">
-<header class="player-bar"><button id="back" type="button" aria-label="Back to lobby and close game">← Back</button><span>Mystery Graph</span><button id="fullscreen" type="button" hidden>Full screen</button></header>
+<header class="player-bar"><button id="back" type="button" aria-label="Back to lobby and close game">← Back</button><span>Mystery Graph</span><button id="music-toggle" type="button" aria-pressed="false" title="Optional Flow soundtrack — turn off built-in music in Missions if both play">Music: Off</button><button id="fullscreen" type="button" hidden>Full screen</button></header>
 <div id="mount"></div><p id="orientation-note">Tap a point · or nudge, then Lock point</p><p id="screen-status" class="sr-only" role="status"></p>
 </section></body></html>
