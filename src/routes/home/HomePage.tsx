@@ -100,7 +100,7 @@ function StartIcon({ kind }: { kind: 'mystery' | 'gift' | 'open' | 'studio' | 'p
 }
 
 export function HomePage() {
-  const [heroPicture] = useState(() => pickNextLibraryPicture({ shape: 'Square' }))
+  const [heroPicture] = useState(() => pickNextLibraryPicture({ shape: 'Square', firstGamePicture: false }))
 
   return (
     <AppShell>
