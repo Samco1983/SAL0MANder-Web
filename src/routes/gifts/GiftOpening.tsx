@@ -88,7 +88,7 @@ export function GiftOpening({
         </div>
       </div>
       {state !== 'open' ? (
-        <button className={styles.openGift} disabled={state === 'opening'} onClick={unwrap}>
+        <button type="button" className={styles.openGift} disabled={state === 'opening'} onClick={unwrap}>
           {state === 'opening'
             ? 'Unwrapping…'
             : wrapper === 'box'
