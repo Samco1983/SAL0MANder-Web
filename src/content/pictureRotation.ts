@@ -193,6 +193,11 @@ export type PickPictureOptions = {
    * are not a game, such as the home page hero, pass false so they do not use it up.
    */
   firstGamePicture?: boolean
+  /**
+   * Override which picture key opens a device's first game (defaults to FIRST_GAME_PICTURE_KEY).
+   * Pass `null` to skip the fixed first picture and rotate immediately.
+   */
+  firstPictureKey?: string | null
 }
 
 /**
@@ -217,8 +222,15 @@ export function pickNextLibraryPicture(options: PickPictureOptions = {}): Puzzle
   const forced = options.excludeKey ?? null
 
   // First game on this device: open on Samuel's chosen picture, then rotate.
-  if (options.firstGamePicture !== false && !forced && !firstGamePictureShown(storage)) {
-    const first = eligible.find((picture) => picture.key === FIRST_GAME_PICTURE_KEY)
+  const firstKey =
+    options.firstPictureKey === undefined ? FIRST_GAME_PICTURE_KEY : options.firstPictureKey
+  if (
+    options.firstGamePicture !== false &&
+    firstKey &&
+    !forced &&
+    !firstGamePictureShown(storage)
+  ) {
+    const first = eligible.find((picture) => picture.key === firstKey)
     if (first && recent[0] !== first.key) {
       markFirstGamePictureShown(storage)
       recordPickedPicture(first.key, storage)

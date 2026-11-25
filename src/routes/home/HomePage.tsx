@@ -4,6 +4,7 @@ import { env } from '@config/env'
 import { paths, buildPath } from '@config/routes'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
+import { isGameEnabled, useSiteGameSettings } from '@content/gameSettings'
 import { pickNextLibraryPicture } from '@content/pictureRotation'
 import { AppShell } from '@components/layout/AppShell'
 import { SharePanel } from '@components/share/SharePanel'
@@ -100,6 +101,7 @@ function StartIcon({ kind }: { kind: 'mystery' | 'gift' | 'open' | 'studio' | 'p
 }
 
 export function HomePage() {
+  const gameSettings = useSiteGameSettings()
   const [heroPicture] = useState(() => pickNextLibraryPicture({ shape: 'Square', firstGamePicture: false }))
 
   return (
@@ -182,20 +184,22 @@ export function HomePage() {
               <span id="start-pictures-description">Find a picture worth uncovering.</span>
             </span>
           </a>
-          <Link
-            to="/arcade/neon-dash/"
-            reloadDocument
-            className={`${styles.startTile} ${styles.arcadeTile}`}
-            aria-labelledby="start-neon-title"
-            aria-describedby="start-neon-description"
-          >
-            <span className={styles.startText}>
-              <strong id="start-neon-title">Play Neon Dash</strong>
-              <span id="start-neon-description">
-                SAL0MANder Arcade · Tap to jump through Voltage Works. More games on the Arcade page.
+          {isGameEnabled(gameSettings, 'neon-dash') ? (
+            <Link
+              to="/arcade/neon-dash/"
+              reloadDocument
+              className={`${styles.startTile} ${styles.arcadeTile}`}
+              aria-labelledby="start-neon-title"
+              aria-describedby="start-neon-description"
+            >
+              <span className={styles.startText}>
+                <strong id="start-neon-title">Play Neon Dash</strong>
+                <span id="start-neon-description">
+                  SAL0MANder Arcade · Tap to jump through Voltage Works. More games on the Arcade page.
+                </span>
               </span>
-            </span>
-          </Link>
+            </Link>
+          ) : null}
         </nav>
 
         {/*
