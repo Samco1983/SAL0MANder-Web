@@ -88,6 +88,7 @@ export function PrivacyPage() {
             <li>Light or dark appearance preference</li>
             <li>Whether the side panel is open or closed</li>
             <li>Game settings and locally saved puzzle progress</li>
+            <li>Which library pictures were shown recently, so the next game uses a different one</li>
             <li>Teacher Studio activity drafts, including questions, picture choices, settings and notes</li>
           </ul>
           <p>

@@ -1,6 +1,12 @@
-import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
+import { useId, useState } from 'react'
+import { PhotoCredit } from '@components/ui/PhotoCredit'
+import { PUZZLE_LIBRARY, PUZZLE_PICTURE_CATEGORIES } from '@content/puzzleLibrary'
 import { BOARD_SHAPES, PIECE_COUNTS, type ActivityDraft } from '@studio/activityDraft'
 import styles from './ImagePanel.module.css'
+
+function withBaseUrl(src: string): string {
+  return `${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}${src}`
+}
 
 /**
  * Choosing the picture and the board.
@@ -32,11 +38,23 @@ export function ImagePanel({
   draft: ActivityDraft
   onChange: (next: ActivityDraft) => void
 }) {
+  const id = useId()
+  const [query, setQuery] = useState('')
+  const [category, setCategory] = useState('')
   const setConfig = (patch: Partial<ActivityDraft['config']>) =>
     onChange({ ...draft, config: { ...draft.config, ...patch } })
 
   const selected = draft.meta.imageKey
-  const fitting = PUZZLE_LIBRARY.filter((p) => p.shape === draft.config.boardShape)
+  const search = query.trim().toLowerCase()
+  const visiblePictures = PUZZLE_LIBRARY.filter(
+    (picture) =>
+      (!category || picture.category === category) &&
+      (!search ||
+        `${picture.name} ${picture.alt} ${picture.category} ${picture.searchTerms?.join(' ') ?? ''}`
+          .toLowerCase()
+          .includes(search)),
+  )
+  const fitting = visiblePictures.filter((p) => p.shape === draft.config.boardShape)
 
   return (
     <section className={styles.panel} aria-label="Puzzle and image">
@@ -82,16 +100,65 @@ export function ImagePanel({
         </label>
       </div>
 
-      <h3 className={styles.heading}>
-        Pictures {fitting.length > 0 && <span className={styles.count}>· {fitting.length} fit this board</span>}
-      </h3>
+      <div className={styles.filters}>
+        <label className={styles.field} htmlFor={`${id}-search`}>
+          <span className={styles.label}>Find a picture</span>
+          <input
+            id={`${id}-search`}
+            className={styles.select}
+            type="search"
+            value={query}
+            placeholder="Try rover, puppies, space or reef"
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+        <label className={styles.field} htmlFor={`${id}-theme`}>
+          <span className={styles.label}>Theme</span>
+          <select
+            id={`${id}-theme`}
+            className={styles.select}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">All themes</option>
+            {PUZZLE_PICTURE_CATEGORIES.map((theme) => (
+              <option key={theme} value={theme}>
+                {theme}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className={styles.headingRow}>
+        <h3 className={styles.heading}>
+          Pictures ({visiblePictures.length} of {PUZZLE_LIBRARY.length})
+          {fitting.length > 0 && <span className={styles.count}> · {fitting.length} fit this board</span>}
+        </h3>
+        {query || category ? (
+          <button
+            type="button"
+            className={styles.clearFilter}
+            onClick={() => {
+              setQuery('')
+              setCategory('')
+            }}
+          >
+            Show all pictures
+          </button>
+        ) : null}
+      </div>
+
+      {visiblePictures.length === 0 ? (
+        <p className={styles.hint}>No library pictures match that search. Try another theme or keyword.</p>
+      ) : null}
 
       <ul className={styles.grid}>
-        {PUZZLE_LIBRARY.map((picture) => {
+        {visiblePictures.map((picture) => {
           const fits = picture.shape === draft.config.boardShape
           const isSelected = selected === picture.key
           return (
-            <li key={picture.key}>
+            <li key={picture.key} className={styles.card}>
               <button
                 type="button"
                 className={styles.pick}
@@ -101,17 +168,16 @@ export function ImagePanel({
                 onClick={() =>
                   onChange({
                     ...draft,
-                    // Choosing a picture sets the board it was made for. The
-                    // alternative is a teacher picking a portrait castle and
-                    // getting it cropped to a square without being told why.
-                    config: { ...draft.config, boardShape: picture.shape },
+                    // Choosing a picture sets the board it was made for and pins
+                    // imagePresetIndex to -1 so preview loads the library pixels.
+                    config: { ...draft.config, boardShape: picture.shape, imagePresetIndex: -1 },
                     meta: { ...draft.meta, imageKey: picture.key },
                   })
                 }
               >
                 <img
                   className={styles.thumb}
-                  src={picture.src}
+                  src={withBaseUrl(picture.src)}
                   alt={picture.alt}
                   width={picture.width}
                   height={picture.height}
@@ -123,6 +189,7 @@ export function ImagePanel({
                   {fits ? picture.shape : `${picture.shape} board`}
                 </span>
               </button>
+              <PhotoCredit credit={picture.photoCredit} />
             </li>
           )
         })}
