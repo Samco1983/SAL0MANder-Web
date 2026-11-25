@@ -101,6 +101,11 @@ const META = {
     description:
       'Open your puzzle gift or paste its complete link or backup code. No account needed. The game website must be reachable.',
   },
+  '/studio': {
+    title: 'Teacher Studio — build a puzzle activity | SAL0MANder',
+    description:
+      'Teachers write their own questions, choose a picture and share a puzzle activity with one link. Drafts stay in your browser. No account needed.',
+  },
   '/about': {
     title: 'About SAL0MANder — who makes it and why',
     description:
