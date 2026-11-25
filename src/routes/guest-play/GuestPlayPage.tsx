@@ -498,7 +498,29 @@ export function GuestPlayPage() {
          * would close the panel and re-open it on every failed retry.
          */
         reveal={session.resultHeld || state.status === 'error'}
-        stageActions={<GameMusicControl gameId="jigsaw" />}
+        stageActions={
+          <>
+            <GameMusicControl gameId="jigsaw" />
+            {state.status === 'ready' &&
+          isSampleActivityId(state.bundle.summary.id) &&
+          !hasExplicitPicture &&
+          pictureLoadKey ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                setLatchedPicture(
+                  rotatePictureForGameLoad(pictureLoadKey, {
+                    excludeKey: activePicture?.key,
+                  }),
+                )
+              }
+            >
+              New picture
+            </Button>
+          ) : null}
+          </>
+        }
         stage={renderStage()}
         companion={
           <>
@@ -525,22 +547,6 @@ export function GuestPlayPage() {
                   <p className={styles.byline}>by {state.bundle.summary.authorDisplayName}</p>
                 ) : null}
                 <p className={styles.description}>{state.bundle.summary.description}</p>
-                {isSampleActivityId(state.bundle.summary.id) &&
-                !hasExplicitPicture &&
-                pictureLoadKey ? (
-                  <Button
-                    variant="secondary"
-                    onClick={() =>
-                      setLatchedPicture(
-                        rotatePictureForGameLoad(pictureLoadKey, {
-                          excludeKey: activePicture?.key,
-                        }),
-                      )
-                    }
-                  >
-                    New picture
-                  </Button>
-                ) : null}
                 {/* No `title` — the heading is directly above; repeating it
                     here would just be noise on this surface. */}
                 {activityId ? <SharePanel activityId={activityId} baseUrl={env.publicBaseUrl} /> : null}
