@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useId, useState } from 'react'
 import { buildShareLink } from '@config/routes'
 import { Button } from '@components/ui/Button'
 import { useCopyToClipboard } from './useCopyToClipboard'
@@ -27,6 +27,7 @@ export function SharePanel(props: SharePanelProps) {
   const url = resolveShareUrl(props)
   const { title } = props
   const [showQr, setShowQr] = useState(false)
+  const qrRegionId = useId()
 
   return (
     <section className={styles.panel} aria-label="Share this activity">
@@ -35,23 +36,31 @@ export function SharePanel(props: SharePanelProps) {
 
       <CopyLinkFields key={url} url={url} />
 
-      <Button variant="ghost" onClick={() => setShowQr((v) => !v)} aria-expanded={showQr}>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => setShowQr((v) => !v)}
+        aria-expanded={showQr}
+        aria-controls={qrRegionId}
+      >
         {showQr ? 'Hide QR code' : 'Show QR code'}
       </Button>
 
-      {showQr ? (
-        <div className={styles.qrWrap}>
-          <Suspense
-            fallback={<div className={styles.qrPlaceholder} style={{ width: 176, height: 176 }} />}
-          >
-            <ShareQr url={url} />
-          </Suspense>
-          <p className={styles.qrHint}>
-            Point a phone camera at this, or print it on a worksheet. It opens the activity with no
-            sign-in.
-          </p>
-        </div>
-      ) : null}
+      <div id={qrRegionId} className={styles.qrWrap} hidden={!showQr}>
+        {showQr ? (
+          <>
+            <Suspense
+              fallback={<div className={styles.qrPlaceholder} style={{ width: 176, height: 176 }} />}
+            >
+              <ShareQr url={url} />
+            </Suspense>
+            <p className={styles.qrHint}>
+              Point a phone camera at this, or print it on a worksheet. It opens the activity with no
+              sign-in.
+            </p>
+          </>
+        ) : null}
+      </div>
     </section>
   )
 }
@@ -68,7 +77,7 @@ function CopyLinkFields({ url }: { url: string }) {
           depends on.
         */}
         <input className={styles.linkInput} value={url} readOnly aria-label="Share link" />
-        <Button variant="secondary" onClick={() => void copy(url)}>
+        <Button type="button" variant="secondary" onClick={() => void copy(url)}>
           {state === 'copied' ? 'Copied' : state === 'failed' ? 'Copy failed' : 'Copy link'}
         </Button>
       </div>

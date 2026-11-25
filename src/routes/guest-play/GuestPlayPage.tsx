@@ -46,7 +46,7 @@ function LinkFailure({ error, retry }: { error: ApiError; retry: () => void }) {
       <h1 className={styles.companionTitle}>{title}</h1>
       <p className={styles.description}>{body}</p>
       {recoverable ? (
-        <Button className={styles.retry} onClick={retry}>
+        <Button type="button" className={styles.retry} onClick={retry}>
           Try again
         </Button>
       ) : (
@@ -91,7 +91,7 @@ function UndeliveredResult({
           : "You finished — nothing is lost yet. Keep this tab open until it can be saved — closing or reloading it before then will lose the result."}
       </p>
       {retryable ? (
-        <Button className={styles.retry} onClick={retry}>
+        <Button type="button" className={styles.retry} onClick={retry}>
           Try saving again
         </Button>
       ) : null}
@@ -506,6 +506,7 @@ export function GuestPlayPage() {
           !hasExplicitPicture &&
           pictureLoadKey ? (
             <Button
+              type="button"
               variant="secondary"
               size="sm"
               onClick={() =>
@@ -692,7 +693,7 @@ export function GuestPlayIndexPage() {
             <p className={styles.demoNote}>No account is needed. The Jigsaw and Picture Reveal sample uses integer-operation questions and has no cloud saves. Mystery Graph keeps graph progress in this browser; an unfinished battle restarts. The whole collection is on the <a href={`${readBasePath()}arcade/`}>Arcade page</a>.</p>
           </section>
         ) : null}
-        <form className={styles.codeForm} onSubmit={submitShareCode}>
+        <form className={styles.codeForm} onSubmit={submitShareCode} aria-label="Open a class activity by code">
           <label className={styles.codeLabel} htmlFor="guest-share-code">
             Enter a class code
           </label>

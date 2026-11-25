@@ -82,7 +82,7 @@ export function QuestionsPanel({
             Students answer these to uncover the picture. Write them in the order you want them
             asked.
           </p>
-          <Button onClick={() => onChange(addQuestion(draft))}>Write the first question</Button>
+          <Button type="button" onClick={() => onChange(addQuestion(draft))}>Write the first question</Button>
         </div>
       ) : (
         <ol className={styles.list}>
@@ -145,7 +145,7 @@ export function QuestionsPanel({
                           onChange={() => onChange(setCorrectChoice(draft, q.id, c.id))}
                         />
                         <span className={styles.srOnly}>
-                          Mark answer {ci + 1} correct
+                          Mark answer {ci + 1} correct for question {index + 1}
                         </span>
                       </label>
                       <input
@@ -160,14 +160,14 @@ export function QuestionsPanel({
                         className={styles.tool}
                         onClick={() => onChange(removeChoice(draft, q.id, c.id))}
                         disabled={q.choices.length <= MIN_CHOICES}
-                        aria-label={`Remove answer ${ci + 1}`}
+                        aria-label={`Remove answer ${ci + 1} for question ${index + 1}`}
                       >
                         ×
                       </button>
                     </div>
                   ))}
                   {q.choices.length < MAX_CHOICES && (
-                    <Button size="sm" variant="secondary" onClick={() => onChange(addChoice(draft, q.id))}>
+                    <Button type="button" size="sm" variant="secondary" onClick={() => onChange(addChoice(draft, q.id))}>
                       Add an answer
                     </Button>
                   )}
@@ -199,7 +199,7 @@ export function QuestionsPanel({
 
       {draft.questions.length > 0 && (
         <div className={styles.addRow}>
-          <Button onClick={() => onChange(addQuestion(draft))}>Add a question</Button>
+          <Button type="button" onClick={() => onChange(addQuestion(draft))}>Add a question</Button>
         </div>
       )}
     </section>
