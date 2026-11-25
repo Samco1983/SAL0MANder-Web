@@ -7,12 +7,14 @@ import { AppShell } from '@components/layout/AppShell'
 import { CompanionLayout } from '@components/layout/CompanionLayout'
 import { GameMusicControl } from '@components/audio/GameMusicControl'
 import { Button, LinkButton } from '@components/ui/Button'
+import { PictureCredit } from '@components/ui/PictureCredit'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
 import { resolveUnityBuildConfig } from '@unity/buildConfig'
 import { correlateAttempt, isUsableFinishedPayload, onUnityMessage } from '@unity/bridge'
-import { preparePreview, type PreviewBoot } from '@unity/previewBridge'
+import { onPreviewMessage, preparePreview, type PreviewBoot } from '@unity/previewBridge'
+import { onPreviewAttemptMessage } from '@unity/previewAttemptBridge'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 import { newId, ShareCodeSchema } from '@contracts/v1'
 import type { PuzzlePicture } from '@content/puzzleLibrary'
@@ -164,6 +166,13 @@ export function GuestPlayPage() {
 
   const activePicture = explicitPicture ?? latchedPicture
   const hasExplicitPicture = Boolean(explicitPicture)
+  const activePictureRef = useRef<PuzzlePicture | undefined>(activePicture)
+  activePictureRef.current = activePicture
+  const [completedPictureKey, setCompletedPictureKey] = useState<string | null>(null)
+
+  useEffect(() => {
+    setCompletedPictureKey(null)
+  }, [activityId, activePicture?.key])
 
   const unityBuildConfigured = Boolean(resolveUnityBuildConfig())
   const isShareCodeRoute = Boolean(activityId && ShareCodeSchema.safeParse(activityId).success)
@@ -387,6 +396,10 @@ export function GuestPlayPage() {
         return
       }
 
+      if (activePictureRef.current) {
+        setCompletedPictureKey(activePictureRef.current.key)
+      }
+
       void submitRef.current({
         status: 'completed',
         durationMs: message.durationMs,
@@ -415,25 +428,67 @@ export function GuestPlayPage() {
     )
   }
 
+  const samplePreviewRequestId =
+    samplePreviewState.status === 'ready' ? samplePreviewState.preview.requestId : undefined
+
+  useEffect(() => {
+    if (!samplePreviewRequestId) return
+    let activeAttempt = 0
+    const stopAttempts = onPreviewAttemptMessage((message) => {
+      if (message.requestId !== samplePreviewRequestId) return
+      if (message.type === 'preview-attempt-ready' && message.attempt > activeAttempt) {
+        activeAttempt = message.attempt
+        setCompletedPictureKey(null)
+      } else if (
+        message.type === 'preview-attempt-finished' &&
+        activeAttempt > 0 &&
+        message.attempt === activeAttempt &&
+        activePictureRef.current
+      ) {
+        setCompletedPictureKey(activePictureRef.current.key)
+      }
+    })
+    const stopLegacy = onPreviewMessage((message) => {
+      if (message.requestId !== samplePreviewRequestId) return
+      if (message.type === 'preview-finished' && activePictureRef.current) {
+        setCompletedPictureKey(activePictureRef.current.key)
+      } else if (message.type === 'preview-error') {
+        setCompletedPictureKey(null)
+      }
+    })
+    return () => {
+      stopAttempts()
+      stopLegacy()
+    }
+  }, [samplePreviewRequestId])
+
+  const completedCredit =
+    completedPictureKey && activePicture && completedPictureKey === activePicture.key ? (
+      <aside className={styles.completionCredit} aria-label="Picture credit">
+        <PictureCredit picture={activePicture} />
+      </aside>
+    ) : null
+
   function renderStage() {
     if (state.status === 'error') return null
     if (usesLibrarySamplePreview) {
       if (samplePreviewState.status === 'ready') {
         return (
-          <>
+          <div className={styles.stageWrap}>
             <JigsawCelebration
               key={`celebrate:${samplePreviewState.preview.requestId}`}
               previewRequestId={samplePreviewState.preview.requestId}
               picture={activePicture}
               onNextPicture={canRotateSamplePicture ? handleNextPicture : undefined}
             />
+            {completedCredit}
             <UnityStage
               key={samplePreviewState.preview.requestId}
               audience="student"
               preview={samplePreviewState.preview}
               previewAttempts
             />
-          </>
+          </div>
         )
       }
       if (samplePreviewState.status === 'error') {
@@ -463,20 +518,21 @@ export function GuestPlayPage() {
       )
     }
     return (
-      <>
+      <div className={styles.stageWrap}>
         <JigsawCelebration
           clientAttemptId={clientAttemptId}
           sessionId={sessionId}
           picture={activePicture}
           onNextPicture={canRotateSamplePicture ? handleNextPicture : undefined}
         />
+        {completedCredit}
         <UnityStage
           audience="student"
           {...(activityId ? { activityId } : {})}
           {...(boot ? { boot } : {})}
           {...(sessionStarted ? { sessionStarted } : {})}
         />
-      </>
+      </div>
     )
   }
 

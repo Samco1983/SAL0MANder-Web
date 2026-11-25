@@ -94,6 +94,7 @@ function GiftRecipient({ hash, urlLength }: { hash: string; urlLength: number })
             requestId={preview.requestId}
             channel={preview.type === 'slide-boot' ? 'slide' : 'preview-attempt'}
             presentation={giftPresentation(gift)}
+            picture={PUZZLE_LIBRARY.find((item) => item.key === gift.imageKey)}
           />
           <div className={styles.stage}>
             {preview.type === 'slide-boot' ? (

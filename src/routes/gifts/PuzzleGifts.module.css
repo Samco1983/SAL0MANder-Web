@@ -520,6 +520,11 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.celebrationCopy {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
 .celebration > a {
   flex-shrink: 0;
 }
