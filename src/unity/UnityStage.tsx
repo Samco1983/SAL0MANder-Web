@@ -354,6 +354,69 @@ export function UnityStage({
     // That is what makes retry unable to duplicate an instance.
   }, [config?.loaderUrl, retryToken, conflictingLaunch])
 
+  const hasBuildConfig = Boolean(config)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const stage = stageRef.current
+    if (!hasBuildConfig || conflictingLaunch || !canvas || !stage) return
+
+    // Single-finger drags move jigsaw pieces inside Unity. Cancelling single-touch
+    // scroll stops iOS/Android pull-to-refresh and page rubber-banding while keeping
+    // two-finger accessibility pinch-zoom available.
+    const handleTouchMove = (event: TouchEvent) => {
+      if (event.touches.length === 1 && event.cancelable) {
+        event.preventDefault()
+      }
+    }
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault()
+    }
+
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false })
+    canvas.addEventListener('contextmenu', handleContextMenu)
+
+    // Notify Unity's window-resize listener when mobile browser toolbars collapse,
+    // the companion sheet opens/closes, or orientation changes without firing a
+    // top-level window resize immediately.
+    let frameId: number | null = null
+    let lastSize = ''
+    const scheduleStageResize = (width: number, height: number) => {
+      const nextSize = `${Math.round(width)}x${Math.round(height)}`
+      if (nextSize === lastSize) return
+      lastSize = nextSize
+      if (frameId !== null) window.cancelAnimationFrame(frameId)
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null
+        window.dispatchEvent(new Event('resize'))
+      })
+    }
+
+    let observer: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver((entries) => {
+        const entry = entries[entries.length - 1]
+        if (!entry) return
+        scheduleStageResize(entry.contentRect.width, entry.contentRect.height)
+      })
+      observer.observe(stage)
+    }
+
+    const viewport = window.visualViewport
+    const handleViewportResize = () => {
+      const rect = stage.getBoundingClientRect()
+      scheduleStageResize(rect.width, rect.height)
+    }
+    viewport?.addEventListener('resize', handleViewportResize)
+
+    return () => {
+      canvas.removeEventListener('touchmove', handleTouchMove)
+      canvas.removeEventListener('contextmenu', handleContextMenu)
+      observer?.disconnect()
+      viewport?.removeEventListener('resize', handleViewportResize)
+      if (frameId !== null) window.cancelAnimationFrame(frameId)
+    }
+  }, [hasBuildConfig, conflictingLaunch])
+
   if (conflictingLaunch) return <div className={styles.stage} role="alert">This puzzle has conflicting launch settings. Close it and try again.</div>
 
   if (!config) {
