@@ -401,17 +401,84 @@
         "foundry-flank"
       ]
     },
-    "neon-dash": {
-      "name": "Neon Dash: Voltage Works",
+    "sal0mander-dash": {
+      "name": "SAL0MANder Dash",
       "genre": "Nocturnal synth & industrial arcade runner",
       "volume": 0.55,
       "defaultEnabled": true,
+      "levels": {
+        "1": {
+          "name": "Voltage Works",
+          "feel": "Warm-up · smooth, learn to jump",
+          "song": "midnight-rider-groove"
+        },
+        "2": {
+          "name": "Grid Runner",
+          "feel": "Steady · more obstacles",
+          "song": "midnight-rider-variant"
+        },
+        "3": {
+          "name": "Pulse Highway",
+          "feel": "Forward push · faster beat",
+          "song": "quiet-acceleration"
+        },
+        "4": {
+          "name": "Overdrive Core",
+          "feel": "Intense · industrial action rock",
+          "song": "tactical-strike"
+        },
+        "5": {
+          "name": "Final Run",
+          "feel": "Relentless · full throttle",
+          "song": "frontline-deployment"
+        }
+      },
       "songs": [
         "midnight-rider-groove",
         "midnight-rider-variant",
+        "quiet-acceleration",
         "tactical-strike",
-        "frontline-deployment",
-        "quiet-acceleration"
+        "frontline-deployment"
+      ]
+    },
+    "neon-dash": {
+      "name": "SAL0MANder Dash (legacy alias)",
+      "genre": "Nocturnal synth & industrial arcade runner",
+      "volume": 0.55,
+      "defaultEnabled": true,
+      "levels": {
+        "1": {
+          "name": "Voltage Works",
+          "feel": "Warm-up · smooth, learn to jump",
+          "song": "midnight-rider-groove"
+        },
+        "2": {
+          "name": "Grid Runner",
+          "feel": "Steady · more obstacles",
+          "song": "midnight-rider-variant"
+        },
+        "3": {
+          "name": "Pulse Highway",
+          "feel": "Forward push · faster beat",
+          "song": "quiet-acceleration"
+        },
+        "4": {
+          "name": "Overdrive Core",
+          "feel": "Intense · industrial action rock",
+          "song": "tactical-strike"
+        },
+        "5": {
+          "name": "Final Run",
+          "feel": "Relentless · full throttle",
+          "song": "frontline-deployment"
+        }
+      },
+      "songs": [
+        "midnight-rider-groove",
+        "midnight-rider-variant",
+        "quiet-acceleration",
+        "tactical-strike",
+        "frontline-deployment"
       ]
     },
     "mystery-graph": {

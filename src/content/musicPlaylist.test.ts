@@ -42,6 +42,7 @@ describe('editable public/audio/music-playlist.json', () => {
       'jigsaw',
       'puzzle-gifts',
       'moon-gate',
+      'sal0mander-dash',
       'neon-dash',
       'mystery-graph',
       'laser-lab',
@@ -67,6 +68,28 @@ describe('editable public/audio/music-playlist.json', () => {
     for (const [id, track] of Object.entries(playlist.tracks)) {
       expect(track.instrumental, `track ${id} must be marked instrumental`).toBe(true)
       expect(track.source).toBe('Google Flow Music')
+    }
+  })
+
+  it('maps SAL0MANder Dash levels 1-5 to one BPM-matched song per level', () => {
+    const playlist = loadDiskPlaylist()
+    const resolved = resolveGamePlaylist(playlist, 'sal0mander-dash', '/')
+    expect(resolved).not.toBeNull()
+    expect(resolved!.levels).toBeDefined()
+
+    const expected: Record<string, { song: string; bpm: number }> = {
+      '1': { song: 'midnight-rider-groove', bpm: 96 },
+      '2': { song: 'midnight-rider-variant', bpm: 96 },
+      '3': { song: 'quiet-acceleration', bpm: 106 },
+      '4': { song: 'tactical-strike', bpm: 115 },
+      '5': { song: 'frontline-deployment', bpm: 115 },
+    }
+
+    for (const [levelKey, spec] of Object.entries(expected)) {
+      const levelEntry = resolved!.levels?.[levelKey]
+      expect(levelEntry, `missing level ${levelKey}`).toBeDefined()
+      expect(levelEntry!.track.id).toBe(spec.song)
+      expect(levelEntry!.track.bpm).toBe(spec.bpm)
     }
   })
 
@@ -169,7 +192,7 @@ describe('music rotation — no repeat until every song for a game has played', 
 })
 
 describe('shared vanilla JS arcade player (public/arcade/shared/music-player.js)', () => {
-  it('rotates through all Moon Gate and Neon Dash songs without repeat until all have played', () => {
+  it('rotates through all Moon Gate and SAL0MANder Dash songs without repeat until all have played', () => {
     const code = readFileSync(SHARED_PLAYER_PATH, 'utf8')
     const run = new Function(code)
     run()
@@ -181,7 +204,10 @@ describe('shared vanilla JS arcade player (public/arcade/shared/music-player.js)
             playlist: MusicPlaylist,
             gameId: string,
             siteRoot: string,
-          ) => { tracks: Array<{ id: string; title: string; src: string }> } | null
+          ) => {
+            tracks: Array<{ id: string; title: string; src: string; bpm?: number }>
+            levels?: Record<string, { name: string; feel: string; track: { id: string; bpm?: number } }>
+          } | null
           pickNextTrack: (
             gameId: string,
             tracks: Array<{ id: string; title: string; src: string }>,
@@ -194,7 +220,13 @@ describe('shared vanilla JS arcade player (public/arcade/shared/music-player.js)
     expect(sal0Music).toBeDefined()
     const playlist = loadDiskPlaylist()
 
-    for (const gameId of ['moon-gate', 'neon-dash', 'mystery-graph']) {
+    const dashCfg = sal0Music!.resolveGameConfig(playlist, 'sal0mander-dash', 'https://sal0mander.com/')
+    expect(dashCfg?.levels?.['1']?.track.id).toBe('midnight-rider-groove')
+    expect(dashCfg?.levels?.['1']?.track.bpm).toBe(96)
+    expect(dashCfg?.levels?.['5']?.track.id).toBe('frontline-deployment')
+    expect(dashCfg?.levels?.['5']?.track.bpm).toBe(115)
+
+    for (const gameId of ['moon-gate', 'sal0mander-dash', 'neon-dash', 'mystery-graph']) {
       const cfg = sal0Music!.resolveGameConfig(playlist, gameId, 'https://sal0mander.com/')
       expect(cfg).not.toBeNull()
       const n = cfg!.tracks.length

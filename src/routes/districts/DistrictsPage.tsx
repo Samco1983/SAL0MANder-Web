@@ -33,9 +33,9 @@ export function DistrictsPage() {
             equations.
           </p>
           <p>
-            The SAL0MANder Arcade adds short math-practice games (for example Moon Gate, Neon Dash
-            and Mystery Graph). Its lesson games, such as Laser Lab, open on the companion lessons
-            site, salomandermath.com.
+            The SAL0MANder Arcade adds short math-practice games (for example Moon Gate, SAL0MANder
+            Dash and Mystery Graph). Its lesson games, such as Laser Lab, open on the companion
+            lessons site, salomandermath.com.
           </p>
         </section>
 

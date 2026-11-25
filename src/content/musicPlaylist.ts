@@ -26,6 +26,16 @@ export const InlineSongEntrySchema = z.object({
   enabled: z.boolean().optional(),
 })
 
+export const GameLevelMusicSchema = z.union([
+  z.string().min(1),
+  z.object({
+    song: z.string().min(1),
+    name: z.string().min(1).optional(),
+    feel: z.string().optional(),
+    bpm: z.number().positive().optional(),
+  }),
+])
+
 export const GameMusicEntrySchema = z.object({
   name: z.string().min(1),
   genre: z.string().min(1),
@@ -33,6 +43,7 @@ export const GameMusicEntrySchema = z.object({
   defaultEnabled: z.boolean().default(true),
   enabled: z.boolean().default(true),
   note: z.string().optional(),
+  levels: z.record(z.string().min(1), GameLevelMusicSchema).optional(),
   songs: z.array(z.union([z.string().min(1), InlineSongEntrySchema])),
 })
 
@@ -56,7 +67,16 @@ export type ResolvedMusicTrack = {
   rawSrc: string
   genre: string
   mood: string
+  bpm?: number
+  durationSeconds?: number
   source: string
+}
+
+export type ResolvedGameLevelMusic = {
+  level: string
+  name?: string
+  feel?: string
+  track: ResolvedMusicTrack
 }
 
 export type ResolvedGamePlaylist = {
@@ -67,6 +87,7 @@ export type ResolvedGamePlaylist = {
   defaultEnabled: boolean
   enabled: boolean
   tracks: ResolvedMusicTrack[]
+  levels?: Record<string, ResolvedGameLevelMusic>
 }
 
 /**
@@ -195,6 +216,8 @@ export function resolveGamePlaylist(
         rawSrc: track.src,
         genre: track.genre ?? '',
         mood: track.mood ?? '',
+        ...(track.bpm !== undefined ? { bpm: track.bpm } : {}),
+        ...(track.durationSeconds !== undefined ? { durationSeconds: track.durationSeconds } : {}),
         source: track.source ?? 'Google Flow Music',
       })
       continue
@@ -211,8 +234,42 @@ export function resolveGamePlaylist(
       rawSrc: merged.src,
       genre: merged.genre ?? '',
       mood: merged.mood ?? '',
+      ...(base?.bpm !== undefined ? { bpm: base.bpm } : {}),
+      ...(base?.durationSeconds !== undefined ? { durationSeconds: base.durationSeconds } : {}),
       source: merged.source ?? 'Google Flow Music',
     })
+  }
+
+  let resolvedLevels: Record<string, ResolvedGameLevelMusic> | undefined
+  if (game.levels) {
+    resolvedLevels = {}
+    for (const [levelKey, levelEntry] of Object.entries(game.levels)) {
+      const songId = typeof levelEntry === 'string' ? levelEntry : levelEntry.song
+      const levelName = typeof levelEntry === 'string' ? undefined : levelEntry.name
+      const levelFeel = typeof levelEntry === 'string' ? undefined : levelEntry.feel
+      const levelBpm = typeof levelEntry === 'string' ? undefined : levelEntry.bpm
+      const rawTrack = playlist.tracks[songId]
+      if (!rawTrack || rawTrack.enabled === false) continue
+      const bpm = levelBpm ?? rawTrack.bpm
+      resolvedLevels[levelKey] = {
+        level: levelKey,
+        ...(levelName ? { name: levelName } : {}),
+        ...(levelFeel ? { feel: levelFeel } : {}),
+        track: {
+          id: songId,
+          title: rawTrack.title,
+          src: resolveTrackSrc(rawTrack.src, basePath),
+          rawSrc: rawTrack.src,
+          genre: rawTrack.genre ?? '',
+          mood: rawTrack.mood ?? '',
+          ...(bpm !== undefined ? { bpm } : {}),
+          ...(rawTrack.durationSeconds !== undefined
+            ? { durationSeconds: rawTrack.durationSeconds }
+            : {}),
+          source: rawTrack.source ?? 'Google Flow Music',
+        },
+      }
+    }
   }
 
   return {
@@ -223,6 +280,7 @@ export function resolveGamePlaylist(
     defaultEnabled: game.defaultEnabled,
     enabled: game.enabled,
     tracks,
+    ...(resolvedLevels ? { levels: resolvedLevels } : {}),
   }
 }
 

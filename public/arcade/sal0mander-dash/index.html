@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111322"><title>SAL0MANder Dash — Voltage Works | SAL0MANder Arcade</title>
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <main id="cabinet">
+    <header>
+      <a href="../" aria-label="SAL0MANder Arcade"><img src="sal0mander.png" alt="SAL0MANder"></a>
+      <span>ARCADE</span>
+      <div class="tools">
+        <button id="sound" type="button" aria-pressed="true">Music: On</button>
+        <button id="nextSong" type="button">Next song</button>
+        <button id="pause" type="button" hidden>Pause</button>
+        <button id="full" type="button">Full screen</button>
+      </div>
+    </header>
+    <section id="stage" aria-label="SAL0MANder Dash game">
+      <canvas id="game" tabindex="0" aria-label="SAL0MANder Dash course. Tap or press Space to jump on the beat. In 2-player mode, Player 1 taps the left half or presses Space or W; Player 2 taps the right half or presses Up or Enter."></canvas>
+      <div id="hud" hidden><b id="sector"></b><span id="hudBpm"></span><div id="meter"><i id="fill"></i></div><span id="percent">0%</span><span id="prisms"></span><span id="shield" hidden>Shield</span></div>
+      <div id="message" role="status"></div>
+      <div id="overlay">
+        <div id="panel">
+          <span id="eyebrow">LEVEL 1 · VOLTAGE WORKS</span>
+          <h1 id="title">SAL<span class="zero">0</span>MANder <em>Dash</em></h1>
+          <p id="songBadge" class="songBadge">♪ Loading track…</p>
+          <div id="levelBox" class="levelBox">
+            <span class="pickLabel">Choose level (one beat-matched song per level)</span>
+            <div id="levels" class="levels" role="radiogroup" aria-label="Choose level"></div>
+          </div>
+          <ol id="ranks" class="ranks" hidden aria-label="Race results"></ol>
+          <div id="boardBox" class="boardBox" hidden><h3>Best runs <small>saved on this device · tap Race to beat a ghost</small></h3><ol id="board" class="ranks board" aria-label="Best runs on this device"></ol></div>
+          <p id="detail">Jump when a teal arrow reaches your cube. Collect five prisms for a shield. Reach halfway to save.</p>
+          <div id="actions">
+            <button id="primary" type="button" disabled>Loading…</button>
+            <button id="nextLevel" type="button" hidden>Next level →</button>
+            <button id="two" type="button">2 Players</button>
+            <button id="coach" type="button" hidden>Race Mr. Sam</button>
+            <button id="online" type="button">Race online</button>
+            <button id="saveRun" type="button" hidden>Save as Mr. Sam’s run</button>
+            <button id="secondary" type="button" hidden>Start over</button>
+          </div>
+          <p id="coachCta" class="coachCta" hidden>Stuck on math? <a href="https://salomandermath.com/#booking" target="_blank" rel="noopener">Mr. Sam can help →</a></p>
+          <div id="lobby" hidden>
+            <div id="lobbyStart"><button id="create" type="button" class="big">Create a race</button><div class="joinRow"><label for="codeIn">Have a code?</label><input id="codeIn" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD" inputmode="text"><button id="join" type="button">Join</button></div></div>
+            <div id="lobbyRoom" hidden><p class="codeLine">Race code <b id="roomCode">----</b></p><p id="roomInfo"></p><button id="ready" type="button" class="big">I’m ready</button></div>
+            <p id="lobbyMsg" role="status"></p><button id="lobbyBack" type="button" class="link">← Back</button>
+          </div>
+          <div id="pick" class="pick"><span class="pickLabel">Pick your face</span><div id="faces" role="group" aria-label="Pick your face"></div></div>
+          <p id="keys2" class="keys2">Every level matches your speed to the song’s BPM so jumps land on the beat. GREAT +10, PERFECT +20, streaks up to ×5; gold arrows pay +100 CRITICAL. Tap jump right after a spring for a super bounce to the pink upper route. 2 Players: <b>P1</b> left half or Space/W · <b>P2</b> right half or ↑/Enter.</p>
+        </div>
+      </div>
+    </section>
+    <footer>
+      <span><span id="trackCredit">Google Flow Music</span> · <a href="../privacy/">Privacy</a> · <button id="wipe" type="button" class="link">Clear my data</button></span>
+      <span>Tap or Space to jump · 2P: Space/W and ↑/Enter</span>
+    </footer>
+  </main>
+  <audio id="track" preload="metadata" loop></audio>
+  <script src="../shared/music-player.js"></script>
+  <script type="module" src="game.js"></script>
+</body></html>
