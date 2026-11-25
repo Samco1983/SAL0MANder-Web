@@ -48,7 +48,7 @@ describe('the primary action', () => {
       paths.giftPlay,
       paths.studio,
       '#pictures-title',
-      '/arcade/neon-dash/',
+      '/arcade/sal0mander-dash/',
     ])
     for (const name of ['Make a Puzzle Gift', 'Open a gift', 'Teacher Studio', 'Picture library']) {
       expect(within(choices).getByRole('link', { name })).toBeVisible()
@@ -88,9 +88,9 @@ describe('the primary action', () => {
       'href',
       '/school/studio',
     )
-    expect(within(choices).getByRole('link', { name: 'Play Neon Dash' })).toHaveAttribute(
+    expect(within(choices).getByRole('link', { name: 'Play SAL0MANder Dash' })).toHaveAttribute(
       'href',
-      '/school/arcade/neon-dash/',
+      '/school/arcade/sal0mander-dash/',
     )
   })
 

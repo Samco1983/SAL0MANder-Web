@@ -726,9 +726,9 @@ export function GuestPlayIndexPage() {
               <a className={styles.demoLink} href={`${readBasePath()}demos/mystery-graph/`}>Open Mystery Graph</a>
             </article>
             <article className={styles.demoCard}>
-              <h2 className={styles.demoTitle}>Neon Dash</h2>
-              <p className={styles.centeredBody}>Tap to jump through Voltage Works. Grab prisms to charge your shield and dodge spikes and saws.</p>
-              <a className={styles.demoLink} href={`${readBasePath()}arcade/neon-dash/`}>Play Neon Dash</a>
+              <h2 className={styles.demoTitle}>SAL0MANder Dash</h2>
+              <p className={styles.centeredBody}>Jump on the beat across five BPM-matched levels. Grab prisms to charge your shield and dodge spikes and saws.</p>
+              <a className={styles.demoLink} href={`${readBasePath()}arcade/sal0mander-dash/`}>Play SAL0MANder Dash</a>
             </article>
             <article className={styles.demoCard}>
               <h2 className={styles.demoTitle}>Space Rescue</h2>

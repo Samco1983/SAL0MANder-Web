@@ -10,7 +10,7 @@ const colors=['#70f1dd','#ffc478','#71caff','#ab99ff','#ff9281','#a3f6ac'];
 const SEAT=['#7cf3da','#ff8fd1','#ffd166','#8fb8ff','#b7ff8f','#ff9f6b','#c79bff'];
 const saveKey='sal0mander.voltage-works.half.v1', soundKey='sal0mander.voltage-works.sound', faceKey='sal0mander.neon-dash.face';
 // Faces: 0 = the original pilot cube, 1-6 = drawn cartoon faces. Only the number is ever shared online.
-const FACES=['Coach Sam','Smile','Shades','Cat','Robot','Alien','Star eyes'];
+const FACES=['Mr. Sam','Smile','Shades','Cat','Robot','Alien','Star eyes'];
 // Face Builder (shared across SAL0MANder games; our own art): eyes, mouth, top and brows picked from parts. Online it travels as ONE
 // number (10000 + eyes*1000 + mouth*100 + top*10 + brows), so no picture or text ever leaves the device.
 const CUSTOM=10000,PARTS=[['Eyes',['Dots','Big','Shades','Stars','Sleepy','Wink']],['Mouth',['Smile','Grin','Flat','Oh','Tongue']],['Top',['None','Cat ears','Antenna','Crown','Spikes','Bow']],['Brows',['None','Happy','Angry','Raised']]];
@@ -48,8 +48,8 @@ function face(id,c,R=30){ctx.save();ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineCa
  else if(id===6){for(const s of[-1,1]){ctx.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,rr=i%2?R*.11:R*.27;ctx.lineTo(s*R*.38+Math.cos(a)*rr,-R*.12+Math.sin(a)*rr);}ctx.fill();}ctx.beginPath();ctx.arc(0,R*.15,R*.38,.1*Math.PI,.9*Math.PI);ctx.fill();}
  else{eye(-R*.35,-R*.12,R*.15);eye(R*.35,-R*.12,R*.15);smile(R*.05,R*.42);}
  ctx.restore();}
-// Coach Sam: the photo cube (face 0) is Samuel, the tutor. Kids pick cartoon faces; Sam records a run kids can race.
-// sal0mander.com (public games/classroom site) stays neutral. Coach Sam features only appear via the tutoring site's
+// Mr. Sam: the photo cube (face 0) is Samuel, the tutor. Kids pick cartoon faces; Sam records a run kids can race.
+// sal0mander.com (public games/classroom site) stays neutral. Mr. Sam features only appear via the tutoring site's
 // link (?sam=1, for Sam's students) or Sam's own link (?coach=1, to record runs and race as SAM).
 const COACH_MODE=/[?&]coach=1\b/.test(location.search),SAM_LINK=COACH_MODE||/[?&]sam=1\b/.test(location.search);let samRun=null,rec=[],recFull=false,coachOutAt=0;
 // Best runs: every full 1-player run is saved ON THIS DEVICE ONLY (no names, nothing sent anywhere), top 10 by score.
@@ -113,7 +113,7 @@ function standings(){return [...racers].sort(ahead);}
 // Place = 1 + number of racers strictly ahead, so tied racers share a place (and nobody 'leads' at 0%).
 function place(x){return 1+racers.filter(y=>ahead(y,x)<0).length;}
 function short(x){return x.coach?'SAM':x.ghostName?'GHOST':(kind==='online'||kind==='coach')?(x.me?'YOU':'R'+(x.seat+1)):'P'+(x.seat+1);}
-function label(x){return x.coach?'Coach Sam':x.ghostName?x.ghostName:kind==='coach'?'You':kind==='online'?(x.me?'You':'Racer '+(x.seat+1)):'Player '+(x.seat+1);}
+function label(x){return x.coach?'Mr. Sam':x.ghostName?x.ghostName:kind==='coach'?'You':kind==='online'?(x.me?'You':'Racer '+(x.seat+1)):'Player '+(x.seat+1);}
 function resultText(){
   if(kind==='coach'){const m=me(),c=racers.find(x=>x.replay),n=label(c),d=ahead(m,c);return d<0?'You beat '+n+'!':d===0?'Dead heat with '+n+'!':n+' wins this time. Try again!';}
   const list=standings(),top=list[0],tie=list[1]&&ahead(list[0],list[1])===0;
@@ -124,9 +124,9 @@ function resultText(){
 function faceIcon(fc,color,p){const c=document.createElement('canvas');c.width=c.height=56;
   const keep=ctx;ctx=c.getContext('2d');ctx.fillStyle='#1b1630';ctx.beginPath();ctx.arc(28,28,26,0,Math.PI*2);ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=4;ctx.stroke();ctx.translate(28,29);face(fc>0?fc:1,color,17);ctx.setTransform(1,0,0,1,0,0);if(p<=3)medal(44,14,10,p);ctx=keep;return c;}
 const pctText=e=>e.f?'finished':(Math.floor(e.p*1000)/10).toFixed(1)+'%';
-// Best runs board: this device's top runs plus Coach Sam's run (when the tutoring link loaded it). Tap Race to race any of them.
+// Best runs board: this device's top runs plus Mr. Sam's run (when the tutoring link loaded it). Tap Race to race any of them.
 function boardList(){const rows=loadBoard().map((e,i)=>({...e,name:'Ghost #'+(i+1),fresh:i===lastRank}));
-  if(samRun){if(!samRun.entry){const x=simulate(samRun.jumps);samRun.entry={s:scoreOf(x),p:x.r.progress,f:x.r.finished,pr:x.r.prisms,g:x.gold||0,pf:x.perfect||0,fc:0,j:samRun.jumps,coach:true,name:'Coach Sam'};}rows.push(samRun.entry);}
+  if(samRun){if(!samRun.entry){const x=simulate(samRun.jumps);samRun.entry={s:scoreOf(x),p:x.r.progress,f:x.r.finished,pr:x.r.prisms,g:x.gold||0,pf:x.perfect||0,fc:0,j:samRun.jumps,coach:true,name:'Mr. Sam'};}rows.push(samRun.entry);}
   rows.sort((a,b)=>b.s-a.s);const ol=$('board');ol.replaceChildren();
   rows.slice(0,5).forEach((e,i)=>{const li=document.createElement('li'),col=e.coach?'#ffd166':'#9ad7ff',txt=document.createElement('div'),name=document.createElement('b'),stat=document.createElement('span'),go=document.createElement('button');
     name.textContent=(i+1)+'. '+e.name+(e.fresh?' · NEW':'');name.style.color=col;stat.textContent=e.s+' pts · '+pctText(e)+' · ◆ '+e.pr+' · gold '+e.g;txt.append(name,stat);
@@ -173,8 +173,8 @@ function menu(state){
   $('secondary').hidden=!again||paused||won||result;
   $('keys2').hidden=state!=='title';
   const over=result||dead||won;$('coachCta').hidden=!(over&&SAM_LINK);
-  $('coach').hidden=!samRun||paused||(!over&&state!=='title');if(samRun)$('coach').textContent=result&&kind==='coach'?'Race Sam again':'Race Coach Sam';
-  if(result&&kind==='coach'){primary.textContent=ghost?.coach?'Race Sam again':'Race ghost again';$('coach').hidden=true;}
+  $('coach').hidden=!samRun||paused||(!over&&state!=='title');if(samRun)$('coach').textContent=result&&kind==='coach'?'Race Mr. Sam again':'Race Mr. Sam';
+  if(result&&kind==='coach'){primary.textContent=ghost?.coach?'Race Mr. Sam again':'Race ghost again';$('coach').hidden=true;}
   $('saveRun').hidden=!(COACH_MODE&&kind==='solo'&&(dead||won)&&recFull);
 }
 function setSolo(){kind='solo';leaveNet();run=new Circuit(score);racers=[{r:run,seat:0,me:true,local:true,color:SEAT[0]}];}
@@ -182,8 +182,8 @@ function start(fromHalf){
   attempt++;lastRank=-1;if(kind!=='solo')setSolo();rec=[];recFull=!fromHalf;run.reset(fromHalf?checkpoint:null);racers[0].perfect=0;racers[0].great=0;racers[0].crit=0;racers[0].used=new Set();racers[0].pp=0;racers[0].streak=0;racers[0].gold=0;racers[0].gotGold=new Set();racers[0].sp=0;racers[0].springStreak=0;racers[0].springSeen=new Set();racers[0].springOpen=null;countIn=fromHalf?1.5:0;
   $('message').textContent=fromHalf?'Ready…':'';noticeEnd=0;play();
 }
-// Ghost race: you vs a recorded run (Coach Sam's, or one of your saved best runs). Same track, same speed.
-function startCoach(){if(samRun)startGhost({coach:true,name:'Coach Sam',fc:0,j:samRun.jumps});}
+// Ghost race: you vs a recorded run (Mr. Sam's, or one of your saved best runs). Same track, same speed.
+function startCoach(){if(samRun)startGhost({coach:true,name:'Mr. Sam',fc:0,j:samRun.jumps});}
 function startGhost(g){ghost=g;attempt++;leaveNet();kind='coach';coachOutAt=0;const gx={r:new Circuit(score),seat:1,me:false,local:false,coach:!!g.coach,ghostName:g.coach?'':g.name,replay:new Set(g.j),color:g.coach?'#ffd166':'#9ad7ff',face:g.fc,perfect:0};
   racers=[racer(0,true,true),gx];run=racers[0].r;countIn=1.5;$('message').textContent='';play();}
 function startLocal(){attempt++;leaveNet();kind='local';racers=[racer(0,true,true),racer(1,false,true)];run=racers[0].r;countIn=1.5;$('message').textContent='';play();}
@@ -202,7 +202,7 @@ function activate(){
 }
 primary.onclick=activate;
 $('coach').onclick=()=>{if(score&&samRun)startCoach();};
-$('saveRun').onclick=()=>{const blob=new Blob([JSON.stringify({v:1,name:'Coach Sam',course:'voltage-works',jumps:rec,progress:+run.progress.toFixed(4),finished:run.finished,prisms:run.prisms,perfect:me().perfect||0,recordedAt:new Date().toISOString()})],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sam-run.json';a.click();$('saveRun').textContent='Saved: put sam-run.json next to game.js';};
+$('saveRun').onclick=()=>{const blob=new Blob([JSON.stringify({v:1,name:'Mr. Sam',course:'voltage-works',jumps:rec,progress:+run.progress.toFixed(4),finished:run.finished,prisms:run.prisms,perfect:me().perfect||0,recordedAt:new Date().toISOString()})],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sam-run.json';a.click();$('saveRun').textContent='Saved: put sam-run.json next to game.js';};
 // Clear my data: deletes everything this game saved on this device (runs, face, checkpoint, sound). Tap twice to confirm.
 {const w=$('wipe');let armed=-1e9;if(w)w.onclick=()=>{if(performance.now()-armed>4000){armed=performance.now();w.textContent='Tap again to delete';return;}
   try{for(const k of Object.keys(localStorage))if(/^(sal0mander|neon-dash)/i.test(k))localStorage.removeItem(k);}catch{/* Nothing saved. */}location.reload();};}
@@ -301,7 +301,7 @@ function step(){
     }
     // Remote racers who are still running move at the same constant speed, so step them forward locally between network updates.
     for(const x of racers)if(!x.local&&!x.replay&&alive(x))x.r.tick++;
-    // Racing Coach Sam: once you're out, watch Sam for 3 s, then fast-forward his recorded run to its real result.
+    // Racing Mr. Sam: once you're out, watch Sam for 3 s, then fast-forward his recorded run to its real result.
     if(kind==='coach'&&!alive(me())){coachOutAt=coachOutAt||performance.now();if(performance.now()-coachOutAt>3000)for(const c of racers)if(c.replay)while(alive(c)){if(c.replay.has(c.r.tick))jumpFor(c);c.r.advance();grabCoins(c);watchSprings(c);}}
     if(kind==='online'){const r=me().r;if(++sent%4===0||r.dead||r.finished){if(!me().sentEnd)netSend({t:'s',fc:myFace,pf:me().perfect||0,pp:me().pp||0,gd:me().gold||0,sp:me().sp||0,k:r.tick,y:Math.round(r.y*10)/10,a:Math.round(r.angle),pr:r.prisms,sh:r.shield?1:0,d:r.dead||undefined,f:r.finished||undefined});if(r.dead||r.finished)me().sentEnd=true;}}
     if(noticeEnd&&focus().r.time>noticeEnd){$('message').textContent='';noticeEnd=0;}

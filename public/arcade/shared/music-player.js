@@ -116,8 +116,39 @@
         rawSrc: raw.src,
         genre: typeof raw.genre === 'string' ? raw.genre : '',
         mood: typeof raw.mood === 'string' ? raw.mood : '',
+        bpm: typeof raw.bpm === 'number' && Number.isFinite(raw.bpm) && raw.bpm > 0 ? raw.bpm : undefined,
+        durationSeconds: typeof raw.durationSeconds === 'number' && Number.isFinite(raw.durationSeconds) && raw.durationSeconds > 0 ? raw.durationSeconds : undefined,
         source: typeof raw.source === 'string' ? raw.source : 'Google Flow Music',
       });
+    }
+    let levels = null;
+    if (game.levels && typeof game.levels === 'object') {
+      levels = {};
+      for (const [levelKey, levelEntry] of Object.entries(game.levels)) {
+        const songId = typeof levelEntry === 'string' ? levelEntry : levelEntry && typeof levelEntry.song === 'string' ? levelEntry.song : '';
+        if (!songId) continue;
+        const raw = trackMap[songId];
+        if (!raw || raw.enabled === false || typeof raw.src !== 'string' || !raw.src) continue;
+        const levelBpm = levelEntry && typeof levelEntry === 'object' && typeof levelEntry.bpm === 'number' && Number.isFinite(levelEntry.bpm) && levelEntry.bpm > 0
+          ? levelEntry.bpm
+          : (typeof raw.bpm === 'number' && Number.isFinite(raw.bpm) && raw.bpm > 0 ? raw.bpm : undefined);
+        levels[levelKey] = {
+          level: levelKey,
+          name: levelEntry && typeof levelEntry === 'object' && typeof levelEntry.name === 'string' ? levelEntry.name : undefined,
+          feel: levelEntry && typeof levelEntry === 'object' && typeof levelEntry.feel === 'string' ? levelEntry.feel : undefined,
+          track: {
+            id: songId,
+            title: typeof raw.title === 'string' && raw.title ? raw.title : songId,
+            src: resolveUrl(raw.src, siteRootUrl),
+            rawSrc: raw.src,
+            genre: typeof raw.genre === 'string' ? raw.genre : '',
+            mood: typeof raw.mood === 'string' ? raw.mood : '',
+            bpm: levelBpm,
+            durationSeconds: typeof raw.durationSeconds === 'number' && Number.isFinite(raw.durationSeconds) && raw.durationSeconds > 0 ? raw.durationSeconds : undefined,
+            source: typeof raw.source === 'string' ? raw.source : 'Google Flow Music',
+          },
+        };
+      }
     }
     return {
       gameId,
@@ -129,6 +160,7 @@
       defaultEnabled: game.defaultEnabled !== false,
       enabled: game.enabled !== false,
       tracks,
+      ...(levels ? { levels } : {}),
     };
   }
 
