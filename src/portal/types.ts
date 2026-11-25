@@ -116,7 +116,8 @@ export const AskQuestionStatusSchema = z.enum([
 
 export const AskQuestionSchema = z.object({
   id, householdId: id, childId: id, workRecordId: id.nullable(),
-  source: z.enum(['ask_form', 'worksheet_open_response']),
+  workAttemptId: id.nullable().optional(),
+  source: z.enum(['ask_form', 'worksheet_open_response', 'worksheet_submission']),
   text: z.string().min(1),
   photoPlaceholder: z.object({ label: id, nameCovered: z.boolean(), expiresAt: iso }).strict().nullable(),
   askModeAtSend: AskModeSchema,

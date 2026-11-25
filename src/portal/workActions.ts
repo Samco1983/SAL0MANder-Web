@@ -131,8 +131,10 @@ export function submitWorkRecord(
   adapter: PortalStorageAdapter,
   actor: PortalActor,
   workRecordId: string,
-  nowIso = new Date().toISOString(),
+  nowIsoOrOptions: string | { nowIso?: string; simulateParentRejected?: boolean } = new Date().toISOString(),
 ): { state: PortalState; record: WorkRecord } {
+  const nowIso = typeof nowIsoOrOptions === 'string' ? nowIsoOrOptions : (nowIsoOrOptions.nowIso ?? new Date().toISOString())
+  const simulateParentRejected = typeof nowIsoOrOptions === 'object' ? Boolean(nowIsoOrOptions.simulateParentRejected) : false
   const state = adapter.load()
   const record = state.workRecords.find((w) => w.id === workRecordId)
   if (!record || !can(actor, 'submit_work', { type: 'work', record })) {
@@ -158,24 +160,39 @@ export function submitWorkRecord(
     pts.ledger.push({ id: `pl_${pts.ledger.length + 1}`, amount: 20, reason: 'Submitted practice set (cosmetics only)', createdAt: nowIso })
   }
 
-  // Route open response through the Ask rail (parent first, provider-accepted gate, Review-first vs Auto-send)
-  if (record.openResponse.trim() && child.askMode !== 'off') {
+  // Route ALL child-authored worksheet text (open response AND typed answers) through the parent-first
+  // Ask rail so no typed answer can reach a tutor before the parent step completes.
+  const openText = record.openResponse.trim()
+  const typedAnswers = activeAttempt.answers
+    .map((ans) => ({ questionId: ans.questionId, value: ans.chosenValue.trim() }))
+    .filter((ans) => ans.value.length > 0)
+  const hasChildText = openText.length > 0 || typedAnswers.length > 0
+
+  if (hasChildText && child.askMode !== 'off') {
+    const answerSummary = typedAnswers.map((ans) => `${ans.questionId}: ${ans.value}`).join(' · ')
+    const parentReviewText = openText || `Submitted typed answers (${answerSummary})`
     enqueueAskQuestionInState(
       state,
       child,
       hh,
-      { text: record.openResponse, source: 'worksheet_open_response', workRecordId: record.id },
+      {
+        text: parentReviewText,
+        source: openText ? 'worksheet_open_response' : 'worksheet_submission',
+        workRecordId: record.id,
+        workAttemptId: activeAttempt.attemptId,
+        simulateParentRejected,
+      },
       nowIso,
     )
   }
 
-  // Queue placeholder draft for the submitted math set (open response text stays behind Review-first until forwarded)
+  // Queue placeholder draft for the submitted math set (typed answers and open response stay behind parent gate until released)
   const mentorId = state.assignments.find((a) => a.householdId === hh.id && a.revokedAt === null)?.mentorId ?? 'mentor_samuel'
   state.feedback.push({
     id: `fb_q_${state.feedback.length + 1}`, householdId: hh.id, childId: child.id, workRecordId: record.id,
     authorMentorId: mentorId, status: 'draft',
-    draftText: child.askMode === 'review' && record.openResponse.trim()
-      ? `[Placeholder draft] Review ${child.nickname}'s attempt #${record.attempts.length} (open response waiting for parent review).`
+    draftText: child.askMode === 'review' && hasChildText
+      ? `[Placeholder draft] Review ${child.nickname}'s attempt #${record.attempts.length} (child responses waiting for parent review).`
       : `[Placeholder draft] Review ${child.nickname}'s attempt #${record.attempts.length}.`,
     sentText: null, parentNotifiedAt: null, shownToChildAt: null, shownBy: null,
   })

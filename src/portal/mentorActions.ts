@@ -60,18 +60,40 @@ export function daysQuiet(child: ChildProfile, nowIso = '2026-11-24T18:00:00Z'):
 
 /**
  * Determines whether a mentor may see child-authored text (`openResponse` and typed `chosenValue` answers)
- * inside a saved WorkRecord (FIX 4 / G-03). Denied whenever consent is unverified, Questions are Off,
- * the work is still a draft, a linked question is waiting for parent review or undelivered, or the child
- * is in Review-first mode without a parent-forwarded release.
+ * for one specific attempt inside a WorkRecord (PR #138 typed-answer leak fix / G-03).
+ *
+ * Deny-by-default: a child's typed answer NEVER reaches any tutor unless:
+ * - household & child consent are verified and Questions are enabled (`askMode !== 'off'`),
+ * - the attempt has been submitted (never drafts), AND
+ * - a linked parent-step record (`AskQuestion`) for that attempt was accepted by the parent's email
+ *   provider AND released/forwarded to the mentor (never waiting, held, bounced, or missing).
  */
-export function canMentorReadWorkText(state: PortalState, record: WorkRecord): boolean {
+export function canMentorReadAttemptText(
+  state: PortalState,
+  record: WorkRecord,
+  attemptId: string,
+): boolean {
   const child = state.children.find((c) => c.id === record.childId)
   const hh = state.households.find((h) => h.id === record.householdId)
   if (!child || !hh || child.consentStatus !== 'verified' || hh.consentRecord.status !== 'verified') return false
   if (child.askMode === 'off') return false
-  if (record.status === 'draft') return false
 
-  const linked = state.askQuestions.filter((q) => q.workRecordId === record.id)
+  const attempt = record.attempts.find((att) => att.attemptId === attemptId)
+  if (!attempt || attempt.submittedAt === null) return false
+
+  const attemptScoped = state.askQuestions.filter(
+    (q) => q.workRecordId === record.id && q.workAttemptId === attemptId,
+  )
+  // Legacy record-level AskQuestions (without workAttemptId) may only authorize the single-attempt record
+  // they were created for — never a newer redo attempt submitted afterward.
+  const linked =
+    attemptScoped.length > 0
+      ? attemptScoped
+      : record.attempts.length === 1
+        ? state.askQuestions.filter((q) => q.workRecordId === record.id && !q.workAttemptId)
+        : []
+
+  if (linked.length === 0) return false
   if (
     linked.some(
       (q) =>
@@ -83,33 +105,37 @@ export function canMentorReadWorkText(state: PortalState, record: WorkRecord): b
   ) {
     return false
   }
-  if (child.askMode === 'review') {
-    return linked.some(
-      (q) =>
-        q.parentEmailAcceptedAt !== null &&
-        q.forwardedToMentorAt !== null &&
-        (q.status === 'queued_for_mentor' || q.status === 'replied'),
-    )
-  }
-  return true
+  return linked.some(
+    (q) =>
+      q.parentEmailAcceptedAt !== null &&
+      q.forwardedToMentorAt !== null &&
+      (q.status === 'queued_for_mentor' || q.status === 'replied'),
+  )
 }
 
-/** Returns a mentor-safe WorkRecord view, omitting child text fields until parent forwards (FIX 4 / G-03). */
+/**
+ * Determines whether a mentor may see child-authored text on the latest attempt of a WorkRecord.
+ */
+export function canMentorReadWorkText(state: PortalState, record: WorkRecord): boolean {
+  if (record.status === 'draft') return false
+  const latest = record.attempts.at(-1)
+  if (!latest) return false
+  return canMentorReadAttemptText(state, record, latest.attemptId)
+}
+
+/** Returns a mentor-safe WorkRecord view, omitting child text fields per attempt until parent step completes (FIX 4 / G-03). */
 export function projectWorkRecordForMentor(state: PortalState, record: WorkRecord): MentorWorkRecord {
-  const allowText = canMentorReadWorkText(state, record)
-  if (!allowText) {
-    return {
-      id: record.id,
-      householdId: record.householdId,
-      childId: record.childId,
-      activityId: record.activityId,
-      activityVersionId: record.activityVersionId,
-      unitId: record.unitId,
-      status: record.status,
-      revisions: record.revisions,
-      currentRevision: record.currentRevision,
-      childTextWithheld: true,
-      attempts: record.attempts.map((att) => ({
+  const latest = record.attempts.at(-1)
+  const allowLatest = latest ? canMentorReadAttemptText(state, record, latest.attemptId) : false
+  let anyWithheld = !allowLatest
+
+  const projectedAttempts: MentorWorkAttempt[] = record.attempts.map((att) => {
+    const allowAttempt = canMentorReadAttemptText(state, record, att.attemptId)
+    if (!allowAttempt) {
+      if (att.openResponse.trim().length > 0 || att.answers.some((a) => a.chosenValue.trim().length > 0)) {
+        anyWithheld = true
+      }
+      return {
         attemptId: att.attemptId,
         startedAt: att.startedAt,
         submittedAt: att.submittedAt,
@@ -119,22 +145,9 @@ export function projectWorkRecordForMentor(state: PortalState, record: WorkRecor
           hintUsed: ans.hintUsed,
           answeredAt: ans.answeredAt,
         })),
-      })),
+      }
     }
-  }
-  return {
-    id: record.id,
-    householdId: record.householdId,
-    childId: record.childId,
-    activityId: record.activityId,
-    activityVersionId: record.activityVersionId,
-    unitId: record.unitId,
-    status: record.status,
-    openResponse: record.openResponse,
-    revisions: record.revisions,
-    currentRevision: record.currentRevision,
-    childTextWithheld: false,
-    attempts: record.attempts.map((att) => ({
+    return {
       attemptId: att.attemptId,
       startedAt: att.startedAt,
       submittedAt: att.submittedAt,
@@ -146,7 +159,22 @@ export function projectWorkRecordForMentor(state: PortalState, record: WorkRecor
         hintUsed: ans.hintUsed,
         answeredAt: ans.answeredAt,
       })),
-    })),
+    }
+  })
+
+  return {
+    id: record.id,
+    householdId: record.householdId,
+    childId: record.childId,
+    activityId: record.activityId,
+    activityVersionId: record.activityVersionId,
+    unitId: record.unitId,
+    status: record.status,
+    ...(allowLatest ? { openResponse: record.openResponse } : {}),
+    revisions: record.revisions,
+    currentRevision: record.currentRevision,
+    childTextWithheld: anyWithheld,
+    attempts: projectedAttempts,
   }
 }
 
