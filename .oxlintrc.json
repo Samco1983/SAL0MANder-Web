@@ -21,6 +21,12 @@
       "rules": {
         "typescript/no-explicit-any": "off"
       }
+    },
+    {
+      "files": ["scripts/**/*.mjs", "scripts/**/*.js", "scripts/**/*.cjs"],
+      "rules": {
+        "eslint/no-console": "off"
+      }
     }
   ]
 }
