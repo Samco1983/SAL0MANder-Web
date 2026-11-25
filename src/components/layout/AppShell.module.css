@@ -9,10 +9,12 @@
    itself to the viewport instead. */
 .shell[data-fill='true'] {
   height: 100dvh;
+  max-width: 100%;
   /* Hidden still permits focus-driven scrolling. Fullscreen exit followed by
      rotation scrolled this shell 255px and hid the board. Clip prevents that
      scroll container while the game's own controls keep their own scrolling. */
   overflow: clip;
+  overscroll-behavior: none;
 }
 
 .skipLink {
@@ -179,6 +181,15 @@
 
   .nav[data-open='true'] {
     display: flex;
+  }
+
+  .shell[data-fill='true'] .header {
+    min-height: 3rem;
+    padding: var(--space-1) var(--space-3);
+  }
+
+  .shell[data-fill='true'] .foundationBanner {
+    padding: var(--space-1) var(--space-3);
   }
 }
 
