@@ -2,6 +2,7 @@ import type { z } from 'zod'
 import type { RequestOptions, Transport } from './transport'
 import { ApiError } from './errors'
 import { newId } from '@contracts/v1'
+import { pickNextLibraryPicture } from '@content/pictureRotation'
 
 /**
  * In-memory transport used when no backend is configured (`VITE_API_BASE_URL`
@@ -100,6 +101,23 @@ export const MOCK_SHARE_CODES = {
 
 export const MOCK_SHARE_CODE = MOCK_SHARE_CODES.ok
 
+/** Deterministic 64-hex placeholder digest keyed on the chosen library picture. */
+function libraryAssetDigest(key: string): string {
+  let h1 = 0x811c9dc5
+  let h2 = 0x9e3779b9
+  for (let i = 0; i < key.length; i += 1) {
+    const code = key.charCodeAt(i)
+    h1 = Math.imul(h1 ^ code, 0x01000193) >>> 0
+    h2 = Math.imul(h2 ^ (code + i), 0x85ebca6b) >>> 0
+  }
+  const chunk = `${h1.toString(16).padStart(8, '0')}${h2.toString(16).padStart(8, '0')}`
+  return chunk.repeat(4)
+}
+
+function libraryAssetId(key: string): string {
+  return `media_${key.replace(/[^A-Za-z0-9_]/g, '_')}`
+}
+
 /** The `PlayBundle` shape from `API_CONTRACT.md`, served by the mock resolver. */
 function demoPlayBundle(activityId: string) {
   const pieceCount = DEMO_PIECE_COUNT
@@ -113,6 +131,7 @@ function demoPlayBundle(activityId: string) {
     called is the kind of thing a teacher notices and nobody can explain.
   */
   const activity = findDemoActivity(activityId)
+  const picture = pickNextLibraryPicture()
   return {
     activityId,
     activityVersionId: activity ? demoVersionId(activityId) : DEMO_VERSION_ID,
@@ -124,7 +143,7 @@ function demoPlayBundle(activityId: string) {
     defaultPlayMode: 'learning-puzzle',
     puzzle: {
       pieceCount,
-      boardShape: DEMO_BOARD_SHAPE,
+      boardShape: picture.shape.toLowerCase(),
       showBoardGuide: true,
       enableCameraZoomAndPan: false,
       allowRestart: true,
@@ -134,15 +153,15 @@ function demoPlayBundle(activityId: string) {
       allowClassicCustomization: false,
     },
     puzzleAsset: {
-      assetId: 'media_demo_1024',
-      variant: 'display_1024',
-      downloadUrl: 'https://cdn.example.invalid/puzzles/media_demo_1024/display_1024.png',
+      assetId: libraryAssetId(picture.key),
+      variant: 'library_webp',
+      downloadUrl: `https://sal0mander.com${picture.src}`,
       downloadUrlExpiresAt: new Date(Date.now() + 3_600_000).toISOString(),
-      contentType: 'image/png',
-      byteSize: 812345,
-      width: 1024,
-      height: 768,
-      checksum: { algorithm: 'sha256', value: 'a'.repeat(64) },
+      contentType: 'image/webp',
+      byteSize: 64_000,
+      width: picture.width,
+      height: picture.height,
+      checksum: { algorithm: 'sha256', value: libraryAssetDigest(picture.key) },
     },
     quiz: {
       quizId: `quiz_${activityId}`,
@@ -192,6 +211,8 @@ const LINK_FAILURES: Record<string, { serverCode: string; message: string }> = {
 
 function demoBundle(activityId: string) {
   const activity = findDemoActivity(activityId)
+  const picture = pickNextLibraryPicture()
+  const digest = libraryAssetDigest(picture.key)
   return {
     summary: {
       id: activityId,
@@ -207,8 +228,27 @@ function demoBundle(activityId: string) {
       id: activity ? demoVersionId(activityId) : DEMO_VERSION_ID,
       activityId,
       versionNumber: 1,
-      payload: { schemaVersion: 1, body: { placeholder: true } },
-      media: [],
+      payload: {
+        schemaVersion: 1,
+        body: {
+          placeholder: true,
+          imageKey: picture.key,
+          pictureSelection: 'rotated',
+        },
+      },
+      media: [
+        {
+          id: libraryAssetId(picture.key),
+          kind: 'puzzle-image' as const,
+          url: `https://sal0mander.com${picture.src}`,
+          contentType: 'image/webp',
+          byteSize: 64_000,
+          width: picture.width,
+          height: picture.height,
+          checksum: `sha256:${digest}`,
+          createdAt: now(),
+        },
+      ],
       createdAt: now(),
     },
   }

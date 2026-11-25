@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { env } from '@config/env'
 import { buildPath, paths, readBasePath } from '@config/routes'
 import { getGuestIdentity } from '@auth/guestIdentity'
@@ -9,9 +9,14 @@ import { Button, LinkButton } from '@components/ui/Button'
 import { PlaceholderNotice } from '@components/ui/PlaceholderNotice'
 import { SharePanel } from '@components/share/SharePanel'
 import { UnityStage } from '@unity/UnityStage'
+import { resolveUnityBuildConfig } from '@unity/buildConfig'
 import { correlateAttempt, isUsableFinishedPayload, onUnityMessage } from '@unity/bridge'
+import { preparePreview, type PreviewBoot } from '@unity/previewBridge'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
-import { ShareCodeSchema } from '@contracts/v1'
+import { newId, ShareCodeSchema } from '@contracts/v1'
+import type { PuzzlePicture } from '@content/puzzleLibrary'
+import { findLibraryPicture, pickNextLibraryPicture } from '@content/pictureRotation'
+import { buildSampleActivityDraft, isSampleActivityId } from '@content/demoActivities'
 import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
 import { useGuestActivity } from './useGuestActivity'
@@ -99,14 +104,92 @@ function UndeliveredResult({
  */
 export function GuestPlayPage() {
   const { activityId } = useParams<{ activityId: string }>()
+  const [searchParams] = useSearchParams()
   const state = useGuestActivity(activityId)
   // Minted lazily on the device; not authentication, carries no PII.
   const identity = getGuestIdentity()
 
   const bundle = state.status === 'ready' ? state.bundle : undefined
-  const allowedPlayModes = (
-    bundle?.version.payload.body as { allowedPlayModes?: string[] } | undefined
-  )?.allowedPlayModes
+  const payloadBody = bundle?.version.payload.body as
+    | { allowedPlayModes?: string[]; imageKey?: string; pictureSelection?: string }
+    | undefined
+  const allowedPlayModes = payloadBody?.allowedPlayModes
+
+  /**
+   * Resolve the puzzle picture for this activity:
+   * - An explicit teacher/parent choice (`?picture=<key>` or a non-rotated
+   *   `imageKey` in the activity bundle) always wins.
+   * - Sample activities carry a freshly rotated `PUZZLE_LIBRARY` picture chosen
+   *   at fetch time without repeating the previous game on this device.
+   * - If a bundle arrives with no valid picture key, fall back to a random
+   *   library picture rather than Unity's retired salamander default.
+   */
+  const explicitParamPicture = findLibraryPicture(searchParams.get('picture'))
+  const explicitBundlePicture =
+    payloadBody?.pictureSelection === 'rotated' ? undefined : findLibraryPicture(payloadBody?.imageKey)
+  const explicitPicture = explicitParamPicture ?? explicitBundlePicture
+  const rotatedBundlePicture = findLibraryPicture(payloadBody?.imageKey)
+  const [overridePicture, setOverridePicture] = useState<PuzzlePicture | undefined>(undefined)
+  const [fallbackPicture, setFallbackPicture] = useState<PuzzlePicture | undefined>(undefined)
+
+  useEffect(() => {
+    setOverridePicture(undefined)
+    setFallbackPicture(undefined)
+  }, [activityId])
+
+  useEffect(() => {
+    if (!bundle || explicitPicture || rotatedBundlePicture || fallbackPicture) return
+    setFallbackPicture(pickNextLibraryPicture())
+  }, [bundle, explicitPicture, rotatedBundlePicture, fallbackPicture])
+
+  const activePicture = explicitPicture ?? overridePicture ?? rotatedBundlePicture ?? fallbackPicture
+  const hasExplicitPicture = Boolean(explicitPicture)
+
+  const unityBuildConfigured = Boolean(resolveUnityBuildConfig())
+  const isShareCodeRoute = Boolean(activityId && ShareCodeSchema.safeParse(activityId).success)
+  const usesLibrarySamplePreview = Boolean(
+    unityBuildConfigured &&
+      bundle &&
+      activePicture &&
+      isSampleActivityId(bundle.summary.id) &&
+      !isShareCodeRoute,
+  )
+
+  const [previewRetry, setPreviewRetry] = useState(0)
+  const [samplePreviewState, setSamplePreviewState] = useState<
+    | { status: 'idle' }
+    | { status: 'preparing' }
+    | { status: 'ready'; preview: PreviewBoot }
+    | { status: 'error'; message: string }
+  >({ status: 'idle' })
+
+  useEffect(() => {
+    if (!usesLibrarySamplePreview || !bundle || !activePicture) {
+      setSamplePreviewState({ status: 'idle' })
+      return
+    }
+    const controller = new AbortController()
+    setSamplePreviewState({ status: 'preparing' })
+    const draft = buildSampleActivityDraft(bundle.summary.id, activePicture)
+    void preparePreview(draft, `sample_${newId()}`, controller.signal)
+      .then((preview) => {
+        if (!controller.signal.aborted) {
+          setSamplePreviewState({ status: 'ready', preview })
+        }
+      })
+      .catch((cause: unknown) => {
+        if (!controller.signal.aborted) {
+          setSamplePreviewState({
+            status: 'error',
+            message:
+              cause instanceof Error
+                ? cause.message
+                : 'The puzzle picture could not be prepared. Try again.',
+          })
+        }
+      })
+    return () => controller.abort()
+  }, [usesLibrarySamplePreview, bundle, activePicture, previewRetry])
 
   /**
    * The mode this attempt is pinned to.
@@ -194,17 +277,23 @@ export function GuestPlayPage() {
    * never chose. See WEB-INVENTORY.md B-6.
    */
   const sessionId = session.status === 'active' ? session.session.id : undefined
+  const activePictureKey = activePicture?.key
   const boot = useMemo(() => {
     if (!bundle) return undefined
+    const rawBody = bundle.version.payload.body
+    const playBundle =
+      activePictureKey && rawBody && typeof rawBody === 'object' && !Array.isArray(rawBody)
+        ? { ...(rawBody as Record<string, unknown>), imageKey: activePictureKey }
+        : rawBody
     return {
       activityId: bundle.summary.id,
       activityVersionId: bundle.version.id,
-      playBundle: bundle.version.payload.body,
+      playBundle,
       ...(clientAttemptId ? { clientAttemptId } : {}),
       ...(selectedPlayMode ? { selectedPlayMode } : {}),
       ...(sessionId ? { sessionId } : {}),
     }
-  }, [bundle, sessionId, selectedPlayMode, clientAttemptId])
+  }, [bundle, activePictureKey, sessionId, selectedPlayMode, clientAttemptId])
 
   /**
    * What `session-finished` is checked against. A ref for the same reason the
@@ -294,6 +383,51 @@ export function GuestPlayPage() {
     })
   }, [])
 
+  function renderStage() {
+    if (state.status === 'error') return null
+    if (usesLibrarySamplePreview) {
+      if (samplePreviewState.status === 'ready') {
+        return (
+          <UnityStage
+            key={samplePreviewState.preview.requestId}
+            audience="student"
+            preview={samplePreviewState.preview}
+            previewAttempts
+          />
+        )
+      }
+      if (samplePreviewState.status === 'error') {
+        return (
+          <div role="alert" className={styles.centeredInner}>
+            <h2 className={styles.companionTitle}>The puzzle picture could not load</h2>
+            <p className={styles.description}>{samplePreviewState.message}</p>
+            <Button onClick={() => setPreviewRetry((n) => n + 1)}>Try again</Button>
+          </div>
+        )
+      }
+      return (
+        <div role="status" className={styles.centeredInner}>
+          <p className={styles.description}>Preparing puzzle picture…</p>
+        </div>
+      )
+    }
+    if (unityBuildConfigured && state.status === 'loading' && isSampleActivityId(activityId)) {
+      return (
+        <div role="status" className={styles.centeredInner}>
+          <p className={styles.description}>Choosing a fresh puzzle picture…</p>
+        </div>
+      )
+    }
+    return (
+      <UnityStage
+        audience="student"
+        {...(activityId ? { activityId } : {})}
+        {...(boot ? { boot } : {})}
+        {...(sessionStarted ? { sessionStarted } : {})}
+      />
+    )
+  }
+
   return (
     <AppShell fill contained={false}>
       <CompanionLayout
@@ -312,40 +446,7 @@ export function GuestPlayPage() {
          * would close the panel and re-open it on every failed retry.
          */
         reveal={session.resultHeld || state.status === 'error'}
-        stage={
-          /*
-            Withheld entirely when there is no boot payload, rather than mounted
-            without one.
-
-            `{...(boot ? { boot } : {})}` omits the PROP; it does not prevent the
-            stage from mounting. So a 404 on activity resolution used to render
-            the failure message while `UnityStage` still injected the loader,
-            downloaded ~88MB of WebGL, and started Unity — which, with no boot to
-            tell it otherwise, opens whichever activity `ActivityManager` has
-            loaded. A student following a mistyped link saw an error with a
-            different puzzle running behind it.
-
-            That is the containment requirement, not a rendering detail: an
-            unknown id must FAIL, not open another puzzle. Asserting "the error
-            appeared" would have passed the whole time — the tests here assert
-            the canvas never mounts and no boot is ever sent.
-
-            Gated on the failure state rather than on `!boot`. Withholding
-            whenever boot is absent would also withhold during normal loading,
-            so the stage would unmount and remount the moment the bundle
-            arrived — churn a Gate-1 test caught immediately, and a step toward
-            the remount that CLAUDE.md forbids. A resolved bundle keeps the
-            stage mounted exactly as before; only genuine failure withholds it.
-          */
-          state.status === 'error' ? null : (
-            <UnityStage
-              audience="student"
-              {...(activityId ? { activityId } : {})}
-              {...(boot ? { boot } : {})}
-              {...(sessionStarted ? { sessionStarted } : {})}
-            />
-          )
-        }
+        stage={renderStage()}
         companion={
           <>
             {state.status === 'loading' ? (
@@ -371,6 +472,18 @@ export function GuestPlayPage() {
                   <p className={styles.byline}>by {state.bundle.summary.authorDisplayName}</p>
                 ) : null}
                 <p className={styles.description}>{state.bundle.summary.description}</p>
+                {isSampleActivityId(state.bundle.summary.id) && !hasExplicitPicture ? (
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      setOverridePicture(
+                        pickNextLibraryPicture({ excludeKey: activePicture?.key }),
+                      )
+                    }
+                  >
+                    New picture
+                  </Button>
+                ) : null}
                 {/* No `title` — the heading is directly above; repeating it
                     here would just be noise on this surface. */}
                 {activityId ? <SharePanel activityId={activityId} baseUrl={env.publicBaseUrl} /> : null}
@@ -391,9 +504,10 @@ export function GuestPlayPage() {
               Unity stage keeps running when it is hidden.
             </PlaceholderNotice>
 
-            <div className={styles.meta}>
+            <div className={styles.meta} data-puzzle-picture={activePicture?.key ?? ''}>
               <span>activity: {activityId ?? '—'}</span>
               <span>version: {state.status === 'ready' ? state.bundle.version.id : '—'}</span>
+              <span>picture: {activePicture ? activePicture.name : '—'}</span>
               <span>guest: {identity.guestToken.slice(0, 8)}… (device-local, not an account)</span>
             </div>
           </>

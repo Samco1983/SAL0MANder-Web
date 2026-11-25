@@ -109,7 +109,7 @@ export function newDraft(activityId: string, now: string): ActivityDraft {
       activityId,
       title: '',
       activityType: 'MysteryReveal',
-      imagePresetIndex: 0,
+      imagePresetIndex: -1,
       pieceCountPreset: 9,
       boardShape: 'Square',
       showBoardGuide: false,
