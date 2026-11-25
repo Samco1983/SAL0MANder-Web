@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -17,6 +18,8 @@ import {
   RECENT_PICTURE_MEMORY,
   RECENT_PUZZLE_PICTURES_STORAGE_KEY,
   pickNextLibraryPicture,
+  pickPictureForGameLoad,
+  resetPictureRotationLoadCache,
   resetPictureRotationMemory,
   resolveActivityPicture,
   writeLastPuzzlePictureKey,
@@ -44,12 +47,17 @@ vi.mock('@unity/previewBridge', async (original) => ({
 }))
 
 vi.mock('@unity/UnityStage', () => ({
-  UnityStage: (props: { preview?: { picture: { key: string }; requestId: string } }) => {
+  UnityStage: (props: {
+    preview?: { picture: { key: string }; requestId: string; config: { activityId: string } }
+    boot?: unknown
+  }) => {
     stageMock(props)
     return (
       <div
         data-testid="mock-unity-stage"
         data-preview-key={props.preview?.picture.key ?? ''}
+        data-preview-activity-id={props.preview?.config.activityId ?? ''}
+        data-has-boot={props.boot ? 'true' : 'false'}
       />
     )
   },
@@ -69,16 +77,17 @@ const UNITY_CONFIG = {
   productVersion: 'test',
 }
 
-function renderGuestPlay(initialEntry: string) {
-  return render(
+function renderGuestPlay(initialEntry: string, strict = false) {
+  const tree = (
     <ThemeProvider>
       <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
           <Route path="/play/:activityId" element={<GuestPlayPage />} />
         </Routes>
       </MemoryRouter>
-    </ThemeProvider>,
+    </ThemeProvider>
   )
+  return render(strict ? <StrictMode>{tree}</StrictMode> : tree)
 }
 
 beforeEach(() => {
@@ -328,5 +337,47 @@ describe('PJ-B picture rotation — sample activities, defaults, and explicit ov
     const picked = pickNextLibraryPicture({ excludeKey: 'coral-reef', random: () => 0 })
     expect(LIBRARY_KEYS.has(picked.key)).toBe(true)
     expect(localStorage.getItem(FIRST_GAME_PICTURE_SHOWN_STORAGE_KEY)).toBeNull()
+  })
+
+  it('memoizes per load so refetches reuse the picture, while a reload rotates without repeating', () => {
+    const loadKey = 'act_integer_operations:attempt-1:load-1'
+    const first = pickPictureForGameLoad(loadKey, { random: () => 0 })
+    const refetch = pickPictureForGameLoad(loadKey, { random: () => 0 })
+    expect(first.key).toBe(FIRST_GAME_PICTURE_KEY)
+    expect(refetch.key).toBe(first.key)
+
+    resetPictureRotationLoadCache()
+    const reloaded = pickPictureForGameLoad('act_integer_operations:attempt-1:load-2', {
+      random: () => 0,
+    })
+    expect(reloaded.key).not.toBe(first.key)
+  })
+
+  it('StrictMode loads of /play/act_integer_operations open rover-first, never flash legacy boot, use transient sample_ ids, and give 5 distinct pictures across 5 loads', async () => {
+    resolveBuildConfigMock.mockReturnValue(UNITY_CONFIG)
+    const shownAcrossFiveLoads: string[] = []
+
+    for (let load = 0; load < 5; load += 1) {
+      stageMock.mockClear()
+      const view = renderGuestPlay('/play/act_integer_operations', true)
+      await waitFor(() =>
+        expect(screen.getByTestId('mock-unity-stage')).toHaveAttribute('data-preview-key'),
+      )
+      // Never mounts UnityStage without a preview on initial idle/loading renders.
+      for (const call of stageMock.mock.calls) {
+        expect(call[0]).toHaveProperty('preview')
+        expect(call[0]).not.toHaveProperty('boot')
+      }
+      const stageEl = screen.getByTestId('mock-unity-stage')
+      const key = stageEl.getAttribute('data-preview-key')!
+      expect(LIBRARY_KEYS.has(key)).toBe(true)
+      expect(stageEl.getAttribute('data-preview-activity-id')).toMatch(/^sample_/)
+      shownAcrossFiveLoads.push(key)
+      view.unmount()
+      resetPictureRotationLoadCache()
+    }
+
+    expect(shownAcrossFiveLoads[0]).toBe(FIRST_GAME_PICTURE_KEY)
+    expect(new Set(shownAcrossFiveLoads).size).toBe(5)
   })
 })
