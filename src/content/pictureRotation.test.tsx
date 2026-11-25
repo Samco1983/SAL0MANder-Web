@@ -11,6 +11,8 @@ import {
 import { GuestActivityBundleSchema, PlayBundleSchema } from '@contracts/v1'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
 import {
+  FIRST_GAME_PICTURE_KEY,
+  FIRST_GAME_PICTURE_SHOWN_STORAGE_KEY,
   LAST_PUZZLE_PICTURE_STORAGE_KEY,
   RECENT_PICTURE_MEMORY,
   RECENT_PUZZLE_PICTURES_STORAGE_KEY,
@@ -301,5 +303,30 @@ describe('PJ-B picture rotation — sample activities, defaults, and explicit ov
     for (let i = 0; i < 30; i += 1) pickNextLibraryPicture()
     const stored: unknown = JSON.parse(localStorage.getItem(RECENT_PUZZLE_PICTURES_STORAGE_KEY) ?? '[]')
     expect(stored).toHaveLength(RECENT_PICTURE_MEMORY)
+  })
+
+  it("opens a device's first game on the rover expedition picture, then rotates", () => {
+    expect(LIBRARY_KEYS.has(FIRST_GAME_PICTURE_KEY)).toBe(true)
+    const first = pickNextLibraryPicture({ random: () => 0.5 })
+    expect(first.key).toBe(FIRST_GAME_PICTURE_KEY)
+    expect(localStorage.getItem(FIRST_GAME_PICTURE_SHOWN_STORAGE_KEY)).toBe('1')
+    const later = Array.from({ length: 8 }, () => pickNextLibraryPicture().key)
+    expect(later).not.toContain(FIRST_GAME_PICTURE_KEY)
+  })
+
+  it('home page hero (firstGamePicture: false) does not use up the rover first game', () => {
+    const hero = pickNextLibraryPicture({ shape: 'Square', firstGamePicture: false, random: () => 0 })
+    if (hero.key !== FIRST_GAME_PICTURE_KEY) {
+      expect(pickNextLibraryPicture().key).toBe(FIRST_GAME_PICTURE_KEY)
+    }
+    expect(localStorage.getItem(FIRST_GAME_PICTURE_SHOWN_STORAGE_KEY)).toBe(
+      hero.key === FIRST_GAME_PICTURE_KEY ? null : '1',
+    )
+  })
+
+  it('"New picture" (excludeKey) never forces the rover', () => {
+    const picked = pickNextLibraryPicture({ excludeKey: 'coral-reef', random: () => 0 })
+    expect(LIBRARY_KEYS.has(picked.key)).toBe(true)
+    expect(localStorage.getItem(FIRST_GAME_PICTURE_SHOWN_STORAGE_KEY)).toBeNull()
   })
 })
