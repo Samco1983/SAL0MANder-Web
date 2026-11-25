@@ -46,8 +46,8 @@ describe('the puzzle picture library', () => {
       total += bytes
       expect(bytes, `${picture.src} is ${Math.round(bytes / 1024)} KB`).toBeLessThan(200 * 1024)
     }
-    // Nineteen lazy-loaded options, including four licensed photos totaling less than 360 KiB.
-    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(1536 * 1024)
+    // Thirty-two lazy-loaded options, including four licensed photos totaling less than 360 KiB.
+    expect(total, `the gallery totals ${Math.round(total / 1024)} KB`).toBeLessThan(2300 * 1024)
   })
 
   /**

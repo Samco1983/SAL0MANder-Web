@@ -56,7 +56,7 @@ describe('the primary action', () => {
     const primary = within(choices).getByRole('link', { name: /Mystery Pictures.*Play a demo/i })
     expect(primary).toHaveAccessibleDescription(/choose Picture Reveal/i)
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Mystery Pictures')
-    const picture = screen.getByAltText(/A forest guardian puzzle part-way through/i)
+    const picture = screen.getByAltText(/puzzle part-way through: five of its nine pieces uncovered/i)
     expect(choices.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(document.getElementById('pictures-title')).toHaveTextContent(
       'The pictures students uncover',

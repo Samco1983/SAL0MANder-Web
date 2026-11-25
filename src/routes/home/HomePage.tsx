@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { PhotoCredit } from '@components/ui/PhotoCredit'
 import { env } from '@config/env'
 import { paths, buildPath } from '@config/routes'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 import { PUZZLE_LIBRARY } from '@content/puzzleLibrary'
+import { pickNextLibraryPicture } from '@content/pictureRotation'
 import { AppShell } from '@components/layout/AppShell'
 import { SharePanel } from '@components/share/SharePanel'
 import { LinkButton } from '@components/ui/Button'
@@ -37,23 +39,16 @@ import styles from './HomePage.module.css'
  * external host). A page that overstates is the thing a district checks first.
  */
 /**
- * The hero picture, and the nine cells drawn over it.
+ * The nine cells drawn over the rotating square hero picture.
  *
- * The page explained the mechanic in three places and showed it in none: the
- * gallery further down proves the pictures are good, but a teacher has to read
- * a paragraph to learn that answering a question is what uncovers one. This is
- * that sentence, drawn.
- *
- * Chosen BY KEY, never by array position — `puzzleLibrary.ts` makes exactly
- * this point about `imagePresetIndex`, and a hero that silently repoints at a
- * different picture when someone reorders the library is the same bug on a more
- * visible surface.
+ * The hero picture is chosen randomly from square entries in `PUZZLE_LIBRARY`
+ * on each visit (never repeating the last picture on this device, and never
+ * hard-coded to the retired `salamander-forest` default).
  *
  * Nine cells because the three launch activities are nine pieces on a square
  * board (`DEMO_PIECE_COUNT`), so the illustration matches what a teacher gets
  * when they follow the button beside it rather than flattering it.
  */
-const HERO_PICTURE = PUZZLE_LIBRARY.find((p) => p.key === 'salamander-forest')
 /** Still to be earned. Scattered rather than contiguous: a solved-so-far board
     does not fill in reading order, and a neat block reads as a loading state. */
 const HERO_COVERED = new Set([0, 5, 6, 8])
@@ -105,6 +100,8 @@ function StartIcon({ kind }: { kind: 'mystery' | 'gift' | 'open' | 'studio' | 'p
 }
 
 export function HomePage() {
+  const [heroPicture] = useState(() => pickNextLibraryPicture({ shape: 'Square', firstGamePicture: false }))
+
   return (
     <AppShell>
       <section className={styles.hero}>
@@ -225,15 +222,15 @@ export function HomePage() {
           different job here, and two identical alt strings on one page would
           also make "shows every picture in the library" ambiguous.
         */}
-        {HERO_PICTURE ? (
+        {heroPicture ? (
           <figure className={styles.heroArt}>
             <div className={styles.heroArtFrame}>
               <img
                 className={styles.heroArtImage}
-                src={HERO_PICTURE.src}
-                alt="A forest guardian puzzle part-way through: five of its nine pieces uncovered, four still hidden."
-                width={HERO_PICTURE.width}
-                height={HERO_PICTURE.height}
+                src={heroPicture.src}
+                alt={`A ${heroPicture.name.toLowerCase()} puzzle part-way through: five of its nine pieces uncovered, four still hidden.`}
+                width={heroPicture.width}
+                height={heroPicture.height}
                 decoding="async"
               />
               {/*

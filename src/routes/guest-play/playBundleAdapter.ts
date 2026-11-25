@@ -1,4 +1,5 @@
 import type { GuestActivityBundle, PlayBundle } from '@contracts/v1'
+import { findLibraryPictureBySrc } from '@content/pictureRotation'
 
 /**
  * Wire `PlayBundle` → the app's internal `GuestActivityBundle`.
@@ -14,6 +15,7 @@ import type { GuestActivityBundle, PlayBundle } from '@contracts/v1'
  * D-003 keeping the gameplay loop in Unity).
  */
 export function toGuestActivityBundle(play: PlayBundle): GuestActivityBundle {
+  const libraryPicture = findLibraryPictureBySrc(play.puzzleAsset.downloadUrl)
   return {
     summary: {
       id: play.activityId,
@@ -39,6 +41,7 @@ export function toGuestActivityBundle(play: PlayBundle): GuestActivityBundle {
           defaultPlayMode: play.defaultPlayMode,
           puzzle: play.puzzle,
           quiz: play.quiz,
+          ...(libraryPicture ? { imageKey: libraryPicture.key, pictureSelection: 'rotated' } : {}),
         },
       },
       media: [
