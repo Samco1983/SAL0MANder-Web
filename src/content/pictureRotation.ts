@@ -41,6 +41,7 @@ type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 let memoryLastPictureKey: string | null = null
 let memoryRecentPictureKeys: string[] = []
 let memoryFirstGamePictureShown = false
+const gameLoadPictures = new Map<string, PuzzlePicture>()
 
 function defaultStorage(): StorageLike | null {
   try {
@@ -157,11 +158,17 @@ function markFirstGamePictureShown(storage: Pick<Storage, 'setItem'> | null): vo
   }
 }
 
+/** Clear per-load memoized picks (mirrors a real browser page reload). */
+export function resetPictureRotationLoadCache(): void {
+  gameLoadPictures.clear()
+}
+
 /** Test-only helper to clear the in-memory fallback alongside localStorage. */
 export function resetPictureRotationMemory(): void {
   memoryLastPictureKey = null
   memoryRecentPictureKeys = []
   memoryFirstGamePictureShown = false
+  gameLoadPictures.clear()
 }
 
 function clampUnitInterval(value: number): number {
@@ -240,6 +247,55 @@ export function pickNextLibraryPicture(options: PickPictureOptions = {}): Puzzle
   const chosen = candidates[index]!
   recordPickedPicture(chosen.key, storage)
   return chosen
+}
+
+export type PickPictureForLoadOptions = PickPictureOptions & {
+  /**
+   * Optional already-rotated picture key returned by the initial bundle fetch.
+   * When present on the first pick for `loadKey`, it is latched and recorded
+   * rather than rolling a second time; subsequent calls for the same `loadKey`
+   * always return the latched picture.
+   */
+  preferredKey?: string | null
+}
+
+/**
+ * Pick once per activity page load.
+ *
+ * Keying by a per-load identifier (such as `${activityId}:${attemptKey}:${loadToken}`)
+ * ensures StrictMode double-mounts and refetches inside the same load reuse the
+ * already-chosen picture instead of re-picking and advancing the rotation window.
+ */
+export function pickPictureForGameLoad(
+  loadKey: string,
+  options: PickPictureForLoadOptions = {},
+): PuzzlePicture {
+  const cached = gameLoadPictures.get(loadKey)
+  if (cached) return cached
+
+  const pool = options.pool ?? PUZZLE_LIBRARY
+  const storage = options.storage === undefined ? defaultStorage() : options.storage
+  const preferred = findLibraryPicture(options.preferredKey, pool)
+  const chosen = preferred ?? pickNextLibraryPicture(options)
+  if (preferred) {
+    recordPickedPicture(preferred.key, storage)
+  }
+  gameLoadPictures.set(loadKey, chosen)
+  return chosen
+}
+
+/** Replace the memoized picture for an active load (e.g., user taps "New picture"). */
+export function rotatePictureForGameLoad(
+  loadKey: string,
+  options: PickPictureOptions = {},
+): PuzzlePicture {
+  const current = gameLoadPictures.get(loadKey)
+  const next = pickNextLibraryPicture({
+    ...options,
+    excludeKey: options.excludeKey ?? current?.key,
+  })
+  gameLoadPictures.set(loadKey, next)
+  return next
 }
 
 export type ResolveActivityPictureOptions = PickPictureOptions & {

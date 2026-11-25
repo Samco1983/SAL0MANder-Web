@@ -15,7 +15,11 @@ import { preparePreview, type PreviewBoot } from '@unity/previewBridge'
 import { MOCK_DEMO_ACTIVITIES } from '@api/mockTransport'
 import { newId, ShareCodeSchema } from '@contracts/v1'
 import type { PuzzlePicture } from '@content/puzzleLibrary'
-import { findLibraryPicture, pickNextLibraryPicture } from '@content/pictureRotation'
+import {
+  findLibraryPicture,
+  pickPictureForGameLoad,
+  rotatePictureForGameLoad,
+} from '@content/pictureRotation'
 import { buildSampleActivityDraft, isSampleActivityId } from '@content/demoActivities'
 import { usePlaySession } from './usePlaySession'
 import type { ApiError } from '@api/errors'
@@ -108,6 +112,9 @@ export function GuestPlayPage() {
   const state = useGuestActivity(activityId)
   // Minted lazily on the device; not authentication, carries no PII.
   const identity = getGuestIdentity()
+  // Stable for the lifetime of this mounted page load (survives StrictMode
+  // effect re-runs and bundle refetches; fresh on every reload or new mount).
+  const [loadToken] = useState(() => newId())
 
   const bundle = state.status === 'ready' ? state.bundle : undefined
   const payloadBody = bundle?.version.payload.body as
@@ -116,33 +123,44 @@ export function GuestPlayPage() {
   const allowedPlayModes = payloadBody?.allowedPlayModes
 
   /**
+   * Created before boot, not inside the session effect, so Unity is handed an
+   * attempt identity from its very first message — for Student Choice the
+   * session does not exist until the student picks, which would otherwise
+   * leave Unity with nothing to correlate against.
+   */
+  const { clientAttemptId, renewAttempt } = useClientAttemptId(bundle?.version.id)
+
+  /**
    * Resolve the puzzle picture for this activity:
    * - An explicit teacher/parent choice (`?picture=<key>` or a non-rotated
    *   `imageKey` in the activity bundle) always wins.
-   * - Sample activities carry a freshly rotated `PUZZLE_LIBRARY` picture chosen
-   *   at fetch time without repeating the previous game on this device.
-   * - If a bundle arrives with no valid picture key, fall back to a random
-   *   library picture rather than Unity's retired salamander default.
+   * - Otherwise pick once per activity page load (memoized by activity +
+   *   session start key + load token) so refetches inside the same load reuse
+   *   it instead of re-picking, while reloads pick a new picture avoiding
+   *   recent pictures on this device.
    */
   const explicitParamPicture = findLibraryPicture(searchParams.get('picture'))
   const explicitBundlePicture =
     payloadBody?.pictureSelection === 'rotated' ? undefined : findLibraryPicture(payloadBody?.imageKey)
   const explicitPicture = explicitParamPicture ?? explicitBundlePicture
-  const rotatedBundlePicture = findLibraryPicture(payloadBody?.imageKey)
-  const [overridePicture, setOverridePicture] = useState<PuzzlePicture | undefined>(undefined)
-  const [fallbackPicture, setFallbackPicture] = useState<PuzzlePicture | undefined>(undefined)
+  const rotatedBundleKey = payloadBody?.imageKey
+  const pictureLoadKey = bundle
+    ? `${bundle.summary.id}:${clientAttemptId ?? 'pending'}:${loadToken}`
+    : undefined
+  const [latchedPicture, setLatchedPicture] = useState<PuzzlePicture | undefined>(undefined)
 
   useEffect(() => {
-    setOverridePicture(undefined)
-    setFallbackPicture(undefined)
+    setLatchedPicture(undefined)
   }, [activityId])
 
   useEffect(() => {
-    if (!bundle || explicitPicture || rotatedBundlePicture || fallbackPicture) return
-    setFallbackPicture(pickNextLibraryPicture())
-  }, [bundle, explicitPicture, rotatedBundlePicture, fallbackPicture])
+    if (!pictureLoadKey || explicitPicture) return
+    setLatchedPicture(
+      pickPictureForGameLoad(pictureLoadKey, { preferredKey: rotatedBundleKey }),
+    )
+  }, [pictureLoadKey, explicitPicture, rotatedBundleKey])
 
-  const activePicture = explicitPicture ?? overridePicture ?? rotatedBundlePicture ?? fallbackPicture
+  const activePicture = explicitPicture ?? latchedPicture
   const hasExplicitPicture = Boolean(explicitPicture)
 
   const unityBuildConfigured = Boolean(resolveUnityBuildConfig())
@@ -150,7 +168,6 @@ export function GuestPlayPage() {
   const usesLibrarySamplePreview = Boolean(
     unityBuildConfigured &&
       bundle &&
-      activePicture &&
       isSampleActivityId(bundle.summary.id) &&
       !isShareCodeRoute,
   )
@@ -170,8 +187,13 @@ export function GuestPlayPage() {
     }
     const controller = new AbortController()
     setSamplePreviewState({ status: 'preparing' })
-    const draft = buildSampleActivityDraft(bundle.summary.id, activePicture)
-    void preparePreview(draft, `sample_${newId()}`, controller.signal)
+    const previewId = `sample_${newId()}`
+    const baseDraft = buildSampleActivityDraft(bundle.summary.id, activePicture)
+    const draft = {
+      ...baseDraft,
+      config: { ...baseDraft.config, activityId: previewId },
+    }
+    void preparePreview(draft, previewId, controller.signal)
       .then((preview) => {
         if (!controller.signal.aborted) {
           setSamplePreviewState({ status: 'ready', preview })
@@ -200,14 +222,6 @@ export function GuestPlayPage() {
    * the value is immutable once set, so a teacher's mode breakdown would be
    * quietly wrong with nothing to reveal it.
    */
-  /**
-   * Created before boot, not inside the session effect, so Unity is handed an
-   * attempt identity from its very first message — for Student Choice the
-   * session does not exist until the student picks, which would otherwise
-   * leave Unity with nothing to correlate against.
-   */
-  const { clientAttemptId, renewAttempt } = useClientAttemptId(bundle?.version.id)
-
   const [chosenMode, setChosenMode] = useState<string | undefined>(undefined)
   const selectedPlayMode = allowedPlayModes?.length === 1 ? allowedPlayModes[0] : chosenMode
 
@@ -411,7 +425,11 @@ export function GuestPlayPage() {
         </div>
       )
     }
-    if (unityBuildConfigured && state.status === 'loading' && isSampleActivityId(activityId)) {
+    if (
+      unityBuildConfigured &&
+      (state.status === 'idle' || state.status === 'loading') &&
+      isSampleActivityId(activityId)
+    ) {
       return (
         <div role="status" className={styles.centeredInner}>
           <p className={styles.description}>Choosing a fresh puzzle picture…</p>
@@ -472,12 +490,16 @@ export function GuestPlayPage() {
                   <p className={styles.byline}>by {state.bundle.summary.authorDisplayName}</p>
                 ) : null}
                 <p className={styles.description}>{state.bundle.summary.description}</p>
-                {isSampleActivityId(state.bundle.summary.id) && !hasExplicitPicture ? (
+                {isSampleActivityId(state.bundle.summary.id) &&
+                !hasExplicitPicture &&
+                pictureLoadKey ? (
                   <Button
                     variant="secondary"
                     onClick={() =>
-                      setOverridePicture(
-                        pickNextLibraryPicture({ excludeKey: activePicture?.key }),
+                      setLatchedPicture(
+                        rotatePictureForGameLoad(pictureLoadKey, {
+                          excludeKey: activePicture?.key,
+                        }),
                       )
                     }
                   >

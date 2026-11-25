@@ -264,6 +264,23 @@ function requestFingerprint(options: RequestOptions): string {
   return JSON.stringify([options.method ?? 'GET', options.path, options.body ?? null])
 }
 
+function waitWithAbort(ms: number, signal?: AbortSignal): Promise<void> {
+  if (signal?.aborted) {
+    return Promise.reject(new DOMException('Request aborted', 'AbortError'))
+  }
+  return new Promise((resolve, reject) => {
+    const onAbort = () => {
+      clearTimeout(timer)
+      reject(new DOMException('Request aborted', 'AbortError'))
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort)
+      resolve()
+    }, ms)
+    signal?.addEventListener('abort', onAbort, { once: true })
+  })
+}
+
 export function createMockTransport(): Transport {
   const sessions = new Map<string, unknown>()
   /** Replays the stored response for a repeated key — mirrors server behavior. */
@@ -271,7 +288,7 @@ export function createMockTransport(): Transport {
 
   return {
     async request<T>(options: RequestOptions, schema: z.ZodType<T>): Promise<T> {
-      await new Promise((r) => setTimeout(r, 120))
+      await waitWithAbort(120, options.signal)
 
       const fingerprint = requestFingerprint(options)
       const replayed = options.idempotencyKey ? idempotency.get(options.idempotencyKey) : undefined
