@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-25",
+  "updatedAt": "2026-11-26",
   "licenseNote": "Original instrumental tracks created with Google Flow Music for SAL0MANder Studios (kid-safe, zero lyrics). Approved by Samuel for live sites.",
   "_howToEdit": [
     "Edit any game's 'songs' list below to add, remove, or reorder tracks (3-5 songs recommended per game).",
@@ -359,6 +359,14 @@
       "source": "Google Flow Music",
       "flowTitle": "Tactical Breach (Boss Cue)",
       "sourceSha256": "f7e7818383f7ebdf513a77621610bf900eb0b8d1b7ba4eed92e98706eef6b63d"
+    },
+    "hyperjump": {
+      "title": "HYPERJUMP",
+      "src": "arcade/neon-dash/hyperjump.mp3",
+      "genre": "synth arcade runner (original Neon Dash song)",
+      "mood": "fast, electric",
+      "instrumental": true,
+      "source": "Original Neon Dash track (level is timed to this song)"
     }
   },
   "games": {
@@ -404,15 +412,12 @@
     "neon-dash": {
       "name": "Neon Dash: Voltage Works",
       "genre": "Nocturnal synth & industrial arcade runner",
-      "volume": 0.55,
+      "volume": 0.6,
       "defaultEnabled": true,
       "songs": [
-        "midnight-rider-groove",
-        "midnight-rider-variant",
-        "tactical-strike",
-        "frontline-deployment",
-        "quiet-acceleration"
-      ]
+        "hyperjump"
+      ],
+      "note": "Rhythm runner: the course is timed to HYPERJUMP, so it plays ONLY its original song (Samuel, Nov 26). Do not rotate."
     },
     "mystery-graph": {
       "name": "Mystery Graph: X-Y Plane",
