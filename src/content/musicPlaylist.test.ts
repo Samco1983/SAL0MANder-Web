@@ -202,7 +202,7 @@ describe('shared vanilla JS arcade player (public/arcade/shared/music-player.js)
     // Neon Dash is a rhythm runner timed to one song: it never rotates.
     const neon = sal0Music!.resolveGameConfig(playlist, 'neon-dash', 'https://sal0mander.com/')
     expect(neon!.tracks.map((t) => t.id)).toEqual(['hyperjump'])
-    expect(neon!.tracks[0].src).toMatch(/^https:\/\/sal0mander\.com\/arcade\/neon-dash\/hyperjump\.mp3$/)
+    expect(neon!.tracks[0]?.src).toMatch(/^https:\/\/sal0mander\.com\/arcade\/neon-dash\/hyperjump\.mp3$/)
 
     for (const gameId of ['moon-gate', 'mystery-graph']) {
       const cfg = sal0Music!.resolveGameConfig(playlist, gameId, 'https://sal0mander.com/')
