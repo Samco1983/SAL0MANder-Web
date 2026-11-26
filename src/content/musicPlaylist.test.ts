@@ -51,8 +51,13 @@ describe('editable public/audio/music-playlist.json', () => {
     for (const gameId of requiredGames) {
       const resolved = resolveGamePlaylist(playlist, gameId, '/')
       expect(resolved, `missing game ${gameId}`).not.toBeNull()
-      expect(resolved!.tracks.length, `${gameId} should have 3-5 songs`).toBeGreaterThanOrEqual(3)
-      expect(resolved!.tracks.length, `${gameId} should have 3-5 songs`).toBeLessThanOrEqual(5)
+      if (gameId === 'neon-dash') {
+        // Rhythm runner: the course is timed to its original song, so it plays ONLY HYPERJUMP (Samuel, Nov 26).
+        expect(resolved!.tracks.map((t) => t.id), 'neon-dash plays only its original song').toEqual(['hyperjump'])
+      } else {
+        expect(resolved!.tracks.length, `${gameId} should have 3-5 songs`).toBeGreaterThanOrEqual(3)
+        expect(resolved!.tracks.length, `${gameId} should have 3-5 songs`).toBeLessThanOrEqual(5)
+      }
       // Every song ID in a game's list is distinct.
       expect(new Set(resolved!.tracks.map((t) => t.id)).size).toBe(resolved!.tracks.length)
 
@@ -66,7 +71,12 @@ describe('editable public/audio/music-playlist.json', () => {
 
     for (const [id, track] of Object.entries(playlist.tracks)) {
       expect(track.instrumental, `track ${id} must be marked instrumental`).toBe(true)
-      expect(track.source).toBe('Google Flow Music')
+      if (id === 'hyperjump') {
+        // Neon Dash's original song (shipped with the game before the playlist existed).
+        expect(track.source).toMatch(/Original Neon Dash track/)
+      } else {
+        expect(track.source).toBe('Google Flow Music')
+      }
     }
   })
 
@@ -169,7 +179,7 @@ describe('music rotation — no repeat until every song for a game has played', 
 })
 
 describe('shared vanilla JS arcade player (public/arcade/shared/music-player.js)', () => {
-  it('rotates through all Moon Gate and Neon Dash songs without repeat until all have played', () => {
+  it('rotates through all Moon Gate and Mystery Graph songs (Neon Dash stays on HYPERJUMP) without repeat until all have played', () => {
     const code = readFileSync(SHARED_PLAYER_PATH, 'utf8')
     const run = new Function(code)
     run()
@@ -194,7 +204,12 @@ describe('shared vanilla JS arcade player (public/arcade/shared/music-player.js)
     expect(sal0Music).toBeDefined()
     const playlist = loadDiskPlaylist()
 
-    for (const gameId of ['moon-gate', 'neon-dash', 'mystery-graph']) {
+    // Neon Dash is a rhythm runner timed to one song: it never rotates.
+    const neon = sal0Music!.resolveGameConfig(playlist, 'neon-dash', 'https://sal0mander.com/')
+    expect(neon!.tracks.map((t) => t.id)).toEqual(['hyperjump'])
+    expect(neon!.tracks[0]?.src).toMatch(/^https:\/\/sal0mander\.com\/arcade\/neon-dash\/hyperjump\.mp3$/)
+
+    for (const gameId of ['moon-gate', 'mystery-graph']) {
       const cfg = sal0Music!.resolveGameConfig(playlist, gameId, 'https://sal0mander.com/')
       expect(cfg).not.toBeNull()
       const n = cfg!.tracks.length
