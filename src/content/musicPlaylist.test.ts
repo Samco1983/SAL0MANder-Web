@@ -71,7 +71,12 @@ describe('editable public/audio/music-playlist.json', () => {
 
     for (const [id, track] of Object.entries(playlist.tracks)) {
       expect(track.instrumental, `track ${id} must be marked instrumental`).toBe(true)
-      expect(track.source).toBe('Google Flow Music')
+      if (id === 'hyperjump') {
+        // Neon Dash's original song (shipped with the game before the playlist existed).
+        expect(track.source).toMatch(/Original Neon Dash track/)
+      } else {
+        expect(track.source).toBe('Google Flow Music')
+      }
     }
   })
 
