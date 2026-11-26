@@ -51,6 +51,8 @@ function face(id,c,R=30){ctx.save();ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineCa
 // Coach Sam: the photo cube (face 0) is Samuel, the tutor. Kids pick cartoon faces; Sam records a run kids can race.
 // sal0mander.com (public games/classroom site) stays neutral. Coach Sam features only appear via the tutoring site's
 // link (?sam=1, for Sam's students) or Sam's own link (?coach=1, to record runs and race as SAM).
+// Online races stay OFF until parent-email invitations exist (Samuel's Nov 24 rule, LOCKED 16, Terms 3.23).
+const ONLINE=false;
 const COACH_MODE=/[?&]coach=1\b/.test(location.search),SAM_LINK=COACH_MODE||/[?&]sam=1\b/.test(location.search);let samRun=null,rec=[],recFull=false,coachOutAt=0;
 // Best runs: every full 1-player run is saved ON THIS DEVICE ONLY (no names, nothing sent anywhere), top 10 by score.
 // Each saved run keeps its jump ticks, so any row can be raced as a ghost (the course is deterministic).
@@ -169,7 +171,7 @@ function menu(state){
   primary.textContent=paused?'Resume':result?(kind==='online'?'Race again':'Rematch'):won?'Play again':again?'Continue from halfway':dead?'Try again':'1 Player';
   primary.disabled=false;
   two.hidden=paused;two.textContent=result?'1 Player':'2 Players';
-  web.hidden=paused||result;
+  web.hidden=!ONLINE||paused||result;
   $('secondary').hidden=!again||paused||won||result;
   $('keys2').hidden=state!=='title';
   const over=result||dead||won;$('coachCta').hidden=!(over&&SAM_LINK);
@@ -217,8 +219,8 @@ document.addEventListener('fullscreenchange',()=>{full.textContent=document.full
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play'&&kind!=='online')menu('paused');});
 // ---------- online ----------
 function relayURL(){
-  const q=new URLSearchParams(location.search).get('relay');if(q)return q;
-  if(['localhost','127.0.0.1'].includes(location.hostname))return 'ws://localhost:8787';
+  // ?relay= only works on the developer's own computer, so a shared link can't point the game at another server.
+  if(['localhost','127.0.0.1'].includes(location.hostname))return new URLSearchParams(location.search).get('relay')||'ws://localhost:8787';
   return 'wss://race.sal0mander.com';
 }
 function netSend(o){try{if(net?.ws?.readyState===1)net.ws.send(JSON.stringify(o));}catch{}}
@@ -248,7 +250,7 @@ function onNet(m){
     if(Number.isFinite(m.pr))r.prisms=m.pr;r.shield=!!m.sh;if(m.d)r.dead=m.d;if(m.f)r.finished=true;
   }
 }
-web.onclick=()=>{if(!score)return;kind='online';menu('lobby');};
+web.onclick=()=>{if(!score||!ONLINE)return;kind='online';menu('lobby');};
 function buildPicker(){const box=$('faces');box.replaceChildren();FACES.forEach((name,id)=>{if(id===0&&!COACH_MODE)return;const b=document.createElement('button');b.type='button';b.className='faceBtn';b.setAttribute('aria-label','Face: '+name);b.setAttribute('aria-pressed',String(id===myFace));b.title=name;
   const c=document.createElement('canvas');c.width=c.height=88;const g2=c.getContext('2d'),keep=ctx;
   if(id===0){g2.fillStyle='#70f1dd';g2.fillRect(0,0,88,88);if(pilot.complete&&pilot.naturalWidth){const s=Math.min(pilot.width,pilot.height);g2.drawImage(pilot,(pilot.width-s)/2,(pilot.height-s)/2,s,s,6,6,76,76);}else{g2.fillStyle='#14121f';g2.font='800 15px sans-serif';g2.textAlign='center';g2.fillText('PILOT',44,50);}}
