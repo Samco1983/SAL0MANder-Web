@@ -57,6 +57,11 @@ const UnityHostPage = lazy(() =>
 const ConsolePage = lazy(() =>
   import('@routes/console/ConsolePage').then((m) => ({ default: m.ConsolePage })),
 )
+const JigsawLessonPreviewPage = lazy(() =>
+  import('@routes/lesson-preview/JigsawLessonPreviewPage').then((m) => ({
+    default: m.JigsawLessonPreviewPage,
+  })),
+)
 
 /**
  * A split route must never show a student a blank screen while its chunk
@@ -107,6 +112,11 @@ export const routes: RouteObject[] = [
   // without redirecting away its query string or fragment.
   { path: `${paths.unity}/index.html`, element: unityHostElement, errorElement: <RouteError /> },
   { path: paths.console, element: split(<ConsolePage />), errorElement: <RouteError /> },
+  {
+    path: paths.lessonPreview,
+    element: split(<JigsawLessonPreviewPage />),
+    errorElement: <RouteError />,
+  },
   // The catch-all needs a boundary too: without one, a throw inside
   // NotFoundPage renders React Router's default blank screen — the exact
   // outcome RouteError exists to prevent.
