@@ -33,6 +33,8 @@ export const paths = {
   unity: '/unity',
   /** Owner-facing V6 mission selector and its two bounded commands. */
   console: '/console',
+  /** Private, non-live preview of the teacher-led turn-taking Jigsaw lesson (fictional learners only). */
+  lessonPreview: '/preview/jigsaw-lesson',
   notFound: '*',
 } as const
 

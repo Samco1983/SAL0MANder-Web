@@ -66,6 +66,11 @@ const EnvSchema = z.object({
   VITE_FEATURE_GUEST_PLAY: boolish,
   VITE_FEATURE_ACCOUNTS: boolish,
   /**
+   * Private teacher-led turn-taking Jigsaw lesson preview (fictional learners only).
+   * Always OFF in production unless explicitly enabled; enabled automatically in local dev/test.
+   */
+  VITE_FEATURE_LESSON_PREVIEW: boolish,
+  /**
    * Custom media upload — photos AND short audio clips. OFF unless explicitly
    * set (D-017). One switch for both: they carry the same review requirement,
    * and audio is the higher risk of the two (D-019).
@@ -189,6 +194,7 @@ export function readEnv(source: unknown) {
       companionLayout: raw.VITE_FEATURE_COMPANION_LAYOUT,
       guestPlay: raw.VITE_FEATURE_GUEST_PLAY,
       accounts: raw.VITE_FEATURE_ACCOUNTS,
+      lessonPreview: raw.VITE_FEATURE_LESSON_PREVIEW,
       customMediaUpload: raw.VITE_FEATURE_CUSTOM_MEDIA_UPLOAD,
       studentSharing: raw.VITE_FEATURE_STUDENT_SHARING,
       shareToTeacher: raw.VITE_FEATURE_SHARE_TO_TEACHER,
