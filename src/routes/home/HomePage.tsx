@@ -111,8 +111,10 @@ export function HomePage() {
             Mystery Pictures<span>Answer. Reveal a picture.</span>
           </h1>
           <p className={styles.lede}>
-            Make math, science, and vocabulary practice visual. Each correct answer uncovers more of
-            the picture automatically. No student account needed.
+            Free math games for everyone. In my small groups, every student gets a turn at the
+            controls, and I teach from the move they make. Make math, science, and vocabulary
+            practice visual — each correct answer uncovers more of the picture automatically, with
+            no student account needed.
           </p>
         </div>
 
