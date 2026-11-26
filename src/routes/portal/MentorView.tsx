@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { buildMentorActor, can } from '@/portal/access'
+import { listVisibleApprovalLogs, openMentorQuestion } from '@/portal/approvalLayers'
 import { sendMentorReplyDemo } from '@/portal/askActions'
 import { formatParentBeltSentence, getNextBeltStep } from '@/portal/belts'
 import {
@@ -55,6 +56,7 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
   const activeScript = SCRIPT_LIBRARY.find((s) => s.unitId === selectedUnitId) ?? SCRIPT_LIBRARY[0]!
   const capacity = getMembershipCapacity(state)
   const visibleLogs = state.auditLogs.filter((record) => can(actor, 'view', { type: 'audit_log', record }))
+  const visibleApprovalLogs = listVisibleApprovalLogs(state, actor)
 
   function handleAddMentor(e: FormEvent) {
     e.preventDefault()
@@ -97,18 +99,36 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
 
       {activeTab === 'today' ? (
         <div className={styles.stack}>
-          <Card title={`Ask queue — oldest first, provider-accepted & forwarded only (${askQueue.length})`} headingLevel={2}>
+          <Card title={`Ask queue — oldest first, parent-approved & stamped only (${askQueue.length})`} headingLevel={2}>
             {askQueue.length === 0 ? (
-              <p className={styles.note}>No queued questions (waiting-review and rejected-email questions stay hidden from mentors).</p>
+              <p className={styles.note}>No queued questions (waiting-approval, unstamped, pulled-back, and rejected-email questions stay hidden from mentors).</p>
             ) : (
               <ul className={styles.checkList} data-testid="mentor-ask-queue">
                 {askQueue.map((q) => {
+                  const opened = openMentorQuestion(state, actor, q.id)
                   const kid = state.children.find((c) => c.id === q.childId)
                   const draft = replyDrafts[q.id] ?? `[Placeholder draft] Nice question, ${kid?.nickname ?? 'friend'} — rewrite subtracting a negative as moving right.`
+                  const flagLabels = q.suspiciousFlags.map((flag) =>
+                    flag === 'approved_within_seconds'
+                      ? `Approved ${q.approvalDelaySeconds ?? 0}s after writing`
+                      : flag === 'same_device_as_writer'
+                        ? 'Same device as writer'
+                        : 'Same network as writer',
+                  )
                   return (
                     <li key={q.id} className={styles.childPreview}>
-                      <p className={styles.checkLabel}>{kid?.nickname ?? 'Child'} · {q.askModeAtSend} · {q.createdAt}</p>
-                      <p className={styles.checkDetail}>{q.text}</p>
+                      <div className={styles.headerRow}>
+                        <p className={styles.checkLabel}>{kid?.nickname ?? 'Child'} · {q.askModeAtSend} · {q.createdAt}</p>
+                        <span className={`${styles.badge} ${styles.pass}`} data-testid={`approval-stamp-${q.id}`}>
+                          {opened.stampLabel}
+                        </span>
+                      </div>
+                      {flagLabels.length > 0 ? (
+                        <p className={styles.alertCallout} role="status" data-testid={`suspicious-flag-${q.id}`}>
+                          Fast-approval / same-network flag: {flagLabels.join(' · ')}
+                        </p>
+                      ) : null}
+                      <p className={styles.checkDetail}>{opened.question.text}</p>
                       {q.photoPlaceholder ? <p className={styles.note}>Photo placeholder: {q.photoPlaceholder.label} (name covered: {q.photoPlaceholder.nameCovered ? 'yes' : 'no'})</p> : null}
                       <label className={styles.field}>
                         <span>Reply draft (human click required; parent email first)</span>
@@ -439,6 +459,20 @@ export function MentorView({ state, onStateChange }: { state: PortalState; onSta
                 <li key={l.id}>{l.at} · {l.actorKind}:{l.actorId} · {l.action} · {l.recordType}:{l.recordId} ({l.outcome})</li>
               ))}
             </ul>
+          </Card>
+
+          <Card title={`Append-only approval log — parent & Mr. Sam only (${visibleApprovalLogs.length})`} headingLevel={2}>
+            {visibleApprovalLogs.length === 0 ? (
+              <p className={styles.note}>No approval events recorded yet.</p>
+            ) : (
+              <ul className={styles.miniList} data-testid="admin-approval-log">
+                {visibleApprovalLogs.slice(-20).reverse().map((entry) => (
+                  <li key={entry.id}>
+                    #{entry.sequence} · {entry.at} · {entry.householdId} · <strong>{entry.event}</strong> ({entry.outcome}) — {entry.detail}
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         </div>
       ) : null}

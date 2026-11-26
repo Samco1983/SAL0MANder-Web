@@ -1,6 +1,6 @@
 import type {
-  AskQuestion, Assignment, AuditLog, Badge, ChildProfile, Feedback, Household,
-  MentorRole, ParentUpdate, Points, PortalState, RoomInvite, SimulatedEmail, WorkRecord,
+  ApprovalLogEntry, AskQuestion, Assignment, AuditLog, Badge, ChildProfile, Feedback, Household,
+  MentorRole, ParentUpdate, Points, PortalState, RegisteredDevice, RoomInvite, SimulatedEmail, WorkRecord,
 } from './types'
 
 /**
@@ -9,14 +9,22 @@ import type {
  */
 export type PortalAction =
   | 'view' | 'edit_household' | 'create_child' | 'edit_child' | 'save_work' | 'submit_work' | 'start_redo'
-  | 'submit_question' | 'forward_question'
+  | 'submit_question' | 'forward_question' | 'pull_back_approval' | 'change_parent_email' | 'manage_devices' | 'billing_action'
   | 'review_work' | 'author_feedback' | 'show_feedback_to_child' | 'send_parent_update'
   | 'award_belt' | 'manage_room_invite' | 'approve_room_invite'
   | 'add_mentor' | 'assign_mentor' | 'revoke_mentor' | 'export_household' | 'delete_household'
 
+/**
+ * Parent session scope:
+ * - `profile_chooser_only`: reached via a parent sign-in link (including a link forwarded to a teen).
+ *   Can only view the household profile chooser to unlock a teen profile via PIN — NEVER parent powers.
+ * - `full_parent`: verified parent session (not on a teen-registered device; sensitive powers still require step-up OTP).
+ */
+export type ParentSessionScope = 'full_parent' | 'profile_chooser_only'
+
 export type PortalActor =
   | { kind: 'anonymous' }
-  | { kind: 'parent'; householdId: string; parentEmail: string }
+  | { kind: 'parent'; householdId: string; parentEmail: string; sessionScope?: ParentSessionScope }
   | { kind: 'child'; householdId: string; childId: string }
   | { kind: 'mentor'; mentorId: string; roles: ReadonlyArray<MentorRole>; active: boolean; assignments: ReadonlyArray<Assignment> }
 
@@ -32,6 +40,8 @@ export type AccessTarget =
   | { type: 'points'; record: Points }
   | { type: 'assignment'; record: Assignment }
   | { type: 'audit_log'; record: AuditLog }
+  | { type: 'approval_log'; record: ApprovalLogEntry }
+  | { type: 'device'; record: RegisteredDevice }
   | { type: 'email'; record: SimulatedEmail }
   | { type: 'portal_admin'; householdId: null }
 
@@ -48,21 +58,36 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
 
   if (actor.kind === 'parent') {
     if (hhId !== actor.householdId) return false
+    const isChooserOnly = actor.sessionScope === 'profile_chooser_only'
+
+    // A forwarded parent sign-in link reaches ONLY the profile chooser (viewing child profile list
+    // to pick their own teen profile with PIN) — never parent powers or parent-only records.
+    if (isChooserOnly) {
+      return action === 'view' && target.type === 'child'
+    }
+
     if (action === 'view') {
       if (target.type === 'audit_log' || target.type === 'assignment') return false
+      if (target.type === 'approval_log' || target.type === 'device') return true
       return target.type === 'feedback' ? target.record.status !== 'draft' : true
     }
     if (
       action === 'edit_household' ||
       action === 'create_child' ||
       action === 'export_household' ||
-      action === 'delete_household'
+      action === 'delete_household' ||
+      action === 'change_parent_email' ||
+      action === 'manage_devices' ||
+      action === 'billing_action'
     ) {
       return target.type === 'household'
     }
     if (action === 'edit_child') return target.type === 'child'
     if (action === 'show_feedback_to_child') return target.type === 'feedback' && target.record.status === 'sent_to_parent'
     if (action === 'forward_question') return target.type === 'ask_question' && target.record.status === 'waiting_parent_review'
+    if (action === 'pull_back_approval') {
+      return target.type === 'ask_question' && target.record.parentApprovalStamp !== null && target.record.pulledBackAt === null
+    }
     if (action === 'approve_room_invite') return target.type === 'room_invite'
     return false
   }
@@ -81,7 +106,7 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
       return false
     }
     if (action === 'submit_question') {
-      return target.type === 'child' && target.record.id === actor.childId && target.record.consentStatus === 'verified' && target.record.askMode !== 'off'
+      return target.type === 'child' && target.record.id === actor.childId && target.record.consentStatus === 'verified' && (target.record.isAdultLearner || target.record.askMode !== 'off')
     }
     if (action === 'save_work' || action === 'submit_work') {
       return target.type === 'work' && target.record.childId === actor.childId && target.record.status === 'draft'
@@ -98,10 +123,17 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
   const assigned = isMentor && hasActiveAssignment(actor, hhId)
 
   if (action === 'view') {
-    if (target.type === 'audit_log' || target.type === 'assignment') return isAdmin
+    if (target.type === 'audit_log' || target.type === 'assignment' || target.type === 'approval_log' || target.type === 'device') {
+      return isAdmin
+    }
     if (target.type === 'household') return isAdmin || assigned
     if (target.type === 'ask_question') {
-      return assigned && target.record.parentEmailAcceptedAt !== null && (target.record.status === 'queued_for_mentor' || target.record.status === 'replied')
+      if (!assigned) return false
+      if (target.record.status !== 'queued_for_mentor' && target.record.status !== 'replied') return false
+      if (target.record.pulledBackAt !== null) return false
+      // Adult learners (18+) go straight to Mr. Sam; teens REQUIRE both parent email acceptance AND "Approved by parent" stamp.
+      if (target.record.adultDirectBypass) return true
+      return target.record.parentEmailAcceptedAt !== null && target.record.parentApprovalStamp !== null
     }
     if (target.type === 'email') {
       return assigned && (
@@ -123,9 +155,18 @@ export function can(actor: PortalActor, action: PortalAction, target: AccessTarg
   return false
 }
 
-export function buildParentActor(state: PortalState, householdId: string): PortalActor {
+export function buildParentActor(
+  state: PortalState,
+  householdId: string,
+  sessionScope: ParentSessionScope = 'full_parent',
+): PortalActor {
   const hh = state.households.find((h) => h.id === householdId)
-  return hh ? { kind: 'parent', householdId: hh.id, parentEmail: hh.parentEmail } : { kind: 'anonymous' }
+  return hh ? { kind: 'parent', householdId: hh.id, parentEmail: hh.parentEmail, sessionScope } : { kind: 'anonymous' }
+}
+
+/** Sign-in link actor (e.g. forwarded parent sign-in link): profile chooser + teen PIN only, never parent powers. */
+export function buildForwardedSignInActor(state: PortalState, householdId: string): PortalActor {
+  return buildParentActor(state, householdId, 'profile_chooser_only')
 }
 
 export function buildChildActor(state: PortalState, childId: string): PortalActor {

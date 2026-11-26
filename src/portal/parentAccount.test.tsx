@@ -36,7 +36,7 @@ describe('portal Phase 1 — PR 2 parent account', () => {
 
     // Unconsented household (David) keeps askMode off, autoShow false, and joinRooms false even if requested
     const beforeConsent = updateFourSettings(adapter, david, 'hh_david', 'child_kai', {
-      askMode: 'auto', autoShow: true, approvedFunGames: ['moon-gate'], joinRooms: true, emailMode: 'everything',
+      askMode: 'review', autoShow: true, approvedFunGames: ['moon-gate'], joinRooms: true, emailMode: 'everything',
     })
     expect(beforeConsent.children.find((c) => c.id === 'child_kai')?.askMode).toBe('off')
     expect(beforeConsent.children.find((c) => c.id === 'child_kai')?.autoShow).toBe(false)

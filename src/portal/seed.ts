@@ -5,11 +5,15 @@ const T = '2026-11-20T17:00:00Z'
 const hh = (id: string, parentName: string, parentEmail: string, verified: boolean, emailMode: 'everything' | 'friday_only' = 'everything'): Household => ({
   id, parentName, parentEmail, membershipStatus: 'active',
   consentRecord: { status: verified ? 'verified' : 'pending', noticeVersion: '2026-11-24-demo-v1', verifiedAt: verified ? '2026-11-18T16:10:00Z' : null, withdrawnAt: null, method: verified ? 'simulated_form' : null },
-  settings: { emailMode }, createdAt: '2026-11-18T16:00:00Z',
+  settings: { emailMode },
+  approvalsLockedAt: null,
+  approvalsLockedReason: null,
+  pendingEmailChange: null,
+  createdAt: '2026-11-18T16:00:00Z',
 })
 
 const kid = (id: string, householdId: string, nickname: string, level: string, overrides: Partial<ChildProfile> = {}): ChildProfile => ({
-  id, householdId, nickname, level, consentStatus: 'verified', askMode: 'review', autoShow: false,
+  id, householdId, nickname, level, isAdultLearner: false, consentStatus: 'verified', askMode: 'review', autoShow: false,
   approvedGames: ['act_integer_operations'], joinRooms: false, voiceClipsEnabled: true, currentBelt: 'white', stripesEarned: 0,
   completedUnitIds: [],
   firstConversationLine: 'Just getting started.', lastActiveAt: '2026-11-23T18:00:00Z', ...overrides,
@@ -31,7 +35,7 @@ export function createSeedState(): PortalState {
     children: [
       kid('child_marcus', 'hh_elena', 'Marcus', '7th Grade Math', { pinHash: 'demo-pin-1234', currentBelt: 'yellow', stripesEarned: 3, completedUnitIds: ['g7-u1', 'g7-u2', 'g7-u3'], firstConversationLine: 'I want to get fast at negative numbers before the quiz.' }),
       kid('child_sofia', 'hh_elena', 'Sofia', '6th Grade Math', { askMode: 'off', stripesEarned: 1, completedUnitIds: ['g6_u1_ratios'], firstConversationLine: 'Fractions are fine, word problems trip me up.' }),
-      kid('child_leo', 'hh_priya', 'Leo', '7th Grade Math', { pinHash: 'demo-pin-4321', askMode: 'auto', autoShow: true, approvedGames: ['act_integer_operations', 'neon-dash'], joinRooms: true, currentBelt: 'green', stripesEarned: 4, completedUnitIds: ['g7-u1', 'g7-u2', 'g7-u3', 'g7-u4'], firstConversationLine: 'I like spotting patterns and checking why shortcuts work.' }),
+      kid('child_leo', 'hh_priya', 'Leo', '7th Grade Math', { pinHash: 'demo-pin-4321', askMode: 'review', autoShow: true, approvedGames: ['act_integer_operations', 'neon-dash'], joinRooms: true, currentBelt: 'green', stripesEarned: 4, completedUnitIds: ['g7-u1', 'g7-u2', 'g7-u3', 'g7-u4'], firstConversationLine: 'I like spotting patterns and checking why shortcuts work.' }),
       kid('child_nina', 'hh_priya', 'Nina', '8th Grade Math', { firstConversationLine: 'Graphing lines makes more sense when I draw the steps.', lastActiveAt: '2026-11-12T18:00:00Z' }),
       kid('child_kai', 'hh_david', 'Kai', '7th Grade Math', { consentStatus: 'pending', askMode: 'off', approvedGames: [] }),
     ],
@@ -78,6 +82,16 @@ export function createSeedState(): PortalState {
       },
     ],
     askQuestions: [],
+    approvalTokens: [],
+    pullBackTokens: [],
+    stepUpChallenges: [],
+    devices: [
+      { id: 'dev_elena_phone', householdId: 'hh_elena', label: "Elena's phone (parent)", deviceKind: 'parent_device', rememberedForChildId: null, networkTag: 'cell-elena', registeredAt: T, revokedAt: null },
+      { id: 'dev_marcus_chromebook', householdId: 'hh_elena', label: "Marcus's Chromebook (remembered teen device)", deviceKind: 'teen_device', rememberedForChildId: 'child_marcus', networkTag: 'home-wifi-elena', registeredAt: T, revokedAt: null },
+      { id: 'dev_priya_phone', householdId: 'hh_priya', label: "Priya's phone (parent)", deviceKind: 'parent_device', rememberedForChildId: null, networkTag: 'cell-priya', registeredAt: T, revokedAt: null },
+      { id: 'dev_leo_chromebook', householdId: 'hh_priya', label: "Leo's Chromebook (remembered teen device)", deviceKind: 'teen_device', rememberedForChildId: 'child_leo', networkTag: 'home-wifi-priya', registeredAt: T, revokedAt: null },
+    ],
+    approvalLogs: [],
     feedback: [
       { id: 'fb_marcus_draft', householdId: 'hh_elena', childId: 'child_marcus', workRecordId: 'work_marcus_u2', authorMentorId: 'mentor_samuel', status: 'draft', draftText: '[Placeholder draft] Strong number-line reasoning.', sentText: null, parentNotifiedAt: null, shownToChildAt: null, shownBy: null },
       { id: 'fb_marcus_waiting', householdId: 'hh_elena', childId: 'child_marcus', workRecordId: 'work_marcus_u2', authorMentorId: 'mentor_b', status: 'sent_to_parent', draftText: '[Placeholder draft] Check sign flip.', sentText: 'Great catch checking #4 on the number line.', parentNotifiedAt: '2026-11-24T17:00:00Z', shownToChildAt: null, shownBy: null },

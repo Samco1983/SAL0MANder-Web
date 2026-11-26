@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { buildChildActor, can, type PortalActor } from '@/portal/access'
+import { signInRememberedTeenDevice } from '@/portal/approvalLayers'
 import { ASK_SEND_DISCLOSURE, submitAskQuestion } from '@/portal/askActions'
 import { awardCosmeticPoints, countPassedSetsInUnit, getCourseLadder, getNextBeltStep } from '@/portal/belts'
 import {
@@ -59,16 +60,29 @@ function defaultUnitForChild(child: ChildProfile): string {
 }
 
 export function ChildProfileView({
-  state, onStateChange, onOpenRoom,
+  state,
+  activeDeviceId = 'dev_marcus_chromebook',
+  activeNetworkTag = 'home-wifi-elena',
+  initialChildId,
+  onStateChange,
+  onOpenRoom,
 }: {
-  state: PortalState; onStateChange: (next: PortalState) => void; onOpenRoom?: (inviteId: string, childId: string) => void
+  state: PortalState
+  activeDeviceId?: string
+  activeNetworkTag?: string
+  initialChildId?: string
+  onStateChange: (next: PortalState) => void
+  onOpenRoom?: (inviteId: string, childId: string) => void
 }) {
-  const [selectedChildId, setSelectedChildId] = useState(state.children[0]?.id ?? '')
+  const [selectedChildId, setSelectedChildId] = useState(initialChildId ?? state.children[0]?.id ?? '')
+  const [chromebookPin, setChromebookPin] = useState('')
+  const [chromebookStatus, setChromebookStatus] = useState('')
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null)
   const [setSearchQuery, setSetSearchQuery] = useState('')
   const [openWorkId, setOpenWorkId] = useState<string | null>(null)
   const [profileError, setProfileError] = useState('')
 
+  const rememberedDevice = state.devices.find((d) => d.id === activeDeviceId && d.deviceKind === 'teen_device' && d.revokedAt === null)
   const child = state.children.find((c) => c.id === selectedChildId) ?? state.children[0]
   if (!child) return <Card title="Child profile" headingLevel={2}><p className={styles.note}>No child profiles available.</p></Card>
 
@@ -133,6 +147,36 @@ export function ChildProfileView({
           ))}
         </div>
         {child.pinHash ? <p className={styles.note}>Optional demo PIN set on {child.nickname}’s profile (opens child profile only; never unlocks parent settings).</p> : null}
+        {rememberedDevice ? (
+          <div className={styles.actions} data-testid="remembered-chromebook-signin">
+            <input
+              type="password"
+              aria-label="Remembered Chromebook PIN"
+              placeholder="Chromebook PIN"
+              className={styles.input}
+              value={chromebookPin}
+              onChange={(e) => setChromebookPin(e.target.value)}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                try {
+                  const res = signInRememberedTeenDevice(state, rememberedDevice.id, chromebookPin)
+                  setSelectedChildId(res.child.id)
+                  setOpenWorkId(null)
+                  setChromebookStatus(`Auto-signed in to ${res.child.nickname}’s own profile on ${res.device.label} (no parent powers).`)
+                } catch (err) {
+                  setChromebookStatus(err instanceof Error ? err.message : 'Unable to sign in.')
+                }
+              }}
+            >
+              Sign in on {rememberedDevice.label}
+            </Button>
+          </div>
+        ) : null}
+        {chromebookStatus ? <p className={styles.statusCallout} role="status">{chromebookStatus}</p> : null}
       </Card>
 
       {activeWork ? (
@@ -140,6 +184,8 @@ export function ChildProfileView({
           key={`${activeWork.id}-${activeWork.attempts.length}`}
           child={child}
           childActor={childActor}
+          activeDeviceId={activeDeviceId}
+          activeNetworkTag={activeNetworkTag}
           record={activeWork}
           practiceSet={getCurriculumSet(activeWork.activityId) ?? getDefaultCurriculumSet()}
           onStateChange={onStateChange}
@@ -341,6 +387,8 @@ export function ChildProfileView({
             key={child.id}
             child={child}
             childActor={childActor}
+            activeDeviceId={activeDeviceId}
+            activeNetworkTag={activeNetworkTag}
             questions={state.askQuestions.filter((record) => can(childActor, 'view', { type: 'ask_question', record }))}
             onStateChange={onStateChange}
           />
@@ -351,9 +399,9 @@ export function ChildProfileView({
 }
 
 function AskMrSamCard({
-  child, childActor, questions, onStateChange,
+  child, childActor, activeDeviceId, activeNetworkTag, questions, onStateChange,
 }: {
-  child: ChildProfile; childActor: PortalActor; questions: PortalState['askQuestions']; onStateChange: (next: PortalState) => void
+  child: ChildProfile; childActor: PortalActor; activeDeviceId: string; activeNetworkTag: string; questions: PortalState['askQuestions']; onStateChange: (next: PortalState) => void
 }) {
   const [questionText, setQuestionText] = useState('')
   const [attachPhoto, setAttachPhoto] = useState(false)
@@ -368,6 +416,8 @@ function AskMrSamCard({
         text: questionText,
         photoPlaceholder: attachPhoto ? { label: 'Written homework photo (placeholder)', nameCovered } : null,
         simulateParentRejected,
+        deviceId: activeDeviceId,
+        networkTag: activeNetworkTag,
       })
       onStateChange(res.state)
       setQuestionText('')
@@ -403,7 +453,7 @@ function AskMrSamCard({
             </label>
           ) : null}
           <p className={styles.note}>
-            <strong>{ASK_SEND_DISCLOSURE}</strong> ({child.askMode === 'review' ? 'Review-first: parent forwards each question.' : 'Auto-send: parent email accepted first, then Mr. Sam.'})
+            <strong>{ASK_SEND_DISCLOSURE}</strong> ({child.isAdultLearner ? '18+ adult learner: goes straight to Mr. Sam.' : 'Review-first only: parent approves with link + code or verified email forward.'})
           </p>
           <div className={styles.actions}>
             <Button type="submit" size="sm">Send question</Button>
@@ -420,7 +470,7 @@ function AskMrSamCard({
         <ul className={styles.miniList}>
           {questions.map((q) => (
             <li key={q.id}>
-              “{q.text}” — <strong>{q.status === 'held_undelivered' ? 'Held (parent email rejected)' : q.status === 'waiting_parent_review' ? 'Waiting for parent review' : q.status === 'queued_for_mentor' ? 'Sent to Mr. Sam' : 'Replied'}</strong>
+              “{q.text}” — <strong>{q.status === 'held_undelivered' ? 'Held (parent email rejected)' : q.status === 'pulled_back' ? 'Pulled back by parent' : q.status === 'waiting_parent_review' ? 'Waiting for parent approval' : q.status === 'queued_for_mentor' ? 'Approved & sent to Mr. Sam' : 'Replied'}</strong>
             </li>
           ))}
         </ul>
@@ -462,10 +512,12 @@ function initialCheckState(attempt: WorkAttempt | undefined, practiceSet: Loaded
 }
 
 function WorksheetPanel({
-  child, childActor, record, practiceSet, onStateChange, onBack,
+  child, childActor, activeDeviceId, activeNetworkTag, record, practiceSet, onStateChange, onBack,
 }: {
   child: ChildProfile
   childActor: PortalActor
+  activeDeviceId: string
+  activeNetworkTag: string
   record: WorkRecord
   practiceSet: LoadedPracticeSet
   onStateChange: (next: PortalState) => void
@@ -599,16 +651,20 @@ function WorksheetPanel({
 
   function handleSubmit() {
     if (isFrozen || failedSaveMode) return
-    const res = submitWorkRecord(portalStorage, childActor, record.id)
+    const res = submitWorkRecord(portalStorage, childActor, record.id, new Date().toISOString(), {
+      deviceId: activeDeviceId,
+      networkTag: activeNetworkTag,
+    })
     setLocalRevision(res.record.currentRevision)
     setSaveStatus({ kind: 'saved', text: `Submitted · rev ${res.record.currentRevision} (frozen and sent to mentor queue)` })
     onStateChange(res.state)
   }
 
-  const askRouteNote =
-    child.askMode === 'review' ? 'Routed through Ask Mr. Sam (parent reviews first before Mr. Sam sees it).'
-      : child.askMode === 'auto' ? 'Routed through Ask Mr. Sam (copy sent to parent first, then queued for Mr. Sam).'
-        : 'Saved on your worksheet (Ask Mr. Sam is Off in parent settings).'
+  const askRouteNote = child.isAdultLearner
+    ? '18+ adult learner: sent straight to Mr. Sam.'
+    : child.askMode === 'review'
+      ? 'Routed through Ask Mr. Sam (parent approves first before Mr. Sam sees it; no Auto-send).'
+      : 'Saved on your worksheet (Ask Mr. Sam is Off in parent settings).'
 
   return (
     <div className={styles.stack}>

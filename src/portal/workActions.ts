@@ -132,6 +132,7 @@ export function submitWorkRecord(
   actor: PortalActor,
   workRecordId: string,
   nowIso = new Date().toISOString(),
+  deviceContext?: { deviceId?: string | null; networkTag?: string | null },
 ): { state: PortalState; record: WorkRecord } {
   const state = adapter.load()
   const record = state.workRecords.find((w) => w.id === workRecordId)
@@ -158,13 +159,19 @@ export function submitWorkRecord(
     pts.ledger.push({ id: `pl_${pts.ledger.length + 1}`, amount: 20, reason: 'Submitted practice set (cosmetics only)', createdAt: nowIso })
   }
 
-  // Route open response through the Ask rail (parent first, provider-accepted gate, Review-first vs Auto-send)
-  if (record.openResponse.trim() && child.askMode !== 'off') {
+  // Route open response through the Ask rail (parent first, Review-first only, no Auto-send)
+  if (record.openResponse.trim() && (child.isAdultLearner || child.askMode !== 'off')) {
     enqueueAskQuestionInState(
       state,
       child,
       hh,
-      { text: record.openResponse, source: 'worksheet_open_response', workRecordId: record.id },
+      {
+        text: record.openResponse,
+        source: 'worksheet_open_response',
+        workRecordId: record.id,
+        deviceId: deviceContext?.deviceId ?? null,
+        networkTag: deviceContext?.networkTag ?? null,
+      },
       nowIso,
     )
   }

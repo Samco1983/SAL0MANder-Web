@@ -1,4 +1,9 @@
 import { can, resolveLiveActor, type PortalActor } from './access'
+import {
+  appendApprovalLogInState,
+  isRegisteredTeenDevice,
+  verifyAndConsumeStepUpCodeInState,
+} from './approvalLayers'
 import { PortalAccessError, type PortalStorageAdapter } from './storage'
 import {
   ChildProfileSchema,
@@ -19,17 +24,17 @@ function revokeChildRoomAccessInState(state: PortalState, childId: string, onlyG
   }
 }
 
-export const CONSENT_NOTICE_VERSION = '2026-11-24-demo-v1'
+export const CONSENT_NOTICE_VERSION = '2026-11-25-demo-v2'
 
 export const CONSENT_NOTICE_POINTS = [
-  'What is collected: first name or nickname, math level, saved practice work, Ask Mr. Sam questions (text + one photo with your child’s name covered), and voice in recorded sessions. Never child email, password, last name, or child video.',
-  'Recordings: group calls record Mr. Sam’s screen and call audio, including children’s voices when microphones are on. Private sessions record Mr. Sam’s webcam, teaching window, and session audio including your child’s voice — never your child’s video.',
-  'Retention & providers (Phase 1 demo): stored locally in this browser only with simulated email. Before real families, counsel sets post-membership periods; work photos expire at 30 days and deletions cover every stored copy unless preservation applies.',
-  'Your rights: you can review your child’s saved items, withdraw consent, turn questions off, export, or delete your family’s records at any time.',
+  'What is collected: first name or nickname, math level, saved practice work, and Ask Mr. Sam questions (text + one photo with your teen’s name covered). Never teen email, password, last name, or teen video.',
+  'Nothing is recorded: no video, transcript, or AI note-taker in live Google Meet sessions. A parent is present for every private lesson with a teen.',
+  'Review-first questions: every teen question goes to your verified email first. Only your yes (single-use 72 h approve link + fresh one-time code, or a forward from your verified email) releases it to Mr. Sam. No Auto-send.',
+  'Your rights: you can review your teen’s saved items, pull back approvals, revoke remembered devices, withdraw consent, turn questions off, export, or delete your family’s records at any time.',
 ] as const
 
 export const ASK_MODE_HELP =
-  'Let my child ask Mr. Sam questions. Choose: I review each question first and forward it, or send it to Mr. Sam automatically with a copy to me. You can change or turn this off any time.'
+  'If your teen sends Mr. Sam a written math question, it goes to your email first. Only your yes (approve button + one-time code, or a forward from your verified address) releases it. Auto-send is removed.'
 
 export const AUTO_SHOW_WARNING =
   'Warning: replies will show on your child’s profile automatically after your email copy is accepted. You still receive every reply by email first and can switch back to tapping each reply at any time.'
@@ -62,7 +67,7 @@ export function requestParentSignInLink(
     to: hh.parentEmail,
     householdId: hh.id,
     subject: `Sign in to SAL0MANder (${hh.parentName}'s membership)`,
-    body: `Simulated one-time parent sign-in link for ${hh.parentName}. Open it from the Simulated Inbox panel.`,
+    body: `Simulated one-time sign-in link for ${hh.parentName}. Opening this link reaches the profile chooser (teen PIN only). Parent controls, approvals, settings, purchases, and email changes each require a fresh one-time code sent to ${hh.parentEmail}.`,
     kind: 'sign_in_link',
     status: 'delivered',
     sentAt: nowIso,
@@ -124,7 +129,7 @@ export function saveChildProfile(
   adapter: PortalStorageAdapter,
   actor: PortalActor,
   householdId: string,
-  input: { id?: string; nickname: string; level: string; pin?: string; firstConversationLine: string },
+  input: { id?: string; nickname: string; level: string; pin?: string; firstConversationLine: string; isAdultLearner?: boolean },
 ): PortalState {
   const state = adapter.load()
   const liveActor = resolveLiveActor(state, actor)
@@ -144,6 +149,7 @@ export function saveChildProfile(
       nickname: input.nickname.trim(),
       level: input.level.trim(),
       ...(pinHash ? { pinHash } : {}),
+      ...(typeof input.isAdultLearner === 'boolean' ? { isAdultLearner: input.isAdultLearner } : {}),
       firstConversationLine: input.firstConversationLine.trim(),
     })
     state.children = state.children.map((c) => (c.id === existing.id ? updated : c))
@@ -160,6 +166,7 @@ export function saveChildProfile(
     nickname: input.nickname.trim(),
     level: input.level.trim(),
     ...(pinHash ? { pinHash } : {}),
+    isAdultLearner: Boolean(input.isAdultLearner),
     consentStatus: hh.consentRecord.status,
     askMode: 'off',
     autoShow: false,
@@ -188,13 +195,47 @@ export function updateFourSettings(
     emailMode: EmailMode
     voiceClipsEnabled?: boolean
   },
+  stepUpOptions?: { stepUpCode: string; deviceId?: string | null; nowIso?: string },
 ): PortalState {
   const state = adapter.load()
   const liveActor = resolveLiveActor(state, actor)
   const hh = state.households.find((h) => h.id === householdId)
   const child = state.children.find((c) => c.id === childId)
   if (!hh || !child || !can(liveActor, 'edit_household', { type: 'household', record: hh }) || !can(liveActor, 'edit_child', { type: 'child', record: child })) {
+    if (hh) {
+      appendApprovalLogInState(state, {
+        at: stepUpOptions?.nowIso ?? new Date().toISOString(),
+        householdId: hh.id,
+        actorKind: actor.kind === 'child' ? 'child' : 'parent',
+        actorLabel: actor.kind === 'parent' ? `${actor.parentEmail} (${actor.sessionScope ?? 'full_parent'})` : actor.kind,
+        event: 'parent_power_denied_without_step_up',
+        detail: 'Blocked settings change from unauthorized or forwarded sign-in session.',
+        outcome: 'deny',
+      })
+      adapter.save(state)
+    }
     throw new PortalAccessError('Only the household parent may update settings')
+  }
+  if (stepUpOptions) {
+    const nowIso = stepUpOptions.nowIso ?? new Date().toISOString()
+    const teenDevice = isRegisteredTeenDevice(state, hh.id, stepUpOptions.deviceId)
+    if (teenDevice) {
+      throw new PortalAccessError(`Settings cannot be changed from teen-registered device (${teenDevice.label}).`)
+    }
+    const stepUp = verifyAndConsumeStepUpCodeInState(state, hh.id, 'change_settings', null, stepUpOptions.stepUpCode, nowIso)
+    if (!stepUp.ok) {
+      appendApprovalLogInState(state, {
+        at: nowIso,
+        householdId: hh.id,
+        actorKind: 'parent',
+        actorLabel: hh.parentEmail,
+        event: 'parent_power_denied_without_step_up',
+        detail: `Settings change blocked: ${stepUp.reason}`,
+        outcome: 'deny',
+      })
+      adapter.save(state)
+      throw new PortalAccessError(stepUp.reason)
+    }
   }
   const consentOk = hh.consentRecord.status === 'verified'
   const allowedLesson = new Set<string>(LESSON_GAMES.map((g) => g.id))
@@ -241,7 +282,7 @@ export function showFeedbackToChild(
 
 /** Household-scoped receipts only (consent, parent approval taps, parent deletion requests) — never admin AuditLog. */
 export function listParentReceipts(state: PortalState, actor: PortalActor): ParentReceipt[] {
-  if (actor.kind !== 'parent') return []
+  if (actor.kind !== 'parent' || actor.sessionScope === 'profile_chooser_only') return []
   const hh = state.households.find((h) => h.id === actor.householdId)
   if (!hh || !can(actor, 'view', { type: 'household', record: hh })) return []
   const out: ParentReceipt[] = []
