@@ -1,0 +1,2138 @@
+{
+  "unitId": "g7-u7",
+  "course": "7th grade",
+  "unitName": "Statistics and probability",
+  "standards": [
+    "7.SP.1",
+    "7.SP.2",
+    "7.SP.3",
+    "7.SP.4",
+    "7.SP.5",
+    "7.SP.6",
+    "7.SP.7a",
+    "7.SP.7b",
+    "7.SP.8a",
+    "7.SP.8b"
+  ],
+  "sets": [
+    {
+      "setId": "g7-u7-a",
+      "title": "Sampling and comparing data sets",
+      "skill": "Tell random from biased samples, identify population vs. sample, estimate a population quantity from a sample proportion, and compare two data sets using mean, median, range and MAD (7.SP.1, 7.SP.2, 7.SP.3, 7.SP.4)",
+      "standards": [
+        "7.SP.1",
+        "7.SP.2",
+        "7.SP.3",
+        "7.SP.4"
+      ],
+      "problems": [
+        {
+          "id": "g7-u7-a-01",
+          "prompt": "Westside Middle School has 640 students. To find out how many students want a longer lunch period, the principal surveys 80 students chosen at random. How many students are in the sample?",
+          "answerType": "integer",
+          "answer": "80",
+          "acceptedAnswers": [
+            "80"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "640",
+              "say": "That's the whole population — every student at the school. The sample is the smaller group the principal actually asked."
+            },
+            {
+              "ifAnswer": "8",
+              "say": "You divided 640 by 80. The sample isn't a ratio; it's simply the number of students who were surveyed."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The population is everyone the principal wants to know about. The sample is the part of the population that actually got asked."
+            }
+          ],
+          "explanation": "The population is all 640 students. The sample is the 80 students who were surveyed, so the sample size is 80.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-a-02",
+          "prompt": "A random sample of 5 seventh graders reported how many books they read over the summer: 4, 7, 10, 12, 7. What is the mean number of books?",
+          "answerType": "integer",
+          "answer": "8",
+          "acceptedAnswers": [
+            "8"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "40",
+              "say": "That's the total of all five numbers — good start. The mean shares that total equally among the 5 students, so divide by 5."
+            },
+            {
+              "ifAnswer": "7",
+              "say": "Looks like you picked the middle number of the ordered list — that's the median. The mean is the total divided by how many numbers there are."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add the five numbers, then divide by 5."
+            }
+          ],
+          "explanation": "4 + 7 + 10 + 12 + 7 = 40. Mean: 40 ÷ 5 = 8 books.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.4"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-a-03",
+          "prompt": "The ages of 6 players on a team are 13, 11, 15, 12, 14, 11. What is the median age?",
+          "answerType": "decimal",
+          "answer": "12.5",
+          "acceptedAnswers": [
+            "12.5",
+            "12 1/2",
+            "25/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "13",
+              "say": "Did you take the number in the middle of the list as written? Put the ages in order first: 11, 11, 12, 13, 14, 15. There are two middle numbers."
+            },
+            {
+              "ifAnswer": "12",
+              "say": "You're close — 12 is one of the two middle numbers. With an even count, the median is halfway between the two middle numbers, 12 and 13."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Order the ages from least to greatest. With 6 numbers, the median is halfway between the 3rd and 4th."
+            }
+          ],
+          "explanation": "In order: 11, 11, 12, 13, 14, 15. The two middle ages are 12 and 13, so the median is (12 + 13) ÷ 2 = 12.5.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.4"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-a-04",
+          "prompt": "The student council wants to know what fraction of all 7th graders at the school would join an after-school chess club. Which sample is most likely to give a fair (representative) answer?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "The 30 students who are already in the chess club",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "30 seventh graders chosen by drawing names from a hat holding every 7th grader's name",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "The first 30 seventh graders who arrive at school on Monday",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "The 30 seventh graders in the council president's homeroom",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Students already in the chess club would almost all say yes. A fair sample has to give every 7th grader — chess fan or not — the same chance of being picked."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Early arrivals might be different from other students (bus riders, for example). Look for the sample where every 7th grader has an equal chance of being chosen."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "A representative sample is random: every member of the population has the same chance to be picked, and no group is favored."
+            }
+          ],
+          "explanation": "Drawing names from a hat that holds every 7th grader's name gives each student the same chance of being chosen, so (b) is a random sample. The others favor chess players, early arrivals or one homeroom.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.1"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-a-05",
+          "prompt": "Five students recorded the minutes they spent on homework last night: 22, 35, 18, 40, 25. What is the range?",
+          "answerType": "integer",
+          "answer": "22",
+          "acceptedAnswers": [
+            "22"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "40",
+              "say": "That's the biggest number. The range is the distance from the smallest to the biggest: biggest minus smallest."
+            },
+            {
+              "ifAnswer": "28",
+              "say": "Looks like you found the mean (140 ÷ 5). The range measures spread: subtract the smallest number from the biggest."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Range = greatest value - least value."
+            }
+          ],
+          "explanation": "Greatest is 40, least is 18. Range: 40 - 18 = 22 minutes.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.4"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-a-06",
+          "prompt": "A school has 400 seventh graders. In a random sample of 50 of them, 30 said they walk to school. About how many of the school's seventh graders walk to school?",
+          "answerType": "integer",
+          "answer": "240",
+          "acceptedAnswers": [
+            "240"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "30",
+              "say": "That's how many walkers were in the sample of 50. Use that to estimate the whole school: 30 out of 50 is 3/5, so about 3/5 of all 400 walk."
+            },
+            {
+              "ifAnswer": "120",
+              "say": "You used 30%, but 30 out of 50 is not 30 percent. 30/50 = 60/100, so 60% of the sample walks. Take 60% of 400."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the fraction of the sample that walks (30 out of 50). Then take that same fraction of the whole school."
+            }
+          ],
+          "explanation": "30/50 = 3/5 = 60% of the sample walk. 3/5 × 400 = 240, so about 240 seventh graders walk to school.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-a-07",
+          "prompt": "A random sample of 5 bags of trail mix had these numbers of almonds: 2, 4, 6, 8, 10. The mean is 6 almonds. What is the mean absolute deviation (MAD)?",
+          "answerType": "decimal",
+          "answer": "2.4",
+          "acceptedAnswers": [
+            "2.4",
+            "12/5",
+            "2 2/5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "12",
+              "say": "That's the total of the distances from the mean (4 + 2 + 0 + 2 + 4) — nice. MAD is the AVERAGE distance, so divide by 5."
+            },
+            {
+              "ifAnswer": "0",
+              "say": "Did the deviations cancel out? For MAD, use each number's DISTANCE from the mean, ignoring whether it's above or below: 4, 2, 0, 2, 4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find how far each number is from 6 (no negatives), add those distances, and divide by 5."
+            }
+          ],
+          "explanation": "Distances from the mean of 6: 4, 2, 0, 2, 4. Total: 12. MAD: 12 ÷ 5 = 2.4 almonds.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-a-08",
+          "prompt": "A factory inspector took three random samples of 25 bottles each and found 2, 1 and 3 cracked bottles in them. Combining all three samples, what fraction of the bottles checked were cracked?",
+          "answerType": "fraction",
+          "answer": "2/25",
+          "acceptedAnswers": [
+            "2/25",
+            "6/75",
+            "0.08",
+            ".08"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6",
+              "say": "Six cracked bottles is the right count — now write it as a fraction of ALL the bottles checked, 3 × 25 = 75."
+            },
+            {
+              "ifAnswer": "6/25",
+              "say": "You used 25 as the total, but there were three samples of 25. The inspector looked at 75 bottles in all."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add the cracked bottles from all three samples, and add the bottles checked. Cracked over total."
+            }
+          ],
+          "explanation": "Cracked: 2 + 1 + 3 = 6. Checked: 3 × 25 = 75. Fraction: 6/75 = 2/25 = 0.08. Notice the three samples gave slightly different results (2, 1, 3) — that's normal sample-to-sample variation, and combining them gives a steadier estimate.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-a-09",
+          "prompt": "A reporter wants to know how adults in Riverton feel about a new bike lane. She calls 200 adults chosen at random from the city's phone list. What is the population in this situation?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "The 200 adults she called",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "All adults in Riverton",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "All adults who ride bikes",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "Everyone who reads the reporter's article",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "The 200 people she called are the sample — the part she actually checked. The population is the whole group she wants to learn about."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "The question is about how ALL adults in the city feel, not just bike riders. The population is everyone the reporter wants to draw a conclusion about."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Population = the entire group you want to know about. Sample = the part of that group you actually ask."
+            }
+          ],
+          "explanation": "The reporter wants to know about all adults in Riverton, so that's the population. The 200 adults she called are the sample.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-a-10",
+          "prompt": "Two random samples of five apples were weighed, in ounces. Orchard A: 5, 8, 6, 9, 7. Orchard B: 10, 12, 9, 13, 11. How many ounces greater is the mean weight for Orchard B than for Orchard A?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "20",
+              "say": "That's the difference between the two TOTALS (55 - 35). Each total covers 5 apples, so the difference between the means is 20 ÷ 5."
+            },
+            {
+              "ifAnswer": "11",
+              "say": "That's Orchard B's mean — good. Now find Orchard A's mean (35 ÷ 5) and subtract."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find each mean (total ÷ 5), then subtract."
+            }
+          ],
+          "explanation": "Orchard A: 35 ÷ 5 = 7 oz. Orchard B: 55 ÷ 5 = 11 oz. Difference: 11 - 7 = 4 ounces.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-a-11",
+          "prompt": "A town has 2,500 voters. In a random sample of 60 voters, 36 said they support building a new library. Estimate how many of the town's voters support the library.",
+          "answerType": "integer",
+          "answer": "1500",
+          "acceptedAnswers": [
+            "1500",
+            "1,500"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "36",
+              "say": "That's the number in the sample. The sample stands for the whole town: 36 out of 60 is 3/5, so take 3/5 of 2,500."
+            },
+            {
+              "ifAnswer": "900",
+              "say": "36 out of 60 is 60%, not 36%. 36/60 = 6/10, so take 6/10 of 2,500."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the fraction of the sample that supports the library, then apply it to all 2,500 voters."
+            }
+          ],
+          "explanation": "36/60 = 3/5 = 60%. 3/5 × 2,500 = 1,500. About 1,500 voters support the library.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-a-12",
+          "prompt": "A random sample of six seventh graders had these heights, in inches: 58, 62, 60, 64, 61, 63. What is the median height?",
+          "answerType": "decimal",
+          "answer": "61.5",
+          "acceptedAnswers": [
+            "61.5",
+            "61 1/2",
+            "123/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "62",
+              "say": "You picked one of the two middle values. Order the list — 58, 60, 61, 62, 63, 64 — then find the number halfway between the two in the middle, 61 and 62."
+            },
+            {
+              "ifAnswer": "61 1/3",
+              "say": "Looks like you found the mean (368 ÷ 6). The median is the MIDDLE of the ordered list: halfway between 61 and 62."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Put the heights in order. With 6 values, average the 3rd and 4th."
+            }
+          ],
+          "explanation": "In order: 58, 60, 61, 62, 63, 64. Middle two: 61 and 62. Median: (61 + 62) ÷ 2 = 61.5 inches.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.4"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-a-13",
+          "prompt": "In a random sample of 40 students, 15 ride the bus to school. What percent of the sample rides the bus?",
+          "answerType": "decimal",
+          "answer": "37.5",
+          "acceptedAnswers": [
+            "37.5",
+            "37.5%",
+            "37 1/2",
+            "75/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "15",
+              "say": "Fifteen is the count. Percent means out of 100: 15 out of 40 is the same as how many out of 100? Try 15 ÷ 40, then multiply by 100."
+            },
+            {
+              "ifAnswer": "0.375",
+              "say": "That decimal is right — now turn it into a percent by multiplying by 100."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "15 out of 40 as a decimal is 15 ÷ 40. Multiply by 100 to make it a percent."
+            }
+          ],
+          "explanation": "15 ÷ 40 = 0.375 = 37.5%. (Or 15/40 = 3/8, and 3/8 of 100 is 37.5.)",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-a-14",
+          "prompt": "Two groups of five students recorded their quiz scores. Group P: 20, 21, 22, 23, 24. Group Q: 10, 15, 22, 29, 34. Which statement is true?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "The groups have the same mean, and Group Q's scores are more spread out.",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "The groups have the same mean, and Group P's scores are more spread out.",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "The groups have the same mean, so they have the same spread.",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "Group Q has the larger mean, because it has the biggest score.",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "Look at the distances from the mean of 22. Group P's scores are all within 2 points of it; Group Q's go 12 points away. Which is more spread out?"
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Add them up: both groups total 110, so both means are 22. Having the biggest single score doesn't make the mean bigger when the group also has the smallest score."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find each group's mean (both totals are 110). Then compare how far the scores sit from that mean."
+            }
+          ],
+          "explanation": "Both groups have mean 110 ÷ 5 = 22. Group P's scores are within 2 of the mean (MAD 1.2); Group Q's are as far as 12 away (MAD 8). Same center, but Q is much more spread out.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-a-15",
+          "prompt": "On a science test, Class A's scores had a mean of 72 and a MAD of 4. Class B's scores had a mean of 82 and a MAD of 4. How many MADs apart are the two means?",
+          "answerType": "decimal",
+          "answer": "2.5",
+          "acceptedAnswers": [
+            "2.5",
+            "5/2",
+            "2 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "10",
+              "say": "That's the difference between the means — good. The question asks how many MADs that is: divide 10 by the MAD of 4."
+            },
+            {
+              "ifAnswer": "40",
+              "say": "You multiplied by the MAD. To see how many 4s fit into the 10-point gap, divide: 10 ÷ 4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Difference between the means, divided by the MAD."
+            }
+          ],
+          "explanation": "Difference: 82 - 72 = 10. Number of MADs: 10 ÷ 4 = 2.5. The means are 2.5 MADs apart, which is a noticeable difference.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-a-16",
+          "prompt": "Mia wants to estimate how many red marbles are in a jar of 500 marbles. She took five random samples of 20 marbles (putting them back each time) and counted the red ones: 6, 7, 5, 8, 6. Combining all five samples, estimate the number of red marbles in the jar.",
+          "answerType": "integer",
+          "answer": "160",
+          "acceptedAnswers": [
+            "160"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "32",
+              "say": "That's the total number of red marbles in all the samples — great. Those 32 came out of 100 marbles drawn, so about 32/100 of the jar is red. Scale that up to 500."
+            },
+            {
+              "ifAnswer": "150",
+              "say": "Did you use 6 out of 20 from just one sample? The samples vary (5 to 8 reds). Combining all five gives a steadier estimate: 32 red out of 100 drawn."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add up all the reds and all the marbles drawn. That fraction of the jar is about red."
+            }
+          ],
+          "explanation": "Reds: 6 + 7 + 5 + 8 + 6 = 32 out of 5 × 20 = 100 marbles drawn. 32/100 × 500 = 160. About 160 red marbles.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u7-a-17",
+          "prompt": "The number of pages six students read last night: 12, 16, 20, 20, 24, 28. Find the mean absolute deviation (MAD).",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "20",
+              "say": "That's the mean — good first step. Now find each number's distance from 20, then average those six distances."
+            },
+            {
+              "ifAnswer": "24",
+              "say": "That's the total of the distances from the mean (8 + 4 + 0 + 0 + 4 + 8). Divide by 6 to get the average distance."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the mean first (total ÷ 6). Then average the distances from the mean."
+            }
+          ],
+          "explanation": "Mean: 120 ÷ 6 = 20. Distances: 8, 4, 0, 0, 4, 8. Total: 24. MAD: 24 ÷ 6 = 4 pages.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-a-18",
+          "prompt": "A website for video-game fans posts a poll asking \"How many hours a week do you play video games?\" and 500 visitors answer. The average is 18 hours. Why is this a poor estimate for ALL teens in the city?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "500 people is too few to tell anything.",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "People who visit a video-game website probably play more than a typical teen, so the sample is biased toward heavy players.",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "The poll should have asked about minutes, not hours.",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "It is a fine estimate, because 500 is a large sample.",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "d",
+              "say": "A big sample doesn't fix a biased one. Think about WHO ends up answering a poll on a gaming site — are they typical teens?"
+            },
+            {
+              "ifAnswer": "a",
+              "say": "Sample size isn't the real problem; 500 is plenty for a random sample. The problem is who got picked: only people already visiting a gaming site."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Ask: did every teen in the city have a fair chance to be in this sample? Who was left out?"
+            }
+          ],
+          "explanation": "Only people who visit a gaming website could answer, and they probably play more than a typical teen. The sample is biased toward heavy players, so its average is likely too high. Sample size doesn't fix that.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.1"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-a-19",
+          "prompt": "Five tomato plants grown with Fertilizer X had heights (cm) of 12, 14, 15, 16, 18. Five plants grown with Fertilizer Y had heights of 20, 22, 23, 24, 26. Both groups have a MAD of 1.6 cm. How many MADs apart are the two mean heights?",
+          "answerType": "integer",
+          "answer": "5",
+          "acceptedAnswers": [
+            "5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8",
+              "say": "That's the gap between the means (23 - 15) — good. Now ask how many MADs of 1.6 fit in that gap: 8 ÷ 1.6."
+            },
+            {
+              "ifAnswer": "12.8",
+              "say": "You multiplied the gap by the MAD. To express the gap in MADs, divide 8 by 1.6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find each mean (total ÷ 5). Subtract them. Divide the gap by the MAD of 1.6."
+            }
+          ],
+          "explanation": "Fertilizer X mean: 75 ÷ 5 = 15. Fertilizer Y mean: 115 ÷ 5 = 23. Gap: 8 cm. 8 ÷ 1.6 = 5, so the means are 5 MADs apart — a very clear difference.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.3",
+            "7.SP.4"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u7-a-20",
+          "prompt": "A factory makes 3,000 light bulbs each day. A random sample of 150 bulbs from today's batch had 6 defective bulbs. Each defective bulb costs the factory $2 to replace. Estimate the factory's replacement cost for today's batch.",
+          "answerType": "integer",
+          "answer": "240",
+          "acceptedAnswers": [
+            "240",
+            "$240"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "120",
+              "say": "That's the estimated number of defective bulbs in the whole batch — nice. Each one costs $2 to replace, so multiply by 2."
+            },
+            {
+              "ifAnswer": "12",
+              "say": "That's the cost of replacing the 6 defective bulbs in the SAMPLE. The question asks about the whole batch: 6 out of 150 is 1 out of 25, so scale up to 3,000 bulbs first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Step 1: what fraction of the sample is defective? Step 2: apply that to 3,000 bulbs. Step 3: multiply by $2."
+            }
+          ],
+          "explanation": "6/150 = 1/25 of the sample is defective. 1/25 × 3,000 = 120 defective bulbs expected. Cost: 120 × $2 = $240.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.2"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Tell what the population and sample are, or list the sample space, and show how you counted or computed each number. Say what each number in your work stands for in the situation. Then explain why your answer makes sense — for example, a probability must be between 0 and 1, and an estimate for a whole population should match the fraction you saw in the sample. If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u7-b",
+      "title": "Probability of simple events",
+      "skill": "Write probabilities as fractions, decimals and percents, place events on the impossible-to-certain scale, use uniform models (spinners, number cubes, cards), compare experimental and theoretical probability, and predict counts in n trials (7.SP.5, 7.SP.6, 7.SP.7a, 7.SP.7b)",
+      "standards": [
+        "7.SP.5",
+        "7.SP.6",
+        "7.SP.7a",
+        "7.SP.7b"
+      ],
+      "problems": [
+        {
+          "id": "g7-u7-b-01",
+          "prompt": "A spinner has 8 equal sections numbered 1 through 8. What is the probability that one spin lands on 3?",
+          "answerType": "fraction",
+          "answer": "1/8",
+          "acceptedAnswers": [
+            "1/8",
+            "0.125",
+            ".125"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3/8",
+              "say": "The 3 is the section's name, not a count. Only ONE section out of 8 is labeled 3."
+            },
+            {
+              "ifAnswer": "1/7",
+              "say": "Count all the sections, including the 3 itself: there are 8 equally likely outcomes, and 1 of them is a win."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Probability = favorable outcomes ÷ total equally likely outcomes."
+            }
+          ],
+          "explanation": "One section out of 8 equal sections is labeled 3, so P(3) = 1/8 = 0.125.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.7a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-b-02",
+          "prompt": "A bag holds 3 red marbles and 5 blue marbles. You pick one without looking. What is the probability it is red?",
+          "answerType": "fraction",
+          "answer": "3/8",
+          "acceptedAnswers": [
+            "3/8",
+            "0.375",
+            ".375"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3/5",
+              "say": "You compared red to blue. Probability compares the red marbles to ALL the marbles: 3 + 5 = 8 in the bag."
+            },
+            {
+              "ifAnswer": "5/8",
+              "say": "That's the probability of BLUE. For red, put the number of red marbles on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Red marbles over total marbles."
+            }
+          ],
+          "explanation": "There are 3 + 5 = 8 marbles, and 3 are red. P(red) = 3/8 = 0.375.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.7a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-b-03",
+          "prompt": "You roll a standard number cube (faces 1 to 6). What is the probability of rolling an even number?",
+          "answerType": "fraction",
+          "answer": "1/2",
+          "acceptedAnswers": [
+            "1/2",
+            "3/6",
+            "0.5",
+            ".5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/6",
+              "say": "That's the chance of ONE particular number. The evens are 2, 4 and 6 — three faces out of six."
+            },
+            {
+              "ifAnswer": "1/3",
+              "say": "Count the even faces again: 2, 4, 6. That's 3 of the 6 faces."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "List the even faces, count them, and put that over 6."
+            }
+          ],
+          "explanation": "Even faces: 2, 4, 6. P(even) = 3/6 = 1/2.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.7a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-b-04",
+          "prompt": "The weather report says the probability of rain tomorrow is 0.9. Which word best describes rain tomorrow?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "Impossible",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "Unlikely",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "Likely",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "Certain",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "d",
+              "say": "Certain would be a probability of exactly 1. At 0.9 there's still a small chance — 1 in 10 — of no rain."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "Unlikely means the probability is closer to 0 than to 1. 0.9 is very close to 1, so rain is likely."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Picture the scale from 0 (impossible) to 1 (certain). Where does 0.9 sit?"
+            }
+          ],
+          "explanation": "0.9 is close to 1 but not equal to it, so rain is likely, not certain.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.5"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-b-05",
+          "prompt": "A bag holds only green marbles. What is the probability that a marble picked at random is green?",
+          "answerType": "integer",
+          "answer": "1",
+          "acceptedAnswers": [
+            "1",
+            "1.0",
+            "1/1"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0",
+              "say": "A probability of 0 means it can't happen. Every marble in the bag is green, so picking green is certain."
+            },
+            {
+              "ifAnswer": "0.5",
+              "say": "Half would mean green is as likely as not-green. There are no other colors, so green is the ONLY thing that can happen."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "An event that is certain has probability 1."
+            }
+          ],
+          "explanation": "Every marble is green, so green is certain: P(green) = 1.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.5"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-b-06",
+          "prompt": "You flip a fair coin 50 times. About how many times would you expect it to land heads?",
+          "answerType": "integer",
+          "answer": "25",
+          "acceptedAnswers": [
+            "25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "50",
+              "say": "That's the total number of flips. Heads comes up about half the time, so take half of 50."
+            },
+            {
+              "ifAnswer": "1/2",
+              "say": "Half is the probability of heads on one flip — good. The question asks for the NUMBER of heads in 50 flips: 1/2 of 50."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Expected number = probability × number of trials."
+            }
+          ],
+          "explanation": "P(heads) = 1/2. 1/2 × 50 = 25. About 25 heads (the real count will vary a bit).",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.6"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-b-07",
+          "prompt": "Priya spun a spinner 40 times and it landed on blue 14 times. Based on her results, what is the experimental probability of landing on blue?",
+          "answerType": "fraction",
+          "answer": "7/20",
+          "acceptedAnswers": [
+            "7/20",
+            "14/40",
+            "0.35",
+            ".35"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "14/26",
+              "say": "You compared blue spins to non-blue spins. Experimental probability is blue spins out of ALL spins: 14 out of 40."
+            },
+            {
+              "ifAnswer": "14",
+              "say": "Fourteen is the count of blue spins. Probability is that count as a fraction of the total 40 spins."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Experimental probability = times it happened ÷ total trials."
+            }
+          ],
+          "explanation": "14 blue out of 40 spins: 14/40 = 7/20 = 0.35.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.6"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-b-08",
+          "prompt": "A number cube is rolled 120 times. About how many times would you expect to roll a 5 or a 6?",
+          "answerType": "integer",
+          "answer": "40",
+          "acceptedAnswers": [
+            "40"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "20",
+              "say": "That's the expected number of 5s alone (or 6s alone). A 5 OR a 6 is 2 faces out of 6, so the probability is 2/6 = 1/3."
+            },
+            {
+              "ifAnswer": "60",
+              "say": "Half the faces would be 3 out of 6. Only two faces — 5 and 6 — count here, so the probability is 2/6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find P(5 or 6) first. Then multiply by 120."
+            }
+          ],
+          "explanation": "P(5 or 6) = 2/6 = 1/3. 1/3 × 120 = 40. About 40 rolls.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-b-09",
+          "prompt": "A bottle cap is tossed 100 times and lands \"top up\" 38 times. Which is the best estimate of the probability that it lands top up on the next toss?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "1/2, because there are two ways it can land",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "0.38",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "0.62",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "38",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "A bottle cap isn't a fair coin — its two sides aren't alike, so the two outcomes aren't equally likely. Let the 100 tosses tell you the probability."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "0.62 is the probability of landing top DOWN (62 out of 100). The question asks about top up."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "When outcomes aren't equally likely, use the observed frequency: times it happened ÷ total tosses."
+            }
+          ],
+          "explanation": "The cap's two sides are not equally likely, so use the data: 38/100 = 0.38.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.7b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-b-10",
+          "prompt": "Cards numbered 1 through 20 are shuffled and one is drawn at random. What is the probability the card shows a multiple of 5?",
+          "answerType": "fraction",
+          "answer": "1/5",
+          "acceptedAnswers": [
+            "1/5",
+            "4/20",
+            "0.2",
+            ".2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/20",
+              "say": "That's the chance of one specific card. There are several multiples of 5 between 1 and 20: 5, 10, 15, 20."
+            },
+            {
+              "ifAnswer": "5/20",
+              "say": "Did you count 5 cards? List the multiples of 5 up to 20: 5, 10, 15, 20 — that's 4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "List the multiples of 5 from 1 to 20, count them, and put that over 20."
+            }
+          ],
+          "explanation": "Multiples of 5: 5, 10, 15, 20 — four cards. P = 4/20 = 1/5 = 0.2.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.7a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-b-11",
+          "prompt": "A jar has 6 red, 9 blue and 5 green buttons. You pick one at random. As a percent, what is the probability the button is NOT green?",
+          "answerType": "integer",
+          "answer": "75",
+          "acceptedAnswers": [
+            "75",
+            "75%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "25",
+              "say": "That's the probability of green (5 out of 20). NOT green is everything else: the 6 red and 9 blue together, out of 20."
+            },
+            {
+              "ifAnswer": "15",
+              "say": "Fifteen is the number of not-green buttons — nice. Now write it as a percent of all 20: 15/20 = ?/100."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Count the buttons that are not green, put that over the total 20, and convert to a percent."
+            }
+          ],
+          "explanation": "Total: 6 + 9 + 5 = 20. Not green: 6 + 9 = 15. 15/20 = 75/100 = 75%. (Or 100% - 25% green = 75%.)",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.5",
+            "7.SP.7a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-b-12",
+          "prompt": "The probability that a certain bus is late is 0.3. What is the probability the bus is NOT late?",
+          "answerType": "decimal",
+          "answer": "0.7",
+          "acceptedAnswers": [
+            "0.7",
+            ".7",
+            "7/10"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.3",
+              "say": "That's the probability it IS late. \"Late\" and \"not late\" are the only two possibilities, and together their probabilities make 1."
+            },
+            {
+              "ifAnswer": "-0.7",
+              "say": "Watch the direction: the two probabilities add to 1, so subtract 0.3 FROM 1: 1 - 0.3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The probabilities of an event and its opposite add up to 1."
+            }
+          ],
+          "explanation": "P(not late) = 1 - 0.3 = 0.7.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.5"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-b-13",
+          "prompt": "A survey asked 200 students how they get to school: 50 walk, 80 ride the bus, and 70 come by car. If one of these students is chosen at random, what is the probability that student rides the bus?",
+          "answerType": "fraction",
+          "answer": "2/5",
+          "acceptedAnswers": [
+            "2/5",
+            "80/200",
+            "0.4",
+            ".4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "80/120",
+              "say": "You compared bus riders to the other students. The probability is bus riders out of ALL 200 students surveyed."
+            },
+            {
+              "ifAnswer": "1/3",
+              "say": "There are three ways to get to school, but they're not equally likely — 80 of the 200 ride the bus. Use the actual counts."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Bus riders over total students surveyed."
+            }
+          ],
+          "explanation": "80 out of 200 ride the bus: 80/200 = 2/5 = 0.4.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.7b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-b-14",
+          "prompt": "Jo rolls a number cube 30 times and gets a 6 nine times. Which statement is the best conclusion?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "The cube must be unfair, because 9 is not equal to 5.",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "The theoretical probability of 1/6 predicts about 5 sixes in 30 rolls. Getting 9 is more than expected, but with only 30 rolls results often vary this much, so the cube may well be fair.",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "The experimental probability is 9/30, so the theoretical probability of a 6 is also 9/30.",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "If Jo rolls 300 times, the results will get even further from the theoretical probability.",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Small numbers of trials bounce around a lot. Jo expected about 5 sixes and got 9 — surprising, but not proof. What would many more rolls show?"
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Experimental probability (from Jo's rolls) and theoretical probability (from the cube's six equal faces) are different things. Thirty rolls don't change the fact that 1 face out of 6 shows a 6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Compare what the theory predicts (1/6 of 30 rolls) with what happened, and think about how much a small number of trials can wobble."
+            }
+          ],
+          "explanation": "Theory predicts 1/6 × 30 = 5 sixes. Nine is more than that, but 30 rolls is a small experiment and results commonly swing this much. With many more rolls, the experimental probability should settle near 1/6 if the cube is fair.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.6",
+            "7.SP.7b"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u7-b-15",
+          "prompt": "A spinner has 5 equal sections, and 2 of them are red. If the spinner is spun 75 times, about how many times would you expect it to land on red?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "15",
+              "say": "That's 1/5 of 75 — the expected number for ONE red section. Two of the five sections are red, so the probability is 2/5."
+            },
+            {
+              "ifAnswer": "37.5",
+              "say": "Half of 75 would mean half the sections are red. Only 2 of 5 are red, so use 2/5 × 75."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "P(red) = 2/5. Multiply by the number of spins."
+            }
+          ],
+          "explanation": "P(red) = 2/5. 2/5 × 75 = 30. About 30 red spins.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-b-16",
+          "prompt": "A weighted coin landed heads 180 times out of 300 flips. Using this experimental probability, about how many heads would you expect in the next 50 flips?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "25",
+              "say": "A fair coin would give 25, but this coin isn't fair. It landed heads 180/300 = 0.6 of the time, so use 0.6 × 50."
+            },
+            {
+              "ifAnswer": "180",
+              "say": "That's the number of heads in the first 300 flips. For the next 50 flips, find the probability (180/300) and multiply by 50."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Experimental probability first: 180 ÷ 300. Then multiply by 50."
+            }
+          ],
+          "explanation": "180/300 = 0.6. 0.6 × 50 = 30. About 30 heads.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.7b",
+            "7.SP.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-b-17",
+          "prompt": "A bag has only red and blue marbles, 21 marbles in all. The probability of picking red is 3/7. How many BLUE marbles are in the bag?",
+          "answerType": "integer",
+          "answer": "12",
+          "acceptedAnswers": [
+            "12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9",
+              "say": "That's the number of RED marbles (3/7 of 21). The question asks for blue: the rest of the 21."
+            },
+            {
+              "ifAnswer": "3",
+              "say": "The 3 in 3/7 isn't a count of marbles — it's 3 out of every 7. With 21 marbles, that's 3 groups of 7, so 9 red."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the number of red marbles (3/7 of 21). Blue is what's left."
+            }
+          ],
+          "explanation": "Red: 3/7 × 21 = 9. Blue: 21 - 9 = 12. Check: P(blue) = 12/21 = 4/7, and 3/7 + 4/7 = 1.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.7a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-b-18",
+          "prompt": "Which event is the MOST likely?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "Rolling a number less than 3 on a number cube",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "A spinner with 5 equal sections, 2 of them red, landing on red",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "Picking a red marble from a bag with 5 red and 7 blue marbles",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "Drawing a vowel from cards labeled A, B, C, D, E, F",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "You're close — 2/5 is 0.4. Compare it with 5/12, which is a little more than 0.41."
+            },
+            {
+              "ifAnswer": "a",
+              "say": "A number less than 3 means only 1 or 2 — that's 2 out of 6, about 0.33. Write each probability as a decimal and compare."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find each probability, write them all as decimals, and pick the biggest."
+            }
+          ],
+          "explanation": "(a) 2/6 ≈ 0.33; (b) 2/5 = 0.40; (c) 5/12 ≈ 0.42; (d) vowels A and E: 2/6 ≈ 0.33. The largest is (c).",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.5",
+            "7.SP.7a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-b-19",
+          "prompt": "A spinner has four equal sections: red, blue, green and yellow. In 80 spins, it landed on red 32 times. How many MORE times did it land on red than the theoretical probability predicts?",
+          "answerType": "integer",
+          "answer": "12",
+          "acceptedAnswers": [
+            "12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "20",
+              "say": "That's the theoretical expected number of reds (1/4 of 80) — good. Now subtract it from the 32 reds that actually happened."
+            },
+            {
+              "ifAnswer": "8",
+              "say": "Did you use 1/2 for red? There are four equal sections, so red should come up about 1/4 of 80 = 20 times."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Theory: 1/4 of 80 spins. Compare that with the 32 that happened."
+            }
+          ],
+          "explanation": "Theoretical: 1/4 × 80 = 20 reds. Actual: 32. Difference: 32 - 20 = 12 more than predicted. (That's a big gap — worth checking the spinner.)",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.6",
+            "7.SP.7a"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u7-b-20",
+          "prompt": "A carnival spinner has 12 equal sections numbered 1 to 12. You win a prize if it lands on a multiple of 4. If the spinner is spun 300 times during the day, about how many spins would NOT win a prize?",
+          "answerType": "integer",
+          "answer": "225",
+          "acceptedAnswers": [
+            "225"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "75",
+              "say": "That's the expected number of WINNING spins (1/4 of 300). The question asks how many spins would NOT win: the rest."
+            },
+            {
+              "ifAnswer": "200",
+              "say": "Did you count 4 winning numbers? The multiples of 4 up to 12 are 4, 8 and 12 — just 3 of the 12 sections, so 1/4 win and 3/4 don't."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find P(win) from the winning sections. P(not win) = 1 - P(win). Multiply by 300."
+            }
+          ],
+          "explanation": "Winning sections: 4, 8, 12 — 3 of 12, so P(win) = 1/4 and P(not win) = 3/4. 3/4 × 300 = 225 spins would not win.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.6",
+            "7.SP.7a"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Tell what the population and sample are, or list the sample space, and show how you counted or computed each number. Say what each number in your work stands for in the situation. Then explain why your answer makes sense — for example, a probability must be between 0 and 1, and an estimate for a whole population should match the fraction you saw in the sample. If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u7-c",
+      "title": "Compound events and simulations",
+      "skill": "Build sample spaces with organized lists, tables and tree diagrams, count outcomes, find P(both) and P(at least one), and choose a simulation that models a compound event (7.SP.8a, 7.SP.8b, 7.SP.8c)",
+      "standards": [
+        "7.SP.8a",
+        "7.SP.8b",
+        "7.SP.8c"
+      ],
+      "problems": [
+        {
+          "id": "g7-u7-c-01",
+          "prompt": "You flip two coins, a penny and a dime. How many different outcomes are in the sample space?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2",
+              "say": "Two is the number of outcomes for ONE coin. Each penny result pairs with each dime result: HH, HT, TH, TT."
+            },
+            {
+              "ifAnswer": "3",
+              "say": "Did you count HT and TH as the same? Penny heads with dime tails is a different outcome from penny tails with dime heads."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "List every pairing of a penny result with a dime result."
+            }
+          ],
+          "explanation": "Outcomes: HH, HT, TH, TT. That's 2 × 2 = 4 outcomes.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.8b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-c-02",
+          "prompt": "You flip a coin and roll a number cube. How many outcomes are in the sample space?",
+          "answerType": "integer",
+          "answer": "12",
+          "acceptedAnswers": [
+            "12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8",
+              "say": "You added 2 + 6. Each of the 2 coin results can go with each of the 6 cube numbers, so multiply."
+            },
+            {
+              "ifAnswer": "6",
+              "say": "That's only the cube's outcomes. Each of those 6 numbers can be paired with heads OR with tails."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Make a table: 2 rows for the coin, 6 columns for the cube."
+            }
+          ],
+          "explanation": "2 coin results × 6 cube numbers = 12 outcomes: H1, H2, ..., H6, T1, ..., T6.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.8b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-c-03",
+          "prompt": "You flip two fair coins. What is the probability that both land heads?",
+          "answerType": "fraction",
+          "answer": "1/4",
+          "acceptedAnswers": [
+            "1/4",
+            "0.25",
+            ".25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/2",
+              "say": "That's the chance of heads on ONE coin. Both coins have to cooperate: list the four outcomes HH, HT, TH, TT and see how many are HH."
+            },
+            {
+              "ifAnswer": "2/4",
+              "say": "Only ONE of the four outcomes — HH — has both heads. HT and TH each have just one head."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "List the sample space (4 outcomes). Count the ones with two heads."
+            }
+          ],
+          "explanation": "Sample space: HH, HT, TH, TT. Only HH works: P = 1/4.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.8a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-c-04",
+          "prompt": "Which list shows the complete sample space for flipping a coin twice?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "H, T",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "HH, HT, TH, TT",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "HH, TT",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "HH, HT, TT",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "d",
+              "say": "You're missing one. Heads-then-tails and tails-then-heads are different outcomes, so TH belongs on the list too."
+            },
+            {
+              "ifAnswer": "a",
+              "say": "That's the sample space for ONE flip. For two flips, each outcome names what happened on the first flip AND the second."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Each outcome records the first flip and the second flip. How many ways can that go?"
+            }
+          ],
+          "explanation": "First flip H or T, second flip H or T: HH, HT, TH, TT. Four outcomes, so (b).",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.8b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-c-05",
+          "prompt": "Two spinners each have three equal sections numbered 1, 2, 3. You spin both. How many outcomes are in the sample space?",
+          "answerType": "integer",
+          "answer": "9",
+          "acceptedAnswers": [
+            "9"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6",
+              "say": "You added 3 + 3. Each of the first spinner's 3 numbers pairs with each of the second's 3 numbers — try making a 3-by-3 table."
+            },
+            {
+              "ifAnswer": "3",
+              "say": "That's just one spinner. The outcome is a PAIR of numbers, one from each spinner."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Make a table with the first spinner's numbers down the side and the second's across the top."
+            }
+          ],
+          "explanation": "3 × 3 = 9 outcomes: (1,1), (1,2), (1,3), (2,1), (2,2), (2,3), (3,1), (3,2), (3,3).",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.8b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-c-06",
+          "prompt": "You flip a coin and roll a number cube. What is the probability of getting heads AND a 4?",
+          "answerType": "fraction",
+          "answer": "1/12",
+          "acceptedAnswers": [
+            "1/12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/6",
+              "say": "That's the chance of the 4 alone. Only half of those 4s come with heads, so the chance is half of 1/6."
+            },
+            {
+              "ifAnswer": "1/8",
+              "say": "Did you add the outcomes (2 + 6 = 8)? There are 2 × 6 = 12 equally likely outcomes, and only one is (H, 4)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "There are 12 equally likely outcomes. How many of them are heads-and-4?"
+            }
+          ],
+          "explanation": "The sample space has 2 × 6 = 12 outcomes. Only (H, 4) works: P = 1/12.",
+          "difficulty": 1,
+          "standards": [
+            "7.SP.8a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-c-07",
+          "prompt": "You flip two fair coins. What is the probability of getting at least one head?",
+          "answerType": "fraction",
+          "answer": "3/4",
+          "acceptedAnswers": [
+            "3/4",
+            "0.75",
+            ".75"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/4",
+              "say": "That's the chance of exactly two heads (HH). \"At least one\" also includes HT and TH — three of the four outcomes."
+            },
+            {
+              "ifAnswer": "1/2",
+              "say": "Did you count only HT and TH? HH also has at least one head. Only TT fails."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "\"At least one head\" means everything except no heads. Which outcome has no heads?"
+            }
+          ],
+          "explanation": "Sample space: HH, HT, TH, TT. Only TT has no heads, so P(at least one head) = 1 - 1/4 = 3/4.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.8a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-c-08",
+          "prompt": "You flip a coin and roll a number cube. What is the probability of getting tails AND an even number?",
+          "answerType": "fraction",
+          "answer": "1/4",
+          "acceptedAnswers": [
+            "1/4",
+            "3/12",
+            "0.25",
+            ".25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/12",
+              "say": "That's the chance of tails with ONE specific number. Three numbers are even (2, 4, 6), so three of the 12 outcomes work."
+            },
+            {
+              "ifAnswer": "1/2",
+              "say": "Half of the outcomes have tails, and half of the cube's numbers are even — but you need BOTH to happen. Half of a half is 1/4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Out of the 12 outcomes, count the ones that are tails with a 2, 4 or 6."
+            }
+          ],
+          "explanation": "Favorable outcomes: (T,2), (T,4), (T,6) — three of 12. P = 3/12 = 1/4.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.8a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-c-09",
+          "prompt": "In a certain family each child is equally likely to be a boy or a girl. Which could you use to simulate the boy-or-girl outcomes for a family with 3 children?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "Spin a spinner with 3 equal sections once",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "Flip a coin 3 times, letting heads mean \"boy\" and tails mean \"girl\"",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "Roll a number cube once and count the dots",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "Draw one card from a deck of 10 cards",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "A spinner with 3 sections has 3 outcomes, but each child has just 2 equally likely outcomes. And you need one trial for EACH of the 3 children."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "A number cube gives 6 outcomes for one roll. Boy-or-girl is a 50-50 event, repeated three times — what simple tool is 50-50?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Match the tool to the event: two equally likely outcomes, once for each child."
+            }
+          ],
+          "explanation": "Each child is a 50-50 event, and a coin flip is 50-50. Flipping a coin 3 times, one flip per child, simulates the family: (b).",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.8c"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-c-10",
+          "prompt": "You roll two number cubes, one red and one green. How many outcomes are in the sample space?",
+          "answerType": "integer",
+          "answer": "36",
+          "acceptedAnswers": [
+            "36"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "12",
+              "say": "You added 6 + 6. Each of the red cube's 6 numbers can pair with each of the green cube's 6 numbers — a 6-by-6 table."
+            },
+            {
+              "ifAnswer": "21",
+              "say": "Did you count (red 2, green 5) and (red 5, green 2) as the same? Since the cubes are different colors, those are two different outcomes."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "A 6-by-6 table: 6 red numbers across, 6 green numbers down."
+            }
+          ],
+          "explanation": "6 × 6 = 36 outcomes, from (1,1) up to (6,6).",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.8b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-c-11",
+          "prompt": "You roll two number cubes and add the numbers. What is the probability the sum is 7?",
+          "answerType": "fraction",
+          "answer": "1/6",
+          "acceptedAnswers": [
+            "1/6",
+            "6/36"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/36",
+              "say": "That's the chance of ONE specific pair. Several pairs add to 7: (1,6), (2,5), (3,4), (4,3), (5,2), (6,1)."
+            },
+            {
+              "ifAnswer": "1/11",
+              "say": "The sums 2 through 12 are 11 possibilities, but they aren't equally likely. Count pairs in the 36-outcome table that add to 7."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Use the 36-outcome table. Count the pairs whose sum is 7."
+            }
+          ],
+          "explanation": "Pairs that sum to 7: (1,6), (2,5), (3,4), (4,3), (5,2), (6,1) — six of 36. P = 6/36 = 1/6.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.8a",
+            "7.SP.8b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-c-12",
+          "prompt": "Two spinners each have four equal sections numbered 1 to 4. You spin both. What is the probability that both spinners show 4?",
+          "answerType": "fraction",
+          "answer": "1/16",
+          "acceptedAnswers": [
+            "1/16",
+            "0.0625"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/4",
+              "say": "That's the chance of a 4 on ONE spinner. The second spinner also has to show 4: 1/4 of those times."
+            },
+            {
+              "ifAnswer": "1/8",
+              "say": "Did you add 4 + 4 = 8 outcomes? Make a 4-by-4 table: there are 16 outcomes, and just one is (4, 4)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "4 × 4 = 16 equally likely outcomes. How many are (4, 4)?"
+            }
+          ],
+          "explanation": "The sample space has 16 outcomes, and only (4,4) works: P = 1/16.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.8a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-c-13",
+          "prompt": "Sam packs 4 shirts, 3 pairs of pants and 2 hats. How many different outfits (one shirt, one pair of pants, one hat) can he make?",
+          "answerType": "integer",
+          "answer": "24",
+          "acceptedAnswers": [
+            "24"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9",
+              "say": "You added 4 + 3 + 2. Each shirt goes with each pair of pants (4 × 3 = 12 combos), and each of those goes with either hat."
+            },
+            {
+              "ifAnswer": "12",
+              "say": "That's shirts and pants — nice. Now each of those 12 combinations can be worn with either of the 2 hats."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Picture a tree diagram: 4 branches, each splitting into 3, each splitting into 2."
+            }
+          ],
+          "explanation": "4 × 3 × 2 = 24 outfits.",
+          "difficulty": 2,
+          "standards": [
+            "7.SP.8b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u7-c-14",
+          "prompt": "A basketball player makes 70% of her free throws. Which simulation best models ONE free throw?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "Flip a coin: heads means she makes it.",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "Roll a number cube: 1 to 4 means she makes it.",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "Spin a spinner with 10 equal sections numbered 1 to 10: landing on 1 through 7 means she makes it.",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "Draw a marble from a bag with 7 red and 7 blue marbles: red means she makes it.",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "A coin makes it 50-50, but she makes 70 out of every 100. The tool has to give a \"make\" 7 times out of 10."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "4 out of 6 is about 67% — close, but not 70%. Look for a tool where exactly 7 out of 10 outcomes mean \"make.\""
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The simulation's probability of \"make\" must equal 70%, or 7 out of 10."
+            }
+          ],
+          "explanation": "Sections 1 through 7 are 7 of 10 equal sections, so P(make) = 7/10 = 70%. That matches the player, so (c). A coin gives 50%, the cube 4/6, and the marbles 7/14 = 50%.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.8c"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-c-15",
+          "prompt": "You roll two number cubes. What is the probability that at least one of them shows a 6?",
+          "answerType": "fraction",
+          "answer": "11/36",
+          "acceptedAnswers": [
+            "11/36"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2/6",
+              "say": "You added the two 1/6 chances, but that counts the (6,6) outcome twice. Try: P(no 6 at all) = 25/36, then subtract from 1."
+            },
+            {
+              "ifAnswer": "25/36",
+              "say": "That's the probability of NO sixes (5/6 × 5/6) — nice. \"At least one 6\" is the opposite: 1 - 25/36."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Count the outcomes with no 6 (5 × 5 = 25). The rest have at least one 6."
+            }
+          ],
+          "explanation": "Outcomes with no 6: 5 × 5 = 25 of 36. So at least one 6: 36 - 25 = 11 outcomes. P = 11/36.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.8a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-c-16",
+          "prompt": "You flip three fair coins. What is the probability of getting exactly two heads?",
+          "answerType": "fraction",
+          "answer": "3/8",
+          "acceptedAnswers": [
+            "3/8",
+            "0.375",
+            ".375"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/8",
+              "say": "That's the chance of one specific result like HHT. But HTH and THH also have exactly two heads."
+            },
+            {
+              "ifAnswer": "1/2",
+              "say": "That counts HHH too (four outcomes with at least two heads). The question says EXACTLY two heads, so HHH doesn't count."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "List all 8 outcomes for three coins. Count the ones with exactly two H's."
+            }
+          ],
+          "explanation": "Sample space: HHH, HHT, HTH, THH, HTT, THT, TTH, TTT. Exactly two heads: HHT, HTH, THH — three of 8. P = 3/8.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.8a",
+            "7.SP.8b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-c-17",
+          "prompt": "You roll two number cubes and multiply the two numbers. What is the probability the product is odd?",
+          "answerType": "fraction",
+          "answer": "1/4",
+          "acceptedAnswers": [
+            "1/4",
+            "9/36",
+            "0.25",
+            ".25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/2",
+              "say": "Half the numbers are odd, but the PRODUCT is odd only when BOTH cubes are odd. Half of a half is less than half."
+            },
+            {
+              "ifAnswer": "3/4",
+              "say": "That's the probability the product is EVEN. A product is odd only when neither cube shows an even number."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "When is a product odd? Think about what each cube must show, then count those pairs in the 36-outcome table."
+            }
+          ],
+          "explanation": "A product is odd only when both numbers are odd. Each cube has 3 odd faces, so 3 × 3 = 9 pairs of 36. P = 9/36 = 1/4.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.8a"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u7-c-18",
+          "prompt": "You roll two number cubes. Which event is LEAST likely?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "The sum is 7",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "The two cubes match (doubles)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "The sum is 12",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "The sum is greater than 9",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "d",
+              "say": "A sum greater than 9 can happen as 10, 11 or 12 — that's 6 of the 36 outcomes. A sum of 12 happens only one way."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "Doubles can happen 6 ways: (1,1) through (6,6). Compare that with how many ways you can roll a sum of 12."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Count the outcomes for each event in the 36-outcome table. The smallest count is the least likely."
+            }
+          ],
+          "explanation": "Sum 7: 6 ways. Doubles: 6 ways. Sum greater than 9: 6 ways (three 10s, two 11s, one 12). Sum 12: just (6,6), 1 way. Least likely is (c).",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.8a",
+            "7.SP.8b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u7-c-19",
+          "prompt": "A spinner has four equal sections numbered 1 to 4. You spin it twice and add the two numbers. What is the probability the sum is 6?",
+          "answerType": "fraction",
+          "answer": "3/16",
+          "acceptedAnswers": [
+            "3/16",
+            "0.1875"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2/16",
+              "say": "You found (2,4) and (4,2) — don't forget (3,3), which also adds to 6."
+            },
+            {
+              "ifAnswer": "1/4",
+              "say": "Did you count 4 outcomes? Only three pairs add to 6: (2,4), (3,3), (4,2). And the sample space has 4 × 4 = 16 outcomes."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Make a 4-by-4 table of the two spins. Count the pairs with sum 6."
+            }
+          ],
+          "explanation": "Pairs summing to 6: (2,4), (3,3), (4,2) — three of 16. P = 3/16.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.8a",
+            "7.SP.8b"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u7-c-20",
+          "prompt": "In a game you flip a coin and roll a number cube. You win if the coin shows heads AND the cube shows a number greater than 4. If you play 60 times, about how many times would you expect to win?",
+          "answerType": "integer",
+          "answer": "10",
+          "acceptedAnswers": [
+            "10"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "20",
+              "say": "That's 1/3 of 60 — the chance of a 5 or 6 alone. You also need heads, which happens only half the time, so halve it."
+            },
+            {
+              "ifAnswer": "30",
+              "say": "Half of 60 is the heads part alone. You ALSO need a 5 or 6 on the cube, which is 2 of the 6 numbers."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Count the winning outcomes among the 12 (heads with a 5 or 6). Find P(win), then multiply by 60."
+            }
+          ],
+          "explanation": "Winning outcomes: (H,5), (H,6) — two of 12, so P(win) = 1/6. 1/6 × 60 = 10. About 10 wins.",
+          "difficulty": 3,
+          "standards": [
+            "7.SP.8a",
+            "7.SP.8b",
+            "7.SP.6"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Tell what the population and sample are, or list the sample space, and show how you counted or computed each number. Say what each number in your work stands for in the situation. Then explain why your answer makes sense — for example, a probability must be between 0 and 1, and an estimate for a whole population should match the fraction you saw in the sample. If you changed your mind partway through, tell what made you change it."
+      }
+    }
+  ]
+}

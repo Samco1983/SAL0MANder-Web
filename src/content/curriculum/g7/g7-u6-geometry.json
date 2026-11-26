@@ -1,0 +1,2078 @@
+{
+  "unitId": "g7-u6",
+  "course": "7th grade",
+  "unitName": "Geometry",
+  "standards": [
+    "7.G.1",
+    "7.G.2",
+    "7.G.3",
+    "7.G.4",
+    "7.G.5",
+    "7.G.6"
+  ],
+  "sets": [
+    {
+      "setId": "g7-u6-a",
+      "title": "Scale drawings and triangles",
+      "skill": "Use scale factors and map/drawing scales to find actual and scaled lengths, see how area changes under a scale factor (k²), choose a sensible scale, and decide when three side lengths or three angles make one triangle, many, or none (7.G.1, 7.G.2)",
+      "standards": [
+        "7.G.1",
+        "7.G.2"
+      ],
+      "problems": [
+        {
+          "id": "g7-u6-a-01",
+          "prompt": "On a map, 1 cm stands for 5 km. Two towns are 7 cm apart on the map. How far apart are they in real life, in km?",
+          "answerType": "integer",
+          "answer": "35",
+          "acceptedAnswers": [
+            "35"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "12",
+              "say": "You added 7 and 5. Every map centimeter is worth 5 real kilometers, so 7 centimeters is 7 groups of 5 km. Multiply."
+            },
+            {
+              "ifAnswer": "1.4",
+              "say": "You divided 7 by 5, which shrinks the distance. The real world is BIGGER than the map, so multiply the map distance by 5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Each cm on the map is 5 km. Seven of them is 7 × 5."
+            }
+          ],
+          "explanation": "1 cm on the map stands for 5 km, so 7 cm stands for 7 × 5 = 35 km.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-a-02",
+          "prompt": "A scale drawing of a classroom uses the scale 1 inch : 4 feet. The real room is 24 feet long. How long is the room in the drawing, in inches?",
+          "answerType": "integer",
+          "answer": "6",
+          "acceptedAnswers": [
+            "6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "96",
+              "say": "You multiplied 24 by 4, which makes the drawing bigger than the room. Going from real feet to drawing inches means dividing by 4."
+            },
+            {
+              "ifAnswer": "20",
+              "say": "You subtracted 4. A scale isn't a subtraction — ask how many groups of 4 feet fit in 24 feet."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Every 4 real feet become 1 drawing inch. How many 4-foot groups are in 24 feet?"
+            }
+          ],
+          "explanation": "24 feet ÷ 4 feet per inch = 6 inches. Check: 6 inches × 4 feet per inch = 24 feet.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-a-03",
+          "prompt": "A model car is built at a scale of 1 : 20, so the real car is 20 times as long as the model. The model is 15 cm long. How long is the real car, in cm?",
+          "answerType": "integer",
+          "answer": "300",
+          "acceptedAnswers": [
+            "300"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.75",
+              "say": "You divided 15 by 20. The REAL car is the big one, so multiply the model's length by 20."
+            },
+            {
+              "ifAnswer": "35",
+              "say": "You added 20. A scale of 1 : 20 means every 1 cm on the model is 20 cm on the real car — that's multiplying, not adding."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "1 : 20 means multiply the model length by 20 to get the real length."
+            }
+          ],
+          "explanation": "Real length = 15 × 20 = 300 cm (that's 3 meters, a reasonable car length).",
+          "difficulty": 1,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-a-04",
+          "prompt": "A rectangle is 4 cm by 6 cm. A scaled copy of it is 6 cm by 9 cm. What is the scale factor from the original to the copy?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "1.5",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "2",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "2/3",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "You noticed 4 went up by 2 — but a scale factor is what you MULTIPLY by, not what you add. Ask: 4 times what gives 6?"
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That's the scale factor going from the copy back to the original. The question goes from the original (4 by 6) to the copy (6 by 9), so the copy is bigger and the factor is bigger than 1."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Scale factor = copy length ÷ original length. Try it with the 4 cm side and check it with the 6 cm side."
+            }
+          ],
+          "explanation": "6 ÷ 4 = 1.5, and 9 ÷ 6 = 1.5 too. Every length was multiplied by 1.5, so the scale factor is 1.5.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-a-05",
+          "prompt": "A side of a figure is 8 cm. The matching side of a scaled copy is 20 cm. What is the scale factor from the original to the copy?",
+          "answerType": "decimal",
+          "answer": "2.5",
+          "acceptedAnswers": [
+            "2.5",
+            "5/2",
+            "2 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "12",
+              "say": "You subtracted 8 from 20. A scale factor is a multiplier: 8 × (what) = 20? Divide 20 by 8."
+            },
+            {
+              "ifAnswer": "0.4",
+              "say": "You divided 8 by 20. That's the factor from the copy back to the original. From the original to the copy, divide copy ÷ original."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Scale factor = copy ÷ original = 20 ÷ 8."
+            }
+          ],
+          "explanation": "20 ÷ 8 = 2.5. Check: 8 × 2.5 = 20.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-a-06",
+          "prompt": "A floor plan uses the scale 1 cm : 2 m. A wall on the plan is 3.5 cm long. How long is the real wall, in meters?",
+          "answerType": "decimal",
+          "answer": "7",
+          "acceptedAnswers": [
+            "7",
+            "7.0"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1.75",
+              "say": "You divided by 2. The real wall is BIGGER than the drawing, so multiply the drawing length by 2."
+            },
+            {
+              "ifAnswer": "5.5",
+              "say": "You added 2. Each drawing centimeter is worth 2 real meters, so 3.5 of them is 3.5 × 2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Every cm on the plan is 2 m. Multiply 3.5 by 2."
+            }
+          ],
+          "explanation": "3.5 cm × 2 m per cm = 7 m.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-a-07",
+          "prompt": "A triangle has sides 6 cm, 8 cm and 10 cm. A scaled copy is made with scale factor 3/4. How long is the longest side of the copy, in cm?",
+          "answerType": "decimal",
+          "answer": "7.5",
+          "acceptedAnswers": [
+            "7.5",
+            "15/2",
+            "7 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "40/3",
+              "say": "You divided 10 by 3/4, which made the copy bigger. A scale factor less than 1 shrinks the figure — multiply 10 by 3/4."
+            },
+            {
+              "ifAnswer": "4.5",
+              "say": "That's 3/4 of the 6 cm side, the SHORTEST one. The question asks about the longest side, 10 cm."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The longest side is 10 cm. Multiply it by 3/4."
+            }
+          ],
+          "explanation": "10 × 3/4 = 30/4 = 7.5 cm. (The other sides become 4.5 cm and 6 cm.)",
+          "difficulty": 2,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-a-08",
+          "prompt": "A square has sides of 3 cm. A scaled copy is made with scale factor 4. What is the area of the copy, in square cm?",
+          "answerType": "integer",
+          "answer": "144",
+          "acceptedAnswers": [
+            "144"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "36",
+              "say": "You multiplied the area (9) by 4. But BOTH the length and the width get multiplied by 4, so the area is multiplied by 4 × 4. Try finding the new side length first."
+            },
+            {
+              "ifAnswer": "12",
+              "say": "That's the new side length — nice start. The question asks for the AREA of the copy, so square it."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the copy's side length first (3 × 4), then find its area. Notice how many times bigger the area got."
+            }
+          ],
+          "explanation": "New side: 3 × 4 = 12 cm. Area: 12 × 12 = 144 sq cm. That's 16 times the original area of 9, because 4² = 16.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-a-09",
+          "prompt": "A swimming pool is 30 m long. Mia wants to draw it on a sheet of paper that is 25 cm wide, as large as it can be and still fit. Which scale should she use?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "1 cm to 1 m",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "1 cm to 2 m",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "1 cm to 10 m",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "1 cm to 50 cm",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Check it: at 1 cm to 1 m, the 30 m pool becomes 30 cm long — that hangs off a 25 cm sheet."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "It fits, but at 1 cm to 10 m the pool is only 3 cm long on the paper. Look for a scale that fits AND fills more of the sheet."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "For each scale, find how long the 30 m pool would be on paper. Which one fits in 25 cm and is biggest?"
+            }
+          ],
+          "explanation": "1 cm : 1 m gives 30 cm (too long). 1 cm : 2 m gives 15 cm (fits). 1 cm : 10 m gives 3 cm (tiny). 1 cm : 50 cm gives 60 cm (way too long). So 1 cm : 2 m is the best choice.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-a-10",
+          "prompt": "A road map uses the scale 1 inch : 25 miles. Two cities are 90 miles apart. How far apart are they on the map, in inches?",
+          "answerType": "decimal",
+          "answer": "3.6",
+          "acceptedAnswers": [
+            "3.6",
+            "18/5",
+            "3 3/5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2250",
+              "say": "You multiplied 90 by 25, which makes the map huge. The map is SMALLER than the real world, so divide the miles by 25."
+            },
+            {
+              "ifAnswer": "65",
+              "say": "You subtracted 25. Ask instead: how many groups of 25 miles are in 90 miles? That's 90 ÷ 25."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Every 25 real miles is 1 map inch. Divide 90 by 25."
+            }
+          ],
+          "explanation": "90 ÷ 25 = 3.6 inches. Check: 3.6 × 25 = 90.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-a-11",
+          "prompt": "A side of a drawing is 12 cm. In a scaled copy, that side is 9 cm. What is the scale factor from the original to the copy? Write it as a fraction.",
+          "answerType": "fraction",
+          "answer": "3/4",
+          "acceptedAnswers": [
+            "3/4",
+            "0.75"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4/3",
+              "say": "You divided 12 by 9. That's the factor from the copy back to the original. The copy is SMALLER, so the factor should be less than 1: copy ÷ original."
+            },
+            {
+              "ifAnswer": "3",
+              "say": "You subtracted. A scale factor is a multiplier: 12 × (what) = 9? Divide 9 by 12 and simplify."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Scale factor = copy ÷ original = 9/12. Simplify."
+            }
+          ],
+          "explanation": "9 ÷ 12 = 9/12 = 3/4. Check: 12 × 3/4 = 9.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-a-12",
+          "prompt": "A rectangle is 5 cm by 8 cm. A scaled copy is made with scale factor 2. The copy's area is how many times the original's area?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2",
+              "say": "That's the scale factor for LENGTHS. Both the length and the width doubled, so the area was multiplied by 2 twice. Compare the two areas to see."
+            },
+            {
+              "ifAnswer": "160",
+              "say": "That's the area of the copy (10 × 16) — nice. The question asks how many TIMES bigger it is than the original area of 40."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Original area: 5 × 8. Copy: 10 × 16. Divide the copy's area by the original's."
+            }
+          ],
+          "explanation": "Original area: 40 sq cm. Copy: 10 × 16 = 160 sq cm. 160 ÷ 40 = 4, which is 2². Scaling lengths by k scales area by k².",
+          "difficulty": 2,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-a-13",
+          "prompt": "Two sides of a triangle are 5 cm and 9 cm long. The third side is a whole number of centimeters. What is the LONGEST the third side could be, in cm?",
+          "answerType": "integer",
+          "answer": "13",
+          "acceptedAnswers": [
+            "13"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "14",
+              "say": "You're close — but if the third side were 14, then 5 + 9 = 14 exactly, and the two short sides would lie flat along the long one. The two shorter sides must add up to MORE than the longest side."
+            },
+            {
+              "ifAnswer": "4",
+              "say": "That's the DIFFERENCE 9 - 5, which is about the shortest end. The question asks for the longest possible third side — think about 5 + 9."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The two shorter sides of any triangle must add up to more than the longest side. So the third side must be less than 5 + 9."
+            }
+          ],
+          "explanation": "The third side must be less than 5 + 9 = 14 (and more than 9 - 5 = 4). The longest whole number under 14 is 13.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-a-14",
+          "prompt": "Which set of three side lengths can be used to make a triangle?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "2 cm, 3 cm, 6 cm",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "4 cm, 5 cm, 9 cm",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "5 cm, 7 cm, 11 cm",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "1 cm, 2 cm, 4 cm",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Try it: 2 + 3 = 5, and 5 is less than 6. The two short sides can't reach each other across the 6. Check each set by adding the two shorter sides."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "So close — 4 + 5 = 9 exactly. The two short sides would lie flat along the 9, making a straight line, not a triangle. They need to add to MORE than the longest side."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add the two shorter sides in each set. They must total MORE than the longest side."
+            }
+          ],
+          "explanation": "5 + 7 = 12, which is more than 11, so 5, 7, 11 makes a triangle. The others fail: 2 + 3 < 6, 4 + 5 = 9 (flat), 1 + 2 < 4.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-a-15",
+          "prompt": "A scale drawing of a garden uses the scale 1 cm : 3 m. On the drawing the garden is a rectangle 4 cm by 2.5 cm. What is the area of the real garden, in square meters?",
+          "answerType": "integer",
+          "answer": "90",
+          "acceptedAnswers": [
+            "90"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "30",
+              "say": "You found the drawing's area (10 sq cm) and multiplied by 3. But both the length AND the width get multiplied by 3, so the area grows by 3 × 3. Try converting each side to meters first."
+            },
+            {
+              "ifAnswer": "10",
+              "say": "That's the area on the drawing, in square cm. Convert the sides to real meters first: 4 × 3 and 2.5 × 3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Convert each side to meters (multiply by 3), then find the area."
+            }
+          ],
+          "explanation": "Real length: 4 × 3 = 12 m. Real width: 2.5 × 3 = 7.5 m. Area: 12 × 7.5 = 90 sq m. (Drawing area 10 sq cm × 3² = 90.)",
+          "difficulty": 3,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-a-16",
+          "prompt": "A figure has an area of 8 square cm. A scaled copy has an area of 72 square cm. What is the scale factor from the original to the copy?",
+          "answerType": "integer",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9",
+              "say": "That's how many times bigger the AREA got — nice. The scale factor is for lengths, and area grows by the scale factor squared. What number squared is 9?"
+            },
+            {
+              "ifAnswer": "64",
+              "say": "You subtracted the areas. Compare them by dividing instead (72 ÷ 8), then remember area grows by the scale factor SQUARED."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Area ratio = 72 ÷ 8. The scale factor is the number that, squared, gives that ratio."
+            }
+          ],
+          "explanation": "72 ÷ 8 = 9, so the area is 9 times bigger. Since area scales by k², k² = 9 and k = 3.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-a-17",
+          "prompt": "A drawing of a building uses the scale 1 cm : 4 m, and the building is 12 cm tall in it. A second drawing of the same building uses the scale 1 cm : 6 m. How tall is the building in the second drawing, in cm?",
+          "answerType": "integer",
+          "answer": "8",
+          "acceptedAnswers": [
+            "8"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "18",
+              "say": "You scaled the wrong direction. The second scale packs MORE meters into each centimeter, so the building should look SHORTER than 12 cm. Find the real height first: 12 × 4."
+            },
+            {
+              "ifAnswer": "48",
+              "say": "That's the real height of the building in meters — great first step. Now put it into the second drawing: how many 6-meter groups are in 48 m?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Step 1: real height = 12 × 4. Step 2: in the new drawing, each cm is 6 m, so divide the real height by 6."
+            }
+          ],
+          "explanation": "Real height: 12 × 4 = 48 m. Second drawing: 48 ÷ 6 = 8 cm. It makes sense that it's shorter, since 1 cm now stands for more meters.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u6-a-18",
+          "prompt": "Ana is asked to draw a triangle whose angles are 40°, 60° and 80°. Which statement is true?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "Exactly one triangle can be drawn.",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "No triangle can be drawn with these angles.",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "Many triangles can be drawn; they all have the same shape but can be different sizes.",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "Many triangles can be drawn, and they can have completely different shapes.",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Try it: draw one, then draw another with sides twice as long. The angles stay 40°, 60°, 80°. Three angles alone don't pin down the size."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "Check the angle sum: 40 + 60 + 80 = 180, so this triangle does exist. The question is how MANY different ones there are."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Angles alone don't fix the size. Could you draw a tiny one and a huge one with the same angles?"
+            }
+          ],
+          "explanation": "Since 40 + 60 + 80 = 180, the triangle exists. But any scaled copy keeps the same angles, so there are many such triangles — all the same shape, different sizes.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-a-19",
+          "prompt": "A triangle has sides of 4 cm and 7 cm. The third side is also a whole number of centimeters. How many different lengths are possible for the third side?",
+          "answerType": "integer",
+          "answer": "7",
+          "acceptedAnswers": [
+            "7"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "11",
+              "say": "That's 4 + 7, the number the third side must stay BELOW. The question asks how many whole numbers work, so list them: the third side must be more than 7 - 4 and less than 4 + 7."
+            },
+            {
+              "ifAnswer": "9",
+              "say": "You're close — you counted 3 and 11 as possible. But 3 + 4 = 7 exactly and 4 + 7 = 11 exactly, which both make a flat line, not a triangle. Leave those two out."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The third side must be greater than 7 - 4 and less than 4 + 7. Count the whole numbers strictly in between."
+            }
+          ],
+          "explanation": "The third side s must satisfy 3 < s < 11. Whole numbers: 4, 5, 6, 7, 8, 9, 10 — that's 7 possible lengths.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u6-a-20",
+          "prompt": "Jonah measures a room that is 6 m by 4.5 m. He draws it so that the 6 m side is 15 cm long on paper. How long should the 4.5 m side be on his drawing, in cm?",
+          "answerType": "decimal",
+          "answer": "11.25",
+          "acceptedAnswers": [
+            "11.25",
+            "45/4",
+            "11 1/4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3",
+              "say": "You subtracted 1.5 from 4.5, keeping the drawing's sides 'as far apart' as the room's. A scale drawing multiplies every length by the same number. Find that number: 15 ÷ 6."
+            },
+            {
+              "ifAnswer": "20",
+              "say": "Your drawing's short side came out longer than its long side (15 cm), so the scale went the wrong way. Find how many cm each meter gets: 15 ÷ 6, then multiply 4.5 by that."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "First find the scale: 6 m became 15 cm, so each meter is 15 ÷ 6 cm. Then apply that to 4.5 m."
+            }
+          ],
+          "explanation": "Scale: 15 ÷ 6 = 2.5 cm per meter. Short side: 4.5 × 2.5 = 11.25 cm. Check: 11.25 is shorter than 15, just as 4.5 is shorter than 6.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.1"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Tell what shape or relationship you used (a scale, an angle rule, a formula) and why it fits the situation. Show each step, including any units, and tell how you checked that your answer makes sense (for example, is the answer bigger or smaller than it should be?). If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u6-b",
+      "title": "Angles and circles",
+      "skill": "Use supplementary, complementary, vertical and adjacent angle relationships to find unknown angles and solve simple angle equations, and find the circumference and area of circles with π ≈ 3.14 or in terms of π (7.G.5, 7.G.4)",
+      "standards": [
+        "7.G.5",
+        "7.G.4"
+      ],
+      "problems": [
+        {
+          "id": "g7-u6-b-01",
+          "prompt": "Two angles are complementary. One of them measures 35°. What is the measure of the other angle, in degrees?",
+          "answerType": "integer",
+          "answer": "55",
+          "acceptedAnswers": [
+            "55"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "145",
+              "say": "You used 180. Complementary angles add up to 90° (they make a corner). Supplementary angles are the ones that add to 180°."
+            },
+            {
+              "ifAnswer": "65",
+              "say": "Check your subtraction: complementary means the two add to 90, so find 90 - 35."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Complementary angles add to 90°. Subtract 35 from 90."
+            }
+          ],
+          "explanation": "90 - 35 = 55°. Check: 35 + 55 = 90.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-b-02",
+          "prompt": "Two angles are supplementary. One of them measures 112°. What is the measure of the other angle, in degrees?",
+          "answerType": "integer",
+          "answer": "68",
+          "acceptedAnswers": [
+            "68"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-22",
+              "say": "You used 90, which gave a negative angle — a sign something's off. Supplementary angles add up to 180° (they make a straight line)."
+            },
+            {
+              "ifAnswer": "78",
+              "say": "Close — check the subtraction: 180 - 112. Count up from 112 to 180 to be sure."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Supplementary angles add to 180°. Subtract 112 from 180."
+            }
+          ],
+          "explanation": "180 - 112 = 68°. Check: 112 + 68 = 180.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-b-03",
+          "prompt": "Two straight lines cross each other. One of the four angles formed measures 74°. What is the measure of the angle directly across from it (its vertical angle), in degrees?",
+          "answerType": "integer",
+          "answer": "74",
+          "acceptedAnswers": [
+            "74"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "106",
+              "say": "That's the angle NEXT to it on the straight line (180 - 74). The angle directly ACROSS the crossing point is a vertical angle, and vertical angles are always equal."
+            },
+            {
+              "ifAnswer": "16",
+              "say": "You subtracted from 90, but nothing here makes a right angle. Vertical angles — the ones across the X from each other — are always equal to each other."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "When two lines cross, the angles across from each other (vertical angles) are equal."
+            }
+          ],
+          "explanation": "Vertical angles are congruent, so the angle across from the 74° angle is also 74°.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-b-04",
+          "prompt": "Angle P and angle Q share a side, and together they form a straight line. Which word describes this pair of angles?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "complementary",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "supplementary",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "vertical",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "congruent",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Complementary angles add up to 90° and make a square corner. A straight line is 180°, so look for the word that goes with 180."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Vertical angles are across from each other at a crossing, not side by side. These two share a side along a straight line."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "A straight line is 180°. Which word means 'two angles that add up to 180°'?"
+            }
+          ],
+          "explanation": "Two angles that together make a straight line add to 180°, so they are supplementary (and also adjacent, since they share a side).",
+          "difficulty": 1,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-b-05",
+          "prompt": "Two straight lines cross. One of the angles formed measures 130°. What is the measure of the angle right next to it along one of the lines, in degrees?",
+          "answerType": "integer",
+          "answer": "50",
+          "acceptedAnswers": [
+            "50"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "130",
+              "say": "That's the vertical angle, across the crossing. The angle NEXT to 130° shares a straight line with it, so the two add up to 180."
+            },
+            {
+              "ifAnswer": "40",
+              "say": "You used 90 — but a straight line is 180°, not 90°. Find 180 - 130."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The two angles sit next to each other along a straight line, so they add up to 180°."
+            }
+          ],
+          "explanation": "180 - 130 = 50°. Check: 130 + 50 = 180, a straight line.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-b-06",
+          "prompt": "A circle has a diameter of 10 cm. What is its circumference, in cm? Use π ≈ 3.14.",
+          "answerType": "decimal",
+          "answer": "31.4",
+          "acceptedAnswers": [
+            "31.4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "62.8",
+              "say": "You doubled the diameter. The formula C = 2πr doubles the RADIUS to get the diameter; here you already have the diameter, so just multiply 10 by 3.14."
+            },
+            {
+              "ifAnswer": "78.5",
+              "say": "That's the area (π × 5²). Circumference is the distance AROUND the circle: π times the diameter."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Circumference = π × diameter. Multiply 3.14 by 10."
+            }
+          ],
+          "explanation": "C = π × d = 3.14 × 10 = 31.4 cm.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.4"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-b-07",
+          "prompt": "An angle measures x°. A second angle measures twice as much, 2x°. The two angles are complementary. What is x?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "60",
+              "say": "You used 180. Complementary angles add to 90°, so the equation is x + 2x = 90."
+            },
+            {
+              "ifAnswer": "45",
+              "say": "You split 90 in half, but the two angles aren't equal — one is twice the other. Together they make 3x, so 3x = 90."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write x + 2x = 90, combine like terms, then divide."
+            }
+          ],
+          "explanation": "x + 2x = 90, so 3x = 90 and x = 30. The angles are 30° and 60°, which add to 90.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-b-08",
+          "prompt": "An angle measuring (3x + 15)° is supplementary to a 60° angle. What is x?",
+          "answerType": "integer",
+          "answer": "35",
+          "acceptedAnswers": [
+            "35"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5",
+              "say": "You used 90. Supplementary angles add to 180°, so the angle must be 180 - 60 = 120°. Then solve 3x + 15 = 120."
+            },
+            {
+              "ifAnswer": "45",
+              "say": "You're close — the angle is 120° — but then you ADDED 15 to 120. The 15 is being added to 3x, so SUBTRACT it from 120 to find 3x."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The angle must be 180 - 60 = 120°. Then solve 3x + 15 = 120."
+            }
+          ],
+          "explanation": "Supplementary: 3x + 15 = 180 - 60 = 120. Subtract 15: 3x = 105. Divide by 3: x = 35. Check: 3(35) + 15 = 120, and 120 + 60 = 180.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-b-09",
+          "prompt": "A circle has a radius of 6 cm. What is its circumference, in terms of π?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "6π cm",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "12π cm",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "36π cm",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3π cm",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You multiplied π by the radius only. Circumference is π times the DIAMETER, and the diameter is twice the radius."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That's the AREA, π × 6². Circumference is the distance around: π × diameter."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "C = π × d, and the diameter is 2 × 6."
+            }
+          ],
+          "explanation": "Diameter = 12 cm, so C = π × 12 = 12π cm.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.4"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-b-10",
+          "prompt": "A circle has a radius of 3 cm. What is its area, in square cm? Use π ≈ 3.14.",
+          "answerType": "decimal",
+          "answer": "28.26",
+          "acceptedAnswers": [
+            "28.26"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "18.84",
+              "say": "That's the circumference (π × 6). Area is π times the radius SQUARED: 3.14 × 3 × 3."
+            },
+            {
+              "ifAnswer": "9.42",
+              "say": "You multiplied π by 3 just once. Area uses r², so multiply by 3 twice: 3.14 × 3 × 3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Area = π × r². Square the radius first (3 × 3), then multiply by 3.14."
+            }
+          ],
+          "explanation": "A = π × 3² = 3.14 × 9 = 28.26 sq cm.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.4"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-b-11",
+          "prompt": "Two straight lines cross. The two vertical (opposite) angles measure (5x - 10)° and 80°. What is x?",
+          "answerType": "integer",
+          "answer": "18",
+          "acceptedAnswers": [
+            "18"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "14",
+              "say": "You're close — but you subtracted 10 from 80. The 10 is being taken away from 5x, so ADD 10 to both sides: 5x = 90."
+            },
+            {
+              "ifAnswer": "22",
+              "say": "You used 180 - 80 = 100, as if the angles were supplementary. Vertical angles are EQUAL, so set 5x - 10 equal to 80."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Vertical angles are equal: 5x - 10 = 80. Undo the - 10, then the × 5."
+            }
+          ],
+          "explanation": "5x - 10 = 80. Add 10: 5x = 90. Divide by 5: x = 18. Check: 5(18) - 10 = 80.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-b-12",
+          "prompt": "A circle has a circumference of 47.1 cm. What is its diameter, in cm? Use π ≈ 3.14.",
+          "answerType": "integer",
+          "answer": "15",
+          "acceptedAnswers": [
+            "15"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "7.5",
+              "say": "That's the radius — you divided by 2 as well. The question asks for the diameter, which is just C ÷ π."
+            },
+            {
+              "ifAnswer": "147.894",
+              "say": "You multiplied 47.1 by 3.14. C = π × d, so to find d you UNDO the multiplication: divide 47.1 by 3.14."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "C = π × d, so d = C ÷ π. Divide 47.1 by 3.14."
+            }
+          ],
+          "explanation": "d = 47.1 ÷ 3.14 = 15 cm. Check: 3.14 × 15 = 47.1.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.4"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-b-13",
+          "prompt": "A circular rug has a diameter of 8 m. What is its area, in square meters? Use π ≈ 3.14.",
+          "answerType": "decimal",
+          "answer": "50.24",
+          "acceptedAnswers": [
+            "50.24"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "200.96",
+              "say": "You squared the diameter. The area formula uses the RADIUS, which is half of 8."
+            },
+            {
+              "ifAnswer": "25.12",
+              "say": "That's the circumference (π × 8). Area is π × r², and the radius is 4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Radius first: 8 ÷ 2 = 4. Then area = π × 4²."
+            }
+          ],
+          "explanation": "r = 4 m. A = 3.14 × 4² = 3.14 × 16 = 50.24 sq m.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.4"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-b-14",
+          "prompt": "The circumference of a circle is 20π cm. What is its area?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "100π sq cm",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "40π sq cm",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "400π sq cm",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "10π sq cm",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "You doubled the radius instead of squaring it. Once you know the radius (from C = 2πr), area is π × r × r."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "You used 20 as the radius, but 20π is the circumference, so 20 is the DIAMETER. The radius is half of that."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "First find the radius from C = 2πr. Then area = πr²."
+            }
+          ],
+          "explanation": "2πr = 20π, so r = 10 cm. A = π × 10² = 100π sq cm.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.4"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-b-15",
+          "prompt": "Three angles together make a straight angle. Their measures are x°, 2x° and 60°. What is x?",
+          "answerType": "integer",
+          "answer": "40",
+          "acceptedAnswers": [
+            "40"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "10",
+              "say": "You used 90, but a straight angle is 180°. The equation is x + 2x + 60 = 180."
+            },
+            {
+              "ifAnswer": "60",
+              "say": "You forgot the 60° angle. It takes up part of the straight line, so 3x = 180 - 60."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write x + 2x + 60 = 180. Combine the x terms, subtract 60, then divide."
+            }
+          ],
+          "explanation": "x + 2x + 60 = 180, so 3x + 60 = 180, 3x = 120 and x = 40. Check: 40 + 80 + 60 = 180.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-b-16",
+          "prompt": "Two angles are complementary, and one is 4 times as large as the other. What is the measure of the LARGER angle, in degrees?",
+          "answerType": "integer",
+          "answer": "72",
+          "acceptedAnswers": [
+            "72"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "18",
+              "say": "That's the smaller angle — nice work. The question asks for the LARGER one, which is 4 times that."
+            },
+            {
+              "ifAnswer": "144",
+              "say": "You used 180. Complementary angles add to 90°, so x + 4x = 90."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Let the small angle be x. Then x + 4x = 90. Solve, then find 4x."
+            }
+          ],
+          "explanation": "x + 4x = 90, so 5x = 90 and x = 18. The larger angle is 4 × 18 = 72°. Check: 18 + 72 = 90.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-b-17",
+          "prompt": "A round table has a circumference of 18.84 feet. A square tablecloth must be just big enough to cover the whole table. What is the smallest area the tablecloth can have, in square feet? Use π ≈ 3.14.",
+          "answerType": "integer",
+          "answer": "36",
+          "acceptedAnswers": [
+            "36"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "28.26",
+              "say": "That's the area of the round table — but the cloth is a SQUARE. The square has to be as wide as the table's diameter, so find the diameter first and square it."
+            },
+            {
+              "ifAnswer": "6",
+              "say": "That's the diameter — great first step. A square that just covers the table has sides that long, so its area is 6 × 6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the diameter from C = π × d. The square cloth has sides equal to the diameter."
+            }
+          ],
+          "explanation": "d = 18.84 ÷ 3.14 = 6 ft. The square must be 6 ft on a side, so its area is 6 × 6 = 36 sq ft.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.4"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u6-b-18",
+          "prompt": "Angle 1 and angle 2 are vertical angles. Angle 1 measures (3x)° and angle 2 measures (x + 50)°. Which equation can be used to find x?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "3x = x + 50",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "3x + x + 50 = 180",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "3x + x + 50 = 90",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3x - 50 = x",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "That treats them as supplementary (adding to 180). Vertical angles are the ones across from each other at a crossing, and they're EQUAL."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That treats them as complementary (adding to 90). Vertical angles don't add up to anything special — they are equal to each other."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Vertical angles are equal. Set the two expressions equal to each other."
+            }
+          ],
+          "explanation": "Vertical angles are congruent, so 3x = x + 50. (Solving: 2x = 50, x = 25, and both angles are 75°.)",
+          "difficulty": 3,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-b-19",
+          "prompt": "A circle has an area of 78.5 square cm. What is its circumference, in cm? Use π ≈ 3.14.",
+          "answerType": "decimal",
+          "answer": "31.4",
+          "acceptedAnswers": [
+            "31.4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5",
+              "say": "That's the radius — great. Now use it to get the circumference: 2 × π × 5."
+            },
+            {
+              "ifAnswer": "15.7",
+              "say": "You're close — you multiplied π by the radius once. Circumference is π times the DIAMETER, which is 2 × 5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Undo the area formula to get the radius: 78.5 ÷ 3.14 = r². Then C = 2πr."
+            }
+          ],
+          "explanation": "r² = 78.5 ÷ 3.14 = 25, so r = 5 cm. C = 2 × 3.14 × 5 = 31.4 cm.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.4"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u6-b-20",
+          "prompt": "Two straight lines cross. One angle measures (2x + 10)°, and the angle next to it along a line measures (3x - 5)°. What is the measure of the SMALLER of these two angles, in degrees?",
+          "answerType": "integer",
+          "answer": "80",
+          "acceptedAnswers": [
+            "80"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "35",
+              "say": "That's x — nice work solving. The question asks for the smaller ANGLE, so put 35 back into 2x + 10 and 3x - 5."
+            },
+            {
+              "ifAnswer": "100",
+              "say": "That's the larger angle. Check the other one: 2(35) + 10 is smaller."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Angles next to each other on a line add to 180: (2x + 10) + (3x - 5) = 180. Solve for x, then find both angles."
+            }
+          ],
+          "explanation": "2x + 10 + 3x - 5 = 180, so 5x + 5 = 180, 5x = 175 and x = 35. The angles are 2(35) + 10 = 80° and 3(35) - 5 = 100°. Smaller: 80°. Check: 80 + 100 = 180.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.5"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Tell what shape or relationship you used (a scale, an angle rule, a formula) and why it fits the situation. Show each step, including any units, and tell how you checked that your answer makes sense (for example, is the answer bigger or smaller than it should be?). If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u6-c",
+      "title": "Area, volume and surface area",
+      "skill": "Find the area of triangles, trapezoids and composite figures, the volume and surface area of rectangular and triangular prisms, solve real-life problems about paint, boxes and carpet, and identify cross sections of prisms and pyramids (7.G.6, 7.G.3)",
+      "standards": [
+        "7.G.6",
+        "7.G.3"
+      ],
+      "problems": [
+        {
+          "id": "g7-u6-c-01",
+          "prompt": "A triangle has a base of 8 cm and a height of 5 cm. What is its area, in square cm?",
+          "answerType": "integer",
+          "answer": "20",
+          "acceptedAnswers": [
+            "20"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "40",
+              "say": "That's base × height, which is the area of a RECTANGLE 8 by 5. A triangle is half of that rectangle — divide by 2."
+            },
+            {
+              "ifAnswer": "13",
+              "say": "You added 8 and 5. Area of a triangle is half of base TIMES height."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Area of a triangle = (base × height) ÷ 2."
+            }
+          ],
+          "explanation": "A = (8 × 5) ÷ 2 = 40 ÷ 2 = 20 sq cm.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-c-02",
+          "prompt": "A trapezoid has parallel sides of 6 cm and 10 cm, and the distance between them (the height) is 4 cm. What is its area, in square cm?",
+          "answerType": "integer",
+          "answer": "32",
+          "acceptedAnswers": [
+            "32"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "64",
+              "say": "You added the two bases and multiplied by the height, but forgot to take half. A trapezoid is the AVERAGE of the two bases times the height."
+            },
+            {
+              "ifAnswer": "240",
+              "say": "You multiplied all three numbers together. The two parallel sides get ADDED (then halved), not multiplied."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Area of a trapezoid = (base 1 + base 2) ÷ 2 × height. Average the two bases first."
+            }
+          ],
+          "explanation": "Average of the bases: (6 + 10) ÷ 2 = 8. Area: 8 × 4 = 32 sq cm.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-c-03",
+          "prompt": "A rectangular box is 5 cm long, 3 cm wide and 4 cm tall. What is its volume, in cubic cm?",
+          "answerType": "integer",
+          "answer": "60",
+          "acceptedAnswers": [
+            "60"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "12",
+              "say": "You added the three dimensions. Volume is how many unit cubes FILL the box: length × width × height."
+            },
+            {
+              "ifAnswer": "94",
+              "say": "That's the surface area — the total area of all six faces. Volume is the space inside: length × width × height."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Volume = length × width × height."
+            }
+          ],
+          "explanation": "V = 5 × 3 × 4 = 60 cubic cm.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-c-04",
+          "prompt": "A rectangular prism (a box shape) is sliced straight across, parallel to its base. What shape is the cross section?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "rectangle",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "triangle",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "circle",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "trapezoid",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "A triangle shows up only if you slice off a corner at a slant. A cut parallel to the base is the same shape as the base."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "A circle comes from slicing a cylinder or sphere. A box has flat rectangular faces, so its slices have straight sides."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Picture slicing a loaf-shaped box like bread. Each slice matches the shape of the base."
+            }
+          ],
+          "explanation": "Slicing a rectangular prism parallel to its base gives a cross section the same shape and size as the base: a rectangle.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-c-05",
+          "prompt": "A cube has edges of 3 cm. What is its surface area, in square cm?",
+          "answerType": "integer",
+          "answer": "54",
+          "acceptedAnswers": [
+            "54"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "27",
+              "say": "That's the volume (3 × 3 × 3). Surface area is the area of the OUTSIDE: six square faces, each 3 by 3."
+            },
+            {
+              "ifAnswer": "9",
+              "say": "That's the area of just ONE face. A cube has six faces, all the same size."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Each face is a 3 by 3 square. A cube has 6 faces."
+            }
+          ],
+          "explanation": "One face: 3 × 3 = 9 sq cm. Six faces: 6 × 9 = 54 sq cm.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-c-06",
+          "prompt": "A right triangle has legs (the two sides that form the right angle) of 7 cm and 6 cm. What is its area, in square cm?",
+          "answerType": "integer",
+          "answer": "21",
+          "acceptedAnswers": [
+            "21"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "42",
+              "say": "That's 7 × 6, the area of a rectangle. The right triangle is half of that rectangle — divide by 2."
+            },
+            {
+              "ifAnswer": "13",
+              "say": "You added the legs. Area is half of one leg TIMES the other leg."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "In a right triangle, one leg is the base and the other is the height. Area = (7 × 6) ÷ 2."
+            }
+          ],
+          "explanation": "A = (7 × 6) ÷ 2 = 42 ÷ 2 = 21 sq cm.",
+          "difficulty": 1,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-c-07",
+          "prompt": "A figure is made of a rectangle 6 cm wide and 4 cm tall, with a triangle sitting on top of it. The triangle's base is the top side of the rectangle (6 cm) and its height is 3 cm. What is the total area, in square cm?",
+          "answerType": "integer",
+          "answer": "33",
+          "acceptedAnswers": [
+            "33"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "42",
+              "say": "You're close — the rectangle (24) is right, but you used 6 × 3 for the triangle. A triangle's area is HALF of base × height."
+            },
+            {
+              "ifAnswer": "24",
+              "say": "That's just the rectangle. Don't forget the triangle on top: (6 × 3) ÷ 2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the rectangle's area and the triangle's area separately, then add."
+            }
+          ],
+          "explanation": "Rectangle: 6 × 4 = 24. Triangle: (6 × 3) ÷ 2 = 9. Total: 24 + 9 = 33 sq cm.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-c-08",
+          "prompt": "A prism has a triangular base with a base of 6 cm and a height of 4 cm. The prism is 10 cm long. What is its volume, in cubic cm?",
+          "answerType": "integer",
+          "answer": "120",
+          "acceptedAnswers": [
+            "120"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "240",
+              "say": "You used 6 × 4 for the triangle, but a triangle's area is half of that. Find the triangle's area first, then multiply by the length."
+            },
+            {
+              "ifAnswer": "20",
+              "say": "You added 6, 4 and 10. Volume of a prism = (area of the base) × (length). Start with the triangle's area."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Volume of a prism = area of the base × length. The base is a triangle: (6 × 4) ÷ 2."
+            }
+          ],
+          "explanation": "Base area: (6 × 4) ÷ 2 = 12 sq cm. Volume: 12 × 10 = 120 cubic cm.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-c-09",
+          "prompt": "A square pyramid (square base, pointed top) is sliced straight across, parallel to its base. What shape is the cross section?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "triangle",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "square",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "trapezoid",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "circle",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "A triangle appears when you slice straight DOWN through the top point. A slice parallel to the base matches the base's shape."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "A trapezoid appears when the slice is tilted. Parallel to the base, the slice has the same shape as the base — just smaller."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "A slice parallel to the base is a smaller copy of the base. What shape is the base?"
+            }
+          ],
+          "explanation": "Slicing a square pyramid parallel to its base gives a smaller square.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-c-10",
+          "prompt": "A rectangular prism is 4 cm long, 3 cm wide and 2 cm tall. What is its surface area, in square cm?",
+          "answerType": "integer",
+          "answer": "52",
+          "acceptedAnswers": [
+            "52"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "24",
+              "say": "That's the volume (4 × 3 × 2). Surface area adds up the areas of all six faces on the outside."
+            },
+            {
+              "ifAnswer": "26",
+              "say": "You're close — you found the three different faces (12 + 8 + 6), but each one has a matching face on the opposite side. Double it."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Three pairs of faces: top/bottom (4 × 3), front/back (4 × 2), sides (3 × 2). Add all six."
+            }
+          ],
+          "explanation": "Faces: 2(4 × 3) + 2(4 × 2) + 2(3 × 2) = 24 + 16 + 12 = 52 sq cm.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u6-c-11",
+          "prompt": "A shipping box is 30 cm long, 20 cm wide and 15 cm tall. It is packed full of small cubes that are 5 cm on each edge. How many cubes fit in the box?",
+          "answerType": "integer",
+          "answer": "72",
+          "acceptedAnswers": [
+            "72"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9000",
+              "say": "That's the volume of the box in cubic cm — good. Each small cube takes up 5 × 5 × 5 = 125 cubic cm, so divide. Or count how many cubes fit along each edge."
+            },
+            {
+              "ifAnswer": "13",
+              "say": "You added 6 + 4 + 3. The cubes fill the box in layers: 6 along the length TIMES 4 along the width TIMES 3 layers tall."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "How many cubes fit along each edge? 30 ÷ 5, 20 ÷ 5 and 15 ÷ 5. Multiply those three numbers."
+            }
+          ],
+          "explanation": "Along the length: 30 ÷ 5 = 6. Width: 20 ÷ 5 = 4. Height: 15 ÷ 5 = 3. Cubes: 6 × 4 × 3 = 72. (Or 9000 ÷ 125 = 72.)",
+          "difficulty": 2,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-c-12",
+          "prompt": "A wall is 12 feet wide and 8 feet tall. It has a door that is 3 feet wide and 7 feet tall, which does not get painted. How many square feet of wall need paint?",
+          "answerType": "integer",
+          "answer": "75",
+          "acceptedAnswers": [
+            "75"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "96",
+              "say": "That's the whole wall, door included. The door doesn't get painted, so subtract its area (3 × 7)."
+            },
+            {
+              "ifAnswer": "117",
+              "say": "You added the door's area. The door is PART of the wall and isn't painted, so take it away: 96 - 21."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Wall area minus door area."
+            }
+          ],
+          "explanation": "Wall: 12 × 8 = 96 sq ft. Door: 3 × 7 = 21 sq ft. Paint: 96 - 21 = 75 sq ft.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-c-13",
+          "prompt": "A garden is shaped like a trapezoid. Its parallel sides are 9 m and 15 m, and the distance between them is 6 m. Topsoil costs $2 per square meter. How much does it cost to cover the whole garden?",
+          "answerType": "integer",
+          "answer": "144",
+          "acceptedAnswers": [
+            "144",
+            "$144"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "72",
+              "say": "That's the area in square meters — nice. Now multiply by the $2 per square meter."
+            },
+            {
+              "ifAnswer": "288",
+              "say": "You forgot to take half when finding the trapezoid's area. Average the two parallel sides first: (9 + 15) ÷ 2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Area = (9 + 15) ÷ 2 × 6. Then multiply by $2."
+            }
+          ],
+          "explanation": "Area: (9 + 15) ÷ 2 × 6 = 12 × 6 = 72 sq m. Cost: 72 × 2 = $144.",
+          "difficulty": 2,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-c-14",
+          "prompt": "A cube is sliced by one flat cut. Which shape CANNOT be the cross section?",
+          "answerType": "choice",
+          "answer": "d",
+          "acceptedAnswers": [
+            "d"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "square",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "rectangle",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "triangle",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "circle",
+              "isCorrect": true
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "A square is easy to get — slice parallel to any face. Look for the shape that would need a curved edge."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "A triangle IS possible: slice off one corner so the cut goes through three faces. Look for the shape that would need a curved edge."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "A cube has only flat faces and straight edges. Which shape has a curve?"
+            }
+          ],
+          "explanation": "Slicing a cube gives polygons with straight sides: a square (parallel to a face), a rectangle (tilted), a triangle (corner cut). A circle needs a curved surface, so it's impossible.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-c-15",
+          "prompt": "A tent is shaped like a triangular prism. Its front is a triangle with a base of 2 m and a height of 1.5 m, and the tent is 3 m long. What is the volume of the tent, in cubic meters?",
+          "answerType": "decimal",
+          "answer": "4.5",
+          "acceptedAnswers": [
+            "4.5",
+            "9/2",
+            "4 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9",
+              "say": "You used 2 × 1.5 for the triangle, but a triangle's area is half of base × height. Find the triangle's area first."
+            },
+            {
+              "ifAnswer": "6.5",
+              "say": "You added the three numbers. Volume of a prism = (area of the triangle) × (length)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Area of the triangle front = (2 × 1.5) ÷ 2. Then multiply by the 3 m length."
+            }
+          ],
+          "explanation": "Triangle: (2 × 1.5) ÷ 2 = 1.5 sq m. Volume: 1.5 × 3 = 4.5 cubic m.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-c-16",
+          "prompt": "A prism has a right-triangle base with sides 3 cm, 4 cm and 5 cm (the 3 cm and 4 cm sides form the right angle). The prism is 6 cm long. What is its total surface area, in square cm?",
+          "answerType": "integer",
+          "answer": "84",
+          "acceptedAnswers": [
+            "84"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "72",
+              "say": "You found the three rectangles (18 + 24 + 30) — great — but forgot the two triangle ends. Each is (3 × 4) ÷ 2."
+            },
+            {
+              "ifAnswer": "78",
+              "say": "You're close — you included only one triangle end. A prism has TWO matching triangle faces."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Faces: two triangles (each (3 × 4) ÷ 2) plus three rectangles, each 6 cm long with widths 3, 4 and 5."
+            }
+          ],
+          "explanation": "Triangles: 2 × 6 = 12. Rectangles: 3 × 6 + 4 × 6 + 5 × 6 = 18 + 24 + 30 = 72. Total: 12 + 72 = 84 sq cm.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-c-17",
+          "prompt": "An open-top storage bin (no lid) is 10 inches long, 6 inches wide and 4 inches tall. It will be lined with paper on the inside bottom and all four inside walls. How many square inches of paper are needed?",
+          "answerType": "integer",
+          "answer": "188",
+          "acceptedAnswers": [
+            "188"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "248",
+              "say": "You included a lid. The bin has no top, so count the bottom and four walls only — one 10 by 6 face, not two."
+            },
+            {
+              "ifAnswer": "240",
+              "say": "That's the volume (10 × 6 × 4). The paper covers surfaces, so add up the areas of the five faces that get lined."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Five faces: the bottom (10 × 6) and four walls — two that are 10 × 4 and two that are 6 × 4."
+            }
+          ],
+          "explanation": "Bottom: 10 × 6 = 60. Long walls: 2 × (10 × 4) = 80. Short walls: 2 × (6 × 4) = 48. Total: 60 + 80 + 48 = 188 sq in.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u6-c-18",
+          "prompt": "A gift box is 8 inches long, 5 inches wide and 3 inches tall. Which calculation gives the least amount of wrapping paper needed to cover every face of the box, with no overlap?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "8 × 5 × 3",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "2(8 × 5) + 2(8 × 3) + 2(5 × 3)",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "8 × 5 + 8 × 3 + 5 × 3",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "4 × (8 + 5 + 3)",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "That's the volume — how much fits INSIDE the box. Wrapping paper covers the outside faces, so add up face areas."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "You're close — those are the three different faces, but each one has an identical face on the opposite side of the box. Each product needs to be doubled."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Paper covers the outside surface. The box has six faces in three matching pairs."
+            }
+          ],
+          "explanation": "Surface area = 2(8 × 5) + 2(8 × 3) + 2(5 × 3) = 80 + 48 + 30 = 158 sq in.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u6-c-19",
+          "prompt": "An L-shaped room is made of a 10 ft by 8 ft rectangle with a 4 ft by 3 ft rectangle attached to one side. Carpet costs $3 per square foot. How much does it cost to carpet the whole room?",
+          "answerType": "integer",
+          "answer": "276",
+          "acceptedAnswers": [
+            "276",
+            "$276"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "92",
+              "say": "That's the room's total area — nice. Now multiply by $3 per square foot."
+            },
+            {
+              "ifAnswer": "240",
+              "say": "You carpeted only the big rectangle (80 × 3). The small 4 by 3 part needs carpet too — add its area before multiplying by $3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Split the L into its two rectangles, add their areas, then multiply by $3."
+            }
+          ],
+          "explanation": "Big part: 10 × 8 = 80. Small part: 4 × 3 = 12. Total area: 92 sq ft. Cost: 92 × 3 = $276.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u6-c-20",
+          "prompt": "A rectangular aquarium has a base that is 50 cm long and 30 cm wide, and it is 30 cm tall. Exactly 30,000 cubic cm of water is poured in. How deep is the water, in cm?",
+          "answerType": "integer",
+          "answer": "20",
+          "acceptedAnswers": [
+            "20"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "30",
+              "say": "That's the full height of the tank, but the tank isn't full. The water's volume is base area × depth, so find the base area (50 × 30) and divide."
+            },
+            {
+              "ifAnswer": "1500",
+              "say": "That's the base area in square cm — great first step. The water fills that base up to some depth: 1500 × depth = 30,000."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Volume = (base area) × (depth). You know the volume and the base area, so divide."
+            }
+          ],
+          "explanation": "Base area: 50 × 30 = 1500 sq cm. Depth: 30,000 ÷ 1500 = 20 cm. Check: 50 × 30 × 20 = 30,000, and 20 cm is less than the tank's 30 cm height.",
+          "difficulty": 3,
+          "standards": [
+            "7.G.6"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Tell what shape or relationship you used (a scale, an angle rule, a formula) and why it fits the situation. Show each step, including any units, and tell how you checked that your answer makes sense (for example, is the answer bigger or smaller than it should be?). If you changed your mind partway through, tell what made you change it."
+      }
+    }
+  ]
+}

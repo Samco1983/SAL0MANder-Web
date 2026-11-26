@@ -1,0 +1,250 @@
+import { useMemo, useState } from 'react'
+import { AppShell } from '@components/layout/AppShell'
+import { Button } from '@components/ui/Button'
+import { Card } from '@components/ui/Card'
+import { buildMentorActor, buildParentActor, can } from '@/portal/access'
+import { runAccessChecks } from '@/portal/accessChecks'
+import { forwardQuestionToMentor } from '@/portal/askActions'
+import { respondToRoomInvite } from '@/portal/roomActions'
+import { createSeedState } from '@/portal/seed'
+import { portalStorage } from '@/portal/storage'
+import type { PortalState } from '@/portal/types'
+import { ChildProfileView } from './ChildProfileView'
+import { MentorView } from './MentorView'
+import { ParentAccountView } from './ParentAccountView'
+import { RoomStageCard } from './RoomStageCard'
+import styles from './PortalPage.module.css'
+
+export const PORTAL_DEMO_BANNER =
+  'DEMO — fictional families, local-only storage, simulated email.'
+
+type PortalTab = 'access' | 'parent' | 'child' | 'mentor' | 'inbox'
+
+export function PortalPage() {
+  const [tab, setTab] = useState<PortalTab>('access')
+  const [state, setState] = useState<PortalState>(() => portalStorage.load())
+  const [signedInHouseholdId, setSignedInHouseholdId] = useState<string | null>(null)
+  const [activeRoom, setActiveRoom] = useState<{ inviteId: string; childId: string } | null>(null)
+  const [statusMessage, setStatusMessage] = useState('')
+  const [inboxNotice, setInboxNotice] = useState('')
+
+  const checks = useMemo(() => runAccessChecks(createSeedState()), [])
+  const passedCount = checks.filter((c) => c.passed).length
+  const allPassed = passedCount === checks.length
+
+  const samuelActor = buildMentorActor(state, 'mentor_samuel')
+  const mentorB = buildMentorActor(state, 'mentor_b')
+  const mentorBHouseholds = state.households.filter((record) =>
+    can(mentorB, 'view', { type: 'household', record }),
+  )
+  const mentorBRevoked = state.assignments.find((a) => a.id === 'asgn_b_elena')?.revokedAt !== null
+
+  function handleRevokeMentorB() {
+    setState(portalStorage.revokeAssignment(samuelActor, 'asgn_b_elena'))
+    setStatusMessage('Revoked Mentor B — visible households dropped to 0 immediately.')
+  }
+
+  function handleResetSeed() {
+    setState(portalStorage.reset())
+    setSignedInHouseholdId(null)
+    setActiveRoom(null)
+    setInboxNotice('')
+    setStatusMessage('Demo storage reset to clean fictional seed (3 households, 5 kids, 3 mentors).')
+  }
+
+  return (
+    <AppShell>
+      <div className={styles.stack}>
+        <p className={styles.demoBanner} role="status">{PORTAL_DEMO_BANNER}</p>
+
+        <div className={styles.headerRow}>
+          <h1 className={styles.title}>SAL0MANder Tutoring Portal (Phase 1 Demo)</h1>
+          <div className={styles.actions} role="tablist" aria-label="Portal views">
+            <Button size="sm" variant={tab === 'access' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'access'} onClick={() => { setTab('access'); setActiveRoom(null) }}>
+              Access Checks
+            </Button>
+            <Button size="sm" variant={tab === 'parent' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'parent'} onClick={() => { setTab('parent'); setActiveRoom(null) }}>
+              Parent Account
+            </Button>
+            <Button size="sm" variant={tab === 'child' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'child'} onClick={() => { setTab('child'); setActiveRoom(null) }}>
+              Child Profile
+            </Button>
+            <Button size="sm" variant={tab === 'mentor' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'mentor'} onClick={() => { setTab('mentor'); setActiveRoom(null) }}>
+              Mentor View
+            </Button>
+            <Button size="sm" variant={tab === 'inbox' ? 'primary' : 'secondary'} role="tab" aria-selected={tab === 'inbox'} onClick={() => { setTab('inbox'); setActiveRoom(null) }}>
+              Simulated Inbox ({state.inbox.length})
+            </Button>
+          </div>
+        </div>
+
+        {activeRoom ? (
+          <RoomStageCard
+            key={activeRoom.inviteId}
+            state={state}
+            inviteId={activeRoom.inviteId}
+            childId={activeRoom.childId}
+            onStateChange={setState}
+            onClose={() => setActiveRoom(null)}
+          />
+        ) : null}
+
+        {!activeRoom && tab === 'parent' ? (
+          <ParentAccountView
+            state={state}
+            signedInHouseholdId={signedInHouseholdId}
+            onStateChange={setState}
+            onSignOut={() => setSignedInHouseholdId(null)}
+            onOpenInbox={() => setTab('inbox')}
+            onOpenRoom={(inviteId, childId) => setActiveRoom({ inviteId, childId })}
+          />
+        ) : null}
+
+        {!activeRoom && tab === 'child' ? (
+          <ChildProfileView state={state} onStateChange={setState} onOpenRoom={(inviteId, childId) => setActiveRoom({ inviteId, childId })} />
+        ) : null}
+
+        {!activeRoom && tab === 'mentor' ? <MentorView state={state} onStateChange={setState} /> : null}
+
+        {!activeRoom && tab === 'inbox' ? (
+          <div className={styles.stack}>
+            {inboxNotice ? <p className={styles.statusCallout} role="status">{inboxNotice}</p> : null}
+            <Card title="Simulated Email Inbox (in-app only — no real email sent)" headingLevel={2}>
+              {state.inbox.length === 0 ? (
+                <p className={styles.note}>Inbox is empty.</p>
+              ) : (
+                <ul className={styles.checkList}>
+                  {state.inbox.map((email) => {
+                    const pendingQ = email.relatedQuestionId
+                      ? state.askQuestions.find((q) => q.id === email.relatedQuestionId && q.status === 'waiting_parent_review')
+                      : undefined
+                    const linkedRoom = email.relatedRoomInviteId
+                      ? state.roomInvites.find((r) => r.id === email.relatedRoomInviteId)
+                      : undefined
+                    return (
+                      <li key={email.id} className={styles.checkItem}>
+                        <div className={styles.checkMeta}>
+                          <p className={styles.checkLabel}>{email.subject}</p>
+                          <p className={styles.checkDetail}>To: {email.to} · Status: {email.status} · {email.sentAt}</p>
+                          <p className={styles.checkDetail}>{email.body}</p>
+                        </div>
+                        {email.kind === 'sign_in_link' && email.householdId ? (
+                          <Button size="sm" onClick={() => { setSignedInHouseholdId(email.householdId); setTab('parent') }}>
+                            Open sign-in link
+                          </Button>
+                        ) : null}
+                        {email.kind === 'question_review' && pendingQ && email.householdId ? (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setState(forwardQuestionToMentor(portalStorage, buildParentActor(state, email.householdId!), pendingQ.id))
+                              setInboxNotice('Parent forwarded question to Mr. Sam.')
+                            }}
+                          >
+                            Forward to Mr. Sam
+                          </Button>
+                        ) : null}
+                        {email.kind === 'room_invite' && linkedRoom && email.householdId ? (
+                          <div className={styles.actions}>
+                            {linkedRoom.parentApproval === 'pending' ? (
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setState(respondToRoomInvite(portalStorage, buildParentActor(state, email.householdId!), linkedRoom.id, 'approved'))
+                                  setInboxNotice(`Approved ${linkedRoom.gameId} room (${linkedRoom.roomCode}).`)
+                                }}
+                              >
+                                Approve room (Yes)
+                              </Button>
+                            ) : null}
+                            {(linkedRoom.parentApproval === 'approved' || linkedRoom.parentApproval === 'standing_yes') && !linkedRoom.closedAt ? (
+                              <>
+                                <Button size="sm" variant="secondary" onClick={() => setActiveRoom({ inviteId: linkedRoom.id, childId: linkedRoom.childId })}>
+                                  Open room link
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setState(respondToRoomInvite(portalStorage, buildParentActor(state, email.householdId!), linkedRoom.id, 'declined'))
+                                    setInboxNotice(`Revoked ${linkedRoom.gameId} room (${linkedRoom.roomCode}).`)
+                                  }}
+                                >
+                                  Revoke (No)
+                                </Button>
+                              </>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </Card>
+          </div>
+        ) : null}
+
+        {!activeRoom && tab === 'access' ? (
+          <div className={styles.stack}>
+            <div className={styles.headerRow}>
+              <h2 className={styles.sectionTitle}>Access Checks</h2>
+              <span className={`${styles.badge} ${allPassed ? styles.pass : styles.fail}`} data-testid="access-checks-summary">
+                {allPassed ? 'PASS' : 'FAIL'} · {passedCount}/{checks.length} checks passed
+              </span>
+            </div>
+
+            <Card title="Policy assertions (single can(actor, action, record) rule)" headingLevel={2}>
+              <ul className={styles.checkList}>
+                {checks.map((check) => (
+                  <li key={check.id} className={styles.checkItem}>
+                    <div className={styles.checkMeta}>
+                      <p className={styles.checkLabel}>{check.label}</p>
+                      <p className={styles.checkDetail}>{check.detail}</p>
+                    </div>
+                    <span className={`${styles.badge} ${check.passed ? styles.pass : styles.fail}`}>
+                      {check.passed ? 'PASS' : 'FAIL'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+
+            <Card title="Interactive revocation check (local adapter)" headingLevel={2}>
+              <p className={styles.note}>
+                Mentor B currently sees <strong>{mentorBHouseholds.length}</strong> household(s):{' '}
+                {mentorBHouseholds.length > 0 ? mentorBHouseholds.map((h) => h.parentName).join(', ') : 'none (revoked)'}.
+              </p>
+              <div className={styles.actions}>
+                <Button onClick={handleRevokeMentorB} disabled={mentorBRevoked}>Revoke Mentor B as Mr. Sam</Button>
+                <Button variant="secondary" onClick={handleResetSeed}>Reset fictional seed</Button>
+              </div>
+              {statusMessage ? <p className={styles.note} role="status">{statusMessage}</p> : null}
+            </Card>
+
+            <div className={styles.grid}>
+              <Card title="Seed households & kids" headingLevel={2}>
+                <ul className={styles.miniList}>
+                  {state.households.map((hh) => (
+                    <li key={hh.id}>
+                      <strong>{hh.parentName}</strong> ({hh.consentRecord.status}):{' '}
+                      {state.children.filter((c) => c.householdId === hh.id).map((c) => `${c.nickname} (${c.currentBelt})`).join(', ')}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+
+              <Card title="Seed mentors" headingLevel={2}>
+                <ul className={styles.miniList}>
+                  {state.mentors.map((m) => (
+                    <li key={m.id}><strong>{m.displayName}</strong> — {m.roles.join(' + ')}</li>
+                  ))}
+                </ul>
+              </Card>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </AppShell>
+  )
+}

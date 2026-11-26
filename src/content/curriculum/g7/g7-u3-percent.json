@@ -1,0 +1,2136 @@
+{
+  "unitId": "g7-u3",
+  "course": "7th grade",
+  "unitName": "Percent",
+  "standards": [
+    "7.RP.3"
+  ],
+  "sets": [
+    {
+      "setId": "g7-u3-a",
+      "title": "Percent of a number, percent to decimal/fraction",
+      "skill": "Find a percent of a number, find the whole from a part and a percent, and move between percents, decimals and fractions (7.RP.3)",
+      "standards": [
+        "7.RP.3"
+      ],
+      "problems": [
+        {
+          "id": "g7-u3-a-01",
+          "prompt": "What is 25% of 80?",
+          "answerType": "integer",
+          "answer": "20",
+          "acceptedAnswers": [
+            "20"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "320",
+              "say": "You divided 80 by 0.25. \"Of\" means multiply: 25% of 80 is 0.25 × 80, and it should be smaller than 80."
+            },
+            {
+              "ifAnswer": "55",
+              "say": "You subtracted 25 from 80. 25% isn't 25 things; it's 25 out of every 100, which is one quarter."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "25% is the same as 1/4. What is one quarter of 80?"
+            }
+          ],
+          "explanation": "25% = 0.25 = 1/4, and 1/4 of 80 = 20.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-a-02",
+          "prompt": "Write 35% as a decimal.",
+          "answerType": "decimal",
+          "answer": "0.35",
+          "acceptedAnswers": [
+            "0.35",
+            ".35"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "35",
+              "say": "Percent means \"per hundred,\" so 35% is 35 hundredths. Where does the decimal point go?"
+            },
+            {
+              "ifAnswer": "3.5",
+              "say": "You moved the decimal point one place. To go from a percent to a decimal, move it two places left."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent means out of 100. Write 35/100 as a decimal."
+            }
+          ],
+          "explanation": "35% = 35/100 = 0.35.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-a-03",
+          "prompt": "Write 3/5 as a percent.",
+          "answerType": "integer",
+          "answer": "60",
+          "acceptedAnswers": [
+            "60",
+            "60%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.6",
+              "say": "That's 3/5 as a decimal, nice. To make it a percent, multiply by 100."
+            },
+            {
+              "ifAnswer": "35",
+              "say": "Those are the digits from the fraction, but a fraction isn't read that way. Change 3/5 to something out of 100."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find an equal fraction with 100 on the bottom: 3/5 = ?/100."
+            }
+          ],
+          "explanation": "3/5 = 60/100 = 60%.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-a-04",
+          "prompt": "Which fraction is equal to 40%?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "1/40",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "4/100",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "2/5",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "40/10",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "4/100 is 4%. You need 40 out of 100."
+            },
+            {
+              "ifAnswer": "a",
+              "say": "1/40 is a small piece, less than 3%. 40% means 40 out of 100."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write 40% as 40/100, then simplify."
+            }
+          ],
+          "explanation": "40% = 40/100 = 2/5.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-a-05",
+          "prompt": "What is 10% of 230?",
+          "answerType": "integer",
+          "answer": "23",
+          "acceptedAnswers": [
+            "23"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2.3",
+              "say": "That's 1% of 230. 10% is ten times bigger than 1%."
+            },
+            {
+              "ifAnswer": "220",
+              "say": "You subtracted 10. 10% means one tenth of the number."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "10% is one tenth. Move the decimal point of 230 one place left."
+            }
+          ],
+          "explanation": "10% of 230 = 230 ÷ 10 = 23.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-a-06",
+          "prompt": "Write 0.07 as a percent.",
+          "answerType": "integer",
+          "answer": "7",
+          "acceptedAnswers": [
+            "7",
+            "7%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "70",
+              "say": "0.07 is seven hundredths, not seventy hundredths. Look at the place of the 7."
+            },
+            {
+              "ifAnswer": "0.07",
+              "say": "That's the decimal you started with. Multiply by 100 to turn it into a percent."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply by 100 (move the decimal point two places right)."
+            }
+          ],
+          "explanation": "0.07 = 7/100 = 7%.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-a-07",
+          "prompt": "What is 15% of 60?",
+          "answerType": "integer",
+          "answer": "9",
+          "acceptedAnswers": [
+            "9"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6",
+              "say": "That's 10% of 60, a great first step. 15% is 10% plus another 5%."
+            },
+            {
+              "ifAnswer": "45",
+              "say": "You subtracted 15 from 60. 15% means 15 out of every 100, so multiply 0.15 × 60."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find 10% of 60, then 5% (half of that), and add."
+            }
+          ],
+          "explanation": "10% of 60 = 6, 5% of 60 = 3, so 15% of 60 = 9.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-a-08",
+          "prompt": "Write 1/8 as a percent.",
+          "answerType": "decimal",
+          "answer": "12.5",
+          "acceptedAnswers": [
+            "12.5",
+            "12.5%",
+            "12 1/2",
+            "12 1/2%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.125",
+              "say": "That's the decimal, nice division. Multiply by 100 to make it a percent."
+            },
+            {
+              "ifAnswer": "8",
+              "say": "1/8 isn't 8%. Divide 1 by 8 first, then change the decimal to a percent."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide 1 ÷ 8 to get a decimal, then multiply by 100."
+            }
+          ],
+          "explanation": "1 ÷ 8 = 0.125 = 12.5%.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-a-09",
+          "prompt": "Which decimal is equal to 125%?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "0.125",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "12.5",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "1.25",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "125.0",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "0.125 is 12.5%. Move the decimal point two places left from 125."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "12.5 would be 1,250%. Percent to decimal means moving the decimal point two places left."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "125% is more than 100%, so the decimal is more than 1."
+            }
+          ],
+          "explanation": "125% = 125/100 = 1.25.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-a-10",
+          "prompt": "What is 120% of 45?",
+          "answerType": "integer",
+          "answer": "54",
+          "acceptedAnswers": [
+            "54"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5.4",
+              "say": "That's 12% of 45. 120% means 1.20 times the number, which is more than 45."
+            },
+            {
+              "ifAnswer": "9",
+              "say": "That's the extra 20%. 120% is the whole 100% plus that 20%."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "120% = 100% + 20%. Find each part and add them."
+            }
+          ],
+          "explanation": "100% of 45 = 45 and 20% of 45 = 9, so 120% of 45 = 54.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-a-11",
+          "prompt": "Write 0.4% as a decimal.",
+          "answerType": "decimal",
+          "answer": "0.004",
+          "acceptedAnswers": [
+            "0.004",
+            ".004"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.4",
+              "say": "That's the number in front of the % sign. Percent means divide by 100, so it gets smaller."
+            },
+            {
+              "ifAnswer": "0.04",
+              "say": "You moved the decimal point one place. Move it two places left."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide 0.4 by 100."
+            }
+          ],
+          "explanation": "0.4% = 0.4 ÷ 100 = 0.004.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-a-12",
+          "prompt": "18 is what percent of 72?",
+          "answerType": "integer",
+          "answer": "25",
+          "acceptedAnswers": [
+            "25",
+            "25%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "400",
+              "say": "You divided 72 by 18. The part (18) goes on top and the whole (72) on the bottom."
+            },
+            {
+              "ifAnswer": "4",
+              "say": "72 ÷ 18 = 4 tells you 18 fits into 72 four times. So 18 is one fourth of 72. What percent is one fourth?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent = part ÷ whole × 100. The whole is 72."
+            }
+          ],
+          "explanation": "18 ÷ 72 = 1/4 = 0.25 = 25%.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-a-13",
+          "prompt": "What is 0.5% of 600?",
+          "answerType": "integer",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "300",
+              "say": "That's 50% of 600. 0.5% is less than 1 percent."
+            },
+            {
+              "ifAnswer": "30",
+              "say": "That's 5% of 600. 0.5% is ten times smaller than 5%."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "1% of 600 is 6. 0.5% is half of 1%."
+            }
+          ],
+          "explanation": "1% of 600 = 6, so 0.5% of 600 = 3.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-a-14",
+          "prompt": "Which number is the greatest?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "3/8",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "0.4",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "37%",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "0.38",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "c",
+              "say": "37 looks big, but 37% is 0.37. Write all four as decimals."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Very close! Line up the decimal places: 0.38 and 0.40. Which is bigger?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Change each one to a decimal with the same number of places, then compare."
+            }
+          ],
+          "explanation": "3/8 = 0.375, 0.4 = 0.400, 37% = 0.370, 0.38 = 0.380. The greatest is 0.4.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-a-15",
+          "prompt": "12 is 40% of what number?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4.8",
+              "say": "You found 40% of 12. But 12 is the part here, and the question asks for the whole."
+            },
+            {
+              "ifAnswer": "480",
+              "say": "You multiplied 12 by 40. If 12 is 40% of the number, the number is bigger than 12, but not that much bigger."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "If 40% is 12, then 10% is 12 ÷ 4. How much is 100%?"
+            }
+          ],
+          "explanation": "40% → 12, so 10% → 3 and 100% → 30. Check: 0.4 × 30 = 12.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-a-16",
+          "prompt": "Write 2 3/4 as a percent.",
+          "answerType": "integer",
+          "answer": "275",
+          "acceptedAnswers": [
+            "275",
+            "275%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2.75",
+              "say": "That's the decimal. Multiply by 100 to write it as a percent."
+            },
+            {
+              "ifAnswer": "75",
+              "say": "You changed the 3/4 to 75%, nice. Don't leave out the 2 wholes; each whole is 100%."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Each whole is 100%. Add the percent for 3/4."
+            }
+          ],
+          "explanation": "2 = 200% and 3/4 = 75%, so 2 3/4 = 275%.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-a-17",
+          "prompt": "What is 62.5% of 48?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "18",
+              "say": "That's the part that's left over (37.5%). The question asks for the 62.5% part."
+            },
+            {
+              "ifAnswer": "3000",
+              "say": "You multiplied 48 by 62.5 but didn't divide by 100. 62.5% is 0.625."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "62.5% = 0.625 = 5/8. Find 5/8 of 48."
+            }
+          ],
+          "explanation": "62.5% = 5/8. 48 ÷ 8 = 6, and 6 × 5 = 30.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-a-18",
+          "prompt": "A class has 28 students, and 21 of them have a library card. Which shows the fraction, decimal and percent of students with a card?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "21/28 = 0.21 = 21%",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "3/4 = 0.75 = 75%",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "1/4 = 0.25 = 25%",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3/4 = 0.34 = 34%",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "21 out of 28 isn't 21 out of 100. Simplify 21/28 first."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That's the students WITHOUT a card (7 out of 28). The question asks about students with one."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write 21/28, simplify it, then change to a decimal and a percent."
+            }
+          ],
+          "explanation": "21/28 = 3/4 = 0.75 = 75%.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-a-19",
+          "prompt": "45 is 150% of what number?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "67.5",
+              "say": "You found 150% of 45. Here 45 is the part, and you're looking for the whole (100%)."
+            },
+            {
+              "ifAnswer": "22.5",
+              "say": "That's 50% of 45. 150% is the whole number plus half of it again. Try finding 50% of the mystery number."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "150% → 45. So 50% → 45 ÷ 3. Then 100% is twice that."
+            }
+          ],
+          "explanation": "150% is 3 halves. 45 ÷ 3 = 15 is 50%, so 100% is 30. Check: 1.5 × 30 = 45.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-a-20",
+          "prompt": "What percent of 80 is 0.4?",
+          "answerType": "decimal",
+          "answer": "0.5",
+          "acceptedAnswers": [
+            "0.5",
+            "0.5%",
+            ".5",
+            ".5%",
+            "1/2",
+            "1/2%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "50",
+              "say": "Check your decimal point: 0.4 ÷ 80 = 0.005. Multiply that by 100."
+            },
+            {
+              "ifAnswer": "200",
+              "say": "You divided 80 by 0.4. The part (0.4) goes on top and the whole (80) on the bottom."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent = part ÷ whole × 100 = 0.4 ÷ 80 × 100. The answer can be less than 1%."
+            }
+          ],
+          "explanation": "0.4 ÷ 80 = 0.005 = 0.5%. Check: 1% of 80 is 0.8, and half of that is 0.4.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 19,
+        "prompt": "Explain how you did number 19. Write each step you took and why, and tell which number was the whole (the 100%) and how you knew. If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u3-b",
+      "title": "Percent change, tax, tip, discount, markup",
+      "skill": "Solve problems with percent increase and decrease, sales tax, tips, discounts and markups, including working backward to the original price (7.RP.3)",
+      "standards": [
+        "7.RP.3"
+      ],
+      "problems": [
+        {
+          "id": "g7-u3-b-01",
+          "prompt": "A $40 shirt is 25% off. What is the sale price (in dollars)?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30",
+            "30.00",
+            "$30.00",
+            "$30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "10",
+              "say": "That's how much you save, great first step. The sale price is what's left to pay."
+            },
+            {
+              "ifAnswer": "15",
+              "say": "You subtracted 25 dollars. 25% off means you save one quarter of the price."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find 25% of $40, then subtract it from $40."
+            }
+          ],
+          "explanation": "25% of $40 = $10. Sale price = $40 - $10 = $30.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-b-02",
+          "prompt": "A meal costs $20. You leave a 15% tip. How much is the tip (in dollars)?",
+          "answerType": "integer",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3",
+            "3.00",
+            "$3.00",
+            "$3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "23",
+              "say": "That's the meal plus the tip. The question asks only for the tip."
+            },
+            {
+              "ifAnswer": "5",
+              "say": "You subtracted 15 from 20. A 15% tip means 15 cents for every dollar."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "10% of $20 is $2. 5% is half of that. Add them."
+            }
+          ],
+          "explanation": "10% of $20 = $2, 5% = $1, so the tip is $3.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-b-03",
+          "prompt": "The sales tax rate is 8%. How much tax is charged on a $50 purchase (in dollars)?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4",
+            "4.00",
+            "$4.00",
+            "$4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "54",
+              "say": "That's the total with tax. The question asks only for the tax."
+            },
+            {
+              "ifAnswer": "40",
+              "say": "You used 0.8, which is 80%. 8% as a decimal is 0.08."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "8% = 0.08. Multiply 0.08 × 50."
+            }
+          ],
+          "explanation": "0.08 × 50 = 4, so the tax is $4.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-b-04",
+          "prompt": "A price goes from $20 to $25. What is the percent change?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "5% increase",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "20% increase",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "25% increase",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "25% decrease",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "The price went up $5, but percent change compares that $5 to the starting price."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "You divided by the NEW price ($25). Percent change always compares to the original amount."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent change = amount of change ÷ original amount × 100."
+            }
+          ],
+          "explanation": "Change = $5. 5 ÷ 20 = 0.25 = 25%. The price went up, so it's a 25% increase.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-b-05",
+          "prompt": "A store buys a lamp for $30 and marks it up 50%. What is the selling price (in dollars)?",
+          "answerType": "integer",
+          "answer": "45",
+          "acceptedAnswers": [
+            "45",
+            "45.00",
+            "$45.00",
+            "$45"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "15",
+              "say": "That's the markup, the extra amount. Add it to what the store paid."
+            },
+            {
+              "ifAnswer": "80",
+              "say": "You added 50 dollars. A 50% markup means adding half of the cost."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find 50% of $30, then add it to $30."
+            }
+          ],
+          "explanation": "50% of $30 = $15. Selling price = $30 + $15 = $45.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-b-06",
+          "prompt": "A town grew from 200 people to 260 people. What is the percent increase?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30",
+            "30%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "60",
+              "say": "That's the number of new people. Compare it to the original 200 to get a percent."
+            },
+            {
+              "ifAnswer": "23",
+              "say": "You divided by the new population. Percent change compares to the original amount, 200."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent increase = increase ÷ original × 100."
+            }
+          ],
+          "explanation": "Increase = 60. 60 ÷ 200 = 0.30 = 30%.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-b-07",
+          "prompt": "A $64 jacket is 30% off. What is the sale price (in dollars)?",
+          "answerType": "decimal",
+          "answer": "44.8",
+          "acceptedAnswers": [
+            "44.8",
+            "44.80",
+            "$44.80",
+            "$44.8"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "19.2",
+              "say": "That's the discount, how much you save. Subtract it from $64."
+            },
+            {
+              "ifAnswer": "34",
+              "say": "You subtracted 30 dollars. 30% off means you save 0.30 × 64."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "If you save 30%, you pay 70%. Find 70% of $64."
+            }
+          ],
+          "explanation": "You pay 70%: 0.70 × 64 = $44.80. (Or 64 - 19.20 = 44.80.)",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-b-08",
+          "prompt": "Dinner costs $45, and you leave an 18% tip. What is the total cost (in dollars)?",
+          "answerType": "decimal",
+          "answer": "53.1",
+          "acceptedAnswers": [
+            "53.1",
+            "53.10",
+            "$53.10",
+            "$53.1"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8.1",
+              "say": "That's the tip. The total is the dinner plus the tip."
+            },
+            {
+              "ifAnswer": "63",
+              "say": "You added 18 dollars. An 18% tip is 0.18 × 45."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find 18% of $45, then add it to $45. Or multiply by 1.18."
+            }
+          ],
+          "explanation": "Tip = 0.18 × 45 = $8.10. Total = 45 + 8.10 = $53.10.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-b-09",
+          "prompt": "An item costs p dollars. Which expression gives the price after a 20% discount?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "p - 20",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "0.2p",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "0.8p",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "1.2p",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "That takes off 20 dollars, not 20 percent. 20% of p is 0.2p."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "0.2p is the discount, the amount you save. What fraction of the price do you still pay?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "If you save 20%, what percent do you still pay?"
+            }
+          ],
+          "explanation": "p - 0.2p = 0.8p. You pay 80% of the price.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-b-10",
+          "prompt": "A game costs $60, and the sales tax rate is 7.5%. What is the total cost (in dollars)?",
+          "answerType": "decimal",
+          "answer": "64.5",
+          "acceptedAnswers": [
+            "64.5",
+            "64.50",
+            "$64.50",
+            "$64.5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4.5",
+              "say": "That's the tax. Add it to the price of the game."
+            },
+            {
+              "ifAnswer": "105",
+              "say": "You used 0.75, which is 75%. 7.5% as a decimal is 0.075."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "7.5% = 0.075. Tax = 0.075 × 60. Then add it on."
+            }
+          ],
+          "explanation": "Tax = 0.075 × 60 = $4.50. Total = 60 + 4.50 = $64.50.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-b-11",
+          "prompt": "A plant was 40 cm tall and is now 46 cm tall. What is the percent increase?",
+          "answerType": "integer",
+          "answer": "15",
+          "acceptedAnswers": [
+            "15",
+            "15%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6",
+              "say": "That's how many centimeters it grew. Compare that to the starting height to get a percent."
+            },
+            {
+              "ifAnswer": "13",
+              "say": "You divided by the new height. Percent change compares to the original height, 40 cm."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent increase = growth ÷ original height × 100."
+            }
+          ],
+          "explanation": "Growth = 6 cm. 6 ÷ 40 = 0.15 = 15%.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-b-12",
+          "prompt": "A bike's price dropped from $250 to $200. What is the percent decrease?",
+          "answerType": "integer",
+          "answer": "20",
+          "acceptedAnswers": [
+            "20",
+            "20%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "25",
+              "say": "You divided by the new price ($200). Percent change compares to the original price."
+            },
+            {
+              "ifAnswer": "50",
+              "say": "That's the drop in dollars. Turn it into a percent of the original price."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent decrease = drop ÷ original price × 100."
+            }
+          ],
+          "explanation": "Drop = $50. 50 ÷ 250 = 0.20 = 20%.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-b-13",
+          "prompt": "A store marks up a $24 item by 35%. What is the selling price (in dollars)?",
+          "answerType": "decimal",
+          "answer": "32.4",
+          "acceptedAnswers": [
+            "32.4",
+            "32.40",
+            "$32.40",
+            "$32.4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8.4",
+              "say": "That's the markup. Add it to the store's cost."
+            },
+            {
+              "ifAnswer": "59",
+              "say": "You added 35 dollars. A 35% markup is 0.35 × 24."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Selling price = cost + 35% of cost = 1.35 × cost."
+            }
+          ],
+          "explanation": "Markup = 0.35 × 24 = $8.40. Selling price = 24 + 8.40 = $32.40.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-b-14",
+          "prompt": "An $80 coat is 25% off. Then you get another 10% off the sale price. What is the final price?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "$52.00",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "$54.00",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "$60.00",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "$28.00",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You added the discounts to get 35% off. The second 10% comes off the SALE price, which is smaller than $80."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That's the price after the first discount. There's still 10% more to take off."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Do it in two steps: first 25% off $80, then 10% off that new price."
+            }
+          ],
+          "explanation": "25% off $80 = $60. 10% of $60 = $6, so the final price is $54.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-b-15",
+          "prompt": "A restaurant bill is $48. The tax rate is 8.25%, and you leave a 20% tip on the $48. What is the total (in dollars)?",
+          "answerType": "decimal",
+          "answer": "61.56",
+          "acceptedAnswers": [
+            "61.56",
+            "$61.56"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "57.6",
+              "say": "You added the tip, nice. Don't forget the tax on top of the bill."
+            },
+            {
+              "ifAnswer": "51.96",
+              "say": "You added the tax, nice. The tip still needs to go on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the tax (0.0825 × 48) and the tip (0.20 × 48), then add both to $48."
+            }
+          ],
+          "explanation": "Tax = $3.96, tip = $9.60. Total = 48 + 3.96 + 9.60 = $61.56.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-b-16",
+          "prompt": "A price went up from $16 to $20. Then it went back down from $20 to $16. What was the percent decrease?",
+          "answerType": "integer",
+          "answer": "20",
+          "acceptedAnswers": [
+            "20",
+            "20%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "25",
+              "say": "That's the percent increase, from $16. The decrease starts at $20, so compare the $4 to $20."
+            },
+            {
+              "ifAnswer": "4",
+              "say": "That's the change in dollars. Turn it into a percent of the starting price for this change."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "For the decrease, the original amount is $20."
+            }
+          ],
+          "explanation": "The drop is $4. 4 ÷ 20 = 0.20 = 20%. The increase was 25%, because it was compared to $16.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-b-17",
+          "prompt": "After a 15% discount, a skateboard costs $68. What was the original price (in dollars)?",
+          "answerType": "integer",
+          "answer": "80",
+          "acceptedAnswers": [
+            "80",
+            "80.00",
+            "$80.00",
+            "$80"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "78.2",
+              "say": "You added 15% of $68. The 15% was taken off the ORIGINAL price, not the sale price. $68 is 85% of the original."
+            },
+            {
+              "ifAnswer": "57.8",
+              "say": "You took another 15% off. Work backward: $68 is 85% of the original price."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The sale price is 85% of the original. So 0.85 × (original) = 68."
+            }
+          ],
+          "explanation": "68 ÷ 0.85 = 80. Check: 15% of $80 is $12, and 80 - 12 = 68.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-b-18",
+          "prompt": "A shop marks up a $50 item by 40%. Later it puts the item on sale for 40% off. What is the final price?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "$50.00, because the changes cancel",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "$42.00",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "$30.00",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "$70.00",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "It feels like they cancel, but the 40% off is taken from a BIGGER price than the 40% markup was."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "That's the price after the markup. The sale takes 40% off of it."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Do it in two steps: 40% markup on $50, then 40% off the new price."
+            }
+          ],
+          "explanation": "Markup: 50 × 1.4 = $70. Sale: 70 × 0.6 = $42.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-b-19",
+          "prompt": "A phone's price fell 12% to $264. What was the price before the drop (in dollars)?",
+          "answerType": "integer",
+          "answer": "300",
+          "acceptedAnswers": [
+            "300",
+            "300.00",
+            "$300.00",
+            "$300"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "295.68",
+              "say": "You added 12% of $264. The 12% was taken from the ORIGINAL price, so $264 is 88% of it."
+            },
+            {
+              "ifAnswer": "232.32",
+              "say": "You took 12% off again. Work backward instead: $264 is 88% of the original."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "If it fell 12%, $264 is 88% of the old price. Solve 0.88 × (old price) = 264."
+            }
+          ],
+          "explanation": "264 ÷ 0.88 = 300. Check: 12% of $300 is $36, and 300 - 36 = 264.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-b-20",
+          "prompt": "Including 6% sales tax, a bill was $79.50. What was the price before tax (in dollars)?",
+          "answerType": "integer",
+          "answer": "75",
+          "acceptedAnswers": [
+            "75",
+            "75.00",
+            "$75.00",
+            "$75"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "74.73",
+              "say": "You took 6% of $79.50 off. But the tax was 6% of the smaller, before-tax price. $79.50 is 106% of that price."
+            },
+            {
+              "ifAnswer": "84.27",
+              "say": "You added more tax. Work backward: $79.50 is 106% of the before-tax price."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Total = 1.06 × (price). Divide the total by 1.06."
+            }
+          ],
+          "explanation": "79.50 ÷ 1.06 = 75. Check: 6% of $75 is $4.50, and 75 + 4.50 = 79.50.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 17,
+        "prompt": "Explain how you did number 17. Write each step you took and why, and tell which number was the whole (the 100%) and how you knew. If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u3-c",
+      "title": "Simple interest, percent error, multi-step percent problems",
+      "skill": "Use simple interest (I = prt), percent error, and multi-step percent problems (7.RP.3)",
+      "standards": [
+        "7.RP.3"
+      ],
+      "problems": [
+        {
+          "id": "g7-u3-c-01",
+          "prompt": "You put $200 in an account that earns 5% simple interest per year. How much interest do you earn in 1 year (in dollars)?",
+          "answerType": "integer",
+          "answer": "10",
+          "acceptedAnswers": [
+            "10",
+            "10.00",
+            "$10.00",
+            "$10"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "210",
+              "say": "That's the balance at the end of the year. The question asks only for the interest."
+            },
+            {
+              "ifAnswer": "1000",
+              "say": "You multiplied by 5 instead of 5%. 5% as a decimal is 0.05."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Interest = principal × rate × time = 200 × 0.05 × 1."
+            }
+          ],
+          "explanation": "200 × 0.05 × 1 = $10.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-c-02",
+          "prompt": "You put $500 in an account at 4% simple interest per year for 3 years. How much interest do you earn (in dollars)?",
+          "answerType": "integer",
+          "answer": "60",
+          "acceptedAnswers": [
+            "60",
+            "60.00",
+            "$60.00",
+            "$60"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "20",
+              "say": "That's one year of interest. The money stays in for 3 years."
+            },
+            {
+              "ifAnswer": "560",
+              "say": "That's the balance after 3 years. The question asks only for the interest."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "I = prt. Here p = 500, r = 0.04 and t = 3."
+            }
+          ],
+          "explanation": "I = 500 × 0.04 × 3 = $60.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-c-03",
+          "prompt": "You guess that a box holds 50 crayons. It really holds 40. What is the percent error?",
+          "answerType": "integer",
+          "answer": "25",
+          "acceptedAnswers": [
+            "25",
+            "25%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "20",
+              "say": "You divided by your guess. Percent error compares the error to the ACTUAL amount, 40."
+            },
+            {
+              "ifAnswer": "10",
+              "say": "That's how far off you were. Turn it into a percent of the actual amount."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent error = |guess - actual| ÷ actual × 100."
+            }
+          ],
+          "explanation": "|50 - 40| = 10. 10 ÷ 40 = 0.25 = 25%.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-c-04",
+          "prompt": "Which formula gives simple interest I, where p is the principal, r is the yearly rate and t is the number of years?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "I = p + r + t",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "I = prt",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "I = p(1 + r)",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "I = pr ÷ t",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "c",
+              "say": "That's the balance after one year, not just the interest. Interest is the extra amount earned."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "More years should mean more interest, so t shouldn't be dividing."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Interest grows with the amount, the rate and the time."
+            }
+          ],
+          "explanation": "Simple interest I = prt: principal × rate × time.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-c-05",
+          "prompt": "A $300 loan has 6% simple interest per year. What is the total owed after 2 years (in dollars)?",
+          "answerType": "integer",
+          "answer": "336",
+          "acceptedAnswers": [
+            "336",
+            "336.00",
+            "$336.00",
+            "$336"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "36",
+              "say": "That's the interest. The total owed is the loan plus the interest."
+            },
+            {
+              "ifAnswer": "318",
+              "say": "That's the total after 1 year. The loan lasts 2 years."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the interest with I = prt, then add it to the $300."
+            }
+          ],
+          "explanation": "I = 300 × 0.06 × 2 = $36. Total = 300 + 36 = $336.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-c-06",
+          "prompt": "You estimate 120 people will come to a show. Really, 150 come. What is the percent error?",
+          "answerType": "integer",
+          "answer": "20",
+          "acceptedAnswers": [
+            "20",
+            "20%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "25",
+              "say": "You divided by your estimate. Percent error compares to the ACTUAL number, 150."
+            },
+            {
+              "ifAnswer": "30",
+              "say": "That's how many people you were off by. Turn it into a percent of the actual number."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent error = |estimate - actual| ÷ actual × 100."
+            }
+          ],
+          "explanation": "|120 - 150| = 30. 30 ÷ 150 = 0.20 = 20%.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u3-c-07",
+          "prompt": "$1,200 is invested at 3.5% simple interest per year for 4 years. How much interest is earned (in dollars)?",
+          "answerType": "integer",
+          "answer": "168",
+          "acceptedAnswers": [
+            "168",
+            "168.00",
+            "$168.00",
+            "$168"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "42",
+              "say": "That's one year of interest. Multiply by the number of years."
+            },
+            {
+              "ifAnswer": "1368",
+              "say": "That's the final balance. The question asks only for the interest."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "I = prt with p = 1,200, r = 0.035 and t = 4."
+            }
+          ],
+          "explanation": "I = 1,200 × 0.035 × 4 = 42 × 4 = $168.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-c-08",
+          "prompt": "A runner predicted finishing in 9.6 minutes. The real time was 8 minutes. What is the percent error?",
+          "answerType": "integer",
+          "answer": "20",
+          "acceptedAnswers": [
+            "20",
+            "20%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "16.67",
+              "say": "You divided by the prediction. Divide the error by the ACTUAL time, 8 minutes."
+            },
+            {
+              "ifAnswer": "1.6",
+              "say": "That's the error in minutes. Turn it into a percent of the actual time."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent error = |predicted - actual| ÷ actual × 100."
+            }
+          ],
+          "explanation": "|9.6 - 8| = 1.6. 1.6 ÷ 8 = 0.2 = 20%.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-c-09",
+          "prompt": "A $250 deposit earns simple interest for 2 years and grows to $270. What is the yearly interest rate?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "8%",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "4%",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "2%",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "10%",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "8% is the total for BOTH years. The rate is per year, so split it."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "You divided the $20 by 2 years. That's $10 a year. What percent of $250 is $10?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Interest = $20. Use I = prt: 20 = 250 × r × 2."
+            }
+          ],
+          "explanation": "20 = 250 × r × 2 = 500r, so r = 20 ÷ 500 = 0.04 = 4% per year.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-c-10",
+          "prompt": "A shirt costs $25. It is marked down 20%, and then 6% sales tax is added to the sale price. What is the final cost (in dollars)?",
+          "answerType": "decimal",
+          "answer": "21.2",
+          "acceptedAnswers": [
+            "21.2",
+            "21.20",
+            "$21.20",
+            "$21.2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "21.5",
+              "say": "You combined 20% off and 6% tax into 14% off. The tax is figured on the sale price, so do two steps."
+            },
+            {
+              "ifAnswer": "26.5",
+              "say": "You added the tax, but the 20% markdown still needs to come off first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Step 1: 20% off $25. Step 2: add 6% of that sale price."
+            }
+          ],
+          "explanation": "Sale price = 0.80 × 25 = $20. Tax = 0.06 × 20 = $1.20. Final cost = $21.20.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-c-11",
+          "prompt": "A scale reads 52 kg for an object whose true mass is 50 kg. What is the percent error?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4",
+            "4%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2",
+              "say": "That's the error in kilograms. Turn it into a percent of the true mass."
+            },
+            {
+              "ifAnswer": "3.85",
+              "say": "You divided by the scale reading. Divide by the TRUE mass, 50 kg."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent error = |measured - true| ÷ true × 100."
+            }
+          ],
+          "explanation": "|52 - 50| = 2. 2 ÷ 50 = 0.04 = 4%.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-c-12",
+          "prompt": "How many years does it take $800 to earn $96 in simple interest at 3% per year?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "24",
+              "say": "$24 is the interest for ONE year, nice. How many years of $24 make $96?"
+            },
+            {
+              "ifAnswer": "12",
+              "say": "12% is the total interest as a percent of $800. Each year adds 3%, so how many years is that?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Use I = prt: 96 = 800 × 0.03 × t."
+            }
+          ],
+          "explanation": "800 × 0.03 = $24 a year. 96 ÷ 24 = 4 years.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-c-13",
+          "prompt": "A team won 18 games, which was 60% of the games it played. There were no ties. How many games did it lose?",
+          "answerType": "integer",
+          "answer": "12",
+          "acceptedAnswers": [
+            "12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "30",
+              "say": "That's the total number of games, nice work. The question asks how many it lost."
+            },
+            {
+              "ifAnswer": "10.8",
+              "say": "You found 60% of 18. But 18 is the part that's 60%. Find the whole first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "18 is 60% of the total. Find the total, then subtract the wins."
+            }
+          ],
+          "explanation": "18 ÷ 0.60 = 30 games in all. 30 - 18 = 12 losses (that's the other 40%).",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u3-c-14",
+          "prompt": "A $2,000 deposit earns 2.5% simple interest per year. What is the balance after 6 months?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "$2,300",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "$2,025",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "$2,050",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "$25",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You used t = 6. Time in the formula is in YEARS, and 6 months is half a year."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That's the balance after a full year. 6 months is only half a year."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write 6 months as a part of a year: t = 6/12 = 0.5."
+            }
+          ],
+          "explanation": "I = 2,000 × 0.025 × 0.5 = $25. Balance = $2,025.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-c-15",
+          "prompt": "A store's sales went from 2,400 to 2,700 items one month. The next month, sales fell 10%. How many items were sold in the second month?",
+          "answerType": "integer",
+          "answer": "2430",
+          "acceptedAnswers": [
+            "2430",
+            "2,430"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2160",
+              "say": "You took 10% off the 2,400. The fall happens AFTER sales reached 2,700, so take 10% of 2,700."
+            },
+            {
+              "ifAnswer": "2690",
+              "say": "You took away 10 items. A 10% fall means one tenth of the sales."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Take 10% off the newest number, 2,700."
+            }
+          ],
+          "explanation": "10% of 2,700 = 270. 2,700 - 270 = 2,430 items.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-c-16",
+          "prompt": "A length that is truly 5 cm is measured as 4.8 cm. What is the percent error?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4",
+            "4%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4.17",
+              "say": "You divided by the measured length. Divide by the TRUE length, 5 cm."
+            },
+            {
+              "ifAnswer": "0.2",
+              "say": "That's the error in centimeters. Turn it into a percent of the true length."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Percent error = |measured - true| ÷ true × 100."
+            }
+          ],
+          "explanation": "|4.8 - 5| = 0.2. 0.2 ÷ 5 = 0.04 = 4%.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-c-17",
+          "prompt": "An account earns simple interest. $1,500 grows to $1,725 in 3 years. What is the yearly interest rate (as a percent)?",
+          "answerType": "integer",
+          "answer": "5",
+          "acceptedAnswers": [
+            "5",
+            "5%"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "15",
+              "say": "15% is the total for all 3 years. The rate is per year, so split it."
+            },
+            {
+              "ifAnswer": "225",
+              "say": "That's the interest in dollars. Turn it into a yearly percent of $1,500."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Interest = 1,725 - 1,500. Then use I = prt and solve for r."
+            }
+          ],
+          "explanation": "I = $225. 225 = 1,500 × r × 3 = 4,500r, so r = 0.05 = 5%.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-c-18",
+          "prompt": "A game costs $50. Which deal gives the lowest price?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "$12 off",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "20% off",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "10% off, then another 15% off",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "25% off, plus a $1 shipping fee",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "c",
+              "say": "10% off and then 15% off is NOT 25% off. The 15% comes off the lower price. Work it out: it's a little more than you think."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "20% off $50 is $10 off. Compare that with the other deals."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the final price for each deal."
+            }
+          ],
+          "explanation": "(a) $50 - $12 = $38. (b) 0.8 × 50 = $40. (c) 0.9 × 50 = $45, then 0.85 × 45 = $38.25. (d) 0.75 × 50 + 1 = $38.50. Deal (a) is lowest.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-c-19",
+          "prompt": "A $40 item is marked up 25%, and then 8% sales tax is added. What is the final cost (in dollars)?",
+          "answerType": "integer",
+          "answer": "54",
+          "acceptedAnswers": [
+            "54",
+            "54.00",
+            "$54.00",
+            "$54"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "53.2",
+              "say": "You added 25% and 8% to make 33%. The tax is figured on the marked-up price, so do two steps."
+            },
+            {
+              "ifAnswer": "50",
+              "say": "That's the price after the markup. The 8% tax still goes on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Step 1: 25% markup on $40. Step 2: add 8% tax to that price."
+            }
+          ],
+          "explanation": "40 × 1.25 = $50. 50 × 1.08 = $54.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u3-c-20",
+          "prompt": "A bike costs $360. You pay 25% now and borrow the rest at 5% simple interest per year for 2 years. How much do you pay in all (the first payment plus the loan and its interest)?",
+          "answerType": "integer",
+          "answer": "387",
+          "acceptedAnswers": [
+            "387",
+            "387.00",
+            "$387.00",
+            "$387"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "297",
+              "say": "That's the loan plus interest. Don't forget the 25% you paid at the start."
+            },
+            {
+              "ifAnswer": "396",
+              "say": "You charged interest on the whole $360. You only borrowed the part you didn't pay at the start."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Step 1: 25% of $360. Step 2: the loan is the rest. Step 3: I = prt on the loan. Add everything."
+            }
+          ],
+          "explanation": "First payment = $90. Loan = $270. Interest = 270 × 0.05 × 2 = $27. Total = 90 + 270 + 27 = $387.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.3"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Write each step you took and why, and tell which number was the whole (the 100%) and how you knew. If you changed your mind partway through, tell what made you change it."
+      }
+    }
+  ]
+}

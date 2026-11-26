@@ -1,0 +1,2103 @@
+{
+  "unitId": "g7-u5",
+  "course": "7th grade",
+  "unitName": "Equations and inequalities",
+  "standards": [
+    "7.EE.3",
+    "7.EE.4a",
+    "7.EE.4b"
+  ],
+  "sets": [
+    {
+      "setId": "g7-u5-a",
+      "title": "Two-step equations",
+      "skill": "Solve equations of the form px + q = r and p(x + q) = r with integer, fraction and decimal coefficients, and write equations that match situations (tape diagrams and hangers in words) (7.EE.4a)",
+      "standards": [
+        "7.EE.4a"
+      ],
+      "problems": [
+        {
+          "id": "g7-u5-a-01",
+          "prompt": "Solve: 3x + 4 = 19",
+          "answerType": "integer",
+          "answer": "5",
+          "acceptedAnswers": [
+            "5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "15",
+              "say": "You're close — you subtracted 4 from both sides and got 3x = 15. One more step: 3x means 3 times x, so divide both sides by 3."
+            },
+            {
+              "ifAnswer": "23/3",
+              "say": "You added 4 to both sides. The 4 is being added to 3x, so undo it by subtracting 4 from both sides first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Undo the + 4 first (subtract 4 from both sides), then undo the × 3."
+            }
+          ],
+          "explanation": "3x + 4 = 19. Subtract 4 from both sides: 3x = 15. Divide both sides by 3: x = 5. Check: 3(5) + 4 = 15 + 4 = 19.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-a-02",
+          "prompt": "Solve: x/2 - 5 = 1",
+          "answerType": "integer",
+          "answer": "12",
+          "acceptedAnswers": [
+            "12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-8",
+              "say": "You subtracted 5 from both sides and got x/2 = -4. The 5 is being taken away from x/2, so add 5 to both sides instead."
+            },
+            {
+              "ifAnswer": "3",
+              "say": "You're close — x/2 = 6 is right. x/2 means x divided by 2, so to undo it, multiply both sides by 2 (don't divide)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Undo the - 5 first by adding 5 to both sides. Then undo the ÷ 2."
+            }
+          ],
+          "explanation": "x/2 - 5 = 1. Add 5 to both sides: x/2 = 6. Multiply both sides by 2: x = 12. Check: 12/2 - 5 = 6 - 5 = 1.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-a-03",
+          "prompt": "Solve: 2(x + 3) = 14",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5.5",
+              "say": "The 2 multiplies everything in the parentheses, including the 3. Either distribute to get 2x + 6 = 14, or divide both sides by 2 first."
+            },
+            {
+              "ifAnswer": "25",
+              "say": "You multiplied 14 by 2. The 2 is multiplying (x + 3), so undo it by dividing both sides by 2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Two ways: divide both sides by 2 first to get x + 3 = 7, or distribute to get 2x + 6 = 14."
+            }
+          ],
+          "explanation": "Divide both sides by 2: x + 3 = 7. Subtract 3: x = 4. (Or distribute: 2x + 6 = 14, 2x = 8, x = 4.) Check: 2(4 + 3) = 2(7) = 14.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-a-04",
+          "prompt": "Maya buys 4 notebooks that each cost the same price, plus a $3 pen. She spends $15 in all. Which equation can be used to find n, the price of one notebook?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "4n + 3 = 15",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "4(n + 3) = 15",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "3n + 4 = 15",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "4n - 3 = 15",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "You're close — but that equation charges $3 for every notebook. The pen is bought once, so the 3 is added only once."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Check the sign: the pen adds to what Maya spends, so it should be + 3, not - 3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Cost of 4 notebooks is 4n. Then the pen adds $3 once. The total is $15."
+            }
+          ],
+          "explanation": "Four notebooks cost 4n dollars. Adding the $3 pen gives 4n + 3, and that equals 15: 4n + 3 = 15. (The solution is n = 3.)",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-a-05",
+          "prompt": "The solution of 5x - 2 = 18 is x = ___. What number goes in the blank?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "20",
+              "say": "You're close — 5x = 20 is right. Now 5x means 5 times x, so divide both sides by 5."
+            },
+            {
+              "ifAnswer": "3.2",
+              "say": "You subtracted 2 from both sides. The 2 is being subtracted from 5x, so add 2 to both sides instead."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Undo the - 2 by adding 2 to both sides. Then undo the × 5."
+            }
+          ],
+          "explanation": "5x - 2 = 18. Add 2 to both sides: 5x = 20. Divide by 5: x = 4. Check: 5(4) - 2 = 20 - 2 = 18.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-a-06",
+          "prompt": "Solve: 0.5x + 1 = 4",
+          "answerType": "integer",
+          "answer": "6",
+          "acceptedAnswers": [
+            "6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "10",
+              "say": "You added 1 to both sides. The 1 is being added to 0.5x, so subtract 1 from both sides first: 0.5x = 3."
+            },
+            {
+              "ifAnswer": "1.5",
+              "say": "You're close — 0.5x = 3 is right. 0.5x means 0.5 times x, so DIVIDE 3 by 0.5. Dividing by a half doubles the number."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtract 1 from both sides first. Then divide by 0.5 (which is the same as multiplying by 2)."
+            }
+          ],
+          "explanation": "0.5x + 1 = 4. Subtract 1: 0.5x = 3. Divide by 0.5: x = 6. Check: 0.5(6) + 1 = 3 + 1 = 4.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-a-07",
+          "prompt": "Solve: -3x + 7 = 1",
+          "answerType": "integer",
+          "answer": "2",
+          "acceptedAnswers": [
+            "2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-2",
+              "say": "You're close — -3x = -6 is right. A negative divided by a negative is POSITIVE: -6 ÷ (-3) = 2."
+            },
+            {
+              "ifAnswer": "-8/3",
+              "say": "You added 7 to both sides. The 7 is being added to -3x, so subtract 7 from both sides first: -3x = -6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtract 7 from both sides first. Then divide by -3 and watch the signs."
+            }
+          ],
+          "explanation": "-3x + 7 = 1. Subtract 7: -3x = -6. Divide by -3: x = 2. Check: -3(2) + 7 = -6 + 7 = 1.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-a-08",
+          "prompt": "Solve: (2/3)x - 4 = 2",
+          "answerType": "integer",
+          "answer": "9",
+          "acceptedAnswers": [
+            "9"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4",
+              "say": "You're close — (2/3)x = 6 is right. To undo multiplying by 2/3, multiply both sides by 3/2 (don't multiply by 2/3 again)."
+            },
+            {
+              "ifAnswer": "-3",
+              "say": "You subtracted 4 from both sides. The 4 is being subtracted from (2/3)x, so ADD 4 to both sides first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add 4 to both sides to get (2/3)x = 6. Then multiply both sides by 3/2, the reciprocal of 2/3."
+            }
+          ],
+          "explanation": "(2/3)x - 4 = 2. Add 4: (2/3)x = 6. Multiply by 3/2: x = 6 × 3/2 = 9. Check: (2/3)(9) - 4 = 6 - 4 = 2.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-a-09",
+          "prompt": "A hanger is balanced. The left side holds 3 identical blocks, each weighing x grams, plus a 7-gram weight. The right side holds 25 grams. Which equation matches the hanger?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "3(x + 7) = 25",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "3x + 7 = 25",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "x + 7 = 25",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3x = 25 + 7",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You're close — but that would mean three groups of (one block plus a 7-gram weight). There is only ONE 7-gram weight on the hanger."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Both the blocks and the 7-gram weight hang on the LEFT side together, so the 7 is added to 3x, not to the 25."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Left side: 3 blocks (3x) and 7 grams. Right side: 25 grams. Balanced means the two sides are equal."
+            }
+          ],
+          "explanation": "The left side weighs 3x + 7 grams and the right side weighs 25 grams. Balanced means 3x + 7 = 25. (Each block weighs 6 grams.)",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-a-10",
+          "prompt": "Solve: 4(x - 2.5) = 6",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2.125",
+              "say": "The 4 multiplies everything in the parentheses, including the 2.5. Try dividing both sides by 4 first: x - 2.5 = 1.5."
+            },
+            {
+              "ifAnswer": "26.5",
+              "say": "You multiplied 6 by 4. The 4 is multiplying (x - 2.5), so undo it by DIVIDING both sides by 4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide both sides by 4 first so the parentheses disappear. Then undo the - 2.5."
+            }
+          ],
+          "explanation": "Divide both sides by 4: x - 2.5 = 1.5. Add 2.5: x = 4. (Or distribute: 4x - 10 = 6, 4x = 16, x = 4.) Check: 4(4 - 2.5) = 4(1.5) = 6.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-a-11",
+          "prompt": "Jin pays $6 per month for a music app, plus a one-time $15 sign-up fee. So far he has paid $69 in all. How many months has he paid for?",
+          "answerType": "integer",
+          "answer": "9",
+          "acceptedAnswers": [
+            "9"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "14",
+              "say": "You added the $15 instead of taking it off. The fee is already part of the $69, so subtract it first: 69 - 15 = 54."
+            },
+            {
+              "ifAnswer": "11.5",
+              "say": "You divided $69 by 6, but $15 of that $69 is the sign-up fee, not monthly payments. Take the fee off first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write the equation 6m + 15 = 69. Undo the + 15 first, then the × 6."
+            }
+          ],
+          "explanation": "Let m be the number of months: 6m + 15 = 69. Subtract 15: 6m = 54. Divide by 6: m = 9. Check: 6(9) + 15 = 54 + 15 = 69.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4a",
+            "7.EE.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-a-12",
+          "prompt": "Solve: 1.5(x + 2) = 9",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "14/3",
+              "say": "The 1.5 multiplies the 2 as well as the x: 1.5x + 3 = 9. Or divide both sides by 1.5 first: x + 2 = 6."
+            },
+            {
+              "ifAnswer": "11.5",
+              "say": "You multiplied 9 by 1.5. The 1.5 is multiplying (x + 2), so DIVIDE both sides by 1.5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide both sides by 1.5 first: 9 ÷ 1.5 = 6. Then undo the + 2."
+            }
+          ],
+          "explanation": "Divide both sides by 1.5: x + 2 = 6. Subtract 2: x = 4. Check: 1.5(4 + 2) = 1.5(6) = 9.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-a-13",
+          "prompt": "Four friends split the cost of a pizza equally, and each friend also pays $2 for a drink. Each friend pays $6.50 in all. What did the pizza cost?",
+          "answerType": "integer",
+          "answer": "18",
+          "acceptedAnswers": [
+            "18",
+            "$18"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "26",
+              "say": "You're close — you multiplied by 4 before taking off the drink. Each friend's $6.50 includes a $2 drink, so first find one friend's share of the pizza: 6.50 - 2."
+            },
+            {
+              "ifAnswer": "4.5",
+              "say": "That's one friend's share of the pizza, $4.50. Four friends each paid that much toward the pizza, so multiply by 4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Let c be the pizza cost. One share is c/4, plus $2 for a drink, equals $6.50: c/4 + 2 = 6.50. Undo the + 2, then the ÷ 4."
+            }
+          ],
+          "explanation": "Equation: c/4 + 2 = 6.50. Subtract 2: c/4 = 4.50. Multiply by 4: c = 18. The pizza cost $18. Check: 18 ÷ 4 = 4.50, and 4.50 + 2 = 6.50.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4a",
+            "7.EE.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u5-a-14",
+          "prompt": "Which situation matches the equation 2(x + 5) = 30?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "A number is doubled, then 5 is added, and the result is 30.",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "Two friends each pay x dollars for a ticket and $5 for a snack. Together they spend $30.",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "Two friends each pay x dollars for a ticket. With one $5 parking fee, they spend $30 together.",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "Five friends each pay x dollars and $2 for a snack. Together they spend $30.",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You're close — but in that story the 5 is added AFTER doubling: 2x + 5 = 30. In 2(x + 5), the 5 is added first and then the whole thing is doubled."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That story has ONE $5 fee for both friends: 2x + 5 = 30. In 2(x + 5), each friend pays the $5, so it gets doubled too."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "In 2(x + 5), each of the 2 groups contains x AND 5. Which story has the 5 inside each group?"
+            }
+          ],
+          "explanation": "Each friend pays x + 5 dollars (ticket plus snack). Two friends pay 2(x + 5), which is $30. So (b) matches. (Each ticket costs $10.)",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-a-15",
+          "prompt": "Solve: -(1/2)x + 3 = 7",
+          "answerType": "integer",
+          "answer": "-8",
+          "acceptedAnswers": [
+            "-8"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8",
+              "say": "You're close — -(1/2)x = 4 is right. Dividing 4 by NEGATIVE one-half gives a negative answer."
+            },
+            {
+              "ifAnswer": "-2",
+              "say": "You multiplied 4 by 1/2. To undo multiplying by -1/2, multiply both sides by -2 (the reciprocal)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtract 3 from both sides first. Then multiply both sides by -2 to undo the -1/2."
+            }
+          ],
+          "explanation": "-(1/2)x + 3 = 7. Subtract 3: -(1/2)x = 4. Multiply by -2: x = -8. Check: -(1/2)(-8) + 3 = 4 + 3 = 7.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-a-16",
+          "prompt": "Rosa's phone plan costs $12 a month plus $0.25 for each text. Her bill this month was $19.50. How many texts did she send?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "78",
+              "say": "You divided the whole bill by 0.25, but $12 of the bill is the monthly charge, not texts. Subtract 12 first: 19.50 - 12 = 7.50."
+            },
+            {
+              "ifAnswer": "126",
+              "say": "You added the $12 instead of taking it off. The $12 is already part of the $19.50 bill."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Equation: 0.25t + 12 = 19.50. Undo the + 12 first, then divide by 0.25."
+            }
+          ],
+          "explanation": "Let t be the number of texts: 0.25t + 12 = 19.50. Subtract 12: 0.25t = 7.50. Divide by 0.25: t = 30. Check: 0.25(30) + 12 = 7.50 + 12 = 19.50.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4a",
+            "7.EE.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-a-17",
+          "prompt": "Solve: -2(x - 3.5) = 11",
+          "answerType": "integer",
+          "answer": "-2",
+          "acceptedAnswers": [
+            "-2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-7.25",
+              "say": "The -2 multiplies the 3.5 too: -2x + 7 = 11. Or divide both sides by -2 first: x - 3.5 = -5.5."
+            },
+            {
+              "ifAnswer": "-9",
+              "say": "You're close — x - 3.5 = -5.5 is right. To undo SUBTRACTING 3.5, add 3.5 to both sides."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide both sides by -2 first: 11 ÷ (-2) = -5.5. Then undo the - 3.5."
+            }
+          ],
+          "explanation": "Divide both sides by -2: x - 3.5 = -5.5. Add 3.5: x = -2. Check: -2(-2 - 3.5) = -2(-5.5) = 11.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-a-18",
+          "prompt": "Which equation has the solution x = -3?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "4x - 5 = 7",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "4x + 5 = -7",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "2(x + 1) = 4",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "-2x + 1 = -5",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Try it: 4(-3) - 5 = -12 - 5 = -17, not 7. Put -3 in for x in each equation and see which one is true."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Try it: -2(-3) + 1 = 6 + 1 = 7, not -5. Careful: -2 times -3 is POSITIVE 6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Substitute -3 for x in each equation. Only one will be a true statement."
+            }
+          ],
+          "explanation": "4(-3) + 5 = -12 + 5 = -7, so (b) is true when x = -3. The others give -17, -4 and 7 instead of 7, 4 and -5.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4a"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-a-19",
+          "prompt": "At 6 a.m. the temperature was -4°C. It rose at a steady 1.5°C per hour until it reached 8°C. How many hours did that take?",
+          "answerType": "integer",
+          "answer": "8",
+          "acceptedAnswers": [
+            "8"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8/3",
+              "say": "You found 8 - 4 = 4 degrees of change, but the start was NEGATIVE 4. From -4 up to 8 is 8 - (-4) = 12 degrees."
+            },
+            {
+              "ifAnswer": "18",
+              "say": "You're close — 12 degrees is the right total change. Each hour adds 1.5 degrees, so DIVIDE 12 by 1.5 instead of multiplying."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Equation: -4 + 1.5h = 8. Undo the -4 by adding 4 to both sides, then divide by 1.5."
+            }
+          ],
+          "explanation": "Let h be the hours: -4 + 1.5h = 8. Add 4: 1.5h = 12. Divide by 1.5: h = 8. Check: -4 + 1.5(8) = -4 + 12 = 8.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4a",
+            "7.EE.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u5-a-20",
+          "prompt": "The perimeter of a rectangle is 31 cm. Its length is 2.5 cm more than its width. What is the width, in cm?",
+          "answerType": "decimal",
+          "answer": "6.5",
+          "acceptedAnswers": [
+            "6.5",
+            "6 1/2",
+            "13/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "7.75",
+              "say": "You divided 31 by 4, which would work if all four sides were equal. The two lengths are each 2.5 cm longer, so take off that extra 2 × 2.5 = 5 first: 4w + 5 = 31."
+            },
+            {
+              "ifAnswer": "13",
+              "say": "You're close — 31 - 5 = 26 is right. But 26 is FOUR widths (two widths plus the width-part of each length), so divide by 4, not 2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Width w, length w + 2.5. Perimeter: w + w + (w + 2.5) + (w + 2.5) = 31, which simplifies to 4w + 5 = 31."
+            }
+          ],
+          "explanation": "Let w be the width; the length is w + 2.5. Perimeter: 2w + 2(w + 2.5) = 4w + 5 = 31. Subtract 5: 4w = 26. Divide by 4: w = 6.5. Check: sides 6.5, 6.5, 9, 9 add to 31.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4a",
+            "7.EE.3"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Write the equation or inequality you used and tell what each part stands for in the story. Show each step you took to solve it and why, and tell how you checked that your answer makes sense in the situation (for example, by putting your answer back into the story). If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u5-b",
+      "title": "Inequalities",
+      "skill": "Solve inequalities of the form px + q > r and px + q < r (also ≥, ≤), including flipping the sign when dividing by a negative, describe the solution set, and solve at most / at least word problems (7.EE.4b)",
+      "standards": [
+        "7.EE.4b"
+      ],
+      "problems": [
+        {
+          "id": "g7-u5-b-01",
+          "prompt": "Solve 2x + 3 > 11. The solution is x > ___. What number goes in the blank?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "7",
+              "say": "You added 3 to both sides. The 3 is being added to 2x, so subtract 3 from both sides first: 2x > 8."
+            },
+            {
+              "ifAnswer": "2.5",
+              "say": "You divided by 2 before dealing with the + 3. Undo the + 3 first, then divide both sides by 2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Solve it like an equation: subtract 3 from both sides, then divide by 2."
+            }
+          ],
+          "explanation": "2x + 3 > 11. Subtract 3: 2x > 8. Divide by 2: x > 4. Check: 5 works (2·5 + 3 = 13 > 11) and 3 doesn't (9 is not > 11).",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-b-02",
+          "prompt": "Solve x/3 + 1 ≥ 4. The solution is x ≥ ___. What number goes in the blank?",
+          "answerType": "integer",
+          "answer": "9",
+          "acceptedAnswers": [
+            "9"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1",
+              "say": "You're close — x/3 ≥ 3 is right. x/3 means x divided by 3, so MULTIPLY both sides by 3 to undo it."
+            },
+            {
+              "ifAnswer": "15",
+              "say": "You added 1 to both sides. The 1 is being added to x/3, so subtract 1 first: x/3 ≥ 3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtract 1 from both sides, then multiply both sides by 3."
+            }
+          ],
+          "explanation": "x/3 + 1 ≥ 4. Subtract 1: x/3 ≥ 3. Multiply by 3: x ≥ 9. Check: 9/3 + 1 = 4, and 12/3 + 1 = 5 ≥ 4.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-b-03",
+          "prompt": "Solve 5x - 2 ≥ 13. What is the smallest number in the solution set?",
+          "answerType": "integer",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2.2",
+              "say": "You subtracted 2 from both sides. The 2 is being subtracted from 5x, so ADD 2: 5x ≥ 15."
+            },
+            {
+              "ifAnswer": "4",
+              "say": "You're close — x ≥ 3 is right. The ≥ sign means 3 itself IS a solution (5·3 - 2 = 13), so 3 is the smallest."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Solve for x first. Then ask: does the boundary number count? The sign ≥ includes it."
+            }
+          ],
+          "explanation": "5x - 2 ≥ 13. Add 2: 5x ≥ 15. Divide by 5: x ≥ 3. Because of the \"or equal to,\" 3 is in the solution set, and it's the smallest number there.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-b-04",
+          "prompt": "Which describes all the solutions of 3x + 2 < 14?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "x > 4",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "x < 4",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "x ≤ 4",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "x < 16/3",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You're close — 4 is the right boundary. You divided by POSITIVE 3, so the sign keeps pointing the same way: x < 4."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "You added 2 to both sides. The 2 is being added to 3x, so subtract 2: 3x < 12."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtract 2, then divide by 3. Dividing by a positive number keeps the sign the same."
+            }
+          ],
+          "explanation": "3x + 2 < 14. Subtract 2: 3x < 12. Divide by 3: x < 4. Check: 3·0 + 2 = 2 < 14 works; 3·4 + 2 = 14 is not < 14, so 4 is not included.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-b-05",
+          "prompt": "What is the smallest whole number that makes 4x + 1 > 17 true?",
+          "answerType": "integer",
+          "answer": "5",
+          "acceptedAnswers": [
+            "5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4",
+              "say": "You're close — x > 4 is right. But 4 itself doesn't work: 4·4 + 1 = 17, and 17 is not greater than 17. Try the next whole number."
+            },
+            {
+              "ifAnswer": "4.5",
+              "say": "You added 1 to both sides. The 1 is being added to 4x, so subtract it first: 4x > 16. And the question asks for a WHOLE number."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Solve to get x > some number. Then find the first whole number past the boundary."
+            }
+          ],
+          "explanation": "4x + 1 > 17. Subtract 1: 4x > 16. Divide by 4: x > 4. The boundary 4 is NOT included (strict >), so the smallest whole number is 5. Check: 4·5 + 1 = 21 > 17.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-b-06",
+          "prompt": "Solve 0.5x + 2 ≤ 5. The solution is x ≤ ___. What number goes in the blank?",
+          "answerType": "integer",
+          "answer": "6",
+          "acceptedAnswers": [
+            "6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "14",
+              "say": "You added 2 to both sides. The 2 is being added to 0.5x, so subtract it first: 0.5x ≤ 3."
+            },
+            {
+              "ifAnswer": "1.5",
+              "say": "You're close — 0.5x ≤ 3 is right. To undo multiplying by 0.5, DIVIDE by 0.5, which doubles the 3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtract 2 from both sides, then divide by 0.5 (same as multiplying by 2)."
+            }
+          ],
+          "explanation": "0.5x + 2 ≤ 5. Subtract 2: 0.5x ≤ 3. Divide by 0.5: x ≤ 6. Check: 0.5·6 + 2 = 5, and 0.5·0 + 2 = 2 ≤ 5.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-b-07",
+          "prompt": "Solve -2x + 1 > 7. The solution is x < ___. What is the boundary number?",
+          "answerType": "integer",
+          "answer": "-3",
+          "acceptedAnswers": [
+            "-3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3",
+              "say": "You're close — -2x > 6 is right. Dividing 6 by -2 gives NEGATIVE 3, and the sign flips to <."
+            },
+            {
+              "ifAnswer": "-4",
+              "say": "You added 1 to both sides. The 1 is being added to -2x, so subtract 1 first: -2x > 6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtract 1, then divide by -2. Dividing by a negative flips the inequality sign."
+            }
+          ],
+          "explanation": "-2x + 1 > 7. Subtract 1: -2x > 6. Divide by -2 and flip the sign: x < -3. Check: x = -5 gives -2(-5) + 1 = 11 > 7. x = 0 gives 1, which is not > 7.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-b-08",
+          "prompt": "Solve -4x - 3 ≤ 9. What is the smallest value of x that makes it true?",
+          "answerType": "integer",
+          "answer": "-3",
+          "acceptedAnswers": [
+            "-3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3",
+              "say": "You're close — -4x ≤ 12 is right. Now divide by -4: 12 ÷ (-4) = -3, and the sign flips to ≥."
+            },
+            {
+              "ifAnswer": "-1.5",
+              "say": "You subtracted 3 from both sides. The 3 is being subtracted from -4x, so ADD 3: -4x ≤ 12."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add 3 to both sides, then divide by -4 and flip the sign. The ≤ becomes ≥, so there's a smallest value."
+            }
+          ],
+          "explanation": "-4x - 3 ≤ 9. Add 3: -4x ≤ 12. Divide by -4 and flip: x ≥ -3. The smallest value is -3. Check: -4(-3) - 3 = 12 - 3 = 9 ≤ 9.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-b-09",
+          "prompt": "A number x is doubled and then decreased by 5. The result is at most 11. Which inequality matches?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "2x - 5 < 11",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "2x - 5 ≤ 11",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "2x - 5 ≥ 11",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "2(x - 5) ≤ 11",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You're close — \"at most 11\" means 11 itself is allowed, so use ≤, not <."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "That decreases x by 5 BEFORE doubling. The story doubles first, then takes away 5: 2x - 5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "\"Doubled\" is 2x. \"Decreased by 5\" is 2x - 5. \"At most 11\" means less than or equal to 11."
+            }
+          ],
+          "explanation": "Doubling gives 2x, decreasing by 5 gives 2x - 5, and \"at most 11\" means ≤ 11. So 2x - 5 ≤ 11. (Solving: x ≤ 8.)",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-b-10",
+          "prompt": "Kim has $20 for the fair. Parking costs $2, and each ride costs $3.50. What is the largest number of rides Kim can afford?",
+          "answerType": "integer",
+          "answer": "5",
+          "acceptedAnswers": [
+            "5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6",
+              "say": "You're close — but check it: 6 rides cost 6 × 3.50 = $21, plus $2 parking is $23. That's more than $20. Try one fewer."
+            },
+            {
+              "ifAnswer": "18",
+              "say": "You subtracted the parking — nice, $18 is left. Now that buys rides at $3.50 each: divide 18 by 3.50 and round DOWN."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Inequality: 3.50r + 2 ≤ 20. Solve it, then remember you can't buy part of a ride."
+            }
+          ],
+          "explanation": "3.50r + 2 ≤ 20. Subtract 2: 3.50r ≤ 18. Divide by 3.50: r ≤ 5.14... Rides come in whole numbers, so the largest is 5. Check: 5 × 3.50 + 2 = $19.50.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4b",
+            "7.EE.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-b-11",
+          "prompt": "Solve 3(x + 2) > 15. The solution is x > ___. What number goes in the blank?",
+          "answerType": "integer",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "13/3",
+              "say": "The 3 multiplies the 2 as well as the x: 3x + 6 > 15. Or divide both sides by 3 first: x + 2 > 5."
+            },
+            {
+              "ifAnswer": "43",
+              "say": "You multiplied 15 by 3. The 3 is multiplying (x + 2), so DIVIDE both sides by 3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide both sides by 3 first (positive, so no flip). Then subtract 2."
+            }
+          ],
+          "explanation": "3(x + 2) > 15. Divide by 3: x + 2 > 5. Subtract 2: x > 3. Check: x = 4 gives 3(6) = 18 > 15.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-b-12",
+          "prompt": "To ride the Thunder coaster you must be at least 48 inches tall. Sam is 41 inches tall and grows about 2.5 inches each year. After how many whole years will Sam be tall enough?",
+          "answerType": "integer",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2",
+              "say": "You're close — but after 2 years Sam is 41 + 5 = 46 inches, still under 48. Check the next year."
+            },
+            {
+              "ifAnswer": "7",
+              "say": "You found the 7 inches Sam still needs — nice. Each year adds 2.5 inches, so divide 7 by 2.5 and round UP to a whole year."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Inequality: 41 + 2.5y ≥ 48. Solve for y, then think about which whole year gets Sam past 48."
+            }
+          ],
+          "explanation": "41 + 2.5y ≥ 48. Subtract 41: 2.5y ≥ 7. Divide by 2.5: y ≥ 2.8. Years come whole, so Sam needs 3 years. Check: 41 + 2.5(3) = 48.5 ≥ 48.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4b",
+            "7.EE.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-b-13",
+          "prompt": "Solve 7 - 2x ≥ 1. What is the largest value of x that makes it true?",
+          "answerType": "integer",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-3",
+              "say": "You're close — -2x ≥ -6 is right. Dividing -6 by -2 gives POSITIVE 3, and the sign flips to ≤."
+            },
+            {
+              "ifAnswer": "-4",
+              "say": "You added 7 to both sides. The 7 is being added to -2x, so subtract 7: -2x ≥ -6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtract 7 from both sides to get -2x ≥ -6. Divide by -2 and flip the sign."
+            }
+          ],
+          "explanation": "7 - 2x ≥ 1. Subtract 7: -2x ≥ -6. Divide by -2 and flip: x ≤ 3. The largest value is 3. Check: 7 - 2(3) = 1 ≥ 1, and 7 - 2(4) = -1 is not ≥ 1.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-b-14",
+          "prompt": "Which inequality has the solution set x ≤ -2?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "3x + 1 ≥ -5",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "-3x + 1 ≥ 7",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "-3x + 1 ≤ 7",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3x - 1 ≤ 7",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Solve it: 3x ≥ -6, so x ≥ -2. The sign points the wrong way. Look for one where you divide by a negative."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Solve it: -3x ≤ 6. Dividing by -3 FLIPS the sign, so x ≥ -2, not ≤."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Solve each one. Remember the flip when dividing by a negative."
+            }
+          ],
+          "explanation": "-3x + 1 ≥ 7 → -3x ≥ 6 → divide by -3 and flip: x ≤ -2. The others give x ≥ -2, x ≥ -2 and x ≤ 8/3.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-b-15",
+          "prompt": "Solve -(2/3)x + 4 < 10. The solution is x > ___. What is the boundary number?",
+          "answerType": "integer",
+          "answer": "-9",
+          "acceptedAnswers": [
+            "-9"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9",
+              "say": "You're close — -(2/3)x < 6 is right. Multiplying 6 by -3/2 gives NEGATIVE 9, and the sign flips to >."
+            },
+            {
+              "ifAnswer": "-4",
+              "say": "You multiplied 6 by 2/3. To undo multiplying by -2/3, multiply by its reciprocal, -3/2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtract 4, then multiply both sides by -3/2 and flip the sign."
+            }
+          ],
+          "explanation": "-(2/3)x + 4 < 10. Subtract 4: -(2/3)x < 6. Multiply by -3/2 and flip: x > -9. Check: x = 0 gives 4 < 10, true.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-b-16",
+          "prompt": "A club has $150 and sells T-shirts for $12 each. The club needs at least $450 for a trip. What is the smallest number of shirts it must sell?",
+          "answerType": "integer",
+          "answer": "25",
+          "acceptedAnswers": [
+            "25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "24",
+              "say": "You're close — check it: 150 + 12 × 24 = $438, not enough. \"At least $450\" means hitting $450 exactly counts: 150 + 12 × 25 = $450."
+            },
+            {
+              "ifAnswer": "37.5",
+              "say": "You divided 450 by 12, but the club already has $150. It only needs to raise 450 - 150 = $300 from shirts."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Inequality: 150 + 12s ≥ 450. Solve for s."
+            }
+          ],
+          "explanation": "150 + 12s ≥ 450. Subtract 150: 12s ≥ 300. Divide by 12: s ≥ 25. The smallest number of shirts is 25. Check: 150 + 12(25) = 450.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4b",
+            "7.EE.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-b-17",
+          "prompt": "Solve 2.5x - 4 ≤ -11.5. What is the largest value of x that makes it true?",
+          "answerType": "integer",
+          "answer": "-3",
+          "acceptedAnswers": [
+            "-3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-6.2",
+              "say": "You subtracted 4 from both sides. The 4 is being subtracted from 2.5x, so ADD 4: 2.5x ≤ -7.5."
+            },
+            {
+              "ifAnswer": "3",
+              "say": "You're close — 2.5x ≤ -7.5 is right. A negative divided by POSITIVE 2.5 stays negative: -3. No flip, because 2.5 is positive."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add 4 to both sides, then divide by 2.5. The sign doesn't flip (2.5 is positive)."
+            }
+          ],
+          "explanation": "2.5x - 4 ≤ -11.5. Add 4: 2.5x ≤ -7.5. Divide by 2.5: x ≤ -3. The largest value is -3. Check: 2.5(-3) - 4 = -7.5 - 4 = -11.5.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-b-18",
+          "prompt": "Lee solved -4x < 12 and wrote x < -3. Which statement is correct?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "Lee is right.",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "Lee is wrong. Dividing by -4 flips the sign, so the solution is x > -3.",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "Lee is wrong. 12 ÷ (-4) is positive, so the solution is x < 3.",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "Lee is wrong. The solution is x > 3.",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Test a number: Lee says x = -10 should work. But -4(-10) = 40, and 40 is not less than 12. Something needs to flip."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "12 ÷ (-4) is -3, so -3 is the right boundary. The thing to fix is the DIRECTION of the sign."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Try a number from Lee's answer, like x = -10, in the original inequality. Does it work?"
+            }
+          ],
+          "explanation": "Dividing both sides by -4 flips the inequality: -4x < 12 becomes x > -3. Check: x = 0 gives 0 < 12, true, and 0 is in x > -3 but not in Lee's x < -3.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4b"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u5-b-19",
+          "prompt": "Dana has a $25 gift card. She buys a $9.75 book, then buys as many $2.50 bookmarks as she can. How much money is left on the card after she buys them?",
+          "answerType": "decimal",
+          "answer": "0.25",
+          "acceptedAnswers": [
+            "0.25",
+            "$0.25",
+            ".25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6",
+              "say": "Six bookmarks is right — but the question asks how much money is LEFT on the card. Add up everything she spent and subtract it from $25."
+            },
+            {
+              "ifAnswer": "15.25",
+              "say": "That's what's left after the book — nice. Now she buys as many $2.50 bookmarks as she can with that $15.25. How many fit, and what's left over?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "First: 9.75 + 2.50b ≤ 25 tells you how many bookmarks. Then subtract everything she spent from $25."
+            }
+          ],
+          "explanation": "9.75 + 2.50b ≤ 25 → 2.50b ≤ 15.25 → b ≤ 6.1, so she buys 6 bookmarks for $15. Total spent: 9.75 + 15 = $24.75. Left on the card: 25 - 24.75 = $0.25.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4b",
+            "7.EE.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u5-b-20",
+          "prompt": "A taxi ride costs $3 plus $2.40 per mile. Priya has $27 and wants to give the driver a $3 tip. What is the greatest whole number of miles she can ride?",
+          "answerType": "integer",
+          "answer": "8",
+          "acceptedAnswers": [
+            "8"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "10",
+              "say": "You forgot the $3 tip. After the $3 starting charge AND the $3 tip, only $21 is left for miles."
+            },
+            {
+              "ifAnswer": "9",
+              "say": "You're close — but 9 miles cost 3 + 2.40 × 9 = $24.60, and with the $3 tip that's $27.60, more than she has. Round DOWN."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Inequality: 3 + 2.40m + 3 ≤ 27. Solve for m, then round down to whole miles."
+            }
+          ],
+          "explanation": "3 + 2.40m + 3 ≤ 27 → 2.40m ≤ 21 → m ≤ 8.75. Miles are whole, so the greatest is 8. Check: 3 + 2.40(8) + 3 = $25.20 ≤ $27, while 9 miles would be $27.60.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.4b",
+            "7.EE.3"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Write the equation or inequality you used and tell what each part stands for in the story. Show each step you took to solve it and why, and tell how you checked that your answer makes sense in the situation (for example, by putting your answer back into the story). If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u5-c",
+      "title": "Multi-step problems with rational numbers",
+      "skill": "Solve multi-step real-life problems with positive and negative fractions, decimals and percents (money, temperatures, measurements), estimate, and judge whether an answer is reasonable (7.EE.3)",
+      "standards": [
+        "7.EE.3"
+      ],
+      "problems": [
+        {
+          "id": "g7-u5-c-01",
+          "prompt": "A sweater costs $40 and is on sale for 25% off. What is the sale price?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30",
+            "$30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "10",
+              "say": "That's the amount saved — nice. The sale PRICE is what's left: 40 - 10."
+            },
+            {
+              "ifAnswer": "15",
+              "say": "You subtracted 25 dollars. 25% means 25 out of every 100, so 25% of $40 is one quarter of 40, which is $10."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "25% is one quarter. Find a quarter of $40, then take it off."
+            }
+          ],
+          "explanation": "25% of 40 = 0.25 × 40 = 10. Sale price: 40 - 10 = $30. (Or 75% of 40 = $30.)",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.3",
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-c-02",
+          "prompt": "Noah earns $12.50 per hour. How much does he earn in 6 hours?",
+          "answerType": "integer",
+          "answer": "75",
+          "acceptedAnswers": [
+            "75",
+            "$75"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "72",
+              "say": "You multiplied 12 by 6 and dropped the 50 cents. Six half-dollars add another $3."
+            },
+            {
+              "ifAnswer": "18.5",
+              "say": "You added 12.50 and 6. Pay per hour TIMES hours: multiply."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply $12.50 by 6. You can do 12 × 6 and 0.50 × 6 separately, then add."
+            }
+          ],
+          "explanation": "12.50 × 6 = 75. (12 × 6 = 72, and 0.50 × 6 = 3; 72 + 3 = 75.) Noah earns $75.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-c-03",
+          "prompt": "The temperature was -6°C in the morning and rose 11°C by noon. What was the noon temperature, in °C?",
+          "answerType": "integer",
+          "answer": "5",
+          "acceptedAnswers": [
+            "5",
+            "+5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-17",
+              "say": "The temperature ROSE, so add 11 to -6. Start at -6 on a number line and move 11 to the right."
+            },
+            {
+              "ifAnswer": "17",
+              "say": "You added 6 and 11, but the morning temperature was NEGATIVE 6. From -6, going up 11 gets you only 5 above zero."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Start at -6 and go up 11: -6 + 11."
+            }
+          ],
+          "explanation": "-6 + 11 = 5. It takes 6 degrees to get back to 0, and the other 5 degrees go above zero. Noon temperature: 5°C.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.3",
+            "7.NS.1"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-c-04",
+          "prompt": "A pair of shoes costs $58.95. About how much would 3 pairs cost?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "about $120",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "about $150",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "about $180",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "about $210",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "You're close — but $58.95 is almost $60, and 3 × 60 = 180. Rounding to $50 drops too much."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Did you round $58.95 up to $70? It's much closer to $60, and 3 × 60 = 180."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Round $58.95 to the nearest ten dollars, then multiply by 3."
+            }
+          ],
+          "explanation": "$58.95 is about $60. 3 × 60 = 180, so 3 pairs cost about $180. (Exactly: $176.85.)",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-c-05",
+          "prompt": "A recipe calls for 2 1/4 cups of flour. You make half the recipe. How many cups of flour do you need?",
+          "answerType": "fraction",
+          "answer": "1 1/8",
+          "acceptedAnswers": [
+            "1 1/8",
+            "9/8",
+            "1.125"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4 1/2",
+              "say": "You doubled the recipe. Half the recipe means multiply by 1/2 (divide by 2)."
+            },
+            {
+              "ifAnswer": "1 1/4",
+              "say": "You halved the 2 but not the 1/4. Half of 2 1/4 means half of ALL of it: half of 2 is 1, and half of 1/4 is 1/8."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Half of 2 1/4: take half of 2 and half of 1/4, then put them together. Or write 2 1/4 as 9/4 and multiply by 1/2."
+            }
+          ],
+          "explanation": "2 1/4 = 9/4. Half of that is 9/4 × 1/2 = 9/8 = 1 1/8 cups. (Half of 2 is 1, half of 1/4 is 1/8.)",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.3",
+            "7.NS.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-c-06",
+          "prompt": "Ava buys 3 notebooks at $2.75 each and pays with a $10 bill. How much change does she get?",
+          "answerType": "decimal",
+          "answer": "1.75",
+          "acceptedAnswers": [
+            "1.75",
+            "$1.75"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8.25",
+              "say": "That's the cost of the notebooks — nice. Change is what's left from the $10: 10 - 8.25."
+            },
+            {
+              "ifAnswer": "7.25",
+              "say": "You took off one notebook. She bought 3, so first find 3 × 2.75."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Cost first: 3 × 2.75. Then change = 10 - cost."
+            }
+          ],
+          "explanation": "3 × 2.75 = 8.25. Change: 10 - 8.25 = $1.75.",
+          "difficulty": 1,
+          "standards": [
+            "7.EE.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-c-07",
+          "prompt": "A store raises the price of a $24 game by 15%. What is the new price?",
+          "answerType": "decimal",
+          "answer": "27.60",
+          "acceptedAnswers": [
+            "27.6",
+            "27.60",
+            "$27.60",
+            "$27.6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3.6",
+              "say": "That's the 15% increase — nice. Add it to the original $24 for the new price."
+            },
+            {
+              "ifAnswer": "20.4",
+              "say": "You took 15% OFF. The price is being raised, so ADD the 15%."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find 15% of 24, then add it to 24. (Or multiply 24 by 1.15.)"
+            }
+          ],
+          "explanation": "15% of 24 = 0.15 × 24 = 3.60. New price: 24 + 3.60 = $27.60. (Or 1.15 × 24 = 27.60.)",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.3",
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-c-08",
+          "prompt": "A 48-gallon tank is 3/4 full. Then 10 gallons are used. How many gallons are left in the tank?",
+          "answerType": "integer",
+          "answer": "26",
+          "acceptedAnswers": [
+            "26"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "36",
+              "say": "That's how much was in the tank to start — nice. Now take away the 10 gallons that were used."
+            },
+            {
+              "ifAnswer": "38",
+              "say": "You subtracted 10 from 48, but the tank wasn't full. It held 3/4 of 48 to begin with."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "First find 3/4 of 48. Then subtract 10."
+            }
+          ],
+          "explanation": "3/4 of 48 = 36 gallons. After using 10: 36 - 10 = 26 gallons.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-c-09",
+          "prompt": "A hiker starts at an elevation of -120 feet (below sea level) and climbs to 1,350 feet. About how much did the elevation change?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "about 1,200 ft",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "about 1,350 ft",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "about 1,500 ft",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "about 150 ft",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You're close — but the start was BELOW sea level. From -120 up to 1,350 is more than 1,350, not less."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "That's the ending elevation. The change also includes climbing from -120 up to 0 first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Change = end - start = 1,350 - (-120). Subtracting a negative adds."
+            }
+          ],
+          "explanation": "1,350 - (-120) = 1,350 + 120 = 1,470 feet, which is about 1,500 feet.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.3",
+            "7.NS.1"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-c-10",
+          "prompt": "Lily's first three test scores are 84, 91 and 77. What score does she need on the fourth test for her average to be exactly 85?",
+          "answerType": "integer",
+          "answer": "88",
+          "acceptedAnswers": [
+            "88"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "84",
+              "say": "That's her average so far. For four tests to average 85, the TOTAL has to be 4 × 85 = 340. How much more does she need?"
+            },
+            {
+              "ifAnswer": "85",
+              "say": "Scoring 85 isn't quite enough, because her average so far (84) is below 85, so she needs to pull it up. Find the total needed: 4 × 85."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "An average of 85 on 4 tests means the four scores add to 4 × 85. Find how much she has so far and what's missing."
+            }
+          ],
+          "explanation": "Needed total: 4 × 85 = 340. So far: 84 + 91 + 77 = 252. Fourth test: 340 - 252 = 88. Check: (84 + 91 + 77 + 88) ÷ 4 = 340 ÷ 4 = 85.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-c-11",
+          "prompt": "Sam's restaurant bill is $38. He leaves an 18% tip. What is the total he pays?",
+          "answerType": "decimal",
+          "answer": "44.84",
+          "acceptedAnswers": [
+            "44.84",
+            "$44.84"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6.84",
+              "say": "That's the tip — nice. Add it to the $38 bill for the total."
+            },
+            {
+              "ifAnswer": "31.16",
+              "say": "You subtracted the tip. A tip is extra money, so ADD it to the bill."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Tip = 18% of 38. Total = bill + tip. (Or multiply 38 by 1.18.)"
+            }
+          ],
+          "explanation": "18% of 38 = 0.18 × 38 = 6.84. Total: 38 + 6.84 = $44.84. Reasonable? 20% of 40 is 8, so a total near 45 makes sense.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.3",
+            "7.RP.3"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u5-c-12",
+          "prompt": "A car's gas tank holds 14.5 gallons. The gauge shows the tank is 2/5 full. Gas costs $4.20 per gallon. How much does it cost to fill the tank?",
+          "answerType": "decimal",
+          "answer": "36.54",
+          "acceptedAnswers": [
+            "36.54",
+            "$36.54"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "24.36",
+              "say": "That's the cost of the gas already IN the tank (2/5 of it). To fill it up, you buy the EMPTY part: 3/5 of 14.5 gallons."
+            },
+            {
+              "ifAnswer": "60.9",
+              "say": "That's the cost of a whole tank. The tank already has 2/5 in it, so only 3/5 of it is empty."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "If 2/5 is full, 3/5 is empty. Find 3/5 of 14.5 gallons, then multiply by $4.20."
+            }
+          ],
+          "explanation": "Empty part: 3/5 × 14.5 = 8.7 gallons. Cost: 8.7 × 4.20 = $36.54. Reasonable? About 9 gallons at about $4 is about $36.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.3",
+            "7.NS.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-c-13",
+          "prompt": "A rectangular garden is 3.5 m long and 2 1/2 m wide. Fencing costs $6 per meter. How much does it cost to fence all the way around the garden?",
+          "answerType": "integer",
+          "answer": "72",
+          "acceptedAnswers": [
+            "72",
+            "$72"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "52.5",
+              "say": "You used the area (3.5 × 2.5). Fencing goes AROUND the garden, so use the perimeter: 3.5 + 2.5 + 3.5 + 2.5."
+            },
+            {
+              "ifAnswer": "36",
+              "say": "That's the fencing for one length and one width. The garden has two of each, so double it."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Perimeter first: two lengths plus two widths. Then multiply the meters by $6."
+            }
+          ],
+          "explanation": "Perimeter: 2(3.5) + 2(2.5) = 7 + 5 = 12 m. Cost: 12 × 6 = $72.",
+          "difficulty": 2,
+          "standards": [
+            "7.EE.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-c-14",
+          "prompt": "Jamal estimates 19.8 × 4.9 by rounding: 20 × 5 = 100. Which statement is true about the exact answer?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "It's a little less than 100, because both numbers were rounded up.",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "It's a little more than 100, because rounding always makes the answer smaller.",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "It's exactly 100, because the rounding cancels out.",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "It's about 50, because he should have rounded 4.9 down to 4.",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "Rounding UP makes the factors bigger, so the estimate is BIGGER than the real answer. The exact product must be smaller than 100."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Rounding up twice doesn't cancel out. Both 19.8 and 4.9 are less than 20 and 5, so their product is less than 20 × 5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Both numbers were rounded UP. Does that make the estimate too big or too small?"
+            }
+          ],
+          "explanation": "19.8 < 20 and 4.9 < 5, so 19.8 × 4.9 < 20 × 5 = 100. The exact answer (97.02) is a little less than 100.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.3"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u5-c-15",
+          "prompt": "A phone costs $480. It's on sale for 20% off, and then 8% sales tax is added to the sale price. What is the final price?",
+          "answerType": "decimal",
+          "answer": "414.72",
+          "acceptedAnswers": [
+            "414.72",
+            "$414.72"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "384",
+              "say": "That's the sale price — nice. Now add 8% tax to it: 384 × 1.08."
+            },
+            {
+              "ifAnswer": "403.2",
+              "say": "You combined 20% off and 8% into 12% off. The tax is ADDED, not taken off: take 20% off first, then multiply by 1.08."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Step 1: sale price = 480 × 0.80. Step 2: with tax = sale price × 1.08."
+            }
+          ],
+          "explanation": "Sale price: 480 × 0.80 = 384. With tax: 384 × 1.08 = 414.72. Final price: $414.72. Reasonable? 20% off 480 is about 380, plus a little tax, so about 410.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.3",
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-c-16",
+          "prompt": "A pool drains at 2 1/2 gallons per minute for 12 minutes. Then it's filled at 4.25 gallons per minute for 8 minutes. What is the overall change in the amount of water, in gallons?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4",
+            "+4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-4",
+              "say": "You're close — 30 gallons out and 34 gallons in means more came IN than went out, so the change is positive."
+            },
+            {
+              "ifAnswer": "64",
+              "say": "You added the 30 gallons drained and the 34 gallons added. Draining takes water OUT, so it's -30. Then -30 + 34."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Draining: -2.5 × 12. Filling: +4.25 × 8. Add the two changes."
+            }
+          ],
+          "explanation": "Drained: 2.5 × 12 = 30 gallons, so -30. Filled: 4.25 × 8 = 34 gallons, so +34. Overall: -30 + 34 = +4 gallons.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.3",
+            "7.NS.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-c-17",
+          "prompt": "Tara has $60. She buys 2 shirts at $14.99 each and a hat for $12.50, plus $3.39 sales tax. How much money does she have left?",
+          "answerType": "decimal",
+          "answer": "14.13",
+          "acceptedAnswers": [
+            "14.13",
+            "$14.13"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "17.52",
+              "say": "You're close — you forgot the $3.39 tax. Take that off too."
+            },
+            {
+              "ifAnswer": "29.12",
+              "say": "You counted only one shirt. She bought two, so 2 × 14.99 = 29.98."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add up everything she pays (two shirts, hat, tax), then subtract from $60."
+            }
+          ],
+          "explanation": "Shirts: 2 × 14.99 = 29.98. Total spent: 29.98 + 12.50 + 3.39 = 45.87. Left: 60 - 45.87 = $14.13. Reasonable? About 30 + 13 + 3 = 46 spent, so about 14 left.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-c-18",
+          "prompt": "A bike costs $249.99. Mara says a 15% discount would save her about $40. Which is the best check of her estimate?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "Reasonable: 10% of $250 is $25 and 5% is $12.50, so the discount is about $37.50, close to $40.",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "Not reasonable: 15% of $250 is about $15.",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "Not reasonable: 15% of $250 is about $150.",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "Not reasonable: she saves $250 - 15 = $235.",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "15% isn't $15. Percent means out of 100, and $250 is 2.5 hundreds. Try 10% of 250 first."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That's more like 60% off, not 15%. 10% of $250 is $25, so 15% is a bit more than that."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Round to $250. 10% of 250 is easy; then 5% is half of that."
+            }
+          ],
+          "explanation": "10% of 250 = 25, and 5% = 12.50, so 15% ≈ 37.50. That's close to $40, so Mara's estimate is reasonable. (Exactly: $37.50.)",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.3",
+            "7.RP.3"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u5-c-19",
+          "prompt": "A temperature dropped 2.5°C every hour for 4 hours, then rose 1 1/2°C. It ended at -3°C. What was the starting temperature, in °C?",
+          "answerType": "decimal",
+          "answer": "5.5",
+          "acceptedAnswers": [
+            "5.5",
+            "5 1/2",
+            "11/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-11.5",
+              "say": "You went the wrong way. You know the END and want the START, so undo the steps backwards: undo the rise (subtract 1.5) and undo the drop (add 10)."
+            },
+            {
+              "ifAnswer": "8.5",
+              "say": "You're close — undoing the 10-degree drop by adding 10 is right. But the rise of 1.5 is undone by SUBTRACTING 1.5, not adding."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Total drop: 2.5 × 4 = 10. Work backwards from -3: undo the rise, then undo the drop. (Or solve s - 10 + 1.5 = -3.)"
+            }
+          ],
+          "explanation": "Let s be the start: s - 2.5(4) + 1.5 = -3, so s - 8.5 = -3 and s = 5.5. Check: 5.5 - 10 = -4.5, then -4.5 + 1.5 = -3.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.3",
+            "7.EE.4a"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u5-c-20",
+          "prompt": "A school orders 4 pizzas at $11.75 each and 2 salads at $6.50 each. A coupon takes 20% off the whole food order, and then a $5 delivery fee is added. What is the total cost?",
+          "answerType": "integer",
+          "answer": "53",
+          "acceptedAnswers": [
+            "53",
+            "$53"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "65",
+              "say": "You're close — you added the fee but skipped the coupon. Take 20% off the $60 food order first."
+            },
+            {
+              "ifAnswer": "52",
+              "say": "So close — the coupon is for the FOOD only. Take 20% off the $60 first (that's $48), THEN add the $5 fee."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Step 1: food total. Step 2: take 20% off (multiply by 0.80). Step 3: add the $5 fee."
+            }
+          ],
+          "explanation": "Food: 4 × 11.75 + 2 × 6.50 = 47 + 13 = 60. After the coupon: 60 × 0.80 = 48. Plus delivery: 48 + 5 = $53. Reasonable? 20% off 60 is 12 off, then 5 back on: about 53.",
+          "difficulty": 3,
+          "standards": [
+            "7.EE.3",
+            "7.RP.3"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Write the equation or inequality you used and tell what each part stands for in the story. Show each step you took to solve it and why, and tell how you checked that your answer makes sense in the situation (for example, by putting your answer back into the story). If you changed your mind partway through, tell what made you change it."
+      }
+    }
+  ]
+}

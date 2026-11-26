@@ -1,0 +1,1846 @@
+{
+  "unitId": "g7-u1",
+  "course": "7th grade",
+  "unitName": "Integers and rational numbers",
+  "standards": [
+    "7.NS.1",
+    "7.NS.2",
+    "7.NS.3"
+  ],
+  "sets": [
+    {
+      "setId": "g7-u1-a",
+      "title": "Adding and subtracting integers",
+      "skill": "Add and subtract integers using the number line, additive inverses, and subtracting as adding the opposite (7.NS.1)",
+      "problems": [
+        {
+          "id": "g7-u1-a-01",
+          "prompt": "-3 + 8 = ?",
+          "answerType": "integer",
+          "answer": "5",
+          "acceptedAnswers": [
+            "5",
+            "+5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-11",
+              "say": "You kept the minus and added the sizes, but these two numbers have different signs. Start at -3 on a number line and take 8 steps to the right; where do you land?"
+            },
+            {
+              "ifAnswer": "-5",
+              "say": "Close! The size of the answer is right, but check the sign. Which number is farther from zero, -3 or 8? The answer takes that number's sign."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Picture a number line: start at -3 and move 8 to the right because you are adding a positive."
+            }
+          ],
+          "explanation": "Start at -3 and move 8 steps right. The first 3 steps get you to 0, and 5 more steps land on 5.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-a-02",
+          "prompt": "6 + (-9) = ?",
+          "answerType": "integer",
+          "answer": "-3",
+          "acceptedAnswers": [
+            "-3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3",
+              "say": "You found the gap between 9 and 6, nice. Now ask which number is bigger in size: 6 or -9? The answer follows that sign."
+            },
+            {
+              "ifAnswer": "15",
+              "say": "Careful, adding -9 means moving left, not right. Start at 6 and walk 9 steps toward the negatives."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Adding a negative number moves you left on the number line. Start at 6 and count 9 to the left."
+            }
+          ],
+          "explanation": "Adding -9 moves 9 steps left. From 6, six steps reach 0 and three more land on -3.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-a-03",
+          "prompt": "On a number line, start at -4 and move 6 units to the right. Where do you land?",
+          "answerType": "integer",
+          "answer": "2",
+          "acceptedAnswers": [
+            "2",
+            "+2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-10",
+              "say": "You moved left instead of right. Moving right means the numbers get bigger; try counting up from -4."
+            },
+            {
+              "ifAnswer": "-2",
+              "say": "So close! Count each step out loud: -3, -2, -1, 0, ... how many steps is that so far?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Moving right on a number line is the same as adding. Count 6 steps up from -4."
+            }
+          ],
+          "explanation": "Moving right means adding, so this is -4 + 6. Four steps get you to 0, and two more land on 2.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-a-04",
+          "prompt": "Which number is the additive inverse of -7?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "1/7",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "-7",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "7",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "0",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "That's the same number again. The additive inverse is the number that brings -7 back to zero when you add them."
+            },
+            {
+              "ifAnswer": "a",
+              "say": "1/7 flips the number into a fraction. That's a different idea. Which number added to -7 gives exactly 0?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Additive inverses are the same distance from zero on opposite sides. They add up to 0."
+            }
+          ],
+          "explanation": "The additive inverse of -7 is 7, because -7 + 7 = 0. They are the same distance from zero on opposite sides.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-a-05",
+          "prompt": "-5 + (-6) = ?",
+          "answerType": "integer",
+          "answer": "-11",
+          "acceptedAnswers": [
+            "-11"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-1",
+              "say": "You subtracted the sizes, which works when the signs are different. Here both numbers are negative, so you keep moving left."
+            },
+            {
+              "ifAnswer": "11",
+              "say": "Right size, but both numbers are negative. If you owe 5 and then owe 6 more, do you have money or owe money?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Both numbers are negative, so you move left twice. Start at -5 and go 6 more to the left."
+            }
+          ],
+          "explanation": "When both numbers are negative, add their sizes and keep the negative sign. 5 + 6 = 11, so the sum is -11.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-a-06",
+          "prompt": "4 - 10 = ?",
+          "answerType": "integer",
+          "answer": "-6",
+          "acceptedAnswers": [
+            "-6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6",
+              "say": "You found the difference between 4 and 10. Now notice you are taking away more than you have, so you end up below zero."
+            },
+            {
+              "ifAnswer": "14",
+              "say": "Subtracting 10 moves you left, not right. Start at 4 and count 10 steps down."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Start at 4 and move 10 to the left. You will pass 0."
+            }
+          ],
+          "explanation": "Subtracting 10 moves 10 steps left. From 4, four steps reach 0 and six more land on -6.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-a-07",
+          "prompt": "-2 - 7 = ?",
+          "answerType": "integer",
+          "answer": "-9",
+          "acceptedAnswers": [
+            "-9"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5",
+              "say": "Subtracting 7 means you move further left from -2, not toward the positives. Try it on a number line."
+            },
+            {
+              "ifAnswer": "-5",
+              "say": "You treated it like -2 + 7 with a sign flip. Rewrite it as -2 + (-7): both parts point left."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Rewrite subtraction as adding the opposite: -2 - 7 is the same as -2 + (-7)."
+            }
+          ],
+          "explanation": "-2 - 7 is the same as -2 + (-7). Both numbers point left, so add the sizes and keep the negative: -9.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-a-08",
+          "prompt": "9 - (-4) = ?",
+          "answerType": "integer",
+          "answer": "13",
+          "acceptedAnswers": [
+            "13",
+            "+13"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5",
+              "say": "That's the one everybody trips on. Subtracting a negative is the same as adding its opposite. What is the opposite of -4?"
+            },
+            {
+              "ifAnswer": "-13",
+              "say": "You turned the subtraction into addition, good. Now check: 9 is positive and you're adding a positive, so which side of zero do you land on?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Rewrite it as adding the opposite: 9 - (-4) becomes 9 + ___."
+            }
+          ],
+          "explanation": "Subtracting a negative is the same as adding its opposite, so 9 - (-4) = 9 + 4 = 13. Taking away a debt leaves you better off.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-a-09",
+          "prompt": "Which expression has the same value as 5 - (-3)?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "5 + (-3)",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "5 + 3",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "-5 + 3",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "5 - 3",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "That one keeps the -3. Subtracting -3 flips into adding the opposite of -3. What is that opposite?"
+            },
+            {
+              "ifAnswer": "d",
+              "say": "That drops the negative sign completely. Two changes happen together: minus becomes plus AND -3 becomes its opposite."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Subtracting a number is the same as adding its opposite."
+            }
+          ],
+          "explanation": "Subtracting -3 is the same as adding 3, so 5 - (-3) = 5 + 3 = 8.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-a-10",
+          "prompt": "-8 + 8 = ?",
+          "answerType": "integer",
+          "answer": "0",
+          "acceptedAnswers": [
+            "0"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "16",
+              "say": "You added the sizes. But -8 and 8 are on opposite sides of zero, so they cancel each other out."
+            },
+            {
+              "ifAnswer": "-16",
+              "say": "These two point in opposite directions. Walk 8 left, then 8 right. Where are you?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "-8 and 8 are opposites. What happens when you add opposites?"
+            }
+          ],
+          "explanation": "-8 and 8 are additive inverses: same distance from zero, opposite sides. Opposites always add to 0.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-a-11",
+          "prompt": "At 6 a.m. the temperature is -6°F. By noon it has risen 11 degrees. What is the temperature at noon (in °F)?",
+          "answerType": "integer",
+          "answer": "5",
+          "acceptedAnswers": [
+            "5",
+            "+5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-17",
+              "say": "Rising means going up, so you add 11 instead of subtracting it. Start at -6 and climb."
+            },
+            {
+              "ifAnswer": "17",
+              "say": "You added the sizes, but the morning temperature was below zero. Climbing from -6, how many degrees does it take just to reach 0?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "\"Risen\" means add. Write -6 + 11 and picture a thermometer going up."
+            }
+          ],
+          "explanation": "The temperature goes up, so compute -6 + 11. It takes 6 degrees to reach 0, and the other 5 bring it to 5°F.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-a-12",
+          "prompt": "-12 - (-5) = ?",
+          "answerType": "integer",
+          "answer": "-7",
+          "acceptedAnswers": [
+            "-7"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-17",
+              "say": "Subtracting a negative turns into adding. Rewrite it as -12 + 5 and try again."
+            },
+            {
+              "ifAnswer": "7",
+              "say": "You flipped the subtraction into addition, nice. Now check the sign: which is bigger in size, -12 or 5?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Change subtracting -5 into adding 5, then use the number line."
+            }
+          ],
+          "explanation": "-12 - (-5) = -12 + 5. Moving 5 right from -12 lands on -7.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-a-13",
+          "prompt": "What is the distance between -7 and 5 on a number line?",
+          "answerType": "integer",
+          "answer": "12",
+          "acceptedAnswers": [
+            "12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2",
+              "say": "You subtracted 7 and 5 as if both were positive. Count the steps from -7 up to 0, then from 0 up to 5."
+            },
+            {
+              "ifAnswer": "-12",
+              "say": "Right size! A distance is never negative, though. How far apart are they?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distance is the absolute value of the difference. Count from -7 to 0 and from 0 to 5."
+            }
+          ],
+          "explanation": "Distance is |5 - (-7)| = |5 + 7| = 12. It is 7 steps from -7 to 0 and 5 more to reach 5.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-a-14",
+          "prompt": "A jump on a number line starts at 3 and ends at -5. Which expression matches the jump?",
+          "answerType": "choice",
+          "answer": "d",
+          "acceptedAnswers": [
+            "d"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "3 + 8",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "3 - (-8)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "-5 + 3",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3 + (-8)",
+              "isCorrect": true
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "That jump would go right, to 11. Our jump goes left, so you are adding a negative."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "3 - (-8) means adding 8, which moves right. Check the direction: from 3 to -5 is left."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Figure out the direction (left or right) and the length of the jump, then find the expression that matches."
+            }
+          ],
+          "explanation": "Going from 3 to -5 moves 8 units left, which is adding -8. So the jump is 3 + (-8) = -5.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-a-15",
+          "prompt": "-15 + 7 - (-3) = ?",
+          "answerType": "integer",
+          "answer": "-5",
+          "acceptedAnswers": [
+            "-5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-11",
+              "say": "Good start with -15 + 7. Now look closely at the last part: subtracting -3 means adding 3."
+            },
+            {
+              "ifAnswer": "-25",
+              "say": "That's what you get if every number pulls left. Check the signs one at a time: +7 goes right, and - (-3) also goes right."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Work left to right. Do -15 + 7 first, then rewrite subtracting -3 as adding 3."
+            }
+          ],
+          "explanation": "First -15 + 7 = -8. Then -8 - (-3) = -8 + 3 = -5.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-a-16",
+          "prompt": "A submarine is at -40 meters. It rises 15 meters, then dives 22 meters. What is its new elevation (in meters)?",
+          "answerType": "integer",
+          "answer": "-47",
+          "acceptedAnswers": [
+            "-47"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-77",
+              "say": "You subtracted all three. \"Rises\" should move the submarine up. Write the rise as +15."
+            },
+            {
+              "ifAnswer": "-3",
+              "say": "Close! Check the dive: diving means going down, so the 22 is subtracted."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write it as one expression: start, plus the rise, minus the dive."
+            }
+          ],
+          "explanation": "The expression is -40 + 15 - 22. -40 + 15 = -25, and -25 - 22 = -47 meters.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-a-17",
+          "prompt": "-18 - 27 = ?",
+          "answerType": "integer",
+          "answer": "-45",
+          "acceptedAnswers": [
+            "-45"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9",
+              "say": "You found the gap between 18 and 27. But subtracting 27 from -18 moves you further left, past -27."
+            },
+            {
+              "ifAnswer": "-9",
+              "say": "You treated the 27 like a positive move. Rewrite it as -18 + (-27): both pull left."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Rewrite as adding the opposite: -18 + (-27). Both numbers are negative."
+            }
+          ],
+          "explanation": "-18 - 27 = -18 + (-27). Both are negative, so add the sizes (18 + 27 = 45) and keep the negative: -45.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-a-18",
+          "prompt": "For any number n, which statement is always true?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "n + (-n) = 0",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "n - (-n) = 0",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "n + n = 0",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "-n - n = 0",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "That's true for n = 0, but not for most numbers. Try n = 3: is 3 - (-3) equal to 0?"
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Test it with a number. If n = 4, is 4 + 4 = 0? Look for the pair that always cancels."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Test each choice with a real number, like n = 5. Which one works every time?"
+            }
+          ],
+          "explanation": "A number plus its opposite always equals 0, so n + (-n) = 0 for every n. That's what additive inverse means.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-a-19",
+          "prompt": "Find the missing number: ___ + (-9) = -2",
+          "answerType": "integer",
+          "answer": "7",
+          "acceptedAnswers": [
+            "7",
+            "+7"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-11",
+              "say": "Check it: -11 + (-9) is -20, not -2. The missing number has to pull you back to the right."
+            },
+            {
+              "ifAnswer": "-7",
+              "say": "Right size! Plug it in to check the sign: does -7 + (-9) really land on -2?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Think: what number, after you move 9 to the left, lands on -2? Work backward by moving 9 to the right from -2."
+            }
+          ],
+          "explanation": "Work backward: -2 + 9 = 7. Check: 7 + (-9) = -2.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-a-20",
+          "prompt": "-6 - 9 + (-4) - (-12) = ?",
+          "answerType": "integer",
+          "answer": "-7",
+          "acceptedAnswers": [
+            "-7"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-31",
+              "say": "You let every number pull left. Look at the last part: subtracting -12 turns into adding 12."
+            },
+            {
+              "ifAnswer": "7",
+              "say": "Right size! Go back over the signs: after -6 - 9 + (-4) you're at -19. Adding 12 doesn't get you past zero."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Go one step at a time, left to right, and rewrite each subtraction as adding the opposite."
+            }
+          ],
+          "explanation": "-6 - 9 = -15, then -15 + (-4) = -19, then -19 - (-12) = -19 + 12 = -7.",
+          "difficulty": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 16,
+        "prompt": "Explain how you did number 16. Write each step you took and why, and tell how you decided whether the answer should be positive or negative. If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u1-b",
+      "title": "Multiplying and dividing integers, and rational numbers on the number line",
+      "skill": "Multiply and divide integers and rational numbers, use sign rules, and convert and place fractions and decimals on the number line (7.NS.2)",
+      "problems": [
+        {
+          "id": "g7-u1-b-01",
+          "prompt": "-6 × 4 = ?",
+          "answerType": "integer",
+          "answer": "-24",
+          "acceptedAnswers": [
+            "-24"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "24",
+              "say": "You got the size right. Now the sign: a negative times a positive is negative."
+            },
+            {
+              "ifAnswer": "-10",
+              "say": "That's -6 + (-4). This one is multiplying, so think four groups of -6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply the sizes first, then decide the sign: one negative factor means a negative answer."
+            }
+          ],
+          "explanation": "6 × 4 = 24. One factor is negative, so the product is negative: -24. It's like four groups of -6.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-b-02",
+          "prompt": "-7 × (-3) = ?",
+          "answerType": "integer",
+          "answer": "21",
+          "acceptedAnswers": [
+            "21",
+            "+21"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-21",
+              "say": "You've got the size. Count the negative signs: there are two. What does a negative times a negative give?"
+            },
+            {
+              "ifAnswer": "-10",
+              "say": "That's adding them. This one multiplies, so start with 7 × 3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply 7 × 3, then use the sign rule for two negatives."
+            }
+          ],
+          "explanation": "7 × 3 = 21, and a negative times a negative is positive, so the answer is 21.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-b-03",
+          "prompt": "-36 ÷ 9 = ?",
+          "answerType": "integer",
+          "answer": "-4",
+          "acceptedAnswers": [
+            "-4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4",
+              "say": "The size is right. Division follows the same sign rules as multiplication: one negative makes the answer negative."
+            },
+            {
+              "ifAnswer": "-27",
+              "say": "That's subtracting. This is dividing: how many 9s make 36?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide the sizes, then think about the signs: one negative and one positive."
+            }
+          ],
+          "explanation": "36 ÷ 9 = 4. One number is negative, so the quotient is -4. Check: 9 × (-4) = -36.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-b-04",
+          "prompt": "What is the sign of (-5) × (-8)?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "Positive",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "Negative",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "Zero",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "You can't tell",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "Two negatives multiply to something positive. Think: (-5) × (-8) is the opposite of (-5) × 8."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "You can tell! Count the negative factors: an even number of negatives gives a positive."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Count the negative signs. Two negatives multiplied together give what sign?"
+            }
+          ],
+          "explanation": "A negative times a negative is positive, so (-5) × (-8) = 40, which is positive.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-b-05",
+          "prompt": "48 ÷ (-6) = ?",
+          "answerType": "integer",
+          "answer": "-8",
+          "acceptedAnswers": [
+            "-8"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8",
+              "say": "Nice division. Now check the signs: positive divided by negative gives what?"
+            },
+            {
+              "ifAnswer": "42",
+              "say": "That's 48 + (-6). Here we divide, so think: what times -6 gives 48?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide 48 ÷ 6, then check the signs."
+            }
+          ],
+          "explanation": "48 ÷ 6 = 8, and positive ÷ negative is negative, so the answer is -8. Check: -6 × (-8) = 48.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-b-06",
+          "prompt": "-45 ÷ (-5) = ?",
+          "answerType": "integer",
+          "answer": "9",
+          "acceptedAnswers": [
+            "9",
+            "+9"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-9",
+              "say": "So close. Both numbers are negative, and negative ÷ negative is positive."
+            },
+            {
+              "ifAnswer": "-40",
+              "say": "That's subtracting. Ask yourself: what number times -5 gives -45?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide the sizes. Two negatives in a division give what sign?"
+            }
+          ],
+          "explanation": "45 ÷ 5 = 9. A negative divided by a negative is positive, so the answer is 9. Check: -5 × 9 = -45.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-b-07",
+          "prompt": "(-2) × (-3) × (-5) = ?",
+          "answerType": "integer",
+          "answer": "-30",
+          "acceptedAnswers": [
+            "-30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "30",
+              "say": "Right size. Count the negative signs: there are three. An odd number of negatives makes the product negative."
+            },
+            {
+              "ifAnswer": "-10",
+              "say": "That's adding them. Multiply two at a time: (-2) × (-3) first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply two at a time. Do (-2) × (-3) first, then multiply that by -5."
+            }
+          ],
+          "explanation": "(-2) × (-3) = 6, and 6 × (-5) = -30. Three negative factors (an odd number) give a negative product.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-b-08",
+          "prompt": "Write 3/8 as a decimal.",
+          "answerType": "decimal",
+          "answer": "0.375",
+          "acceptedAnswers": [
+            "0.375",
+            ".375"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.38",
+              "say": "You rounded, and that's close! This decimal stops on its own, so keep dividing until there's no remainder."
+            },
+            {
+              "ifAnswer": "3.8",
+              "say": "Careful, 3/8 is less than 1 because 3 is smaller than 8. Divide 3 by 8."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "A fraction bar means divide. Do 3 ÷ 8, adding zeros after the decimal point."
+            }
+          ],
+          "explanation": "3/8 means 3 ÷ 8. Long division gives 0.375, and it terminates (stops) because the remainder becomes 0.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-b-09",
+          "prompt": "Which expression is equal to -(3/4)?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "3/4",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "(-3)/(-4)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "3/(-4)",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "4/(-3)",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "Two negatives in a division make a positive, so (-3)/(-4) is positive 3/4."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "That one flips the fraction. Keep 3 on top and 4 on the bottom, and decide where the one negative sign goes."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "A negative fraction can put its one negative sign on the top or on the bottom. Find the choice with exactly one negative."
+            }
+          ],
+          "explanation": "-(3/4) = (-3)/4 = 3/(-4). With exactly one negative sign, the value is negative. (-3)/(-4) is positive.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-b-10",
+          "prompt": "Write -7/20 as a decimal.",
+          "answerType": "decimal",
+          "answer": "-0.35",
+          "acceptedAnswers": [
+            "-0.35",
+            "-.35"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.35",
+              "say": "You've got the digits. The fraction is negative, so the decimal keeps that negative sign."
+            },
+            {
+              "ifAnswer": "-0.7",
+              "say": "You divided 7 by 10. The bottom is 20, so the answer is half of that."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Make the bottom 100: 7/20 = ?/100. Then put the negative sign back."
+            }
+          ],
+          "explanation": "7/20 = 35/100 = 0.35, and the fraction is negative, so it's -0.35.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-b-11",
+          "prompt": "(-2/3) × 9 = ?",
+          "answerType": "integer",
+          "answer": "-6",
+          "acceptedAnswers": [
+            "-6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6",
+              "say": "Good multiplying. A negative times a positive is negative, so check your sign."
+            },
+            {
+              "ifAnswer": "-18",
+              "say": "You multiplied by 2 but forgot the 3 underneath. Divide 9 by 3 first, then multiply by 2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find 1/3 of 9 first, then double it, then think about the sign."
+            }
+          ],
+          "explanation": "9 ÷ 3 = 3, and 3 × 2 = 6, so (2/3) × 9 = 6. One factor is negative, so the answer is -6.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-b-12",
+          "prompt": "(-2.5) × (-4) = ?",
+          "answerType": "integer",
+          "answer": "10",
+          "acceptedAnswers": [
+            "10",
+            "+10",
+            "10.0"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-10",
+              "say": "Right size. Look at the signs again: two negatives make a positive."
+            },
+            {
+              "ifAnswer": "-6.5",
+              "say": "That's adding. Multiply 2.5 × 4 first: four groups of 2.5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply 2.5 × 4, then use the sign rule for two negatives."
+            }
+          ],
+          "explanation": "2.5 × 4 = 10, and a negative times a negative is positive, so the answer is 10.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-b-13",
+          "prompt": "What number is exactly halfway between -3 and -2 on a number line?",
+          "answerType": "decimal",
+          "answer": "-2.5",
+          "acceptedAnswers": [
+            "-2.5",
+            "-5/2",
+            "-2 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2.5",
+              "say": "Right spot, wrong side of zero. Both -3 and -2 are negative, so the halfway point is too."
+            },
+            {
+              "ifAnswer": "-3.5",
+              "say": "-3.5 is outside the two numbers, past -3. Look between -3 and -2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Draw the piece of the number line from -3 to -2 and split it into two equal parts."
+            }
+          ],
+          "explanation": "The distance from -3 to -2 is 1, so halfway is 0.5 from each end: -3 + 0.5 = -2.5.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-b-14",
+          "prompt": "Which number is between -1/2 and -1/4 on a number line?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "-3/4",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "-3/8",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "-1/8",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "3/8",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "c",
+              "say": "-1/8 is closer to zero than -1/4, so it's to the right of both. Try changing everything to eighths."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "3/8 is positive, but both endpoints are negative. The number you want has to be negative too."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Rename the fractions with the same denominator, like eighths: -1/2 = -4/8 and -1/4 = -2/8."
+            }
+          ],
+          "explanation": "-1/2 = -4/8 and -1/4 = -2/8. The number -3/8 sits right between them.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-b-15",
+          "prompt": "(-3/4) ÷ (3/8) = ?",
+          "answerType": "integer",
+          "answer": "-2",
+          "acceptedAnswers": [
+            "-2",
+            "-2/1"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2",
+              "say": "The size is right. Negative divided by positive is negative, so fix the sign."
+            },
+            {
+              "ifAnswer": "-9/32",
+              "say": "You multiplied straight across. Dividing by a fraction means multiplying by its reciprocal: flip 3/8 to 8/3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Dividing by a fraction is multiplying by its reciprocal. Rewrite it with 8/3."
+            }
+          ],
+          "explanation": "(-3/4) ÷ (3/8) = (-3/4) × (8/3) = -24/12 = -2. Also, -3/4 is -6/8, which is two groups of 3/8, negative.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-b-16",
+          "prompt": "-60 ÷ (-4) ÷ (-3) = ?",
+          "answerType": "integer",
+          "answer": "-5",
+          "acceptedAnswers": [
+            "-5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5",
+              "say": "Good work with the sizes. Count the negative signs: three negatives in a row gives a negative answer."
+            },
+            {
+              "ifAnswer": "-45",
+              "say": "Go left to right: do -60 ÷ (-4) first, then divide that by -3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Work left to right: -60 ÷ (-4) first, then divide that result by -3."
+            }
+          ],
+          "explanation": "-60 ÷ (-4) = 15, then 15 ÷ (-3) = -5.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-b-17",
+          "prompt": "(-2/5) × (-15/4) = ? (Write as a fraction in lowest terms or a decimal.)",
+          "answerType": "fraction",
+          "answer": "3/2",
+          "acceptedAnswers": [
+            "3/2",
+            "1.5",
+            "1 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-3/2",
+              "say": "You simplified nicely! Two negatives multiplied make a positive, though."
+            },
+            {
+              "ifAnswer": "30/20",
+              "say": "That's the right value, just not simplified. What's the biggest number that divides 30 and 20?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply the tops and the bottoms, then simplify. Two negatives give what sign?"
+            }
+          ],
+          "explanation": "(2 × 15)/(5 × 4) = 30/20 = 3/2. Both factors are negative, so the product is positive: 3/2, or 1.5.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-b-18",
+          "prompt": "What is -8 ÷ 0?",
+          "answerType": "choice",
+          "answer": "d",
+          "acceptedAnswers": [
+            "d"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "0",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "-8",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "8",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "Undefined",
+              "isCorrect": true
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Zero divided by a number is 0, but here zero is the divisor. Try checking: what number times 0 gives -8?"
+            },
+            {
+              "ifAnswer": "b",
+              "say": "Check it with multiplication: does 0 × (-8) give -8? Think about whether any number works."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Turn it into a multiplication question: ___ × 0 = -8. Is there any number that works?"
+            }
+          ],
+          "explanation": "Division by zero is undefined. No number times 0 gives -8, because anything times 0 is 0.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-b-19",
+          "prompt": "Which is greater: -0.6 or -2/3? Type the greater number.",
+          "answerType": "decimal",
+          "answer": "-0.6",
+          "acceptedAnswers": [
+            "-0.6",
+            "-.6",
+            "-3/5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-2/3",
+              "say": "Good comparing! With negatives, the one closer to zero is greater. Change -2/3 to a decimal and see which is closer."
+            },
+            {
+              "ifAnswer": "-0.67",
+              "say": "That's -2/3 as a decimal, nice. Now on the number line, which one is farther right?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Change -2/3 to a decimal, place both on a number line, and pick the one farther to the right."
+            }
+          ],
+          "explanation": "-2/3 is about -0.667, which is farther from zero than -0.6. On a number line -0.6 is farther right, so -0.6 is greater.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-b-20",
+          "prompt": "(-1.2) × (-3) ÷ (-0.4) = ?",
+          "answerType": "integer",
+          "answer": "-9",
+          "acceptedAnswers": [
+            "-9"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9",
+              "say": "Great multiplying. Count all three negatives: an odd number of them makes the answer negative."
+            },
+            {
+              "ifAnswer": "-0.9",
+              "say": "Check the decimal place. Dividing by 0.4 is like asking how many 0.4s fit into 3.6, and that's more than 1."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Go left to right: (-1.2) × (-3) first, then divide by -0.4."
+            }
+          ],
+          "explanation": "(-1.2) × (-3) = 3.6. Then 3.6 ÷ (-0.4) = -9, because there are nine 0.4s in 3.6 and the signs are different.",
+          "difficulty": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 15,
+        "prompt": "Explain how you did number 15. Write each step you took and why, and tell how you decided whether the answer should be positive or negative. If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u1-c",
+      "title": "Rational number operations in context",
+      "skill": "Solve real-world problems with positive and negative fractions and decimals: money, temperature, elevation (7.NS.3)",
+      "problems": [
+        {
+          "id": "g7-u1-c-01",
+          "prompt": "A diver is 12 feet below the surface (-12 ft). She swims down 9 more feet. What is her new elevation (in feet)?",
+          "answerType": "integer",
+          "answer": "-21",
+          "acceptedAnswers": [
+            "-21"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-3",
+              "say": "Going down from -12 takes you deeper, not back toward the surface. Moving down means you add a negative."
+            },
+            {
+              "ifAnswer": "21",
+              "say": "Right number of feet. She's below the surface, though, so write the elevation as a negative."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write it as -12 + (-9). Going down means moving more negative."
+            }
+          ],
+          "explanation": "Going down 9 more feet is -12 + (-9) = -21. She is 21 feet below the surface.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-c-02",
+          "prompt": "At noon the temperature is 4°C. By night it drops 10 degrees. What is the temperature at night (in °C)?",
+          "answerType": "integer",
+          "answer": "-6",
+          "acceptedAnswers": [
+            "-6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6",
+              "say": "You found the gap. Dropping 10 from 4 takes you past 0, so the answer is below zero."
+            },
+            {
+              "ifAnswer": "14",
+              "say": "\"Drops\" means the temperature goes down, so subtract the 10."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write 4 - 10 and picture a thermometer going down past zero."
+            }
+          ],
+          "explanation": "4 - 10 = -6. It takes 4 degrees to reach 0°C, and 6 more takes it to -6°C.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-c-03",
+          "prompt": "You have $25 in a savings account and spend $32 on shoes using that account. What is the balance now (in dollars)?",
+          "answerType": "integer",
+          "answer": "-7",
+          "acceptedAnswers": [
+            "-7",
+            "-$7",
+            "$-7",
+            "-7.00"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "7",
+              "say": "You found the difference. You spent more than you had, so the account is below zero. How do you write that?"
+            },
+            {
+              "ifAnswer": "57",
+              "say": "Spending takes money away, so subtract the $32."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write it as 25 - 32. You spent more than you had."
+            }
+          ],
+          "explanation": "25 - 32 = -7. The account is $7 below zero, which means you owe $7.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-c-04",
+          "prompt": "The temperature drops 3 degrees every hour for 5 hours. Which expression shows the total change in temperature?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "5 + (-3)",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "(-5) × (-3)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "5 × (-3)",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "3 - 5",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "That shows one drop of 3, plus 5. The drop happens 5 times, so you need to multiply."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "Two negatives multiplied make a positive, which would mean the temperature went up. Only the drop is negative here."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "A repeated drop is a negative number multiplied by how many times it happens."
+            }
+          ],
+          "explanation": "Each hour is a change of -3, and it happens 5 times, so the total change is 5 × (-3) = -15 degrees.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-c-05",
+          "prompt": "A pond is 3/4 foot below its normal level (-3/4 ft). Rain raises it 1/2 foot. What is the new level compared with normal (in feet)?",
+          "answerType": "fraction",
+          "answer": "-1/4",
+          "acceptedAnswers": [
+            "-1/4",
+            "-0.25",
+            "-.25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/4",
+              "say": "The amount is right. The rain didn't quite bring the pond back to normal, so it's still a little below."
+            },
+            {
+              "ifAnswer": "-5/4",
+              "say": "Rain raises the level, so add +1/2, which moves toward zero."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Use fourths: -3/4 + 2/4. Picture moving right on a number line."
+            }
+          ],
+          "explanation": "1/2 = 2/4, so -3/4 + 2/4 = -1/4. The pond is still 1/4 foot below normal.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-c-06",
+          "prompt": "You owe a friend $4.50, then borrow $2.75 more. Write the total you owe as a negative number (in dollars).",
+          "answerType": "decimal",
+          "answer": "-7.25",
+          "acceptedAnswers": [
+            "-7.25",
+            "-$7.25",
+            "$-7.25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-1.75",
+              "say": "Borrowing more makes you owe more, not less. Both amounts are debts, so add them."
+            },
+            {
+              "ifAnswer": "7.25",
+              "say": "Right amount. The question asks you to show the debt as a negative number."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Both amounts are money you owe. Write -4.50 + (-2.75)."
+            }
+          ],
+          "explanation": "-4.50 + (-2.75) = -7.25. Two debts add up to a bigger debt of $7.25.",
+          "difficulty": 1
+        },
+        {
+          "id": "g7-u1-c-07",
+          "prompt": "A trail starts 340 feet above sea level and ends 125 feet below sea level. How many feet does the hiker descend in all?",
+          "answerType": "integer",
+          "answer": "465",
+          "acceptedAnswers": [
+            "465"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "215",
+              "say": "You subtracted 125 from 340, but the trail goes below sea level. Count down to 0 first, then keep going."
+            },
+            {
+              "ifAnswer": "-465",
+              "say": "Right number. The question asks how many feet the hiker descends, which is a distance, so give a positive number."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the distance from 340 down to -125: 340 - (-125)."
+            }
+          ],
+          "explanation": "From 340 down to 0 is 340 feet, and from 0 down to -125 is 125 more. 340 + 125 = 465 feet.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-c-08",
+          "prompt": "The temperature falls 18°F over 6 hours, the same amount each hour. What is the change in temperature each hour (in °F)?",
+          "answerType": "integer",
+          "answer": "-3",
+          "acceptedAnswers": [
+            "-3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3",
+              "say": "Right size. The temperature fell, so the change each hour is negative."
+            },
+            {
+              "ifAnswer": "-12",
+              "say": "That's subtracting 6. Split the total drop equally across 6 hours."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The total change is -18. Share it equally over 6 hours: -18 ÷ 6."
+            }
+          ],
+          "explanation": "The total change is -18°F, and -18 ÷ 6 = -3. The temperature changed by -3°F each hour.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-c-09",
+          "prompt": "A bird flies 15 meters above sea level. A fish swims 6 meters below sea level. Which expression gives the distance between them?",
+          "answerType": "choice",
+          "answer": "a",
+          "acceptedAnswers": [
+            "a"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "|15 - (-6)|",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "text": "15 + (-6)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "|-6| - 15",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "15 - 6",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "That treats the fish as if it were between the bird and the water. They're on opposite sides of sea level, so the distances add."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "15 - 6 would be the distance if both were above water. The fish is at -6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distance between two numbers is the absolute value of their difference. Write the fish's position as -6."
+            }
+          ],
+          "explanation": "Distance = |15 - (-6)| = |15 + 6| = 21 meters. Points on opposite sides of zero: add their distances from zero.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-c-10",
+          "prompt": "A freezer is at -4.5°C when the power goes out. The temperature rises 2.5°C each hour for 3 hours. What is the temperature then (in °C)?",
+          "answerType": "integer",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3",
+            "3.0",
+            "+3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-2",
+              "say": "You added just one hour of warming. It rises 2.5 degrees each hour for 3 hours."
+            },
+            {
+              "ifAnswer": "-12",
+              "say": "Rising means the temperature goes up, so the 7.5 total gets added to -4.5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "First find the total rise: 3 × 2.5. Then add that to -4.5."
+            }
+          ],
+          "explanation": "Total rise = 3 × 2.5 = 7.5. Then -4.5 + 7.5 = 3°C.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-c-11",
+          "prompt": "A submarine is at -84 meters. It rises 1/4 of the way to the surface. What is its new elevation (in meters)?",
+          "answerType": "integer",
+          "answer": "-63",
+          "acceptedAnswers": [
+            "-63"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-21",
+              "say": "You found 1/4 of 84, nice. That's how far it rises, not where it ends up. Move up from -84 by that much."
+            },
+            {
+              "ifAnswer": "-105",
+              "say": "Rising moves the submarine toward the surface, so the elevation gets closer to 0."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find 1/4 of 84 first. That's how far it moves up from -84."
+            }
+          ],
+          "explanation": "1/4 of 84 is 21, so it rises 21 meters: -84 + 21 = -63 meters.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-c-12",
+          "prompt": "A club account has $18.40. The club spends $25.15 on supplies. What is the balance now (in dollars)?",
+          "answerType": "decimal",
+          "answer": "-6.75",
+          "acceptedAnswers": [
+            "-6.75",
+            "-$6.75",
+            "$-6.75"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6.75",
+              "say": "You found the difference. They spent more than they had, so the balance is below zero."
+            },
+            {
+              "ifAnswer": "-7.25",
+              "say": "Check the cents. Line up the decimal points and subtract 18.40 from 25.15 carefully."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write 18.40 - 25.15. Since you're taking away more than you have, the answer will be negative."
+            }
+          ],
+          "explanation": "25.15 - 18.40 = 6.75, and the club spent more than it had, so 18.40 - 25.15 = -6.75.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-c-13",
+          "prompt": "Four friends share a $36.60 bill equally. Write each friend's change in money as a number (in dollars).",
+          "answerType": "decimal",
+          "answer": "-9.15",
+          "acceptedAnswers": [
+            "-9.15",
+            "-$9.15",
+            "$-9.15"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "9.15",
+              "say": "Right amount. Each person is paying, so their money goes down. Show that with the sign."
+            },
+            {
+              "ifAnswer": "-9.6",
+              "say": "Check the division. 36 ÷ 4 = 9, and 0.60 ÷ 4 is less than a dime."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Paying is a negative change: -36.60 ÷ 4."
+            }
+          ],
+          "explanation": "-36.60 ÷ 4 = -9.15. Each friend's money goes down by $9.15.",
+          "difficulty": 2
+        },
+        {
+          "id": "g7-u1-c-14",
+          "prompt": "The morning temperature is -5.5°F. In the afternoon it is 7.25°F. How many degrees did the temperature rise?",
+          "answerType": "choice",
+          "answer": "d",
+          "acceptedAnswers": [
+            "d"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "1.75",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "-1.75",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "-12.75",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "12.75",
+              "isCorrect": true
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "That's 7.25 - 5.5, as if the morning were positive. Starting below zero means it has to climb further."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "The temperature went up, so the rise is positive. Subtract in the order later minus earlier."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Rise = afternoon minus morning: 7.25 - (-5.5)."
+            }
+          ],
+          "explanation": "7.25 - (-5.5) = 7.25 + 5.5 = 12.75 degrees. It climbed 5.5 to reach 0, then 7.25 more.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-c-15",
+          "prompt": "An elevator starts on floor -3 (three floors below ground level, which is floor 0). It goes up 7 floors, then down 5 floors. What floor is it on?",
+          "answerType": "integer",
+          "answer": "-1",
+          "acceptedAnswers": [
+            "-1"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "-15",
+              "say": "Going up should move the elevator toward positive floors. Write the up trip as +7."
+            },
+            {
+              "ifAnswer": "1",
+              "say": "So close. Go step by step: -3 + 7 = 4, then down 5 from 4. Which side of 0 is that?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write -3 + 7 - 5 and work left to right."
+            }
+          ],
+          "explanation": "-3 + 7 = 4, and 4 - 5 = -1. The elevator ends one floor below ground level.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-c-16",
+          "prompt": "A water tank loses 2 3/4 gallons each day for 4 days. What is the total change in water (in gallons)?",
+          "answerType": "integer",
+          "answer": "-11",
+          "acceptedAnswers": [
+            "-11",
+            "-11.0"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "11",
+              "say": "Right amount! The tank is losing water, so the change should be negative."
+            },
+            {
+              "ifAnswer": "-8",
+              "say": "You multiplied the 2 but not the 3/4. Every day the tank loses 2 3/4, so the 3/4 gets multiplied too."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Each day the change is -2 3/4. Multiply that by 4. It may help to write 2 3/4 as 2.75 or 11/4."
+            }
+          ],
+          "explanation": "4 × (-2 3/4) = 4 × (-11/4) = -11. The tank lost 11 gallons, so the change is -11.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-c-17",
+          "prompt": "The low temperatures for five nights were -4°F, -7°F, 2°F, -3°F, and -8°F. What is the mean (average) low temperature (in °F)?",
+          "answerType": "integer",
+          "answer": "-4",
+          "acceptedAnswers": [
+            "-4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4",
+              "say": "Your adding is on track. The sum of the five temperatures is negative, so the average is negative too."
+            },
+            {
+              "ifAnswer": "-24",
+              "say": "That's the sum if the 2 were negative. Look again: 2°F is above zero, so it moves the total up."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Add all five temperatures (watch the one positive!), then divide by 5."
+            }
+          ],
+          "explanation": "Sum: -4 + (-7) + 2 + (-3) + (-8) = -20. Mean: -20 ÷ 5 = -4°F.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-c-18",
+          "prompt": "A scuba diver descends 4.5 meters every minute. Which expression gives the diver's change in elevation after 6 minutes?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "(-6) × (-4.5)",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "6 × (-4.5)",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "6 + (-4.5)",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "(-4.5) ÷ 6",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Two negatives would make a positive, which means going up. Time is positive here; only the descent is negative."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "That adds one descent to 6. The diver descends 4.5 meters six separate times, so multiply."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Change per minute is -4.5. It happens 6 times."
+            }
+          ],
+          "explanation": "Each minute is a change of -4.5 m, so after 6 minutes the change is 6 × (-4.5) = -27 meters.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-c-19",
+          "prompt": "A lemonade stand spends $12.50 on supplies and sells 14 cups for $0.75 each. What is the profit (in dollars)? Use a negative number for a loss.",
+          "answerType": "integer",
+          "answer": "-2",
+          "acceptedAnswers": [
+            "-2",
+            "-2.00",
+            "-$2",
+            "-$2.00",
+            "$-2.00"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2",
+              "say": "Good work on the money in and the money out. The stand took in less than it spent, so this is a loss."
+            },
+            {
+              "ifAnswer": "23",
+              "say": "Supplies are money going out, so subtract them from the sales."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the money taken in (14 × 0.75), then subtract what was spent."
+            }
+          ],
+          "explanation": "Sales: 14 × $0.75 = $10.50. Profit: 10.50 - 12.50 = -2. The stand lost $2.",
+          "difficulty": 3
+        },
+        {
+          "id": "g7-u1-c-20",
+          "prompt": "A river was 3/4 foot below normal on Monday (-3/4 ft). On Friday it was 2 1/3 feet above normal. How many feet did the river rise?",
+          "answerType": "fraction",
+          "answer": "37/12",
+          "acceptedAnswers": [
+            "37/12",
+            "3 1/12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "19/12",
+              "say": "You subtracted 3/4 from 2 1/3. Monday was below normal, so the river had to rise 3/4 just to get back to normal, then rise more."
+            },
+            {
+              "ifAnswer": "1 7/12",
+              "say": "That's 2 1/3 minus 3/4. Since Monday was below zero, the rise is 2 1/3 - (-3/4)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Rise = Friday minus Monday: 2 1/3 - (-3/4). Use twelfths."
+            }
+          ],
+          "explanation": "2 1/3 - (-3/4) = 2 1/3 + 3/4 = 28/12 + 9/12 = 37/12, or 3 1/12 feet.",
+          "difficulty": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Write each step you took and why, and tell how you decided whether the answer should be positive or negative. If you changed your mind partway through, tell what made you change it."
+      }
+    }
+  ]
+}

@@ -1,0 +1,2174 @@
+{
+  "unitId": "g7-u2",
+  "course": "7th grade",
+  "unitName": "Ratios, rates and proportional relationships",
+  "standards": [
+    "7.RP.1",
+    "7.RP.2"
+  ],
+  "sets": [
+    {
+      "setId": "g7-u2-a",
+      "title": "Unit rates and complex fractions",
+      "skill": "Compute unit rates, including rates with fractions in both quantities (complex fractions), and compare rates to find the better buy (7.RP.1)",
+      "standards": [
+        "7.RP.1",
+        "7.RP.2"
+      ],
+      "problems": [
+        {
+          "id": "g7-u2-a-01",
+          "prompt": "A car travels 150 miles in 3 hours at a steady speed. What is its speed in miles per hour?",
+          "answerType": "integer",
+          "answer": "50",
+          "acceptedAnswers": [
+            "50"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "450",
+              "say": "You multiplied the miles by the hours. A rate \"per hour\" asks how many miles fit into ONE hour, so share the 150 miles among the 3 hours."
+            },
+            {
+              "ifAnswer": "0.02",
+              "say": "You divided hours by miles, which tells you hours per mile. The question wants miles per hour, so put the miles on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "\"Per hour\" means \"in one hour.\" Split the 150 miles evenly across the 3 hours."
+            }
+          ],
+          "explanation": "Speed = miles ÷ hours = 150 ÷ 3 = 50 miles per hour.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-a-02",
+          "prompt": "You pay $6 for 4 notebooks. What is the price of one notebook (in dollars)?",
+          "answerType": "decimal",
+          "answer": "1.5",
+          "acceptedAnswers": [
+            "1.5",
+            "1.50",
+            "$1.50",
+            "$1.5",
+            "3/2",
+            "1 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "24",
+              "say": "You multiplied. Four notebooks cost $6 altogether, so one notebook has to cost less than $6. Share the $6 among 4."
+            },
+            {
+              "ifAnswer": "0.67",
+              "say": "You divided 4 by 6, which tells you notebooks per dollar. For dollars per notebook, put the dollars on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Price per notebook = total dollars ÷ number of notebooks."
+            }
+          ],
+          "explanation": "$6 ÷ 4 = $1.50 per notebook. Check: 4 × $1.50 = $6.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-a-03",
+          "prompt": "A printer prints 84 pages in 7 minutes. How many pages does it print per minute?",
+          "answerType": "integer",
+          "answer": "12",
+          "acceptedAnswers": [
+            "12"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "588",
+              "say": "You multiplied the pages by the minutes. The printer makes 84 pages in all 7 minutes together, so one minute is a smaller share."
+            },
+            {
+              "ifAnswer": "77",
+              "say": "You subtracted the 7. A unit rate splits the pages into equal groups, one group for each minute."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide the number of pages by the number of minutes."
+            }
+          ],
+          "explanation": "84 ÷ 7 = 12 pages per minute. Check: 12 × 7 = 84.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-a-04",
+          "prompt": "Which package of rice is the best buy (lowest price per ounce)?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "12 ounces for $3.00",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "20 ounces for $4.40",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "8 ounces for $2.40",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "16 ounces for $4.16",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "c",
+              "say": "That one has the smallest price tag, but it's also the smallest bag. Find the price for ONE ounce in each bag and compare those."
+            },
+            {
+              "ifAnswer": "a",
+              "say": "Nice try! $3 for 12 ounces is $0.25 an ounce. Work out one more of the bags the same way before you decide."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide each price by its number of ounces, then pick the smallest price per ounce."
+            }
+          ],
+          "explanation": "Price per ounce: (a) $3 ÷ 12 = $0.25, (b) $4.40 ÷ 20 = $0.22, (c) $2.40 ÷ 8 = $0.30, (d) $4.16 ÷ 16 = $0.26. The lowest is (b).",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-a-05",
+          "prompt": "A runner covers 1/2 mile in 1/4 hour. What is the runner's speed in miles per hour?",
+          "answerType": "integer",
+          "answer": "2",
+          "acceptedAnswers": [
+            "2",
+            "2/1"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/8",
+              "say": "You multiplied the two fractions. Speed is miles DIVIDED by hours: (1/2) ÷ (1/4)."
+            },
+            {
+              "ifAnswer": "1/2",
+              "say": "You divided hours by miles. Put the miles on top: (1/2) ÷ (1/4). How many quarter hours make a whole hour?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Speed = miles ÷ hours. Ask: how many 1/4 hours are in 1 hour, and how far would the runner go in that many?"
+            }
+          ],
+          "explanation": "(1/2) ÷ (1/4) = (1/2) × 4 = 2 miles per hour. In 4 quarter hours (one hour) the runner goes 4 × 1/2 = 2 miles.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-a-06",
+          "prompt": "A recipe uses 3/4 cup of sugar for 3 batches. How much sugar is used per batch (in cups)?",
+          "answerType": "fraction",
+          "answer": "1/4",
+          "acceptedAnswers": [
+            "1/4",
+            "0.25",
+            ".25"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4",
+              "say": "You divided 3 by 3/4, which is batches per cup. The question asks cups for ONE batch, so the cups go on top: (3/4) ÷ 3."
+            },
+            {
+              "ifAnswer": "9/4",
+              "say": "You multiplied by 3. One batch uses less sugar than three batches, so share the 3/4 cup into 3 equal parts."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Cups per batch = cups ÷ batches. Split 3/4 cup into 3 equal parts."
+            }
+          ],
+          "explanation": "(3/4) ÷ 3 = 3/12 = 1/4 cup per batch. Three quarter-cups make 3/4 cup.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-a-07",
+          "prompt": "Find the value of the complex fraction (1/2) ÷ (3/4).",
+          "answerType": "fraction",
+          "answer": "2/3",
+          "acceptedAnswers": [
+            "2/3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3/8",
+              "say": "You multiplied straight across. Dividing by 3/4 means multiplying by its reciprocal, 4/3."
+            },
+            {
+              "ifAnswer": "3/2",
+              "say": "You flipped the first fraction instead of the second. Keep 1/2, then multiply by the flip of 3/4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Keep the first fraction, change ÷ to ×, and flip the second fraction."
+            }
+          ],
+          "explanation": "(1/2) ÷ (3/4) = (1/2) × (4/3) = 4/6 = 2/3.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-a-08",
+          "prompt": "A snail crawls 2/3 foot in 1/6 hour. What is its speed in feet per hour?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4",
+            "4/1"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/9",
+              "say": "You multiplied the fractions. Speed means feet ÷ hours, so divide 2/3 by 1/6."
+            },
+            {
+              "ifAnswer": "1/4",
+              "say": "You divided hours by feet, which gives hours per foot. Flip it around: feet go on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Speed = feet ÷ hours = (2/3) ÷ (1/6). How many sixths of an hour are in one hour?"
+            }
+          ],
+          "explanation": "(2/3) ÷ (1/6) = (2/3) × 6 = 4 feet per hour. In six 1/6-hours the snail crawls 6 × 2/3 = 4 feet.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-a-09",
+          "prompt": "A machine fills 3/5 of a tank in 1/2 minute. Which expression gives its rate in tanks per minute?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "(1/2) ÷ (3/5)",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "(3/5) × (1/2)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "(3/5) ÷ (1/2)",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "(3/5) - (1/2)",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "That's minutes on top, so it tells you minutes per tank. For tanks per minute, the tanks go on top."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "Multiplying the two amounts doesn't give a rate. A rate divides one quantity by the other."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "\"Tanks per minute\" means tanks ÷ minutes."
+            }
+          ],
+          "explanation": "Tanks per minute = (3/5) ÷ (1/2) = 6/5, so the machine fills 1 1/5 tanks each minute.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-a-10",
+          "prompt": "A hose fills 2 1/2 gallons in 1/3 minute. How many gallons does it fill per minute?",
+          "answerType": "decimal",
+          "answer": "7.5",
+          "acceptedAnswers": [
+            "7.5",
+            "15/2",
+            "7 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5/6",
+              "say": "You multiplied by 1/3. Gallons per minute means gallons ÷ minutes, so divide by 1/3."
+            },
+            {
+              "ifAnswer": "2/15",
+              "say": "That's minutes per gallon, the flip of what's asked. Put the gallons on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write 2 1/2 as 5/2, then divide by 1/3 (multiply by 3)."
+            }
+          ],
+          "explanation": "(5/2) ÷ (1/3) = (5/2) × 3 = 15/2 = 7 1/2 gallons per minute.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-a-11",
+          "prompt": "A painter covers 3/4 of a wall in 1/2 hour. At that rate, how many walls does the painter cover per hour?",
+          "answerType": "fraction",
+          "answer": "3/2",
+          "acceptedAnswers": [
+            "3/2",
+            "1.5",
+            "1 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3/8",
+              "say": "You multiplied. Walls per hour means walls ÷ hours: (3/4) ÷ (1/2)."
+            },
+            {
+              "ifAnswer": "2/3",
+              "say": "You put the hours on top, which tells you hours per wall. Swap them so the walls are on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "In one hour there are two half hours. How much wall gets painted in two half hours?"
+            }
+          ],
+          "explanation": "(3/4) ÷ (1/2) = (3/4) × 2 = 3/2, or 1 1/2 walls per hour.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-a-12",
+          "prompt": "A 4.8-pound bag of seeds costs $12. What is the cost per pound (in dollars)?",
+          "answerType": "decimal",
+          "answer": "2.5",
+          "acceptedAnswers": [
+            "2.5",
+            "2.50",
+            "$2.50",
+            "$2.5",
+            "5/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.4",
+              "say": "You divided pounds by dollars, which tells you pounds per dollar. For dollars per pound, put the $12 on top."
+            },
+            {
+              "ifAnswer": "57.6",
+              "say": "You multiplied. One pound costs less than the whole bag, so divide the cost by the pounds."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Cost per pound = dollars ÷ pounds = 12 ÷ 4.8."
+            }
+          ],
+          "explanation": "12 ÷ 4.8 = 2.5, so the seeds cost $2.50 per pound. Check: 4.8 × 2.5 = 12.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-a-13",
+          "prompt": "A walker goes 1 3/4 miles in 1/2 hour. What is the walker's speed in miles per hour?",
+          "answerType": "decimal",
+          "answer": "3.5",
+          "acceptedAnswers": [
+            "3.5",
+            "7/2",
+            "3 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "7/8",
+              "say": "You found half of 1 3/4. But a whole hour is longer than a half hour, so the walker goes FARTHER in an hour."
+            },
+            {
+              "ifAnswer": "2/7",
+              "say": "That's hours per mile. Put the miles on top: (7/4) ÷ (1/2)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write 1 3/4 as 7/4. Then divide by 1/2, which is the same as doubling."
+            }
+          ],
+          "explanation": "(7/4) ÷ (1/2) = (7/4) × 2 = 7/2 = 3 1/2 miles per hour.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-a-14",
+          "prompt": "A batter uses 2/3 cup of flour for every 1/2 cup of milk. Which rate is the same?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "1/3 cup of flour per cup of milk",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "3/4 cup of flour per cup of milk",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "4/3 cups of flour per cup of milk",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "1 1/6 cups of flour per cup of milk",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "You multiplied the two amounts. To find flour per ONE cup of milk, divide: (2/3) ÷ (1/2)."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "That's cups of milk per cup of flour, the flip. The question keeps flour first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find how much flour goes with 1 whole cup of milk: (2/3) ÷ (1/2)."
+            }
+          ],
+          "explanation": "(2/3) ÷ (1/2) = (2/3) × 2 = 4/3. So it's 4/3 cups of flour for every cup of milk.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-a-15",
+          "prompt": "A pump moves 5/8 gallon of water every 1/4 minute. How many gallons does it move per minute?",
+          "answerType": "decimal",
+          "answer": "2.5",
+          "acceptedAnswers": [
+            "2.5",
+            "5/2",
+            "2 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "5/32",
+              "say": "You multiplied the fractions. Gallons per minute means divide: (5/8) ÷ (1/4)."
+            },
+            {
+              "ifAnswer": "2/5",
+              "say": "That's minutes per gallon. Flip your division so gallons are on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "There are four 1/4 minutes in a minute. How much water moves in four of them?"
+            }
+          ],
+          "explanation": "(5/8) ÷ (1/4) = (5/8) × 4 = 20/8 = 5/2, or 2 1/2 gallons per minute.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-a-16",
+          "prompt": "On a walk you cover 3/10 kilometer in 1/12 hour. What is your speed in kilometers per hour?",
+          "answerType": "decimal",
+          "answer": "3.6",
+          "acceptedAnswers": [
+            "3.6",
+            "18/5",
+            "3 3/5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/40",
+              "say": "You multiplied. Kilometers per hour means kilometers ÷ hours: (3/10) ÷ (1/12)."
+            },
+            {
+              "ifAnswer": "5/18",
+              "say": "Your division is the right idea but upside down; that's hours per kilometer. Put the kilometers on top."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Dividing by 1/12 is the same as multiplying by 12."
+            }
+          ],
+          "explanation": "(3/10) ÷ (1/12) = (3/10) × 12 = 36/10 = 3.6 kilometers per hour.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-a-17",
+          "prompt": "Find the value of the complex fraction (2 1/4) ÷ (3/8).",
+          "answerType": "integer",
+          "answer": "6",
+          "acceptedAnswers": [
+            "6",
+            "6/1"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "27/32",
+              "say": "You multiplied straight across. Change 2 1/4 to 9/4, then multiply by the reciprocal of 3/8."
+            },
+            {
+              "ifAnswer": "1/6",
+              "say": "You flipped the first fraction. Keep 9/4 as it is and flip 3/8 to 8/3."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Change 2 1/4 to an improper fraction first, then keep, change, flip."
+            }
+          ],
+          "explanation": "2 1/4 = 9/4. Then (9/4) × (8/3) = 72/12 = 6.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-a-18",
+          "prompt": "One store sells 2.5 pounds of apples for $4.50. Another sells 4 pounds for $6.80. Which statement is true?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "The first store is cheaper by $0.10 per pound",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "The second store is cheaper by $0.10 per pound",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "The first store is cheaper because $4.50 is less than $6.80",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "Both stores charge the same per pound",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Check your division for the first store: $4.50 ÷ 2.5. Compare the two prices per pound again."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Smaller total price, but it's also fewer pounds. Compare the price of ONE pound at each store."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find dollars per pound at each store, then compare."
+            }
+          ],
+          "explanation": "First store: 4.50 ÷ 2.5 = $1.80 per pound. Second store: 6.80 ÷ 4 = $1.70 per pound. The second store is $0.10 cheaper per pound.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-a-19",
+          "prompt": "A turtle walks 1/5 mile in 2/3 hour. At that rate, how many hours would it take to walk 1 mile?",
+          "answerType": "fraction",
+          "answer": "10/3",
+          "acceptedAnswers": [
+            "10/3",
+            "3 1/3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3/10",
+              "say": "That's miles per hour. This question asks for hours per mile, so the hours go on top."
+            },
+            {
+              "ifAnswer": "2/15",
+              "say": "You multiplied. Hours per mile means hours ÷ miles: (2/3) ÷ (1/5)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Hours per mile = hours ÷ miles. One mile is five of the 1/5-mile pieces."
+            }
+          ],
+          "explanation": "(2/3) ÷ (1/5) = (2/3) × 5 = 10/3, or 3 1/3 hours. Each 1/5 mile takes 2/3 hour, and 5 × 2/3 = 10/3.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-a-20",
+          "prompt": "A faucet drips 3/4 cup of water in 2 1/2 hours. How many cups does it drip per hour?",
+          "answerType": "decimal",
+          "answer": "0.3",
+          "acceptedAnswers": [
+            "0.3",
+            ".3",
+            "3/10"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "10/3",
+              "say": "That's hours per cup. Cups per hour means cups ÷ hours, so the 3/4 goes on top."
+            },
+            {
+              "ifAnswer": "15/8",
+              "say": "You multiplied. In one hour the faucet drips less than in 2 1/2 hours, so divide."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Write 2 1/2 as 5/2. Then compute (3/4) ÷ (5/2)."
+            }
+          ],
+          "explanation": "(3/4) ÷ (5/2) = (3/4) × (2/5) = 6/20 = 3/10 = 0.3 cup per hour.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 19,
+        "prompt": "Explain how you did number 19. Write each step you took and why, and tell how you decided which quantity to divide by which (or which numbers go on top of your proportion). If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u2-b",
+      "title": "Proportional relationships in tables, graphs and equations (constant of proportionality)",
+      "skill": "Decide whether a relationship is proportional, find the constant of proportionality from a table, graph or equation, and explain what a point like (1, r) means (7.RP.2)",
+      "standards": [
+        "7.RP.1",
+        "7.RP.2"
+      ],
+      "problems": [
+        {
+          "id": "g7-u2-b-01",
+          "prompt": "A table shows x = 2, 4, 6 and y = 10, 20, 30. What is the constant of proportionality (y ÷ x)?",
+          "answerType": "integer",
+          "answer": "5",
+          "acceptedAnswers": [
+            "5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/5",
+              "say": "You divided x by y. The constant of proportionality is y ÷ x, so put the y-value on top."
+            },
+            {
+              "ifAnswer": "10",
+              "say": "That's how much y goes up from row to row, but x goes up by 2 each time too. Divide one y-value by its own x-value."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Pick any row and divide its y by its x."
+            }
+          ],
+          "explanation": "10 ÷ 2 = 5, 20 ÷ 4 = 5, 30 ÷ 6 = 5. Every row gives 5, so k = 5 and y = 5x.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-b-02",
+          "prompt": "The cost of x pounds of grapes is y = 3x dollars. How much do 5 pounds cost (in dollars)?",
+          "answerType": "integer",
+          "answer": "15",
+          "acceptedAnswers": [
+            "15",
+            "$15",
+            "15.00",
+            "$15.00"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8",
+              "say": "You added 3 and 5. In y = 3x the 3 and the x are multiplied: 3 dollars for EACH pound."
+            },
+            {
+              "ifAnswer": "1.67",
+              "say": "You divided. Put 5 in for x and multiply: y = 3 × 5."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Substitute 5 for x in y = 3x."
+            }
+          ],
+          "explanation": "y = 3 × 5 = 15. Five pounds cost $15.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-b-03",
+          "prompt": "The graph of a proportional relationship passes through the point (4, 12). What is the constant of proportionality?",
+          "answerType": "integer",
+          "answer": "3",
+          "acceptedAnswers": [
+            "3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "1/3",
+              "say": "You divided x by y. The constant of proportionality is y ÷ x: 12 ÷ 4."
+            },
+            {
+              "ifAnswer": "8",
+              "say": "You subtracted. In a proportional relationship, y is a multiple of x, so divide instead."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The constant of proportionality is y ÷ x for any point on the line (except (0, 0))."
+            }
+          ],
+          "explanation": "k = 12 ÷ 4 = 3. The equation of the line is y = 3x.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-b-04",
+          "prompt": "Which table shows a proportional relationship between x and y?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "x: 1, 2, 3 and y: 4, 6, 8",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "x: 1, 2, 3 and y: 3, 6, 9",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "x: 2, 4, 6 and y: 3, 5, 7",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "x: 1, 2, 3 and y: 5, 10, 16",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "y goes up by the same amount each time, but that isn't enough. Check y ÷ x: 4 ÷ 1 and 6 ÷ 2 aren't equal."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "So close! The first two rows work. Check the last row: is 16 ÷ 3 the same as 5?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide y by x in every row. In a proportional table, you get the same number every time."
+            }
+          ],
+          "explanation": "In (b), 3 ÷ 1 = 6 ÷ 2 = 9 ÷ 3 = 3, so y = 3x. None of the other tables has the same y ÷ x in every row.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-b-05",
+          "prompt": "y is proportional to x, and y = 18 when x = 3. What is y when x = 5?",
+          "answerType": "integer",
+          "answer": "30",
+          "acceptedAnswers": [
+            "30"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "20",
+              "say": "You added 2 because x went up by 2. Proportional means y is always the same multiple of x. Find that multiple first."
+            },
+            {
+              "ifAnswer": "15",
+              "say": "You multiplied 5 by 3, but 3 is the old x-value, not the constant. Find y ÷ x first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the constant k = 18 ÷ 3, then multiply the new x by k."
+            }
+          ],
+          "explanation": "k = 18 ÷ 3 = 6, so y = 6x. When x = 5, y = 6 × 5 = 30.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-b-06",
+          "prompt": "A proportional graph passes through the point (1, 2.5). What is the unit rate (the constant of proportionality)?",
+          "answerType": "decimal",
+          "answer": "2.5",
+          "acceptedAnswers": [
+            "2.5",
+            "5/2",
+            "2 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.4",
+              "say": "You divided 1 by 2.5. The unit rate is the y-value that goes with x = 1."
+            },
+            {
+              "ifAnswer": "1",
+              "say": "That's the x-value. Look at the y-value that goes with it."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "At x = 1, the y-value IS the unit rate."
+            }
+          ],
+          "explanation": "The point (1, r) on a proportional graph shows the unit rate r. Here r = 2.5, so y = 2.5x.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-b-07",
+          "prompt": "A table shows x = 3, 6, 9 and y = 2, 4, 6. What is the constant of proportionality (y ÷ x)?",
+          "answerType": "fraction",
+          "answer": "2/3",
+          "acceptedAnswers": [
+            "2/3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3/2",
+              "say": "You divided x by y. Keep y on top: 2 ÷ 3."
+            },
+            {
+              "ifAnswer": "2",
+              "say": "That's how much y grows each row. x grows by 3 each row, so divide a y by its own x."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The constant can be a fraction. Divide y by x in any row."
+            }
+          ],
+          "explanation": "2 ÷ 3 = 4 ÷ 6 = 6 ÷ 9 = 2/3, so y = (2/3)x.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-b-08",
+          "prompt": "The equation d = 55t gives the distance d in miles after t hours. How many hours does it take to travel 220 miles?",
+          "answerType": "integer",
+          "answer": "4",
+          "acceptedAnswers": [
+            "4"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "12100",
+              "say": "You put 220 in for t, but 220 is the distance d. Put 220 in for d and solve 220 = 55t."
+            },
+            {
+              "ifAnswer": "165",
+              "say": "You subtracted. The equation multiplies 55 by t, so undo it by dividing."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Replace d with 220: 220 = 55t. What number times 55 gives 220?"
+            }
+          ],
+          "explanation": "220 = 55t, so t = 220 ÷ 55 = 4 hours.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-b-09",
+          "prompt": "Which equation matches the table x = 2, 5, 8 and y = 7, 17.5, 28?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "y = x + 5",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "y = 3.5x",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "x = 3.5y",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "y = 2x + 3",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "It works for the first row (2 + 5 = 7). Test the second row: is 5 + 5 equal to 17.5?"
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Close! The 3.5 is right, but x and y are switched. Which letter should be alone on one side?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find y ÷ x for every row. That number goes in front of x."
+            }
+          ],
+          "explanation": "7 ÷ 2 = 17.5 ÷ 5 = 28 ÷ 8 = 3.5, so y = 3.5x.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-b-10",
+          "prompt": "A proportional relationship passes through (6, 4). What is y when x = 15?",
+          "answerType": "integer",
+          "answer": "10",
+          "acceptedAnswers": [
+            "10"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "13",
+              "say": "You added 9 because x went up by 9. Proportional relationships multiply. Find y ÷ x first."
+            },
+            {
+              "ifAnswer": "22.5",
+              "say": "You used x ÷ y = 1.5 as the multiplier. The constant is y ÷ x, which is smaller than 1 here."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find k = y ÷ x = 4 ÷ 6, then multiply 15 by k."
+            }
+          ],
+          "explanation": "k = 4/6 = 2/3. y = (2/3) × 15 = 10.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-b-11",
+          "prompt": "The graph of a proportional relationship passes through (8, 6). What is the y-value on the line when x = 1?",
+          "answerType": "fraction",
+          "answer": "3/4",
+          "acceptedAnswers": [
+            "3/4",
+            "0.75",
+            ".75"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4/3",
+              "say": "That's x ÷ y. The y-value at x = 1 is y ÷ x: 6 ÷ 8."
+            },
+            {
+              "ifAnswer": "2",
+              "say": "You found the gap between 8 and 6. In a proportional relationship, you divide y by x."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "The y-value at x = 1 is the unit rate. Divide 6 by 8."
+            }
+          ],
+          "explanation": "Unit rate = 6 ÷ 8 = 3/4, so the point (1, 3/4) is on the line.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-b-12",
+          "prompt": "Pay is proportional to hours worked. 3 hours pays $46.50 and 5 hours pays $77.50. What is the pay per hour (in dollars)?",
+          "answerType": "decimal",
+          "answer": "15.5",
+          "acceptedAnswers": [
+            "15.5",
+            "15.50",
+            "$15.50",
+            "$15.5"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "31",
+              "say": "You found the difference in pay, nice. That $31 is for 2 extra hours, not one."
+            },
+            {
+              "ifAnswer": "124",
+              "say": "You added the two pays. Pick one row and divide the pay by its hours."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide the pay by the hours in one row: 46.50 ÷ 3."
+            }
+          ],
+          "explanation": "46.50 ÷ 3 = 15.50 and 77.50 ÷ 5 = 15.50. The pay is $15.50 per hour.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-b-13",
+          "prompt": "The equation y = (2/5)x is proportional. What is x when y = 8?",
+          "answerType": "integer",
+          "answer": "20",
+          "acceptedAnswers": [
+            "20"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3.2",
+              "say": "You multiplied 8 by 2/5, but 8 is y, not x. Solve 8 = (2/5)x instead."
+            },
+            {
+              "ifAnswer": "40",
+              "say": "You multiplied by 5, which is halfway there. (2/5)x means 2 fifths of x, so also divide by 2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Put 8 in for y: 8 = (2/5)x. Divide 8 by 2/5 (multiply by 5/2)."
+            }
+          ],
+          "explanation": "8 = (2/5)x, so x = 8 ÷ (2/5) = 8 × (5/2) = 20. Check: (2/5) × 20 = 8.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-b-14",
+          "prompt": "On a proportional graph, x is hours and y is miles walked. The point (1, 4) is on the line. What does the 4 mean?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "4 hours per mile",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "The walk started 4 miles from home",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "4 miles per hour",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "The walk lasted 4 hours",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "That's the flip. The point means 1 hour goes with 4 miles, so it's miles for each hour."
+            },
+            {
+              "ifAnswer": "b",
+              "say": "A proportional graph starts at (0, 0), so the walk starts at 0 miles. The point (1, 4) is about what happens after 1 hour."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Read the point as (hours, miles). What happens after exactly 1 hour?"
+            }
+          ],
+          "explanation": "(1, 4) means in 1 hour the walker goes 4 miles. That is the unit rate: 4 miles per hour.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-b-15",
+          "prompt": "In a proportional table, x = 4 goes with y = 10. What is y when x = 2.8?",
+          "answerType": "integer",
+          "answer": "7",
+          "acceptedAnswers": [
+            "7",
+            "7.0"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "8.8",
+              "say": "You subtracted 1.2 because x went down by 1.2. Proportional relationships multiply, so find y ÷ x first."
+            },
+            {
+              "ifAnswer": "1.12",
+              "say": "You multiplied 2.8 by 4 ÷ 10. The constant is y ÷ x = 10 ÷ 4."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find k = 10 ÷ 4, then multiply 2.8 by k."
+            }
+          ],
+          "explanation": "k = 10 ÷ 4 = 2.5. y = 2.5 × 2.8 = 7.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-b-16",
+          "prompt": "A relationship has the points (2, 9), (6, 27), and (10, 45). What is the constant of proportionality?",
+          "answerType": "decimal",
+          "answer": "4.5",
+          "acceptedAnswers": [
+            "4.5",
+            "9/2",
+            "4 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "18",
+              "say": "That's how much y went up from the first point to the second. x went up by 4 at the same time, so divide a y by its own x."
+            },
+            {
+              "ifAnswer": "2/9",
+              "say": "You divided x by y. Keep y on top: 9 ÷ 2."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Divide y by x for one point, then check another point."
+            }
+          ],
+          "explanation": "9 ÷ 2 = 27 ÷ 6 = 45 ÷ 10 = 4.5, so y = 4.5x.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-b-17",
+          "prompt": "y is proportional to x. When x = 3/4, y = 1/2. What is the constant of proportionality?",
+          "answerType": "fraction",
+          "answer": "2/3",
+          "acceptedAnswers": [
+            "2/3"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3/2",
+              "say": "You divided x by y. Put y on top: (1/2) ÷ (3/4)."
+            },
+            {
+              "ifAnswer": "3/8",
+              "say": "You multiplied the two fractions. The constant is y DIVIDED by x."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "k = y ÷ x = (1/2) ÷ (3/4). Keep, change, flip."
+            }
+          ],
+          "explanation": "(1/2) ÷ (3/4) = (1/2) × (4/3) = 4/6 = 2/3, so y = (2/3)x.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-b-18",
+          "prompt": "Which set of points could ALL be on the graph of one proportional relationship?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "(1, 3), (2, 6), (4, 10)",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "(0, 2), (1, 4), (2, 6)",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "(2, 5), (4, 10), (6, 15)",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "(3, 1), (6, 2), (9, 4)",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "The first two points work. Check the last one: is 10 ÷ 4 the same as 3?"
+            },
+            {
+              "ifAnswer": "b",
+              "say": "A proportional graph always goes through (0, 0). This set has (0, 2), so the line starts too high."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "For every point, y ÷ x has to be the same number."
+            }
+          ],
+          "explanation": "In (c), 5 ÷ 2 = 10 ÷ 4 = 15 ÷ 6 = 2.5, so all three points are on y = 2.5x.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-b-19",
+          "prompt": "Pay is proportional to hours. Working 6 hours earns $87. How much is earned for 10 hours (in dollars)?",
+          "answerType": "integer",
+          "answer": "145",
+          "acceptedAnswers": [
+            "145",
+            "$145",
+            "145.00",
+            "$145.00"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "91",
+              "say": "You added 4 because the hours went up by 4. Find the pay for ONE hour first, then multiply."
+            },
+            {
+              "ifAnswer": "52.2",
+              "say": "You multiplied by 6/10, which makes the pay smaller. More hours should earn more, so use 10/6."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the hourly pay: 87 ÷ 6. Then multiply by 10."
+            }
+          ],
+          "explanation": "87 ÷ 6 = $14.50 per hour. 14.50 × 10 = $145.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-b-20",
+          "prompt": "The equation c = 1.25p gives the cost c of p pounds of carrots. One customer pays $13.75. A second customer buys 4 more pounds than the first. What does the second customer pay (in dollars)?",
+          "answerType": "decimal",
+          "answer": "18.75",
+          "acceptedAnswers": [
+            "18.75",
+            "$18.75"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "17.75",
+              "say": "You added $4, but the second customer bought 4 more POUNDS, not 4 more dollars. Each pound costs $1.25."
+            },
+            {
+              "ifAnswer": "15",
+              "say": "That's how many pounds the second customer bought. You're one step away: turn the pounds into a cost."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "First find the first customer's pounds: 13.75 ÷ 1.25. Add 4 pounds, then use c = 1.25p."
+            }
+          ],
+          "explanation": "13.75 ÷ 1.25 = 11 pounds. 11 + 4 = 15 pounds. c = 1.25 × 15 = $18.75.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Write each step you took and why, and tell how you decided which quantity to divide by which (or which numbers go on top of your proportion). If you changed your mind partway through, tell what made you change it."
+      }
+    },
+    {
+      "setId": "g7-u2-c",
+      "title": "Proportions in context (scale, speed, recipes, maps)",
+      "skill": "Set up and solve proportions for scale drawings, maps, speed and recipes (7.RP.2)",
+      "standards": [
+        "7.RP.1",
+        "7.RP.2"
+      ],
+      "problems": [
+        {
+          "id": "g7-u2-c-01",
+          "prompt": "A map scale says 1 inch = 20 miles. Two towns are 3 inches apart on the map. How many miles apart are they?",
+          "answerType": "integer",
+          "answer": "60",
+          "acceptedAnswers": [
+            "60"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "23",
+              "say": "You added the 3 to the 20. Each inch stands for 20 miles, so 3 inches stand for three groups of 20."
+            },
+            {
+              "ifAnswer": "6.67",
+              "say": "You divided. The real distance is much bigger than the map distance, so multiply."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Every inch on the map is 20 real miles. Count 20 miles for each of the 3 inches."
+            }
+          ],
+          "explanation": "3 × 20 = 60 miles.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-c-02",
+          "prompt": "A recipe uses 2 cups of flour for 12 cookies. How many cups of flour are needed for 36 cookies?",
+          "answerType": "integer",
+          "answer": "6",
+          "acceptedAnswers": [
+            "6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "26",
+              "say": "You added the 24 extra cookies to the cups. Cookies and cups grow by the same FACTOR: 36 is how many times 12?"
+            },
+            {
+              "ifAnswer": "72",
+              "say": "You multiplied the 2 cups by 36 cookies. That would be 2 cups for every single cookie. How many batches of 12 make 36?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "36 cookies is 3 batches of 12. Each batch needs 2 cups."
+            }
+          ],
+          "explanation": "36 ÷ 12 = 3 batches, and 3 × 2 = 6 cups.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-c-03",
+          "prompt": "A car travels at 45 miles per hour. How far does it go in 4 hours (in miles)?",
+          "answerType": "integer",
+          "answer": "180",
+          "acceptedAnswers": [
+            "180"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "49",
+              "say": "You added. 45 miles happens in EACH hour, so the 4 hours give four groups of 45."
+            },
+            {
+              "ifAnswer": "11.25",
+              "say": "You divided. After 4 hours the car has gone farther than after 1 hour, so multiply."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Distance = speed × time."
+            }
+          ],
+          "explanation": "45 × 4 = 180 miles.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-c-04",
+          "prompt": "A model car is built at a scale of 1 : 24 (1 inch on the model stands for 24 inches on the real car). The model is 7 inches long. Which proportion finds the real length L (in inches)?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "1/24 = L/7",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "1/24 = 7/L",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "24/1 = 7/L",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "24/7 = 1/L",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "The model numbers have to match up. In 1/24, model is on top; so the 7 (a model length) should be on top too."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "Here the top numbers don't match: 24 is a real length but 7 is a model length. Keep model over real in both fractions."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Set up model/real = model/real. Which numbers are model lengths?"
+            }
+          ],
+          "explanation": "model/real = 1/24 = 7/L, so L = 7 × 24 = 168 inches.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-c-05",
+          "prompt": "Pencils are 3 for $0.60. How much do 10 pencils cost (in dollars)?",
+          "answerType": "decimal",
+          "answer": "2",
+          "acceptedAnswers": [
+            "2",
+            "2.00",
+            "$2",
+            "$2.00"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.2",
+              "say": "That's the price of ONE pencil, nice work. Now find the price of 10."
+            },
+            {
+              "ifAnswer": "6",
+              "say": "You multiplied $0.60 by 10, but $0.60 is for 3 pencils, not 1. Find the price of one pencil first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the unit price: 0.60 ÷ 3. Then multiply by 10."
+            }
+          ],
+          "explanation": "0.60 ÷ 3 = $0.20 per pencil. 10 × 0.20 = $2.00.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-c-06",
+          "prompt": "A blueprint uses the scale 1 cm = 2 m. A room is 4.5 cm long on the blueprint. How long is the real room (in meters)?",
+          "answerType": "integer",
+          "answer": "9",
+          "acceptedAnswers": [
+            "9",
+            "9.0"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "2.25",
+              "say": "You divided by 2. The real room is bigger than the drawing, so each centimeter becomes 2 meters."
+            },
+            {
+              "ifAnswer": "6.5",
+              "say": "You added 2. The scale means every 1 cm stands for 2 m, so multiply."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Each centimeter on the blueprint is 2 real meters."
+            }
+          ],
+          "explanation": "4.5 × 2 = 9 meters.",
+          "difficulty": 1,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 1
+        },
+        {
+          "id": "g7-u2-c-07",
+          "prompt": "A train travels 210 miles in 3.5 hours. At the same speed, how far does it go in 5 hours (in miles)?",
+          "answerType": "integer",
+          "answer": "300",
+          "acceptedAnswers": [
+            "300"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "211.5",
+              "say": "You added 1.5 because the time went up by 1.5 hours. Find the speed (miles per hour) first, then multiply."
+            },
+            {
+              "ifAnswer": "60",
+              "say": "That's the speed, miles per hour. One more step: how far in 5 hours?"
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Speed = 210 ÷ 3.5. Then distance = speed × 5."
+            }
+          ],
+          "explanation": "210 ÷ 3.5 = 60 miles per hour. 60 × 5 = 300 miles.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-c-08",
+          "prompt": "A punch recipe mixes 3 cups of juice with 5 cups of sparkling water. You use 12 cups of juice. How many cups of sparkling water do you need?",
+          "answerType": "integer",
+          "answer": "20",
+          "acceptedAnswers": [
+            "20"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "14",
+              "say": "You added 9 because the juice went up by 9. A recipe grows by multiplying: 12 is how many times 3?"
+            },
+            {
+              "ifAnswer": "7.2",
+              "say": "You used 3/5 as the multiplier. The water is MORE than the juice in this recipe, so the answer should be bigger than 12."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "12 cups of juice is 4 times the 3 cups in the recipe. Make the water 4 times bigger too."
+            }
+          ],
+          "explanation": "12 ÷ 3 = 4, so multiply the water by 4: 5 × 4 = 20 cups.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-c-09",
+          "prompt": "On a map, 2 cm stands for 15 km. What distance on the map stands for 60 km?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "4 cm",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "8 cm",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "30 cm",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "47 cm",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "4 cm would be 2 × 15 = 30 km. 60 km is 4 groups of 15 km, so you need 4 groups of 2 cm."
+            },
+            {
+              "ifAnswer": "c",
+              "say": "30 is 2 × 15, but that number doesn't match either of the units. Find how many 15-km pieces are in 60 km."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "60 km is how many times 15 km? Multiply the 2 cm by that same number."
+            }
+          ],
+          "explanation": "60 ÷ 15 = 4, and 4 × 2 cm = 8 cm.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-c-10",
+          "prompt": "A drawing of a garden uses the scale 1 inch = 4 feet. The real garden is 26 feet long. How long is the drawing of the garden (in inches)?",
+          "answerType": "decimal",
+          "answer": "6.5",
+          "acceptedAnswers": [
+            "6.5",
+            "13/2",
+            "6 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "104",
+              "say": "You multiplied. Going from real feet to a smaller drawing, you need to divide."
+            },
+            {
+              "ifAnswer": "22",
+              "say": "You subtracted 4. Each 4 feet becomes 1 inch, so count how many 4s fit into 26."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "How many groups of 4 feet are in 26 feet? Each group is 1 inch."
+            }
+          ],
+          "explanation": "26 ÷ 4 = 6.5 inches.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-c-11",
+          "prompt": "A cyclist rides 18 km in 45 minutes. What is the cyclist's speed in kilometers per hour?",
+          "answerType": "integer",
+          "answer": "24",
+          "acceptedAnswers": [
+            "24"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "0.4",
+              "say": "That's kilometers per MINUTE. An hour has 60 minutes, so there's one more step."
+            },
+            {
+              "ifAnswer": "13.5",
+              "say": "You used 45/60 the wrong way, which shrank the distance. In a full hour the cyclist goes farther than in 45 minutes."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "45 minutes is 3/4 of an hour. Divide 18 by 3/4, or find km per minute and multiply by 60."
+            }
+          ],
+          "explanation": "18 ÷ 45 = 0.4 km per minute, and 0.4 × 60 = 24 km per hour. (Or 18 ÷ 3/4 = 24.)",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-c-12",
+          "prompt": "A recipe for 4 servings uses 3/4 cup of rice. How much rice is needed for 10 servings (in cups)?",
+          "answerType": "fraction",
+          "answer": "15/8",
+          "acceptedAnswers": [
+            "15/8",
+            "1 7/8",
+            "1.875"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "3/10",
+              "say": "You multiplied by 4/10, which shrinks the rice. 10 servings need MORE rice than 4 servings."
+            },
+            {
+              "ifAnswer": "6 3/4",
+              "say": "You added 6 because there are 6 more servings. Find the rice for 1 serving first, then multiply by 10."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Rice for one serving = (3/4) ÷ 4. Multiply that by 10."
+            }
+          ],
+          "explanation": "(3/4) ÷ 4 = 3/16 cup per serving. 10 × 3/16 = 30/16 = 15/8, or 1 7/8 cups.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-c-13",
+          "prompt": "Two cities are 5.5 inches apart on a map whose scale is 1/2 inch = 25 miles. How many miles apart are the cities?",
+          "answerType": "integer",
+          "answer": "275",
+          "acceptedAnswers": [
+            "275"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "137.5",
+              "say": "You treated it like 1 inch = 25 miles. Here 25 miles is only HALF an inch, so a whole inch is twice that."
+            },
+            {
+              "ifAnswer": "11",
+              "say": "That's how many half inches are in 5.5 inches, great start. Each half inch stands for 25 miles."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "First find how many miles 1 whole inch stands for."
+            }
+          ],
+          "explanation": "1/2 inch = 25 miles, so 1 inch = 50 miles. 5.5 × 50 = 275 miles.",
+          "difficulty": 2,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 2
+        },
+        {
+          "id": "g7-u2-c-14",
+          "prompt": "A scale drawing of a room is 6 inches by 4 inches. The scale is 1 inch = 3 feet. What is the real area of the room?",
+          "answerType": "choice",
+          "answer": "c",
+          "acceptedAnswers": [
+            "c"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "24 square feet",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "72 square feet",
+              "isCorrect": false
+            },
+            {
+              "id": "c",
+              "text": "216 square feet",
+              "isCorrect": true
+            },
+            {
+              "id": "d",
+              "text": "30 square feet",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "b",
+              "say": "You multiplied the drawing's area by 3. But BOTH the length and the width grow by 3. Scale each side first."
+            },
+            {
+              "ifAnswer": "a",
+              "say": "That's the area of the drawing in square inches. Turn each side into feet before you multiply."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the real length and the real width first, then multiply them."
+            }
+          ],
+          "explanation": "Real length = 6 × 3 = 18 ft, real width = 4 × 3 = 12 ft. Area = 18 × 12 = 216 square feet.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-c-15",
+          "prompt": "A photo is 4 inches wide and 6 inches tall. It is enlarged so the width is 10 inches, keeping the same shape. What is the new height (in inches)?",
+          "answerType": "integer",
+          "answer": "15",
+          "acceptedAnswers": [
+            "15"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "12",
+              "say": "You added 6 because the width went up by 6. Enlarging keeps the same shape, so multiply both sides by the same factor."
+            },
+            {
+              "ifAnswer": "2.4",
+              "say": "You multiplied by 4/10, which made the photo shorter. It's being enlarged, so the height gets bigger."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find the scale factor: 10 ÷ 4. Multiply the height by it."
+            }
+          ],
+          "explanation": "Scale factor = 10 ÷ 4 = 2.5. New height = 6 × 2.5 = 15 inches.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-c-16",
+          "prompt": "A car uses 3 gallons of gas to go 87 miles. How many gallons does it need to go 232 miles?",
+          "answerType": "integer",
+          "answer": "8",
+          "acceptedAnswers": [
+            "8"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "29",
+              "say": "That's miles per gallon, a great first step. Now how many groups of 29 miles fit in 232 miles?"
+            },
+            {
+              "ifAnswer": "2.67",
+              "say": "That's how many times farther 232 miles is than 87. Multiply that by the 3 gallons."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find miles per gallon (87 ÷ 3), then divide 232 by it."
+            }
+          ],
+          "explanation": "87 ÷ 3 = 29 miles per gallon. 232 ÷ 29 = 8 gallons.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-c-17",
+          "prompt": "A model of a building uses the scale 1 : 150. The model is 40 cm tall. How tall is the real building in METERS?",
+          "answerType": "integer",
+          "answer": "60",
+          "acceptedAnswers": [
+            "60"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "6000",
+              "say": "That's the right height in centimeters. The question asks for meters, and 100 cm = 1 m."
+            },
+            {
+              "ifAnswer": "190",
+              "say": "You added 150. A 1 : 150 scale means every real length is 150 TIMES the model length."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Multiply by 150 to get centimeters, then change centimeters to meters."
+            }
+          ],
+          "explanation": "40 × 150 = 6,000 cm. 6,000 ÷ 100 = 60 meters.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-c-18",
+          "prompt": "One runner goes 400 meters in 80 seconds. Another goes 1,500 meters in 330 seconds. Which statement is true?",
+          "answerType": "choice",
+          "answer": "b",
+          "acceptedAnswers": [
+            "b"
+          ],
+          "choices": [
+            {
+              "id": "a",
+              "text": "The second runner is faster because 1,500 meters is farther",
+              "isCorrect": false
+            },
+            {
+              "id": "b",
+              "text": "The first runner is faster: 5 meters per second compared with about 4.5",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "text": "They run at the same speed",
+              "isCorrect": false
+            },
+            {
+              "id": "d",
+              "text": "The second runner is faster: 0.22 seconds per meter compared with 0.2",
+              "isCorrect": false
+            }
+          ],
+          "hints": [
+            {
+              "ifAnswer": "a",
+              "say": "Running farther doesn't mean running faster. Compare meters per second for each runner."
+            },
+            {
+              "ifAnswer": "d",
+              "say": "Seconds per meter is the time for each meter, so the BIGGER number means slower. Check which runner needs less time per meter."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find meters per second for each runner: meters ÷ seconds."
+            }
+          ],
+          "explanation": "First runner: 400 ÷ 80 = 5 m/s. Second runner: 1,500 ÷ 330 ≈ 4.5 m/s. The first runner is faster.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-c-19",
+          "prompt": "A recipe calls for 2 1/2 cups of flour for every 1 1/4 cups of sugar. How much flour goes with 3 cups of sugar (in cups)?",
+          "answerType": "integer",
+          "answer": "6",
+          "acceptedAnswers": [
+            "6"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "4.25",
+              "say": "You added 1 3/4 because the sugar went up by 1 3/4. Recipes grow by multiplying. Find the flour for 1 cup of sugar."
+            },
+            {
+              "ifAnswer": "1.5",
+              "say": "You used sugar ÷ flour. You want flour for each cup of sugar: (2 1/2) ÷ (1 1/4)."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Find flour per cup of sugar: (5/2) ÷ (5/4). Then multiply by 3."
+            }
+          ],
+          "explanation": "(5/2) ÷ (5/4) = 2 cups of flour per cup of sugar. 2 × 3 = 6 cups.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        },
+        {
+          "id": "g7-u2-c-20",
+          "prompt": "On a map with the scale 1 cm = 12 km, a bus route is 7.5 cm long. The bus averages 60 km per hour. How many hours does the trip take?",
+          "answerType": "decimal",
+          "answer": "1.5",
+          "acceptedAnswers": [
+            "1.5",
+            "3/2",
+            "1 1/2"
+          ],
+          "hints": [
+            {
+              "ifAnswer": "90",
+              "say": "That's the real distance in kilometers, nice. One more step: how long does 90 km take at 60 km per hour?"
+            },
+            {
+              "ifAnswer": "0.125",
+              "say": "You divided the map length by the speed. Turn the map length into real kilometers first."
+            },
+            {
+              "ifAnswer": "*",
+              "say": "Step 1: real distance = 7.5 × 12. Step 2: time = distance ÷ speed."
+            }
+          ],
+          "explanation": "7.5 × 12 = 90 km. 90 ÷ 60 = 1.5 hours.",
+          "difficulty": 3,
+          "standards": [
+            "7.RP.1",
+            "7.RP.2"
+          ],
+          "dok": 3
+        }
+      ],
+      "openResponse": {
+        "problemNumber": 20,
+        "prompt": "Explain how you did number 20. Write each step you took and why, and tell how you decided which quantity to divide by which (or which numbers go on top of your proportion). If you changed your mind partway through, tell what made you change it."
+      }
+    }
+  ]
+}
