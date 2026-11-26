@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -234,6 +234,24 @@ describe('no dead links', () => {
     expect(text).not.toMatch(/mock backend/i)
     expect(text).not.toMatch(/contract version/i)
     expect(text).not.toMatch(/foundation|unfinished|placeholder|pending product approval/i)
+  })
+
+  it('uses the official Nov 25 parent-facing wording across home, arcade, and arcade privacy', () => {
+    renderHome()
+    const line1 =
+      'Free math games for everyone. In my small groups, every student gets a turn at the controls, and I teach from the move they make.'
+    const line3 =
+      'If your teen sends me a written math question, it goes to your email first. You choose whether to review each one before I see it.'
+
+    expect(document.querySelector('main')?.textContent ?? '').toContain(line1)
+
+    const arcadeHtml = readFileSync('public/arcade/index.html', 'utf8')
+    expect(arcadeHtml).toContain(line1)
+    expect(arcadeHtml).toContain(line3)
+
+    const arcadePrivacyHtml = readFileSync('public/arcade/privacy/index.html', 'utf8')
+    expect(arcadePrivacyHtml).toContain(line3)
+    expect(arcadePrivacyHtml).not.toMatch(/coach\s+sam/i)
   })
 
   /**
