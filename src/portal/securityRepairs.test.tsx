@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RoomStageCard } from '@routes/portal/RoomStageCard'
 import { buildChildActor, buildMentorActor, buildParentActor } from './access'
+import { requestParentStepUpCode } from './approvalLayers'
 import { forwardQuestionToMentor, sendMentorReplyDemo, submitAskQuestion } from './askActions'
 import { getCurriculumSet } from './curriculum'
 import {
@@ -51,7 +52,7 @@ describe('portal Phase 1 — PR 11 security repair order (G-07, G-06, Codex1, G-
     expect(leoIn.invite.activeChildIds).toEqual(['child_leo'])
 
     const afterSwitchOff = updateFourSettings(adapter, priya, 'hh_priya', 'child_leo', {
-      askMode: 'auto', autoShow: true, approvedFunGames: ['neon-dash'], joinRooms: false, emailMode: 'everything',
+      askMode: 'review', autoShow: true, approvedFunGames: ['neon-dash'], joinRooms: false, emailMode: 'everything',
     })
     expect(afterSwitchOff.roomInvites.find((r) => r.id === leoRoom.invite.id)?.activeChildIds).toEqual([])
     expect(() => joinRoom(adapter, leo, leoRoom.invite.id, '2026-11-26T01:02:00Z')).toThrow(PortalAccessError)
@@ -172,9 +173,10 @@ describe('portal Phase 1 — PR 11 security repair order (G-07, G-06, Codex1, G-
     // Mentor B already has an existing session actor built BEFORE revocation
     const staleMentorBSession = buildMentorActor(seed, 'mentor_b')
 
-    // Prepare a forwarded question and an openable room invite on Elena's household while Mentor B is still assigned
-    const asked = submitAskQuestion(adapter, marcus, 'child_marcus', { text: 'Need help on #3' }, '2026-11-25T10:00:00Z')
-    forwardQuestionToMentor(adapter, elena, asked.question.id, '2026-11-25T10:01:00Z')
+    // Prepare a parent-approved question and an openable room invite on Elena's household while Mentor B is still assigned
+    const asked = submitAskQuestion(adapter, marcus, 'child_marcus', { text: 'Need help on #3', deviceId: 'dev_marcus_chromebook' }, '2026-11-25T10:00:00Z')
+    const elenaOtp = requestParentStepUpCode(adapter, 'hh_elena', 'approve_question', asked.question.id, '2026-11-25T10:00:30Z')
+    forwardQuestionToMentor(adapter, elena, asked.question.id, { tokenId: asked.approvalTokenId!, stepUpCode: elenaOtp.challenge.code, deviceId: 'dev_elena_phone' }, '2026-11-25T10:01:00Z')
     const room = createRoomInvite(adapter, samuel, {
       childId: 'child_marcus', gameId: 'moon-gate',
       startsAt: '2026-11-26T02:00:00Z', endsAt: '2026-11-26T02:10:00Z',
@@ -249,8 +251,10 @@ describe('portal Phase 1 — PR 11 security repair order (G-07, G-06, Codex1, G-
     expect(JSON.stringify(marcusViewBeforeFwd)).not.toContain('SECRET_TYPED_ANSWER_MARCUS')
     expect(JSON.stringify(marcusViewBeforeFwd)).not.toContain('SECRET_OPEN_RESPONSE_MARCUS')
 
-    // Once parent forwards, mentor view includes Marcus's open response and typed answers
-    const afterFwd = forwardQuestionToMentor(adapter, elena, pendingQ.id, '2026-11-25T12:05:00Z')
+    // Once parent approves with single-use link + fresh code, mentor view includes Marcus's open response and typed answers
+    const workToken = afterMarcusSubmit.state.approvalTokens.find((t) => t.questionId === pendingQ.id)!
+    const workOtp = requestParentStepUpCode(adapter, 'hh_elena', 'approve_question', pendingQ.id, '2026-11-25T12:04:00Z')
+    const afterFwd = forwardQuestionToMentor(adapter, elena, pendingQ.id, { tokenId: workToken.tokenId, stepUpCode: workOtp.challenge.code, deviceId: 'dev_elena_phone' }, '2026-11-25T12:05:00Z')
     const marcusViewAfterFwd = listTodayWorkQueue(afterFwd, samuel).find((w) => w.id === marcusSet.record.id)!
     expect(marcusViewAfterFwd.openResponse).toBe('SECRET_OPEN_RESPONSE_MARCUS')
     expect(marcusViewAfterFwd.attempts[0]?.answers[0]?.chosenValue).toBe('SECRET_TYPED_ANSWER_MARCUS')
@@ -272,8 +276,10 @@ describe('portal Phase 1 — PR 11 security repair order (G-07, G-06, Codex1, G-
     expect(JSON.stringify(sofiaKidView)).not.toContain('SECRET_TYPED_SOFIA')
     expect(JSON.stringify(sofiaKidView)).not.toContain('SECRET_OPEN_SOFIA')
 
-    // (c) Turning Questions OFF for Leo hides even previously queued Ask questions from mentors
-    submitAskQuestion(adapter, leo, 'child_leo', { text: 'SECRET_LEO_ASK' }, '2026-11-25T12:04:00Z')
+    // (c) Turning Questions OFF for Leo hides even previously parent-approved Ask questions from mentors
+    const leoAsk = submitAskQuestion(adapter, leo, 'child_leo', { text: 'SECRET_LEO_ASK', deviceId: 'dev_leo_chromebook' }, '2026-11-25T12:04:00Z')
+    const leoOtp = requestParentStepUpCode(adapter, 'hh_priya', 'approve_question', leoAsk.question.id, '2026-11-25T12:05:00Z')
+    forwardQuestionToMentor(adapter, priya, leoAsk.question.id, { tokenId: leoAsk.approvalTokenId!, stepUpCode: leoOtp.challenge.code, deviceId: 'dev_priya_phone' }, '2026-11-25T12:06:00Z')
     expect(listTodayAskQueue(adapter.load(), samuel).some((q) => q.text === 'SECRET_LEO_ASK')).toBe(true)
     const afterLeoOff = updateFourSettings(adapter, priya, 'hh_priya', 'child_leo', {
       askMode: 'off', autoShow: false, approvedFunGames: ['neon-dash'], joinRooms: true, emailMode: 'everything',

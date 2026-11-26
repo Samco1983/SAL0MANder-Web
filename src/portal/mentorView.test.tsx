@@ -5,8 +5,9 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { routes } from '@app/router'
 import { paths } from '@config/routes'
-import { buildChildActor, buildMentorActor } from './access'
-import { submitAskQuestion } from './askActions'
+import { buildChildActor, buildMentorActor, buildParentActor } from './access'
+import { requestParentStepUpCode } from './approvalLayers'
+import { forwardQuestionToMentor, submitAskQuestion } from './askActions'
 import {
   addMentorAccount, assignMentorToHousehold, awardBeltPassed,
   buildFridayDrafts, getMembershipCapacity, listQuietKids,
@@ -26,17 +27,22 @@ describe('portal Phase 1 — PR 5 Mentor view and Admin page', () => {
     const mentorB = buildMentorActor(seed, 'mentor_b')
     const mentorC = buildMentorActor(seed, 'mentor_c')
     const leo = buildChildActor(seed, 'child_leo')
+    const priya = buildParentActor(seed, 'hh_priya')
 
-    // Oldest-first Ask queue ordering (only provider-accepted auto-send Leo questions visible to Mr. Sam, never Mentor B/C)
-    submitAskQuestion(adapter, leo, 'child_leo', { text: 'First question' }, '2026-11-24T10:00:00Z')
-    const afterSecond = submitAskQuestion(adapter, leo, 'child_leo', { text: 'Second question' }, '2026-11-24T11:00:00Z')
-    expect(listTodayAskQueue(afterSecond.state, samuel).map((q) => q.text)).toEqual(['First question', 'Second question'])
-    expect(listTodayAskQueue(afterSecond.state, mentorB)).toEqual([])
-    expect(listTodayAskQueue(afterSecond.state, mentorC)).toEqual([])
+    // Oldest-first Ask queue ordering (only parent-approved & stamped Leo questions visible to Mr. Sam, never Mentor B/C)
+    const firstAsk = submitAskQuestion(adapter, leo, 'child_leo', { text: 'First question', deviceId: 'dev_leo_chromebook' }, '2026-11-24T10:00:00Z')
+    const firstOtp = requestParentStepUpCode(adapter, 'hh_priya', 'approve_question', firstAsk.question.id, '2026-11-24T10:05:00Z')
+    forwardQuestionToMentor(adapter, priya, firstAsk.question.id, { tokenId: firstAsk.approvalTokenId!, stepUpCode: firstOtp.challenge.code, deviceId: 'dev_priya_phone' }, '2026-11-24T10:06:00Z')
+    const secondAsk = submitAskQuestion(adapter, leo, 'child_leo', { text: 'Second question', deviceId: 'dev_leo_chromebook' }, '2026-11-24T11:00:00Z')
+    const secondOtp = requestParentStepUpCode(adapter, 'hh_priya', 'approve_question', secondAsk.question.id, '2026-11-24T11:05:00Z')
+    const afterSecondState = forwardQuestionToMentor(adapter, priya, secondAsk.question.id, { tokenId: secondAsk.approvalTokenId!, stepUpCode: secondOtp.challenge.code, deviceId: 'dev_priya_phone' }, '2026-11-24T11:06:00Z')
+    expect(listTodayAskQueue(afterSecondState, samuel).map((q) => q.text)).toEqual(['First question', 'Second question'])
+    expect(listTodayAskQueue(afterSecondState, mentorB)).toEqual([])
+    expect(listTodayAskQueue(afterSecondState, mentorC)).toEqual([])
 
     // Quiet list detects 7+ days inactive Nina for assigned Mr. Sam only; nudge goes to parent email
-    expect(listQuietKids(afterSecond.state, samuel).map((c) => c.id)).toEqual(['child_nina'])
-    expect(listQuietKids(afterSecond.state, mentorB)).toEqual([])
+    expect(listQuietKids(afterSecondState, samuel).map((c) => c.id)).toEqual(['child_nina'])
+    expect(listQuietKids(afterSecondState, mentorB)).toEqual([])
     expect(() => sendQuietNudge(adapter, mentorB, 'child_nina')).toThrow(PortalAccessError)
     const afterNudge = sendQuietNudge(adapter, samuel, 'child_nina')
     expect(afterNudge.inbox[0]?.to).toBe('priya.demo@family.example')

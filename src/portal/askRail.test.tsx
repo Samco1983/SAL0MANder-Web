@@ -6,6 +6,7 @@ import { ThemeProvider } from '@app/providers/ThemeProvider'
 import { routes } from '@app/router'
 import { paths } from '@config/routes'
 import { buildChildActor, buildMentorActor, buildParentActor, can } from './access'
+import { requestParentStepUpCode } from './approvalLayers'
 import {
   ASK_SEND_DISCLOSURE,
   PARENT_REJECTED_CHILD_NOTICE,
@@ -17,12 +18,12 @@ import { showFeedbackToChild } from './parentActions'
 import { LocalPortalStorageAdapter, PortalAccessError } from './storage'
 import { openOrCreateWorkRecord, saveWorkDraft, submitWorkRecord } from './workActions'
 
-describe('portal Phase 1 — PR 4 Ask rail', () => {
+describe('portal Phase 1 — PR 4 Ask rail (Nov 25 review-first only)', () => {
   beforeEach(() => {
     window.localStorage.clear()
   })
 
-  it('enforces consent/askMode gates, Review-first, Auto-send provider acceptance, rejection hold, worksheet open-response rail, and Show/auto-show reply rules', () => {
+  it('enforces consent/askMode gates, Review-first only (no Auto-send), step-up approval, rejection hold, worksheet open-response rail, and Show/auto-show reply rules', () => {
     const adapter = new LocalPortalStorageAdapter()
     const seed = adapter.reset()
     const elena = buildParentActor(seed, 'hh_elena')
@@ -55,17 +56,32 @@ describe('portal Phase 1 — PR 4 Ask rail', () => {
     expect(failureEmail).toBeDefined()
     expect(failureEmail?.body).not.toContain('Secret held math question')
 
-    // Review-first (Marcus): parent inbox only until parent forwards; cross-household parent denied
+    // Review-first (Marcus): parent inbox only until parent approves with single-use link + fresh code; cross-household parent denied
     const reviewRes = submitAskQuestion(adapter, marcus, 'child_marcus', {
       text: 'Why does 3 - (-5) equal 8?',
       photoPlaceholder: { label: 'Page 14', nameCovered: true },
-    })
+      deviceId: 'dev_marcus_chromebook',
+    }, '2026-11-25T10:00:00Z')
     expect(reviewRes.question.status).toBe('waiting_parent_review')
+    expect(reviewRes.approvalTokenId).not.toBeNull()
     expect(can(samuel, 'view', { type: 'ask_question', record: reviewRes.question })).toBe(false)
-    expect(() => forwardQuestionToMentor(adapter, priya, reviewRes.question.id)).toThrow(PortalAccessError)
 
-    const forwarded = forwardQuestionToMentor(adapter, elena, reviewRes.question.id)
+    const elenaOtp = requestParentStepUpCode(adapter, 'hh_elena', 'approve_question', reviewRes.question.id, '2026-11-25T10:05:00Z')
+    expect(() =>
+      forwardQuestionToMentor(adapter, priya, reviewRes.question.id, {
+        tokenId: reviewRes.approvalTokenId!,
+        stepUpCode: elenaOtp.challenge.code,
+        deviceId: 'dev_priya_phone',
+      }, '2026-11-25T10:06:00Z'),
+    ).toThrow(PortalAccessError)
+
+    const forwarded = forwardQuestionToMentor(adapter, elena, reviewRes.question.id, {
+      tokenId: reviewRes.approvalTokenId!,
+      stepUpCode: elenaOtp.challenge.code,
+      deviceId: 'dev_elena_phone',
+    }, '2026-11-25T10:06:00Z')
     const fwdQ = forwarded.askQuestions.find((q) => q.id === reviewRes.question.id)!
+    expect(fwdQ.parentApprovalStamp?.label).toContain('Approved by parent, 2026-11-25 10:06 UTC')
     expect(can(samuel, 'view', { type: 'ask_question', record: fwdQ })).toBe(true)
 
     // Reply for Marcus (autoShow=false): sent_to_parent first, hidden from Marcus until Elena taps Show
@@ -76,17 +92,27 @@ describe('portal Phase 1 — PR 4 Ask rail', () => {
     const afterShow = showFeedbackToChild(adapter, elena, waitingFb.id)
     expect(can(marcus, 'view', { type: 'feedback', record: afterShow.feedback.find((f) => f.id === waitingFb.id)! })).toBe(true)
 
-    // Auto-send + opt-in autoShow (Leo): parent accepted first -> queued; rejected reply email still holds reply away from child
-    const autoRes = submitAskQuestion(adapter, leo, 'child_leo', { text: 'Does (-2)*(-3) always stay positive?' })
-    expect(autoRes.question.status).toBe('queued_for_mentor')
-    expect(autoRes.question.parentEmailAcceptedAt).not.toBeNull()
-    const rejReply = sendMentorReplyDemo(adapter, samuel, autoRes.question.id, 'Held reply text', { simulateParentRejected: true })
+    // Leo (Nov 25: no Auto-send — waits for Priya's approval even though Leo has autoShow=true for replies)
+    const leoRes = submitAskQuestion(adapter, leo, 'child_leo', {
+      text: 'Does (-2)*(-3) always stay positive?',
+      deviceId: 'dev_leo_chromebook',
+    }, '2026-11-25T11:00:00Z')
+    expect(leoRes.question.status).toBe('waiting_parent_review')
+    expect(can(samuel, 'view', { type: 'ask_question', record: leoRes.question })).toBe(false)
+    const priyaOtp = requestParentStepUpCode(adapter, 'hh_priya', 'approve_question', leoRes.question.id, '2026-11-25T11:05:00Z')
+    forwardQuestionToMentor(adapter, priya, leoRes.question.id, {
+      tokenId: leoRes.approvalTokenId!,
+      stepUpCode: priyaOtp.challenge.code,
+      deviceId: 'dev_priya_phone',
+    }, '2026-11-25T11:06:00Z')
+
+    const rejReply = sendMentorReplyDemo(adapter, samuel, leoRes.question.id, 'Held reply text', { simulateParentRejected: true })
     expect(rejReply.held).toBe(true)
     expect(rejReply.shownToChild).toBe(false)
-    const okReply = sendMentorReplyDemo(adapter, samuel, autoRes.question.id, 'Yes — opposite of an opposite is positive.')
+    const okReply = sendMentorReplyDemo(adapter, samuel, leoRes.question.id, 'Yes — opposite of an opposite is positive.')
     expect(okReply.shownToChild).toBe(true)
 
-    // Worksheet open response routes through the exact same Ask rail (Nina is in review mode -> waiting_parent_review)
+    // Worksheet open response routes through the exact same Ask rail (Nina -> waiting_parent_review)
     const work = openOrCreateWorkRecord(adapter, nina, 'child_nina')
     saveWorkDraft(adapter, nina, work.record.id, work.record.currentRevision, { answers: [], openResponse: 'I drew a number line for #2.' })
     const sub = submitWorkRecord(adapter, nina, work.record.id)
@@ -96,7 +122,7 @@ describe('portal Phase 1 — PR 4 Ask rail', () => {
     expect(can(samuel, 'view', { type: 'ask_question', record: wsQ })).toBe(false)
   })
 
-  it('walks through Ask form, rejection hold, parent Forward to Mr. Sam, and reply Show/auto-show in UI', async () => {
+  it('walks through Ask form, rejection hold, parent link+OTP approval, parent stamp in Mentor View, and reply Show in UI', async () => {
     const user = userEvent.setup()
     const router = createMemoryRouter(routes, { initialEntries: [paths.portal] })
     render(<ThemeProvider><RouterProvider router={router} /></ThemeProvider>)
@@ -109,7 +135,7 @@ describe('portal Phase 1 — PR 4 Ask rail', () => {
     await user.click(screen.getByRole('button', { name: /Kai \(white\)/i }))
     expect(screen.getByText(/Ask Mr\. Sam stays Off until your parent verifies consent/i)).toBeVisible()
 
-    // Marcus (Review-first): sees B3 disclosure, simulates rejected parent email -> held away from Mr. Sam
+    // Marcus (Review-first): sees disclosure, simulates rejected parent email -> held away from Mr. Sam
     await user.click(screen.getByRole('button', { name: /Marcus \(yellow\)/i }))
     expect(screen.getByText(ASK_SEND_DISCLOSURE)).toBeVisible()
     const box = screen.getByLabelText(/Your math question/i)
@@ -123,16 +149,19 @@ describe('portal Phase 1 — PR 4 Ask rail', () => {
     await user.click(screen.getByRole('button', { name: /^send question$/i }))
     expect(screen.getByTestId('ask-rail-status')).toHaveTextContent(/Sent to your parent first/i)
 
-    // Mentor View: neither rejected nor waiting-review question is in Mr. Sam's queue yet
+    // Mentor View: neither rejected nor waiting-approval question is in Mr. Sam's queue yet
     await user.click(screen.getByRole('tab', { name: /mentor view/i }))
     expect(screen.queryByTestId('mentor-ask-queue')).toBeNull()
 
-    // Parent forwards from Simulated Inbox -> appears in Mentor View Ask Queue -> Mr. Sam sends reply (parent first)
+    // Parent requests fresh one-time code & approves with link + code in Simulated Inbox (on Elena's parent phone)
     await user.click(screen.getByRole('tab', { name: /simulated inbox/i }))
-    await user.click(screen.getByRole('button', { name: /forward to mr\. sam/i }))
+    await user.click(screen.getByRole('button', { name: /send one-time code/i }))
+    await user.click(screen.getByRole('button', { name: /approve with link \+ code/i }))
+
     await user.click(screen.getByRole('tab', { name: /mentor view/i }))
     const queue = screen.getByTestId('mentor-ask-queue')
     expect(within(queue).getByText(/How do I check -6 times 3\?/i)).toBeVisible()
+    expect(within(queue).getByText(/Approved by parent,/i)).toBeVisible()
     expect(within(queue).queryByText(/Rejected test question/i)).toBeNull()
     await user.click(within(queue).getByRole('button', { name: /send reply \(parent first\)/i }))
     expect(screen.getByText(/waiting for "Show to Marcus"/i)).toBeVisible()

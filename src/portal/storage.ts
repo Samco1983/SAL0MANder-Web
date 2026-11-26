@@ -43,6 +43,20 @@ export class LocalPortalStorageAdapter implements PortalStorageAdapter {
 
   save(state: PortalState): PortalState {
     const validated = PortalStateSchema.parse(state)
+    // Layer 8: Enforce append-only approval log invariant for every remaining household.
+    if (this.memory) {
+      const activeHouseholds = new Set(validated.households.map((h) => h.id))
+      const expectedPrefix = this.memory.approvalLogs.filter((entry) => activeHouseholds.has(entry.householdId))
+      const nextMatching = validated.approvalLogs.filter((entry) => activeHouseholds.has(entry.householdId))
+      if (nextMatching.length < expectedPrefix.length) {
+        throw new PortalAccessError('Approval log is append-only and cannot be truncated')
+      }
+      for (let i = 0; i < expectedPrefix.length; i += 1) {
+        if (JSON.stringify(expectedPrefix[i]) !== JSON.stringify(nextMatching[i])) {
+          throw new PortalAccessError('Approval log is append-only and existing entries cannot be modified')
+        }
+      }
+    }
     this.memory = structuredClone(validated)
     try {
       if (typeof window !== 'undefined') window.localStorage.setItem(STORAGE_KEY, JSON.stringify(validated))
@@ -53,6 +67,7 @@ export class LocalPortalStorageAdapter implements PortalStorageAdapter {
   }
 
   reset(): PortalState {
+    this.memory = null
     return this.save(createSeedState())
   }
 
@@ -92,6 +107,8 @@ export class LocalPortalStorageAdapter implements PortalStorageAdapter {
       children: state.children.filter((c) => c.householdId === householdId),
       workRecords: state.workRecords.filter((w) => w.householdId === householdId),
       askQuestions: state.askQuestions.filter((q) => q.householdId === householdId),
+      approvalLogs: state.approvalLogs.filter((l) => l.householdId === householdId),
+      devices: state.devices.filter((d) => d.householdId === householdId),
       feedback: state.feedback.filter((f) => f.householdId === householdId && f.status !== 'draft'),
       parentUpdates: state.parentUpdates.filter((u) => u.householdId === householdId),
       badges: state.badges.filter((b) => b.householdId === householdId),
@@ -113,7 +130,13 @@ export class LocalPortalStorageAdapter implements PortalStorageAdapter {
       ...state,
       households: state.households.filter((h) => h.id !== householdId),
       children: keep(state.children), workRecords: keep(state.workRecords),
-      askQuestions: keep(state.askQuestions), feedback: keep(state.feedback),
+      askQuestions: keep(state.askQuestions),
+      approvalTokens: keep(state.approvalTokens),
+      pullBackTokens: keep(state.pullBackTokens),
+      stepUpChallenges: keep(state.stepUpChallenges),
+      devices: keep(state.devices),
+      approvalLogs: keep(state.approvalLogs),
+      feedback: keep(state.feedback),
       parentUpdates: keep(state.parentUpdates), roomInvites: keep(state.roomInvites),
       badges: keep(state.badges), points: keep(state.points), inbox: keep(state.inbox),
       auditLogs: [

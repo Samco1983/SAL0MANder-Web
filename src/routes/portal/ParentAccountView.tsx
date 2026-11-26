@@ -1,8 +1,26 @@
 import { useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
-import { buildChildActor, buildParentActor, can } from '@/portal/access'
-import { forwardQuestionToMentor } from '@/portal/askActions'
+import {
+  buildChildActor,
+  buildForwardedSignInActor,
+  buildParentActor,
+  can,
+  type ParentSessionScope,
+} from '@/portal/access'
+import {
+  approveQuestionWithLinkAndCode,
+  authorizeParentBillingAction,
+  cancelParentEmailChange,
+  finalizeParentEmailChange,
+  listVisibleApprovalLogs,
+  rememberTeenDevice,
+  requestParentEmailChange,
+  requestParentStepUpCode,
+  revokeRegisteredDevice,
+  unlockParentApprovals,
+  unlockTeenFromForwardedSignIn,
+} from '@/portal/approvalLayers'
 import { formatParentBeltSentence } from '@/portal/belts'
 import {
   ASK_MODE_HELP, AUTO_SHOW_WARNING, CONSENT_NOTICE_POINTS, FUN_GAMES, LESSON_GAMES,
@@ -14,21 +32,35 @@ import { portalStorage } from '@/portal/storage'
 import type { AskMode, ChildProfile, EmailMode, PortalState } from '@/portal/types'
 import styles from './PortalPage.module.css'
 
-type ParentSubTab = 'overview' | 'consent' | 'profiles' | 'settings'
+type ParentSubTab = 'overview' | 'consent' | 'profiles' | 'settings' | 'security'
 
 export function ParentAccountView({
-  state, signedInHouseholdId, onStateChange, onSignOut, onOpenInbox, onOpenRoom,
+  state,
+  signedInHouseholdId,
+  sessionScope = 'full_parent',
+  activeDeviceId = 'dev_elena_phone',
+  activeNetworkTag = 'cell-elena',
+  onStateChange,
+  onSignOut,
+  onOpenChildProfile,
+  onOpenInbox,
+  onOpenRoom,
 }: {
   state: PortalState
   signedInHouseholdId: string | null
+  sessionScope?: ParentSessionScope
+  activeDeviceId?: string
+  activeNetworkTag?: string
   onStateChange: (next: PortalState) => void
   onSignOut: () => void
+  onOpenChildProfile?: (childId: string) => void
   onOpenInbox: () => void
   onOpenRoom?: (inviteId: string, childId: string) => void
 }) {
   const [subTab, setSubTab] = useState<ParentSubTab>('overview')
   const [emailInput, setEmailInput] = useState('elena.demo@family.example')
   const [notice, setNotice] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
   const [consentMethod, setConsentMethod] = useState<'simulated_form' | 'simulated_call'>('simulated_form')
   const [exportJson, setExportJson] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -38,6 +70,15 @@ export function ParentAccountView({
   const [pin, setPin] = useState('')
   const [firstLine, setFirstLine] = useState('')
   const [selectedChildId, setSelectedChildId] = useState('')
+  const [chooserPins, setChooserPins] = useState<Record<string, string>>({})
+  const [questionOtps, setQuestionOtps] = useState<Record<string, string>>({})
+  const [unlockCode, setUnlockCode] = useState('')
+  const [newParentEmail, setNewParentEmail] = useState('')
+  const [emailChangeOtp, setEmailChangeOtp] = useState('')
+  const [deviceLabel, setDeviceLabel] = useState('')
+  const [deviceChildId, setDeviceChildId] = useState('')
+  const [deviceOtp, setDeviceOtp] = useState('')
+  const [billingOtp, setBillingOtp] = useState('')
 
   const hh = signedInHouseholdId ? state.households.find((h) => h.id === signedInHouseholdId) : undefined
 
@@ -77,14 +118,77 @@ export function ParentAccountView({
     )
   }
 
-  const parentActor = buildParentActor(state, hh.id)
+  // Acceptance Row #5: Forwarded parent sign-in link reaches ONLY the profile chooser & teen PIN profile — NEVER parent powers.
+  if (sessionScope === 'profile_chooser_only') {
+    const chooserActor = buildForwardedSignInActor(state, hh.id)
+    const chooserKids = state.children.filter((record) => can(chooserActor, 'view', { type: 'child', record }))
+    return (
+      <div className={styles.stack} data-testid="forwarded-signin-chooser">
+        <div className={styles.headerRow}>
+          <div>
+            <h2 className={styles.sectionTitle}>Profile chooser (teen sign-in only)</h2>
+            <p className={styles.note}>
+              Opened from a forwarded parent sign-in link. Teens can open ONLY their own profile with their PIN. Approving questions, changing settings, buying anything, or changing the parent email are blocked here and require a fresh one-time code sent to {hh.parentEmail}.
+            </p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onSignOut}>Sign out</Button>
+        </div>
+        {errorMsg ? <p className={styles.alertCallout} role="alert">{errorMsg}</p> : null}
+        <Card title="Choose your profile (PIN required)" headingLevel={2}>
+          <ul className={styles.checkList}>
+            {chooserKids.map((child) => (
+              <li key={child.id} className={styles.checkItem}>
+                <div className={styles.checkMeta}>
+                  <p className={styles.checkLabel}>{child.nickname} · {child.level}</p>
+                  <p className={styles.checkDetail}>{child.pinHash ? 'Enter your profile PIN to open your own profile.' : 'No PIN set — opens teen profile only.'}</p>
+                </div>
+                <div className={styles.actions}>
+                  {child.pinHash ? (
+                    <input
+                      type="password"
+                      aria-label={`PIN for ${child.nickname}`}
+                      placeholder="PIN"
+                      className={styles.input}
+                      value={chooserPins[child.id] ?? ''}
+                      onChange={(e) => setChooserPins((prev) => ({ ...prev, [child.id]: e.target.value }))}
+                    />
+                  ) : null}
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setErrorMsg('')
+                      try {
+                        const res = unlockTeenFromForwardedSignIn(portalStorage, chooserActor, child.id, chooserPins[child.id] ?? '')
+                        onStateChange(res.state)
+                        onOpenChildProfile?.(child.id)
+                      } catch (err) {
+                        setErrorMsg(err instanceof Error ? err.message : 'Unable to open teen profile.')
+                      }
+                    }}
+                  >
+                    Open {child.nickname}’s profile
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
+    )
+  }
+
+  const parentActor = buildParentActor(state, hh.id, 'full_parent')
   const myChildren = state.children.filter((record) => can(parentActor, 'view', { type: 'child', record }))
   const waitingReplies = state.feedback.filter((record) => can(parentActor, 'show_feedback_to_child', { type: 'feedback', record }))
   const waitingQuestions = state.askQuestions.filter((record) => can(parentActor, 'forward_question', { type: 'ask_question', record }))
   const heldQuestions = state.askQuestions.filter((record) => can(parentActor, 'view', { type: 'ask_question', record }) && record.status === 'held_undelivered')
+  const pulledBackQuestions = state.askQuestions.filter((record) => can(parentActor, 'view', { type: 'ask_question', record }) && record.status === 'pulled_back')
   const myUpdates = state.parentUpdates.filter((record) => can(parentActor, 'view', { type: 'parent_update', record }))
   const myReceipts = listParentReceipts(state, parentActor)
+  const myApprovalLogs = listVisibleApprovalLogs(state, parentActor)
+  const myDevices = state.devices.filter((record) => can(parentActor, 'view', { type: 'device', record }))
   const activeChild = myChildren.find((c) => c.id === selectedChildId) ?? myChildren[0]
+  const targetDeviceChild = myChildren.find((c) => c.id === deviceChildId) ?? myChildren[0]
 
   function beginEditChild(child: ChildProfile) {
     setEditingChildId(child.id)
@@ -115,8 +219,59 @@ export function ParentAccountView({
         <Button variant="ghost" size="sm" onClick={onSignOut}>Sign out</Button>
       </div>
 
+      {hh.approvalsLockedAt ? (
+        <div className={styles.alertCallout} role="alert" data-testid="approvals-locked-banner">
+          <p><strong>Approvals locked</strong> ({hh.approvalsLockedAt}): {hh.approvalsLockedReason}</p>
+          <div className={styles.actions}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setErrorMsg('')
+                const res = requestParentStepUpCode(portalStorage, hh.id, 'unlock_approvals')
+                onStateChange(res.state)
+                setUnlockCode(res.challenge.code)
+                setNotice(`Sent unlock code (${res.challenge.code}) to ${hh.parentEmail}.`)
+              }}
+            >
+              Send unlock code
+            </Button>
+            <input
+              type="text"
+              aria-label="Unlock approvals code"
+              placeholder="6-digit code"
+              className={styles.input}
+              value={unlockCode}
+              onChange={(e) => setUnlockCode(e.target.value)}
+            />
+            <Button
+              size="sm"
+              onClick={() => {
+                setErrorMsg('')
+                try {
+                  onStateChange(unlockParentApprovals(portalStorage, parentActor, hh.id, unlockCode, activeDeviceId))
+                  setUnlockCode('')
+                  setNotice('Unlocked parent approvals after fresh one-time code verification.')
+                } catch (err) {
+                  onStateChange(portalStorage.load())
+                  setErrorMsg(err instanceof Error ? err.message : 'Unable to unlock approvals.')
+                }
+              }}
+            >
+              Unlock approvals
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       <div className={styles.actions} role="tablist" aria-label="Parent sections">
-        {([['overview', 'Parent view'], ['consent', 'Consent'], ['profiles', 'Child profiles'], ['settings', 'Settings (5)']] as const).map(([key, label]) => (
+        {([
+          ['overview', 'Parent view'],
+          ['consent', 'Consent'],
+          ['profiles', 'Child profiles'],
+          ['settings', 'Settings (5)'],
+          ['security', `Security & devices (${myApprovalLogs.length})`],
+        ] as const).map(([key, label]) => (
           <Button key={key} type="button" size="sm" variant={subTab === key ? 'primary' : 'secondary'} role="tab" aria-selected={subTab === key} onClick={() => setSubTab(key)}>
             {label}
           </Button>
@@ -124,37 +279,97 @@ export function ParentAccountView({
       </div>
 
       {notice ? <p className={styles.statusCallout} role="status">{notice}</p> : null}
+      {errorMsg ? <p className={styles.alertCallout} role="alert">{errorMsg}</p> : null}
 
       {subTab === 'overview' ? (
         <div className={styles.stack}>
-          <Card title={`Questions waiting for your review (${waitingQuestions.length})`} headingLevel={2}>
-            {waitingQuestions.length === 0 && heldQuestions.length === 0 ? (
-              <p className={styles.note}>No questions waiting to forward right now.</p>
+          <Card title={`Questions waiting for your approval (${waitingQuestions.length})`} headingLevel={2}>
+            {waitingQuestions.length === 0 && heldQuestions.length === 0 && pulledBackQuestions.length === 0 ? (
+              <p className={styles.note}>No questions waiting to approve right now.</p>
             ) : (
               <ul className={styles.checkList}>
                 {waitingQuestions.map((q) => {
-                  const kidName = myChildren.find((c) => c.id === q.childId)?.nickname ?? 'your child'
+                  const kidName = myChildren.find((c) => c.id === q.childId)?.nickname ?? 'your teen'
+                  const tok = state.approvalTokens.find((t) => t.questionId === q.id && t.usedAt === null && t.revokedAt === null)
                   return (
                     <li key={q.id} className={styles.checkItem}>
                       <div className={styles.checkMeta}>
                         <p className={styles.checkLabel}>Question from {kidName} ({q.source === 'worksheet_open_response' ? 'open response' : 'Ask form'})</p>
                         <p className={styles.checkDetail}>{q.text}</p>
+                        {tok ? <p className={styles.note}>Single-use approve link active until {tok.expiresAt} (needs fresh 6-digit code; blocked on teen device).</p> : null}
                         {q.photoPlaceholder ? <p className={styles.note}>Photo placeholder: {q.photoPlaceholder.label} (name covered: {q.photoPlaceholder.nameCovered ? 'yes' : 'no'})</p> : null}
                       </div>
-                      <Button size="sm" onClick={() => { onStateChange(forwardQuestionToMentor(portalStorage, parentActor, q.id)); setNotice(`Forwarded ${kidName}'s question to Mr. Sam.`) }}>
-                        Forward to Mr. Sam
-                      </Button>
+                      <div className={styles.actions}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setErrorMsg('')
+                            const res = requestParentStepUpCode(portalStorage, hh.id, 'approve_question', q.id)
+                            onStateChange(res.state)
+                            setQuestionOtps((prev) => ({ ...prev, [q.id]: res.challenge.code }))
+                            setNotice(`Sent fresh 6-digit code (${res.challenge.code}) to ${hh.parentEmail}.`)
+                          }}
+                        >
+                          Send 6-digit code
+                        </Button>
+                        <input
+                          type="text"
+                          aria-label={`Approval code for ${q.id}`}
+                          placeholder="6-digit code"
+                          className={styles.input}
+                          value={questionOtps[q.id] ?? ''}
+                          onChange={(e) => setQuestionOtps((prev) => ({ ...prev, [q.id]: e.target.value }))}
+                        />
+                        <Button
+                          size="sm"
+                          disabled={!tok}
+                          onClick={() => {
+                            if (!tok) return
+                            setErrorMsg('')
+                            try {
+                              onStateChange(
+                                approveQuestionWithLinkAndCode(portalStorage, parentActor, {
+                                  questionId: q.id,
+                                  tokenId: tok.tokenId,
+                                  stepUpCode: questionOtps[q.id] ?? '',
+                                  deviceId: activeDeviceId,
+                                  networkTag: activeNetworkTag,
+                                }),
+                              )
+                              setNotice(`Approved ${kidName}'s question for Mr. Sam. "Was this you?" email sent to ${hh.parentEmail}.`)
+                            } catch (err) {
+                              onStateChange(portalStorage.load())
+                              setErrorMsg(err instanceof Error ? err.message : 'Approval blocked.')
+                            }
+                          }}
+                        >
+                          Approve for Mr. Sam
+                        </Button>
+                      </div>
                     </li>
                   )
                 })}
                 {heldQuestions.map((q) => {
-                  const kidName = myChildren.find((c) => c.id === q.childId)?.nickname ?? 'your child'
+                  const kidName = myChildren.find((c) => c.id === q.childId)?.nickname ?? 'your teen'
                   return (
                     <li key={q.id} className={styles.checkItem}>
                       <div className={styles.checkMeta}>
                         <p className={styles.checkLabel}>Held undelivered — {kidName}</p>
                         <p className={styles.checkDetail}>{q.text}</p>
                         <p className={styles.warningText}>Parent email was rejected; held here and never sent to Mr. Sam.</p>
+                      </div>
+                    </li>
+                  )
+                })}
+                {pulledBackQuestions.map((q) => {
+                  const kidName = myChildren.find((c) => c.id === q.childId)?.nickname ?? 'your teen'
+                  return (
+                    <li key={q.id} className={styles.checkItem}>
+                      <div className={styles.checkMeta}>
+                        <p className={styles.checkLabel}>Pulled back — {kidName}</p>
+                        <p className={styles.checkDetail}>{q.text}</p>
+                        <p className={styles.warningText}>Pulled back via “Was this you?” email ({q.pulledBackAt}) and hidden from Mr. Sam.</p>
                       </div>
                     </li>
                   )
@@ -238,7 +453,7 @@ export function ParentAccountView({
                   <div key={child.id} className={styles.childPreview} data-testid={`child-preview-${child.id}`}>
                     <p className={styles.checkLabel}>{child.nickname} · {child.level}</p>
                     <p className={styles.statusCallout} data-testid={`parent-belt-sentence-${child.id}`}>{formatParentBeltSentence(child)}</p>
-                    <p className={styles.checkDetail}>Ask mode: {child.askMode}</p>
+                    <p className={styles.checkDetail}>Ask mode: {child.askMode} (no Auto-send)</p>
                     <p className={styles.checkDetail}>“{child.firstConversationLine}”</p>
                     <p className={styles.checkDetail}>Approved games: {child.approvedGames.length ? child.approvedGames.join(', ') : 'Free arcade only until consent'}</p>
                     {hasWaiting ? <p className={styles.warningText}>Mr. Sam replied — ask your parent to check their email and you’ll see it here.</p> : null}
@@ -350,6 +565,250 @@ export function ParentAccountView({
           onSave={(next) => { onStateChange(updateFourSettings(portalStorage, parentActor, hh.id, activeChild.id, next)); setNotice(`Saved settings for ${activeChild.nickname}.`) }}
         />
       ) : null}
+
+      {subTab === 'security' ? (
+        <div className={styles.stack}>
+          <Card title={`Remembered devices (${myDevices.length}) — Layer 9`} headingLevel={2}>
+            <p className={styles.note}>
+              Sign in once on your teen’s Chromebook and remember it for their PIN profile only. Parent approvals are always blocked on teen-registered devices. Revoke any device at any time.
+            </p>
+            <ul className={styles.checkList}>
+              {myDevices.map((d) => {
+                const kidName = myChildren.find((c) => c.id === d.rememberedForChildId)?.nickname
+                return (
+                  <li key={d.id} className={styles.checkItem}>
+                    <div className={styles.checkMeta}>
+                      <p className={styles.checkLabel}>{d.label} {d.revokedAt ? '(Revoked)' : ''}</p>
+                      <p className={styles.checkDetail}>
+                        Type: {d.deviceKind} · Network: {d.networkTag}
+                        {kidName ? ` · PIN profile: ${kidName}` : ''}
+                      </p>
+                    </div>
+                    {!d.revokedAt ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          onStateChange(revokeRegisteredDevice(portalStorage, parentActor, hh.id, d.id))
+                          setNotice(`Revoked device "${d.label}".`)
+                        }}
+                      >
+                        Revoke device
+                      </Button>
+                    ) : null}
+                  </li>
+                )
+              })}
+            </ul>
+            {targetDeviceChild ? (
+              <div className={styles.formStack}>
+                <label className={styles.field}>
+                  <span>Remember teen device for</span>
+                  <select className={styles.input} value={targetDeviceChild.id} onChange={(e) => setDeviceChildId(e.target.value)}>
+                    {myChildren.map((c) => <option key={c.id} value={c.id}>{c.nickname}</option>)}
+                  </select>
+                </label>
+                <label className={styles.field}>
+                  <span>Device label</span>
+                  <input className={styles.input} value={deviceLabel} onChange={(e) => setDeviceLabel(e.target.value)} placeholder={`${targetDeviceChild.nickname}'s Chromebook`} />
+                </label>
+                <div className={styles.actions}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setErrorMsg('')
+                      const res = requestParentStepUpCode(portalStorage, hh.id, 'manage_devices')
+                      onStateChange(res.state)
+                      setDeviceOtp(res.challenge.code)
+                      setNotice(`Sent device step-up code (${res.challenge.code}) to ${hh.parentEmail}.`)
+                    }}
+                  >
+                    Send device code
+                  </Button>
+                  <input
+                    type="text"
+                    aria-label="Device step-up code"
+                    placeholder="6-digit code"
+                    className={styles.input}
+                    value={deviceOtp}
+                    onChange={(e) => setDeviceOtp(e.target.value)}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setErrorMsg('')
+                      try {
+                        const res = rememberTeenDevice(portalStorage, parentActor, hh.id, {
+                          childId: targetDeviceChild.id,
+                          label: deviceLabel || `${targetDeviceChild.nickname}'s Chromebook`,
+                          networkTag: activeNetworkTag,
+                          stepUpCode: deviceOtp,
+                        })
+                        onStateChange(res.state)
+                        setDeviceLabel('')
+                        setDeviceOtp('')
+                        setNotice(`Remembered "${res.device.label}" for ${targetDeviceChild.nickname}'s PIN profile only.`)
+                      } catch (err) {
+                        onStateChange(portalStorage.load())
+                        setErrorMsg(err instanceof Error ? err.message : 'Unable to remember device.')
+                      }
+                    }}
+                  >
+                    Remember this device
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </Card>
+
+          <Card title="Change parent email (old-address confirmation + 48 h hold) — Layer 7" headingLevel={2}>
+            <p className={styles.note}>Current verified parent email: <strong>{hh.parentEmail}</strong></p>
+            {hh.pendingEmailChange && !hh.pendingEmailChange.completedAt && !hh.pendingEmailChange.cancelledAt ? (
+              <div className={styles.childPreview}>
+                <p className={styles.checkLabel}>Pending change to {hh.pendingEmailChange.newEmail}</p>
+                <p className={styles.checkDetail}>
+                  {hh.pendingEmailChange.oldAddressConfirmedAt
+                    ? `Old address confirmed (${hh.pendingEmailChange.oldAddressConfirmedAt}). 48-hour hold until ${hh.pendingEmailChange.effectiveAt}.`
+                    : `Waiting for confirmation from old address (${hh.pendingEmailChange.oldEmail}) in Simulated Inbox.`}
+                </p>
+                <div className={styles.actions}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setErrorMsg('')
+                      try {
+                        onStateChange(finalizeParentEmailChange(portalStorage, hh.id))
+                        setNotice('Parent email change finalized after 48-hour hold.')
+                      } catch (err) {
+                        setErrorMsg(err instanceof Error ? err.message : 'Still within 48-hour hold.')
+                      }
+                    }}
+                  >
+                    Try finalizing now
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      onStateChange(cancelParentEmailChange(portalStorage, parentActor, hh.id))
+                      setNotice('Cancelled pending parent email change.')
+                    }}
+                  >
+                    Cancel change
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.formStack}>
+                <label className={styles.field}>
+                  <span>New parent email (fictional .example)</span>
+                  <input type="email" className={styles.input} value={newParentEmail} onChange={(e) => setNewParentEmail(e.target.value)} placeholder="new.parent@family.example" />
+                </label>
+                <div className={styles.actions}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setErrorMsg('')
+                      const res = requestParentStepUpCode(portalStorage, hh.id, 'change_parent_email')
+                      onStateChange(res.state)
+                      setEmailChangeOtp(res.challenge.code)
+                      setNotice(`Sent email-change code (${res.challenge.code}) to ${hh.parentEmail}.`)
+                    }}
+                  >
+                    Send email-change code
+                  </Button>
+                  <input
+                    type="text"
+                    aria-label="Email change step-up code"
+                    placeholder="6-digit code"
+                    className={styles.input}
+                    value={emailChangeOtp}
+                    onChange={(e) => setEmailChangeOtp(e.target.value)}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setErrorMsg('')
+                      try {
+                        onStateChange(requestParentEmailChange(portalStorage, parentActor, hh.id, newParentEmail, emailChangeOtp, activeDeviceId))
+                        setNewParentEmail('')
+                        setEmailChangeOtp('')
+                        setNotice('Sent old-address confirmation email to Simulated Inbox. 48-hour hold starts after old-address yes.')
+                      } catch (err) {
+                        onStateChange(portalStorage.load())
+                        setErrorMsg(err instanceof Error ? err.message : 'Email change blocked.')
+                      }
+                    }}
+                  >
+                    Request email change
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          <Card title="Simulated purchase step-up check (Acceptance Row #5)" headingLevel={2}>
+            <p className={styles.note}>Buying a lesson requires a verified parent + fresh one-time code sent to {hh.parentEmail} (never reachable from a forwarded link or teen device).</p>
+            <div className={styles.actions}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  setErrorMsg('')
+                  const res = requestParentStepUpCode(portalStorage, hh.id, 'billing_action')
+                  onStateChange(res.state)
+                  setBillingOtp(res.challenge.code)
+                  setNotice(`Sent billing verification code (${res.challenge.code}) to ${hh.parentEmail}.`)
+                }}
+              >
+                Send billing code
+              </Button>
+              <input
+                type="text"
+                aria-label="Billing step-up code"
+                placeholder="6-digit code"
+                className={styles.input}
+                value={billingOtp}
+                onChange={(e) => setBillingOtp(e.target.value)}
+              />
+              <Button
+                size="sm"
+                onClick={() => {
+                  setErrorMsg('')
+                  try {
+                    const res = authorizeParentBillingAction(portalStorage, parentActor, hh.id, '60-minute private lesson ($50)', billingOtp, activeDeviceId)
+                    onStateChange(res.state)
+                    setBillingOtp('')
+                    setNotice(res.receipt)
+                  } catch (err) {
+                    onStateChange(portalStorage.load())
+                    setErrorMsg(err instanceof Error ? err.message : 'Purchase blocked.')
+                  }
+                }}
+              >
+                Authorize simulated $50 lesson
+              </Button>
+            </div>
+          </Card>
+
+          <Card title={`Append-only approval log (${myApprovalLogs.length}) — Layer 8`} headingLevel={2}>
+            {myApprovalLogs.length === 0 ? (
+              <p className={styles.note}>No approval or security events recorded yet.</p>
+            ) : (
+              <ul className={styles.miniList} data-testid="parent-approval-log">
+                {myApprovalLogs.slice().reverse().map((entry) => (
+                  <li key={entry.id}>
+                    #{entry.sequence} · {entry.at} · <strong>{entry.event}</strong> ({entry.outcome}) — {entry.detail}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -397,10 +856,10 @@ function SettingsPanel({
         <fieldset className={styles.fieldset} disabled={!consentVerified}>
           <legend>1. Questions {!consentVerified ? '(locked Off until consent is verified)' : ''}</legend>
           <p className={styles.note}>{ASK_MODE_HELP}</p>
-          {(['off', 'review', 'auto'] as const).map((mode) => (
+          {(['off', 'review'] as const).map((mode) => (
             <label key={mode} className={styles.radioRow}>
               <input type="radio" name="askMode" checked={askMode === mode} onChange={() => setAskMode(mode)} />
-              {mode === 'off' ? 'Off' : mode === 'review' ? 'Review first (recommended)' : 'Auto-send (parent first, then Mr. Sam)'}
+              {mode === 'off' ? 'Off' : 'Review first (parent email first — no Auto-send)'}
             </label>
           ))}
         </fieldset>

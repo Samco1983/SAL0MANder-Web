@@ -68,6 +68,7 @@ export function canMentorReadWorkText(state: PortalState, record: WorkRecord): b
   const child = state.children.find((c) => c.id === record.childId)
   const hh = state.households.find((h) => h.id === record.householdId)
   if (!child || !hh || child.consentStatus !== 'verified' || hh.consentRecord.status !== 'verified') return false
+  if (child.isAdultLearner) return record.status !== 'draft'
   if (child.askMode === 'off') return false
   if (record.status === 'draft') return false
 
@@ -78,20 +79,23 @@ export function canMentorReadWorkText(state: PortalState, record: WorkRecord): b
         q.status === 'waiting_parent_review' ||
         q.status === 'held_undelivered' ||
         q.status === 'parent_bounced' ||
-        q.parentEmailAcceptedAt === null,
+        q.status === 'pulled_back' ||
+        q.pulledBackAt !== null ||
+        q.parentEmailAcceptedAt === null ||
+        q.parentApprovalStamp === null,
     )
   ) {
     return false
   }
-  if (child.askMode === 'review') {
-    return linked.some(
-      (q) =>
-        q.parentEmailAcceptedAt !== null &&
-        q.forwardedToMentorAt !== null &&
-        (q.status === 'queued_for_mentor' || q.status === 'replied'),
-    )
-  }
-  return true
+  // Nov 25: Review-first only (no Auto-send) — requires an explicit parent approval stamp on a linked question.
+  return linked.some(
+    (q) =>
+      q.parentEmailAcceptedAt !== null &&
+      q.forwardedToMentorAt !== null &&
+      q.parentApprovalStamp !== null &&
+      q.pulledBackAt === null &&
+      (q.status === 'queued_for_mentor' || q.status === 'replied'),
+  )
 }
 
 /** Returns a mentor-safe WorkRecord view, omitting child text fields until parent forwards (FIX 4 / G-03). */
@@ -155,11 +159,13 @@ export function listTodayAskQueue(state: PortalState, actor: PortalActor): AskQu
   return state.askQuestions
     .filter((record) => {
       if (record.status !== 'queued_for_mentor') return false
+      if (record.pulledBackAt !== null) return false
+      if (!record.adultDirectBypass && record.parentApprovalStamp === null) return false
       if (!can(liveActor, 'view', { type: 'ask_question', record })) return false
       const child = state.children.find((c) => c.id === record.childId)
       const hh = state.households.find((h) => h.id === record.householdId)
       if (!child || !hh || child.consentStatus !== 'verified' || hh.consentRecord.status !== 'verified') return false
-      return child.askMode !== 'off'
+      return child.isAdultLearner || child.askMode !== 'off'
     })
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 }
