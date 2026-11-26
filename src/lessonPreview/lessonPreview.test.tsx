@@ -3,6 +3,7 @@ import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from '@app/providers/ThemeProvider'
+import { readEnv } from '@config/env'
 import { HomePage } from '@routes/home/HomePage'
 import { JigsawLessonPreviewPage } from '@routes/lesson-preview/JigsawLessonPreviewPage'
 import {
@@ -418,5 +419,18 @@ describe('Multi-tab UI integration, Firebase URL guard, audio audition & private
     )
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href') ?? '')
     expect(hrefs.some((h) => h.includes('jigsaw-lesson') || h.includes('/preview/'))).toBe(false)
+
+    // Production builds keep the preview fail-closed unless explicitly opted in.
+    const prodDefault = readEnv({ VITE_APP_ENV: 'production' })
+    expect(!prodDefault.isProd || prodDefault.features.lessonPreview).toBe(false)
+
+    const prodOptIn = readEnv({
+      VITE_APP_ENV: 'production',
+      VITE_FEATURE_LESSON_PREVIEW: 'true',
+    })
+    expect(!prodOptIn.isProd || prodOptIn.features.lessonPreview).toBe(true)
+
+    const localDev = readEnv({ VITE_APP_ENV: 'local' })
+    expect(!localDev.isProd || localDev.features.lessonPreview).toBe(true)
   })
 })

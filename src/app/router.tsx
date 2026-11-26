@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter, type RouteObject } from 'react-router-dom'
+import { env } from '@config/env'
 import { paths } from '@config/routes'
 import { HomePage } from '@routes/home/HomePage'
 import { NotFoundPage } from '@routes/not-found/NotFoundPage'
@@ -114,7 +115,12 @@ export const routes: RouteObject[] = [
   { path: paths.console, element: split(<ConsolePage />), errorElement: <RouteError /> },
   {
     path: paths.lessonPreview,
-    element: split(<JigsawLessonPreviewPage />),
+    element:
+      !env.isProd || env.features.lessonPreview ? (
+        split(<JigsawLessonPreviewPage />)
+      ) : (
+        <NotFoundPage />
+      ),
     errorElement: <RouteError />,
   },
   // The catch-all needs a boundary too: without one, a throw inside

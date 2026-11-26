@@ -1,7 +1,7 @@
 # Teacher-Led Multiplayer Jigsaw Lesson — Private Preview
 
 **STATUS: PRIVATE, NON-LIVE PREVIEW (fictional learners only).**
-Not linked from the public homepage, navigation bar, sitemap, or Arcade. Uses fictional test learners (**Maya**, 14, 3.21 consent Yes; **Leo**, 13, 3.21 consent No → shown as **Player 2**; **Priya**, 15, 3.21 consent Yes) and **Mr. Sam** (teacher host), matching [jigsaw-multiplayer-lesson-20261125.md](../../../../claude4-room/portal-launch-20261124/jigsaw-multiplayer-lesson-20261125.md) and Enrollment Agreement v2 Sections `3.21`, `3.22`, `3.22A`, and `4`.
+Not linked from the public homepage, navigation bar, sitemap, or Arcade. Strictly gated behind `!env.isProd || env.features.lessonPreview` (`VITE_FEATURE_LESSON_PREVIEW`, fail-closed `false` in production builds so `/preview/jigsaw-lesson` renders 404 unless explicitly enabled). Uses fictional test learners (**Maya**, 14, 3.21 consent Yes; **Leo**, 13, 3.21 consent No → shown as **Player 2**; **Priya**, 15, 3.21 consent Yes) and **Mr. Sam** (teacher host), matching [jigsaw-multiplayer-lesson-20261125.md](../../../../claude4-room/portal-launch-20261124/jigsaw-multiplayer-lesson-20261125.md) and Enrollment Agreement v2 Sections `3.21`, `3.22`, `3.22A`, and `4`.
 
 ## How to run the 4-tab preview locally (zero setup)
 1. Start the dev server: `npm run dev`
